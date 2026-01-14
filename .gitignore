@@ -1,0 +1,32 @@
+# ---- data & assets ----
+data/
+PanoramaView/
+FisheyeView/
+*.zip
+*.tar
+*.tar.gz
+
+# ---- model checkpoints ----
+*.pth
+*.pt
+*.ckpt
+
+# ---- logs ----
+runs/
+wandb/
+logs/
+*.log
+
+# ---- python cache ----
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+
+# ---- system ----
+.DS_Store
+Thumbs.db
+
+# ---- IDE ----
+.vscode/
+.idea/
