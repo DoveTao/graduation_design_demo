@@ -38,7 +38,7 @@ class Config:
     # Train: mixed-k sampling (recommended)
     use_mixed_k: bool = True
     k_choices: List[int] = field(default_factory=lambda: [5, 10])
-    k_probs: List[float] = field(default_factory=lambda: [0.35, 0.65])
+    k_probs: List[float] = field(default_factory=lambda: [0.2, 0.8])
 
     # Optional: filter too-small baseline pairs (meters). 0 disables.
     min_dt: float = 0.05
@@ -94,7 +94,7 @@ class Config:
     pin_memory: bool = True
 
     # Loop
-    max_steps: int = 2000
+    max_steps: int = 6000
     log_every: int = 50
 
     # Eval

@@ -24,8 +24,8 @@ def cosine_sim(a: torch.Tensor, b: torch.Tensor) -> torch.Tensor:
     """
     a: [B,NA,D], b: [B,NB,D] -> sim [B,NA,NB]
     """
-    a = F.normalize(a, dim=-1)
-    b = F.normalize(b, dim=-1)
+    a = F.normalize(a, dim=-1, eps=1e-6)
+    b = F.normalize(b, dim=-1, eps=1e-6)
     return a @ b.transpose(-1, -2)
 
 
@@ -170,11 +170,11 @@ def epipolar_band_bias_or_mask(
     # rotate A bearings into B frame (approx)
     # bA_rot = R * bA  (choose convention; placeholder)
     bA_rot = torch.matmul(bearing_a, R.transpose(-1, -2))  # [B,NA,3]
-    bA_rot = F.normalize(bA_rot, dim=-1)
+    bA_rot = F.normalize(bA_rot, dim=-1, eps=1e-6)
 
-    bB = F.normalize(bearing_b, dim=-1)
+    bB = F.normalize(bearing_b, dim=-1, eps=1e-6)
     cos = torch.matmul(bA_rot, bB.transpose(-1, -2))  # [B,NA,NB]
-    cos = torch.clamp(cos, -1.0, 1.0)
+    cos = torch.clamp(cos, -1.0 + 1e-4, 1.0 - 1e-4)
     ang = torch.acos(cos)  # radians
     thresh = math.radians(angle_thresh_deg)
     allowed = ang <= thresh  # [B,NA,NB] bool

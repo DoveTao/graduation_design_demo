@@ -84,11 +84,12 @@ def epipolar_simplified_loss(
     TODO: Replace with strict epipolar (R,t_dir) band constraint on sphere.
     """
     bA_rot = torch.matmul(bearing_a, R.transpose(-1, -2))  # [B,NA,3]
-    bA_rot = F.normalize(bA_rot, dim=-1)
+    bA_rot = F.normalize(bA_rot, dim=-1, eps=1e-6)
 
     bB_exp = torch.matmul(W_ab, bearing_b)                # [B,NA,3]
-    bB_exp = F.normalize(bB_exp, dim=-1)
+    bB_exp = F.normalize(bB_exp, dim=-1, eps=1e-6)
 
-    cos = torch.sum(bA_rot * bB_exp, dim=-1).clamp(-1.0, 1.0)  # [B,NA]
+    cos = torch.sum(bA_rot * bB_exp, dim=-1)
+    cos = cos.clamp(-1.0 + 1e-4, 1.0 - 1e-4)  # avoid acos grad blow-up at ±1
     ang = torch.acos(cos)  # radians
     return ang.mean()

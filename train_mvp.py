@@ -79,13 +79,8 @@ def main():
     print(f"[Info] device={device}, amp={cfg.amp}, grad_accum={accum_steps}")
     print(f"[Info] data_root={cfg.data_root}")
     print(f"[Info] pano size HxW={cfg.H}x{cfg.W}, batch={cfg.batch_size}")
-
-    # ---- Optional: you can keep split in config.py; if you still want to force here, keep this block ----
-    # If you already set these in config.py, you can delete these four lines.
-    cfg.train_scenes = ["scene01"]
-    cfg.train_seqs = ["seq01", "seq02"]
-    cfg.test_scenes = ["scene01"]
-    cfg.test_seqs = ["seq03"]
+    print(f"[Info] train split: scenes={cfg.train_scenes}, seqs={cfg.train_seqs}")
+    print(f"[Info] test  split: scenes={cfg.test_scenes},  seqs={cfg.test_seqs}")
 
     # ---- Datasets / Loaders ----
     if cfg.use_mixed_k:
@@ -106,12 +101,12 @@ def main():
         train_set = RflyPanoPanoramaPairs(
             data_root=cfg.data_root,
             hw=(cfg.H, cfg.W),
-            k_stride=cfg.test_k_stride,  # if you want separate train_k_stride, add it in config
+            k_stride=cfg.train_k_stride,
             pair_step=cfg.pair_step,
             scenes=cfg.train_scenes,
             seqs=cfg.train_seqs,
         )
-        print(f"[Info] train sampling: fixed_k k_stride={cfg.test_k_stride}")
+        print(f"[Info] train sampling: fixed_k k_stride={cfg.train_k_stride}")
 
     test_set = RflyPanoPanoramaPairs(
         data_root=cfg.data_root,
@@ -140,6 +135,7 @@ def main():
         drop_last=False,
     )
     print(f"[Info] train pairs = {len(train_set)}, test pairs = {len(test_set)}")
+    print(f"[Info] max_steps={cfg.max_steps}, log_every={cfg.log_every}, eval_every(updates)={cfg.eval_every}")
 
     # ---- Model / Optim ----
     model = PanoramaRelPoseModel(cfg, device=device).to(device)
@@ -148,9 +144,15 @@ def main():
     opt = torch.optim.AdamW(model.parameters(), lr=cfg.lr, weight_decay=cfg.weight_decay)
     scaler = torch.amp.GradScaler("cuda", enabled=amp_enabled)
 
+    # ---- Baseline Eval (before training) ----
+    rot0, t0 = eval_model(model, test_loader, device, max_batches=cfg.max_eval_batches)
+    print(f"[Eval ] baseline | rot={rot0:.4f}° | tdir={t0:.4f}°")
+
     # ---- Training loop with gradient accumulation ----
     it = iter(train_loader)
     opt.zero_grad(set_to_none=True)
+
+    update_step = 0  # true optimizer updates
 
     for step in range(cfg.max_steps):
         try:
@@ -182,7 +184,7 @@ def main():
             L_cycle_w = reliability_weighted(L_cycle, aux["cA_f"], aux["cB_f"])
             L_rel = reliability_reg_loss(aux["cA_f"], aux["cB_f"])
 
-            # Epipolar simplified: use per-token bearings if available; else fallback
+            # Epipolar simplified
             if ("bearingA_f" in aux) and ("bearingB_f" in aux):
                 bearing_a = aux["bearingA_f"]
                 bearing_b = aux["bearingB_f"]
@@ -207,21 +209,24 @@ def main():
                 + cfg.lam_e * L_epi
             )
 
-            # IMPORTANT: scale loss for accumulation
+            # Scale for accumulation
             L = L_total / accum_steps
 
         scaler.scale(L).backward()
 
-        # step every accum_steps
+        did_update = False
         if (step + 1) % accum_steps == 0:
             scaler.step(opt)
             scaler.update()
             opt.zero_grad(set_to_none=True)
+            update_step += 1
+            did_update = True
 
-        # Logging (print UN-SCALED total for readability)
+        # ---- Logging ----
         if step % cfg.log_every == 0:
+            # show both "step" and "update_step" to avoid confusion under accumulation
             print(
-                f"[Train] step {step:04d} | "
+                f"[Train] step {step:05d} upd {update_step:05d} | "
                 f"L={L_total.item():.3f} | pose={L_pose.item():.3f} | "
                 f"x={L_x.item():.4f} | cyc={L_cycle.item():.4f} | "
                 f"rel={L_rel.item():.3f} | epi={L_epi.item():.3f}"
@@ -229,16 +234,19 @@ def main():
             if step == 0:
                 print("[Shapes] IA", tuple(IA.shape), "| R", tuple(R_pred.shape), "| t", tuple(t_pred.shape))
 
-        # Periodic eval
-        if (step % cfg.eval_every) == 0:
+        # ---- Eval (by update_step; only after a real update) ----
+        if did_update and (update_step % cfg.eval_every) == 0:
             rot_err, t_err = eval_model(model, test_loader, device, max_batches=cfg.max_eval_batches)
-            print(f"[Eval ] step {step:04d} | rot={rot_err:.2f}° | tdir={t_err:.2f}°")
+            print(f"[Eval ] upd {update_step:05d} (step {step:05d}) | rot={rot_err:.4f}° | tdir={t_err:.4f}°")
 
-    # Flush remaining grads if max_steps not divisible by accum_steps
+    # ---- Flush remaining grads if max_steps not divisible by accum_steps ----
     if (cfg.max_steps % accum_steps) != 0:
         scaler.step(opt)
         scaler.update()
         opt.zero_grad(set_to_none=True)
+        update_step += 1
+        rot_err, t_err = eval_model(model, test_loader, device, max_batches=cfg.max_eval_batches)
+        print(f"[Eval ] upd {update_step:05d} (final flush) | rot={rot_err:.4f}° | tdir={t_err:.4f}°")
 
     print("[Done] Training finished.")
 
