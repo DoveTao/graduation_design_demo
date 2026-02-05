@@ -1,5 +1,6 @@
 # train_mvp.py
 from __future__ import annotations
+
 import random
 import numpy as np
 
@@ -15,7 +16,7 @@ from losses import (
     cycle_loss,
     reliability_weighted,
     reliability_reg_loss,
-    epipolar_simplified_loss,
+    epipolar_strict_loss,
 )
 
 
@@ -33,39 +34,40 @@ def eval_model(model, test_loader, device, max_batches: int | None = 50):
     model.eval()
     rot_errs = []
     t_errs = []
-    n = 0
+    seen = 0
 
     for batch in test_loader:
         IA = batch["IA"].to(device, non_blocking=True)
         IB = batch["IB"].to(device, non_blocking=True)
         R_gt = batch["R_gt"].to(device, non_blocking=True)
-        t_gt_dir = batch["t_gt_dir"].to(device, non_blocking=True)
+        t_gt = batch["t_gt_dir"].to(device, non_blocking=True)
 
         R_pred, t_pred, _ = model(IA, IB)
 
-        # rotation error (deg): acos((trace(R_gt^T R_pred)-1)/2)
-        R_rel = torch.matmul(R_gt.transpose(-1, -2), R_pred)  # [B,3,3]
-        tr = torch.diagonal(R_rel, dim1=-2, dim2=-1).sum(-1)  # [B]
-        cos = torch.clamp((tr - 1.0) * 0.5, -1.0, 1.0)
-        rot_deg = torch.rad2deg(torch.acos(cos))              # [B]
+        # rotation geodesic (deg) via trace
+        Rp = R_pred
+        Rg = R_gt
+        tr = torch.einsum("bij,bji->b", Rp, Rg.transpose(-1, -2)).clamp(-1.0, 3.0)
+        cos_theta = ((tr - 1.0) / 2.0).clamp(-1.0, 1.0)
+        rot = torch.acos(cos_theta) * (180.0 / np.pi)
 
-        # translation direction error (deg)
-        t_pred_dir = t_pred / (t_pred.norm(dim=-1, keepdim=True) + 1e-9)
-        cos_t = torch.clamp((t_pred_dir * t_gt_dir).sum(-1), -1.0, 1.0)
-        t_deg = torch.rad2deg(torch.acos(cos_t))              # [B]
+        # translation direction angle (deg)
+        tp = t_pred / (t_pred.norm(dim=-1, keepdim=True) + 1e-9)
+        tg = t_gt / (t_gt.norm(dim=-1, keepdim=True) + 1e-9)
+        cos_t = (tp * tg).sum(dim=-1).clamp(-1.0, 1.0)
+        t_ang = torch.acos(cos_t) * (180.0 / np.pi)
 
-        rot_errs.append(rot_deg.detach().cpu())
-        t_errs.append(t_deg.detach().cpu())
+        rot_errs.append(rot.detach().cpu())
+        t_errs.append(t_ang.detach().cpu())
 
-        n += 1
-        if (max_batches is not None) and (n >= max_batches):
+        seen += IA.size(0)
+        if max_batches is not None and seen >= max_batches:
             break
 
-    rot_mean = torch.cat(rot_errs).mean().item() if rot_errs else float("nan")
-    t_mean = torch.cat(t_errs).mean().item() if t_errs else float("nan")
-
+    rot_err = torch.cat(rot_errs).mean().item() if rot_errs else float("nan")
+    t_err = torch.cat(t_errs).mean().item() if t_errs else float("nan")
     model.train()
-    return rot_mean, t_mean
+    return rot_err, t_err
 
 
 def main():
@@ -74,127 +76,134 @@ def main():
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     amp_enabled = (cfg.amp and device.type == "cuda")
-    accum_steps = max(1, int(getattr(cfg, "grad_accum", 1)))
 
-    print(f"[Info] device={device}, amp={cfg.amp}, grad_accum={accum_steps}")
-    print(f"[Info] data_root={cfg.data_root}")
-    print(f"[Info] pano size HxW={cfg.H}x{cfg.W}, batch={cfg.batch_size}")
-    print(f"[Info] train split: scenes={cfg.train_scenes}, seqs={cfg.train_seqs}")
-    print(f"[Info] test  split: scenes={cfg.test_scenes},  seqs={cfg.test_seqs}")
-
-    # ---- Datasets / Loaders ----
+    # -------------------------
+    # Dataset / loader
+    # -------------------------
     if cfg.use_mixed_k:
-        train_set = RflyPanoPanoramaPairsMixedK(
+        train_ds = RflyPanoPanoramaPairsMixedK(
             data_root=cfg.data_root,
+            scenes=cfg.train_scenes,
+            seqs=cfg.train_seqs,
             hw=(cfg.H, cfg.W),
             k_choices=cfg.k_choices,
             k_probs=cfg.k_probs,
             pair_step=cfg.pair_step,
-            scenes=cfg.train_scenes,
-            seqs=cfg.train_seqs,
             min_dt=cfg.min_dt,
             max_tries=cfg.max_tries,
             seed=cfg.seed,
         )
-        print(f"[Info] train sampling: mixed_k choices={cfg.k_choices}, probs={cfg.k_probs}, min_dt={cfg.min_dt}")
     else:
-        train_set = RflyPanoPanoramaPairs(
+        train_ds = RflyPanoPanoramaPairs(
             data_root=cfg.data_root,
-            hw=(cfg.H, cfg.W),
-            k_stride=cfg.train_k_stride,
-            pair_step=cfg.pair_step,
             scenes=cfg.train_scenes,
             seqs=cfg.train_seqs,
+            hw=(cfg.H, cfg.W),
+            k_stride=cfg.test_k_stride,
+            pair_step=cfg.pair_step,
         )
-        print(f"[Info] train sampling: fixed_k k_stride={cfg.train_k_stride}")
 
-    test_set = RflyPanoPanoramaPairs(
+    test_ds = RflyPanoPanoramaPairs(
         data_root=cfg.data_root,
+        scenes=cfg.test_scenes,
+        seqs=cfg.test_seqs,
         hw=(cfg.H, cfg.W),
         k_stride=cfg.test_k_stride,
         pair_step=cfg.pair_step,
-        scenes=cfg.test_scenes,
-        seqs=cfg.test_seqs,
     )
-    print(f"[Info] test sampling: fixed_k k_stride={cfg.test_k_stride}")
 
-    train_loader = DataLoader(
-        train_set,
-        batch_size=cfg.batch_size,
-        shuffle=True,
+    # DataLoader 性能设置
+    loader_kwargs = dict(
         num_workers=cfg.num_workers,
         pin_memory=cfg.pin_memory,
         drop_last=True,
     )
+    if cfg.num_workers > 0:
+        loader_kwargs.update(dict(persistent_workers=True, prefetch_factor=2))
+
+    train_loader = DataLoader(
+        train_ds,
+        batch_size=cfg.batch_size,
+        shuffle=True,
+        **loader_kwargs,
+    )
+
     test_loader = DataLoader(
-        test_set,
+        test_ds,
         batch_size=1,
         shuffle=False,
         num_workers=cfg.num_workers,
         pin_memory=cfg.pin_memory,
         drop_last=False,
     )
-    print(f"[Info] train pairs = {len(train_set)}, test pairs = {len(test_set)}")
-    print(f"[Info] max_steps={cfg.max_steps}, log_every={cfg.log_every}, eval_every(updates)={cfg.eval_every}")
 
-    # ---- Model / Optim ----
+    print(f"[Data] len(train_ds)={len(train_ds)} | len(train_loader)={len(train_loader)}")
+    print(f"[Data] len(test_ds)={len(test_ds)}")
+
+    # -------------------------
+    # Model / optim
+    # -------------------------
     model = PanoramaRelPoseModel(cfg, device=device).to(device)
+    opt = torch.optim.AdamW(model.parameters(), lr=cfg.lr, weight_decay=cfg.weight_decay)
+
+    scaler = torch.amp.GradScaler("cuda", enabled=amp_enabled)
     model.train()
 
-    opt = torch.optim.AdamW(model.parameters(), lr=cfg.lr, weight_decay=cfg.weight_decay)
-    scaler = torch.amp.GradScaler("cuda", enabled=amp_enabled)
+    # gradient accumulation
+    accum_steps = max(1, int(cfg.grad_accum))
+    update_step = 0
 
-    # ---- Baseline Eval (before training) ----
-    rot0, t0 = eval_model(model, test_loader, device, max_batches=cfg.max_eval_batches)
-    print(f"[Eval ] baseline | rot={rot0:.4f}° | tdir={t0:.4f}°")
+    # -------------------------
+    # IMPORTANT: run to cfg.max_steps even if dataloader exhausts
+    # -------------------------
+    train_it = iter(train_loader)
+    epoch_like = 0  # just for debug printing
 
-    # ---- Training loop with gradient accumulation ----
-    it = iter(train_loader)
-    opt.zero_grad(set_to_none=True)
-
-    update_step = 0  # true optimizer updates
-
-    for step in range(cfg.max_steps):
+    for step in range(int(cfg.max_steps)):
         try:
-            batch = next(it)
+            batch = next(train_it)
         except StopIteration:
-            it = iter(train_loader)
-            batch = next(it)
+            epoch_like += 1
+            train_it = iter(train_loader)
+            batch = next(train_it)
 
-        IA = batch["IA"].to(device, non_blocking=True)             # [B,3,H,W]
+        IA = batch["IA"].to(device, non_blocking=True)
         IB = batch["IB"].to(device, non_blocking=True)
-        R_gt = batch["R_gt"].to(device, non_blocking=True)         # [B,3,3]
-        t_gt_dir = batch["t_gt_dir"].to(device, non_blocking=True) # [B,3]
-        B = IA.shape[0]
+        R_gt = batch["R_gt"].to(device, non_blocking=True)
+        t_gt = batch["t_gt_dir"].to(device, non_blocking=True)
 
         with torch.amp.autocast("cuda", enabled=amp_enabled):
             R_pred, t_pred, aux = model(IA, IB)
 
-            # Core losses
-            L_pose = pose_loss(R_pred, t_pred, R_gt, t_gt_dir)
+            # --- Pose loss (base) ---
+            L_pose = pose_loss(R_pred, t_pred, R_gt, t_gt)
+
+            # --- Cross-level consistency ---
             L_x = xlevel_loss(aux["Wc_tilde"], aux["Wc_ab"])
 
-            L_cycle_c = cycle_loss(aux["Wc_ab"], aux["Wc_ba"])
-            L_cycle_f = cycle_loss(aux["Wf_ab"], aux["Wf_ba"])
-            L_cycle = 0.5 * (L_cycle_c + L_cycle_f)
+            # --- Cycle consistency (fine) ---
+            L_cycle = cycle_loss(aux["Wf_ab"], aux["Wf_ba"])
 
-            # Reliability
+            # --- Reliability regularizer ---
+            L_rel = reliability_reg_loss(aux["cA_f"], aux["cB_f"])
+
+            # reliability-weighted pose/x/cycle
             L_pose_w = reliability_weighted(L_pose, aux["cA_f"], aux["cB_f"])
             L_x_w = reliability_weighted(L_x, aux["cA_f"], aux["cB_f"])
             L_cycle_w = reliability_weighted(L_cycle, aux["cA_f"], aux["cB_f"])
-            L_rel = reliability_reg_loss(aux["cA_f"], aux["cB_f"])
 
-            # Epipolar simplified
-            if ("bearingA_f" in aux) and ("bearingB_f" in aux):
-                bearing_a = aux["bearingA_f"]
-                bearing_b = aux["bearingB_f"]
-            else:
+            # --- Strict epipolar loss ---
+            bearing_a = aux.get("bearingA_f", None)
+            bearing_b = aux.get("bearingB_f", None)
+            if bearing_a is None or bearing_b is None:
                 fine_b = model.module2.hier.fine_bearing.to(device)  # [Nf,3]
-                bearing_a = fine_b.view(1, cfg.Nf, 3).expand(B, -1, -1)
-                bearing_b = fine_b.view(1, cfg.Nf, 3).expand(B, -1, -1)
+                Bsz = IA.size(0)
+                bearing_a = fine_b.view(1, cfg.Nf, 3).expand(Bsz, -1, -1)
+                bearing_b = fine_b.view(1, cfg.Nf, 3).expand(Bsz, -1, -1)
 
-            L_epi = epipolar_simplified_loss(
+            L_epi = epipolar_strict_loss(
                 R=aux["Rc"],
+                t_dir=aux["tc_dir"],
                 W_ab=aux["Wf_ab"],
                 bearing_a=bearing_a,
                 bearing_b=bearing_b,
@@ -216,8 +225,9 @@ def main():
 
         did_update = False
         if (step + 1) % accum_steps == 0:
+            # AMP: unscale before clipping
             if amp_enabled:
-                scaler.unscale_(opt)  # IMPORTANT: unscale before clipping
+                scaler.unscale_(opt)
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             scaler.step(opt)
             scaler.update()
@@ -227,9 +237,8 @@ def main():
 
         # ---- Logging ----
         if step % cfg.log_every == 0:
-            # show both "step" and "update_step" to avoid confusion under accumulation
             print(
-                f"[Train] step {step:05d} upd {update_step:05d} | "
+                f"[Train] step {step:05d} upd {update_step:05d} ep{epoch_like:03d} | "
                 f"L={L_total.item():.3f} | pose={L_pose.item():.3f} | "
                 f"x={L_x.item():.4f} | cyc={L_cycle.item():.4f} | "
                 f"rel={L_rel.item():.3f} | epi={L_epi.item():.3f}"
@@ -241,17 +250,6 @@ def main():
         if did_update and (update_step % cfg.eval_every) == 0:
             rot_err, t_err = eval_model(model, test_loader, device, max_batches=cfg.max_eval_batches)
             print(f"[Eval ] upd {update_step:05d} (step {step:05d}) | rot={rot_err:.4f}° | tdir={t_err:.4f}°")
-
-    # ---- Flush remaining grads if max_steps not divisible by accum_steps ----
-    if (cfg.max_steps % accum_steps) != 0:
-        scaler.step(opt)
-        scaler.update()
-        opt.zero_grad(set_to_none=True)
-        update_step += 1
-        rot_err, t_err = eval_model(model, test_loader, device, max_batches=cfg.max_eval_batches)
-        print(f"[Eval ] upd {update_step:05d} (final flush) | rot={rot_err:.4f}° | tdir={t_err:.4f}°")
-
-    print("[Done] Training finished.")
 
 
 if __name__ == "__main__":

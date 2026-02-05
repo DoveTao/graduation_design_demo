@@ -98,7 +98,8 @@ class Module2Sampler(nn.Module):
 class PanoramaRelPoseModel(nn.Module):
     """
     End-to-end MVP model:
-      Module2 -> Module3 coarse -> routing+epi -> Module3 fine -> Module4 pose decoder (included in fine head)
+      Module2 -> Module3 coarse -> routing+epi -> Module3 fine -> Module4 pose decoder
+      (included in fine head)
     """
     def __init__(self, cfg: Config, device: torch.device):
         super().__init__()
@@ -124,12 +125,13 @@ class PanoramaRelPoseModel(nn.Module):
         Rc = out_c["Rc"]
         tc_dir = out_c["tc_dir"]
 
-        # Module3 fine (routing + epipolar placeholder)
+        # Module3 fine (routing + strict spherical epipolar band + sparse matching)
         out_f = self.fine(
             TokA_f=TokA_f,
             TokB_f=TokB_f,
             Wc_ab=Wc_ab,
             Rc=Rc,
+            tc_dir=tc_dir,
             topk_coarse=self.cfg.topk_coarse,
             epi_angle_thresh_deg=self.cfg.epi_angle_thresh_deg,
             epi_bias_strength=self.cfg.epi_bias_strength,
@@ -151,8 +153,6 @@ class PanoramaRelPoseModel(nn.Module):
         aux["Wc_tilde"] = Wc_tilde
         aux["bearingA_f"] = TokA_f.bearing   # [B,Nf,3]
         aux["bearingB_f"] = TokB_f.bearing   # [B,Nf,3]
-
-
 
         # Final prediction from fine head (Module4 in MVP)
         R = out_f["R"]

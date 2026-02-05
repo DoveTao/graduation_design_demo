@@ -34,32 +34,11 @@ def cycle_loss(W_ab: torch.Tensor, W_ba: torch.Tensor) -> torch.Tensor:
     return F.mse_loss(P, I)
 
 
-'''def reliability_weighted(
-    base_loss: torch.Tensor,
-    cA: torch.Tensor,  # [B,NA,1]
-    cB: torch.Tensor,  # [B,NB,1]
-) -> torch.Tensor:
-    """
-    Simple reliability weighting: multiply loss by mean confidence.
-    """
-    w = 0.5 * (cA.mean() + cB.mean())
-    return w * base_loss'''
-
 def reliability_weighted(base_loss: torch.Tensor, cA: torch.Tensor, cB: torch.Tensor) -> torch.Tensor:
-    # cA/cB 是 logits，所以权重要用 sigmoid 转成 (0,1)
+    # cA/cB are logits -> convert to probability for weighting
     w = 0.5 * (torch.sigmoid(cA).mean() + torch.sigmoid(cB).mean())
     return w * base_loss
 
-
-
-'''def reliability_reg_loss(cA: torch.Tensor, cB: torch.Tensor) -> torch.Tensor:
-    """
-    Simple regularizer: encourage confidence toward 1 (can be replaced with better calibration).
-    """
-    target = torch.ones_like(cA)
-    la = F.binary_cross_entropy(cA, target)
-    lb = F.binary_cross_entropy(cB, target)
-    return 0.5 * (la + lb)'''
 
 def reliability_reg_loss(cA: torch.Tensor, cB: torch.Tensor) -> torch.Tensor:
     targetA = torch.ones_like(cA)
@@ -69,27 +48,40 @@ def reliability_reg_loss(cA: torch.Tensor, cB: torch.Tensor) -> torch.Tensor:
     return 0.5 * (la + lb)
 
 
-
-def epipolar_simplified_loss(
+def epipolar_strict_loss(
     R: torch.Tensor,           # [B,3,3]
+    t_dir: torch.Tensor,       # [B,3]
     W_ab: torch.Tensor,        # [B,NA,NB]
     bearing_a: torch.Tensor,   # [B,NA,3]
     bearing_b: torch.Tensor,   # [B,NB,3]
 ) -> torch.Tensor:
     """
-    Simplified epipolar consistency placeholder:
-      compute expected bearing in B per A token: bB_exp = sum_j W_ab[i,j] * bB[j]
-      penalize angular difference between R*bA and bB_exp.
+    Strict spherical epipolar consistency.
 
-    TODO: Replace with strict epipolar (R,t_dir) band constraint on sphere.
+    For each A-ray, rotate into B: r = R*bA.
+    Epipolar plane normal: n = t x r.
+    Great-circle constraint for candidate bB: n_unit · bB = 0.
+
+    Loss: expected squared violation under soft correspondence W_ab:
+      E_{j~W_ab[i,:]} [ (n_unit(i) · bB_j)^2 ].
     """
-    bA_rot = torch.matmul(bearing_a, R.transpose(-1, -2))  # [B,NA,3]
-    bA_rot = F.normalize(bA_rot, dim=-1, eps=1e-6)
+    B, NA, _ = bearing_a.shape
+    NB = bearing_b.shape[1]
 
-    bB_exp = torch.matmul(W_ab, bearing_b)                # [B,NA,3]
-    bB_exp = F.normalize(bB_exp, dim=-1, eps=1e-6)
+    t = F.normalize(t_dir.float(), dim=-1, eps=1e-6)                             # [B,3]
+    r = torch.matmul(bearing_a.float(), R.transpose(-1, -2).float())             # [B,NA,3]
+    r = F.normalize(r, dim=-1, eps=1e-6)
+    bB = F.normalize(bearing_b.float(), dim=-1, eps=1e-6)                        # [B,NB,3]
 
-    cos = torch.sum(bA_rot * bB_exp, dim=-1)
-    cos = cos.clamp(-1.0 + 1e-4, 1.0 - 1e-4)  # avoid acos grad blow-up at ±1
-    ang = torch.acos(cos)  # radians
-    return ang.mean()
+    t_exp = t[:, None, :].expand(-1, NA, -1)                                     # [B,NA,3]
+    n = torch.cross(t_exp, r, dim=-1)                                            # [B,NA,3]
+    n_norm = n.norm(dim=-1, keepdim=True)                                        # [B,NA,1]
+    valid = (n_norm > 1e-3).float()                                              # [B,NA,1]
+    n_unit = n / (n_norm + 1e-6)
+
+    s = torch.matmul(n_unit, bB.transpose(-1, -2))                               # [B,NA,NB]
+    viol = s * s                                                                 # squared distance to epipolar plane
+    loss_a = (W_ab.float() * viol).sum(dim=-1)                                   # [B,NA]
+
+    loss = (loss_a * valid.squeeze(-1)).sum() / (valid.sum() + 1e-6)
+    return loss
