@@ -216,6 +216,9 @@ def main():
 
         did_update = False
         if (step + 1) % accum_steps == 0:
+            if amp_enabled:
+                scaler.unscale_(opt)  # IMPORTANT: unscale before clipping
+            torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             scaler.step(opt)
             scaler.update()
             opt.zero_grad(set_to_none=True)

@@ -84,7 +84,7 @@ class Config:
     # =========================
     batch_size: int = 1                 # RTX 3060 6GB + 1024x2048 建议 1
     grad_accum: int = 4                # 等效大 batch：例如 4
-    lr: float = 1e-4
+    lr: float = 5e-5   # or 1e-5 if still unstable
     weight_decay: float = 1e-4
     amp: bool = True
     seed: int = 1234
