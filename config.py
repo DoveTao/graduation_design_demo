@@ -100,3 +100,5 @@ class Config:
     # Eval
     eval_every: int = 400
     max_eval_batches: int = 100
+
+    deterministic: bool = False
