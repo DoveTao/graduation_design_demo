@@ -27,7 +27,6 @@ def set_seed(seed: int, deterministic: bool = True):
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
 
-    # deterministic=True 会明显变慢（但可复现）
     torch.backends.cudnn.deterministic = bool(deterministic)
     torch.backends.cudnn.benchmark = not bool(deterministic)
 
@@ -49,7 +48,6 @@ def _print_startup_info(cfg: Config, device: torch.device, amp_enabled: bool):
         print(f"[Env ] CC   : {prop.major}.{prop.minor}")
         print(f"[Env ] AMP  : {amp_enabled}")
         print(f"[Env ] TF32 : matmul={torch.backends.cuda.matmul.allow_tf32} | cudnn={torch.backends.cudnn.allow_tf32}")
-        # matmul precision (PyTorch 2.x)
         try:
             print(f"[Env ] matmul_precision: {torch.get_float32_matmul_precision()}")
         except Exception:
@@ -76,7 +74,6 @@ def _print_startup_info(cfg: Config, device: torch.device, amp_enabled: bool):
 
 
 class EMA:
-    """Exponential moving average for timing stats."""
     def __init__(self, alpha: float = 0.05):
         self.alpha = alpha
         self.v = None
@@ -94,6 +91,7 @@ def eval_model(model, test_loader, device, max_batches: int | None = 50):
     model.eval()
     rot_errs = []
     t_errs = []
+    t_abs_errs = []
     seen = 0
 
     for batch in test_loader:
@@ -104,21 +102,25 @@ def eval_model(model, test_loader, device, max_batches: int | None = 50):
 
         R_pred, t_pred, _ = model(IA, IB)
 
-        # rotation geodesic (deg) via trace
+        # rot geodesic (deg) using trace
         Rp = R_pred
         Rg = R_gt
         tr = torch.einsum("bij,bji->b", Rp, Rg.transpose(-1, -2)).clamp(-1.0, 3.0)
         cos_theta = ((tr - 1.0) / 2.0).clamp(-1.0, 1.0)
         rot = torch.acos(cos_theta) * (180.0 / np.pi)
 
-        # translation direction angle (deg)
+        # tdir angle (deg)
         tp = t_pred / (t_pred.norm(dim=-1, keepdim=True) + 1e-9)
         tg = t_gt / (t_gt.norm(dim=-1, keepdim=True) + 1e-9)
         cos_t = (tp * tg).sum(dim=-1).clamp(-1.0, 1.0)
         t_ang = torch.acos(cos_t) * (180.0 / np.pi)
 
+        # sign-invariant tdir angle: acos(|cos|)
+        t_ang_abs = torch.acos(cos_t.abs()) * (180.0 / np.pi)
+
         rot_errs.append(rot.detach().cpu())
         t_errs.append(t_ang.detach().cpu())
+        t_abs_errs.append(t_ang_abs.detach().cpu())
 
         seen += IA.size(0)
         if max_batches is not None and seen >= max_batches:
@@ -126,25 +128,24 @@ def eval_model(model, test_loader, device, max_batches: int | None = 50):
 
     rot_err = torch.cat(rot_errs).mean().item() if rot_errs else float("nan")
     t_err = torch.cat(t_errs).mean().item() if t_errs else float("nan")
+    t_abs_err = torch.cat(t_abs_errs).mean().item() if t_abs_errs else float("nan")
+
     model.train()
-    return rot_err, t_err
+    return rot_err, t_err, t_abs_err
 
 
 def main():
     cfg = Config()
 
-    # ---- speed knobs (safe defaults) ----
-    # RTX 30 系列：TF32 对 matmul/attention 很有帮助（几乎不影响训练稳定性）
+    # speed knobs
     if torch.cuda.is_available():
         torch.backends.cuda.matmul.allow_tf32 = True
         torch.backends.cudnn.allow_tf32 = True
         try:
-            # "high" 更快一些；"medium" 也可以
             torch.set_float32_matmul_precision("high")
         except Exception:
             pass
 
-    # deterministic 可选：Config 里没有就默认 True（保持你现在行为）
     deterministic = getattr(cfg, "deterministic", True)
     set_seed(cfg.seed, deterministic=deterministic)
 
@@ -153,9 +154,7 @@ def main():
 
     _print_startup_info(cfg, device, amp_enabled)
 
-    # -------------------------
     # Dataset / loader
-    # -------------------------
     if cfg.use_mixed_k:
         train_ds = RflyPanoPanoramaPairsMixedK(
             data_root=cfg.data_root,
@@ -168,6 +167,12 @@ def main():
             min_dt=cfg.min_dt,
             max_tries=cfg.max_tries,
             seed=cfg.seed,
+        )
+        max_dt = getattr(cfg, "max_dt", None)
+        train_ds.max_dt = float(max_dt) if max_dt is not None else None
+        print(
+            f"[Data] MixedK strict dt: min_dt={cfg.min_dt} max_dt={max_dt} "
+            f"k_choices={cfg.k_choices} k_probs={cfg.k_probs}"
         )
     else:
         train_ds = RflyPanoPanoramaPairs(
@@ -188,7 +193,6 @@ def main():
         pair_step=cfg.pair_step,
     )
 
-    # DataLoader 性能设置
     loader_kwargs = dict(
         num_workers=int(cfg.num_workers),
         pin_memory=bool(cfg.pin_memory),
@@ -203,7 +207,6 @@ def main():
         shuffle=True,
         **loader_kwargs,
     )
-
     test_loader = DataLoader(
         test_ds,
         batch_size=1,
@@ -213,30 +216,36 @@ def main():
         drop_last=False,
     )
 
-    # 额外信息：估计一个“epoch-like”有多少 step（对理解 StopIteration 重置很重要）
     print(f"[Data] len(train_ds)={len(train_ds)} | len(train_loader)={len(train_loader)} (batches per epoch-like)")
     print(f"[Data] len(test_ds)={len(test_ds)}")
     print("-" * 80)
 
-    # -------------------------
     # Model / optim
-    # -------------------------
     model = PanoramaRelPoseModel(cfg, device=device).to(device)
     opt = torch.optim.AdamW(model.parameters(), lr=float(cfg.lr), weight_decay=float(cfg.weight_decay))
-    scaler = torch.amp.GradScaler("cuda", enabled=amp_enabled)
+    scaler = torch.amp.GradScaler(
+    "cuda",
+    enabled=amp_enabled,
+    init_scale=1024.0,
+    growth_interval=2000,
+    )
     model.train()
 
-    # gradient accumulation
-    accum_steps = max(1, int(cfg.grad_accum))
-    update_step = 0
+    # probe param (to verify weights actually change)
+    probe_param = None
+    for p in model.parameters():
+        probe_param = p
+        break
 
-    # -------------------------
-    # IMPORTANT: run to cfg.max_steps even if dataloader exhausts
-    # -------------------------
+    accum_steps = max(1, int(cfg.grad_accum))
+    accum_count = 0  # only increment after successful backward
+
+    update_step = 0           # REAL successful optimizer updates
+    skip_updates = 0          # AMP skipped updates due to inf/nan grads
+
     train_it = iter(train_loader)
     epoch_like = 0
 
-    # timing EMAs
     ema_data = EMA(0.05)
     ema_fwd = EMA(0.05)
     ema_bwd = EMA(0.05)
@@ -245,8 +254,11 @@ def main():
 
     last_iter_t0 = time.perf_counter()
 
+    last_grad_norm = float("nan")
+    last_scale = scaler.get_scale() if amp_enabled else 1.0
+
     for step in range(int(cfg.max_steps)):
-        # ---- data time ----
+        # data time
         t0 = time.perf_counter()
         try:
             batch = next(train_it)
@@ -262,7 +274,7 @@ def main():
         R_gt = batch["R_gt"].to(device, non_blocking=True)
         t_gt = batch["t_gt_dir"].to(device, non_blocking=True)
 
-        # ---- forward + loss ----
+        # forward + loss
         t2 = time.perf_counter()
         with torch.amp.autocast("cuda", enabled=amp_enabled):
             R_pred, t_pred, aux = model(IA, IB)
@@ -279,7 +291,6 @@ def main():
             bearing_a = aux.get("bearingA_f", None)
             bearing_b = aux.get("bearingB_f", None)
             if bearing_a is None or bearing_b is None:
-                # fallback
                 fine_b = model.module2.hier.fine_bearing.to(device)  # [Nf,3]
                 Bsz = IA.size(0)
                 bearing_a = fine_b.view(1, cfg.Nf, 3).expand(Bsz, -1, -1)
@@ -301,48 +312,103 @@ def main():
                 + float(cfg.lam_e) * L_epi
             )
             L = L_total / accum_steps
+
         t3 = time.perf_counter()
         fwd_t = t3 - t2
 
-        # ---- backward ----
+        # NaN/Inf guard (loss-level)
+        if not torch.isfinite(L_total.detach()).item():
+            meta = batch.get("meta", {})
+            print("[NaN] non-finite loss detected. meta=", meta)
+            print("      L_pose=", float(L_pose.detach().float().cpu()) if torch.isfinite(L_pose) else L_pose)
+            print("      L_x   =", float(L_x.detach().float().cpu()) if torch.isfinite(L_x) else L_x)
+            print("      L_cyc =", float(L_cycle.detach().float().cpu()) if torch.isfinite(L_cycle) else L_cycle)
+            print("      L_rel =", float(L_rel.detach().float().cpu()) if torch.isfinite(L_rel) else L_rel)
+            print("      L_epi =", float(L_epi.detach().float().cpu()) if torch.isfinite(L_epi) else L_epi)
+            opt.zero_grad(set_to_none=True)
+            accum_count = 0
+            continue
+
+        # backward
         t4 = time.perf_counter()
         scaler.scale(L).backward()
         t5 = time.perf_counter()
         bwd_t = t5 - t4
 
-        # ---- opt step (only when update) ----
+        accum_count += 1
+
         did_update = False
         opt_t = 0.0
-        if (step + 1) % accum_steps == 0:
+
+        if accum_count >= accum_steps:
             t6 = time.perf_counter()
+
+            scale_before = scaler.get_scale() if amp_enabled else 1.0
+
             if amp_enabled:
                 scaler.unscale_(opt)
-            torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
-            scaler.step(opt)
-            scaler.update()
-            opt.zero_grad(set_to_none=True)
-            update_step += 1
-            did_update = True
+
+            grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+            last_grad_norm = float(grad_norm.detach().float().cpu()) if torch.isfinite(grad_norm) else float("nan")
+
+            # if grad_norm is non-finite, force skip (avoid fake update_step)
+            if not torch.isfinite(grad_norm):
+                skip_updates += 1
+                opt.zero_grad(set_to_none=True)
+                scaler.update()  # shrink scale
+                accum_count = 0
+                last_scale = scaler.get_scale() if amp_enabled else 1.0
+            else:
+                p_before = probe_param.detach().float().clone()
+
+                scaler.step(opt)
+                scaler.update()
+
+                p_after = probe_param.detach().float()
+                did_real_step = (p_after - p_before).abs().max().item() > 0.0
+                if did_real_step:
+                    update_step += 1
+                else:
+                    skip_updates += 1
+
+                opt.zero_grad(set_to_none=True)
+
+                scale_after = scaler.get_scale() if amp_enabled else 1.0
+                last_scale = float(scale_after)
+
+                # Heuristic: if scale decreased, scaler detected inf and skipped the step
+                stepped = (scale_after >= scale_before) if amp_enabled else True
+
+                if stepped:
+                    update_step += 1
+                    did_update = True
+                else:
+                    skip_updates += 1
+                    did_update = False
+
+                accum_count = 0
+
             t7 = time.perf_counter()
             opt_t = t7 - t6
 
-        # ---- iteration timing (for steps/s) ----
+        # iter timing
         now = time.perf_counter()
         iter_t = now - last_iter_t0
         last_iter_t0 = now
 
-        # Update EMAs
         ema_data.update(data_t)
         ema_fwd.update(fwd_t)
         ema_bwd.update(bwd_t)
         ema_opt.update(opt_t)
         ema_iter.update(iter_t)
 
-        # ---- Logging ----
+        # logging
         if step % int(cfg.log_every) == 0:
-            # 注意：不做 cuda synchronize，避免额外拖慢；这里时间是“近似值”（足够定位瓶颈）
             it = ema_iter.v if ema_iter.v else 1e-6
             sps = 1.0 / it
+
+            p0_mean = float(probe_param.detach().float().mean().cpu()) if probe_param is not None else float("nan")
+
             print(
                 f"[Train] step {step:05d} upd {update_step:05d} ep{epoch_like:03d} | "
                 f"L={L_total.item():.3f} | pose={L_pose.item():.3f} | "
@@ -354,16 +420,26 @@ def main():
                 f"data={ema_data.v*1000:.1f}ms fwd={ema_fwd.v*1000:.1f}ms "
                 f"bwd={ema_bwd.v*1000:.1f}ms opt={ema_opt.v*1000:.1f}ms"
             )
+            print(
+                f"[Stat ] grad_norm={last_grad_norm:.4f} | scaler_scale={last_scale:.1f} | "
+                f"skip_updates={skip_updates} | p0_mean={p0_mean:.6e}"
+            )
             if step == 0:
                 print("[Shapes] IA", tuple(IA.shape), "| R", tuple(R_pred.shape), "| t", tuple(t_pred.shape))
                 print("-" * 80)
 
-        # ---- Eval (by update_step; only after a real update) ----
+        # eval only after REAL updates
         if did_update and int(cfg.eval_every) > 0 and (update_step % int(cfg.eval_every) == 0):
             t_eval0 = time.perf_counter()
-            rot_err, t_err = eval_model(model, test_loader, device, max_batches=int(cfg.max_eval_batches))
+            rot_err, t_err, t_abs_err = eval_model(model, test_loader, device, max_batches=int(cfg.max_eval_batches))
             t_eval1 = time.perf_counter()
-            print(f"[Eval ] upd {update_step:05d} (step {step:05d}) | rot={rot_err:.4f}° | tdir={t_err:.4f}° | time={(t_eval1-t_eval0):.2f}s")
+            print(
+                f"[Eval ] upd {update_step:05d} (step {step:05d}) | "
+                f"rot={rot_err:.4f}° | tdir={t_err:.4f}° | tdir_abs={t_abs_err:.4f}° | "
+                f"time={(t_eval1-t_eval0):.2f}s"
+            )
+            # avoid eval time contaminating next iter_t
+            last_iter_t0 = time.perf_counter()
 
     print("[Done] training finished.")
 

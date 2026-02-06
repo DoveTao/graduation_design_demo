@@ -30,3 +30,7 @@ Thumbs.db
 # ---- IDE ----
 .vscode/
 .idea/
+
+check_k_dist.py
+check_labels_pose.py
+

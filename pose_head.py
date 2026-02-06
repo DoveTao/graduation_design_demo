@@ -4,7 +4,8 @@ import torch
 import torch.nn.functional as F
 
 
-def normalize_vec(v: torch.Tensor, eps: float = 1e-9) -> torch.Tensor:
+def normalize_vec(v: torch.Tensor, eps: float = 1e-6) -> torch.Tensor:
+    # eps 对 AMP 友好一点（1e-9 在 fp16 里意义不大）
     return v / (v.norm(dim=-1, keepdim=True) + eps)
 
 
@@ -23,13 +24,28 @@ def rot6d_to_matrix(x: torch.Tensor) -> torch.Tensor:
     return R
 
 
-def matrix_geodesic_distance(R1: torch.Tensor, R2: torch.Tensor, eps: float = 1e-7) -> torch.Tensor:
+def matrix_geodesic_distance(R1: torch.Tensor, R2: torch.Tensor, eps: float = 1e-6) -> torch.Tensor:
     """
-    R1,R2: [B,3,3]
-    returns angle [B] in radians
+    Stable geodesic angle (radians) using atan2, AMP-friendly.
+
+    angle = atan2( ||vee(R - R^T)|| / 2, (trace(R)-1)/2 )
+    where R = R1^T R2
     """
-    R = torch.matmul(R1.transpose(-1, -2), R2)
+    # 强制 float32 计算，避免 autocast 把 acos/边界搞炸
+    R1 = R1.float()
+    R2 = R2.float()
+
+    R = torch.matmul(R1.transpose(-1, -2), R2)  # [B,3,3]
+
     tr = R[..., 0, 0] + R[..., 1, 1] + R[..., 2, 2]
-    cos = (tr - 1.0) / 2.0
-    cos = torch.clamp(cos, -1.0 + eps, 1.0 - eps)
-    return torch.acos(cos)
+    c = (tr - 1.0) * 0.5  # cos(theta)
+    c = torch.clamp(c, -1.0, 1.0)
+
+    # s = ||vee(R - R^T)|| / 2  (equivalent to sin(theta) magnitude)
+    vx = R[..., 2, 1] - R[..., 1, 2]
+    vy = R[..., 0, 2] - R[..., 2, 0]
+    vz = R[..., 1, 0] - R[..., 0, 1]
+    s = 0.5 * torch.sqrt(vx * vx + vy * vy + vz * vz + eps)
+
+    angle = torch.atan2(s, c.clamp(-1.0 + eps, 1.0 - eps))
+    return angle

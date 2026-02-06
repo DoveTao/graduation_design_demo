@@ -12,7 +12,6 @@ class Config:
     # =========================
     # Paths
     # =========================
-    # Use relative path: <project_root>/data
     data_root: str = str(PROJECT_ROOT / "data")
 
     # =========================
@@ -33,16 +32,20 @@ class Config:
     pair_step: int = 1
 
     # =========================
-    # k sampling strategy
+    # k sampling strategy (align train with test, still help tdir)
     # =========================
-    # Train: mixed-k sampling (recommended)
     use_mixed_k: bool = True
-    k_choices: List[int] = field(default_factory=lambda: [5, 10])
-    k_probs: List[float] = field(default_factory=lambda: [0.2, 0.8])
 
-    # Optional: filter too-small baseline pairs (meters). 0 disables.
-    min_dt: float = 0.05
+    # 训练主要对齐 test_k_stride=10（避免分布偏移导致 tdir@k=10 变差）
+    # 同时少量引入更长基线，帮助网络学习更明确的平移方向
+    k_choices: List[int] = field(default_factory=lambda: [10, 20])
+    k_probs: List[float] = field(default_factory=lambda: [0.84, 0.16])
+
+    # 过滤太短基线，但不要高到大量拒绝 k=10（否则等价于训练/测试不匹配）
+    min_dt: float = 0.06
     max_tries: int = 10
+    # Optional: filter too-large baseline pairs (meters). None disables.
+    max_dt: float | None = 5.0
 
     # Test: fixed k for comparable metrics
     test_k_stride: int = 10
@@ -66,7 +69,7 @@ class Config:
     topk_fine: int = 32
 
     # =========================
-    # Epipolar-guided band (placeholder)
+    # Epipolar-guided band (keep looser early for stability)
     # =========================
     epi_angle_thresh_deg: float = 30.0
     epi_bias_strength: float = 10.0
@@ -76,15 +79,19 @@ class Config:
     # =========================
     lam_x: float = 1.0
     lam_c: float = 0.5
-    lam_r: float = 0.2
+
+    # reliability 正则不要太大（否则会压过 pose 监督）
+    lam_r: float = 0.05
+
+    # epipolar 项适度（不要太大导致早期粗位姿误导 fine）
     lam_e: float = 0.2
 
     # =========================
     # Train / Optim
     # =========================
-    batch_size: int = 1                 # RTX 3060 6GB + 1024x2048 建议 1
-    grad_accum: int = 4                # 等效大 batch：例如 4
-    lr: float = 5e-5   # or 1e-5 if still unstable
+    batch_size: int = 1
+    grad_accum: int = 4
+    lr: float = 5e-5
     weight_decay: float = 1e-4
     amp: bool = True
     seed: int = 1234
@@ -94,11 +101,12 @@ class Config:
     pin_memory: bool = True
 
     # Loop
-    max_steps: int = 6000
+    max_steps: int = 2000
     log_every: int = 50
 
     # Eval
-    eval_every: int = 400
+    eval_every: int = 200
     max_eval_batches: int = 100
 
+    # Speed / reproducibility
     deterministic: bool = False

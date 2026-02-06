@@ -352,33 +352,99 @@ class RflyPanoPanoramaPairsMixedK(Dataset):
         return self._worker_rng
 
     def __getitem__(self, idx: int):
+        """
+        Strict min_dt (and optional max_dt) sampling.
+
+        - We NEVER "fall back" to a pair with dt < min_dt when min_dt > 0.
+        - If a given (seq, i) can't find a valid k after max_tries, we resample i within the same seq.
+        - If the seq seems hopeless, we jump to another seq via index_map.
+        - If still no valid pair is found after bounded attempts, raise RuntimeError with diagnostics.
+
+        Optional max_dt:
+          set train_ds.max_dt = <float meters>  (or None to disable)
+        """
         rng = self._get_rng()
 
-        seq_idx, i = self.index_map[idx]
-        sd = self.seqs_data[seq_idx]
-        n = sd["n"]
+        # optional max_dt: user may set attribute externally
+        max_dt = getattr(self, "max_dt", None)
+        if max_dt is not None:
+            max_dt = float(max_dt)
+            if max_dt <= 0:
+                max_dt = None
 
-        # sample k (and optionally enforce min_dt)
-        k = int(rng.choice(self.k_choices, p=self.k_probs))
-        j = i + k
+        # fast path if min_dt disabled and max_dt disabled:
+        # still sample k by probs on the given (seq,i)
+        strict = (self.min_dt > 0.0) or (max_dt is not None)
 
-        # ensure valid (should always hold because i <= n-max_k-1 and k<=max_k)
-        if j >= n:
-            j = n - 1
-            k = j - i
+        # helper: dt check
+        def _ok_dt(dt: float) -> bool:
+            if (self.min_dt > 0.0) and (dt < self.min_dt):
+                return False
+            if (max_dt is not None) and (dt > max_dt):
+                return False
+            return True
 
-        # optional: reject too small dt by resampling k
-        dt_world = float(np.linalg.norm(sd["t_w"][j] - sd["t_w"][i]))
-        if self.min_dt > 0.0:
-            tries = 0
-            while dt_world < self.min_dt and tries < self.max_tries:
+        # bounded global retries to guarantee termination
+        # (strict filtering can make some datasets infeasible; then we raise)
+        GLOBAL_TRIES = max(50, self.max_tries * 50)
+
+        # start from the given mapping (keeps sampling close to deterministic)
+        base_seq_idx, base_i = self.index_map[idx]
+
+        chosen = None  # tuple (seq_idx, i, j, k, dt_world)
+        tries_global = 0
+
+        while chosen is None and tries_global < GLOBAL_TRIES:
+            tries_global += 1
+
+            # Choose a candidate (seq_idx, i)
+            if tries_global == 1:
+                seq_idx, i = base_seq_idx, base_i
+            else:
+                # resample from the same seq for a while; then jump globally
+                if tries_global < (GLOBAL_TRIES // 3):
+                    seq_idx = base_seq_idx
+                    sd0 = self.seqs_data[seq_idx]
+                    i = int(rng.choice(sd0["valid_i"]))
+                else:
+                    # jump to another (seq,i) across dataset
+                    seq_idx, i = self.index_map[int(rng.integers(0, len(self.index_map)))]
+
+            sd = self.seqs_data[seq_idx]
+            n = sd["n"]
+
+            # Try to find a valid k for this i
+            ok = False
+            best = None  # keep best dt in case you want debugging later (but we won't return it if strict)
+            for _ in range(max(1, self.max_tries)):
                 k = int(rng.choice(self.k_choices, p=self.k_probs))
                 j = i + k
+                # i is from valid_i, so j should always be < n, but keep safety:
                 if j >= n:
-                    tries += 1
                     continue
+
                 dt_world = float(np.linalg.norm(sd["t_w"][j] - sd["t_w"][i]))
-                tries += 1
+                if best is None or dt_world > best[4]:
+                    best = (seq_idx, i, j, k, dt_world)
+
+                if (not strict) or _ok_dt(dt_world):
+                    chosen = (seq_idx, i, j, k, dt_world)
+                    ok = True
+                    break
+
+            # if not ok, loop continues (strict mode will keep searching)
+            # if strict disabled, best should always be valid, but chosen already set above.
+
+        if chosen is None:
+            # strict mode but cannot satisfy dt constraints
+            raise RuntimeError(
+                f"MixedK strict dt sampling failed after {GLOBAL_TRIES} attempts. "
+                f"min_dt={self.min_dt} max_dt={max_dt}. "
+                f"Try lowering min_dt, disabling max_dt, or ensuring your sequences contain sufficient motion."
+            )
+
+        seq_idx, i, j, k, dt_world = chosen
+        sd = self.seqs_data[seq_idx]
 
         # load images
         IA = _read_pano_rgb(sd["pano"][i], self.hw)  # [3,H,W]
