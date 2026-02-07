@@ -101,7 +101,7 @@ class Config:
     pin_memory: bool = True
 
     # Loop
-    max_steps: int = 2000
+    max_steps: int = 20000
     log_every: int = 50
 
     # Eval

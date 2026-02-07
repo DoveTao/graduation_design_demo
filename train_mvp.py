@@ -6,6 +6,7 @@ import random
 import numpy as np
 
 import torch
+import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
 from config import Config
@@ -86,14 +87,35 @@ class EMA:
         return self.v
 
 
-@torch.no_grad()
-def eval_model(model, test_loader, device, max_batches: int | None = 50):
-    model.eval()
-    rot_errs = []
-    t_errs = []
-    t_abs_errs = []
-    seen = 0
+def _angle_deg(u: torch.Tensor, v: torch.Tensor, eps: float = 1e-9) -> torch.Tensor:
+    """
+    u,v: [B,3] normalized or not
+    return: [B] in degrees
+    """
+    u = u / (u.norm(dim=-1, keepdim=True) + eps)
+    v = v / (v.norm(dim=-1, keepdim=True) + eps)
+    cos = (u * v).sum(dim=-1).clamp(-1.0, 1.0)
+    return torch.acos(cos) * (180.0 / np.pi)
 
+
+@torch.no_grad()
+def eval_model(model, test_loader, device, max_batches: int | None = 50, diag_batches: int = 100):
+    model.eval()
+
+    rot_errs = []
+    t_raw_errs = []
+    t_abs_errs = []
+
+    # ---- TDIR-CHK accumulators ----
+    chk_raw = []
+    chk_flip = []
+    chk_Rt = []
+    chk_Rt_flip = []
+    chk_RtT = []
+    chk_RtT_flip = []
+    diag_seen = 0
+
+    seen = 0
     for batch in test_loader:
         IA = batch["IA"].to(device, non_blocking=True)
         IB = batch["IB"].to(device, non_blocking=True)
@@ -102,36 +124,74 @@ def eval_model(model, test_loader, device, max_batches: int | None = 50):
 
         R_pred, t_pred, _ = model(IA, IB)
 
-        # rot geodesic (deg) using trace
+        # rotation geodesic (deg): acos((tr(Rp^T Rg)-1)/2)
         Rp = R_pred
         Rg = R_gt
         tr = torch.einsum("bij,bji->b", Rp, Rg.transpose(-1, -2)).clamp(-1.0, 3.0)
         cos_theta = ((tr - 1.0) / 2.0).clamp(-1.0, 1.0)
         rot = torch.acos(cos_theta) * (180.0 / np.pi)
 
-        # tdir angle (deg)
-        tp = t_pred / (t_pred.norm(dim=-1, keepdim=True) + 1e-9)
-        tg = t_gt / (t_gt.norm(dim=-1, keepdim=True) + 1e-9)
-        cos_t = (tp * tg).sum(dim=-1).clamp(-1.0, 1.0)
-        t_ang = torch.acos(cos_t) * (180.0 / np.pi)
+        # t direction
+        tp = F.normalize(t_pred, dim=-1, eps=1e-6)
+        tg = F.normalize(t_gt, dim=-1, eps=1e-6)
 
-        # sign-invariant tdir angle: acos(|cos|)
-        t_ang_abs = torch.acos(cos_t.abs()) * (180.0 / np.pi)
+        t_raw = _angle_deg(tp, tg)                # signed
+        t_abs = torch.minimum(t_raw, _angle_deg(tp, -tg))  # sign-invariant
 
         rot_errs.append(rot.detach().cpu())
-        t_errs.append(t_ang.detach().cpu())
-        t_abs_errs.append(t_ang_abs.detach().cpu())
+        t_raw_errs.append(t_raw.detach().cpu())
+        t_abs_errs.append(t_abs.detach().cpu())
+
+        # ---- TDIR-CHK (坐标系诊断) ----
+        if diag_seen < diag_batches:
+            # raw / flip
+            a_raw = t_raw
+            a_flip = _angle_deg(tp, -tg)
+
+            # R @ t
+            tg_Rt = torch.einsum("bij,bj->bi", Rg, tg)
+            a_Rt = _angle_deg(tp, tg_Rt)
+            a_Rt_flip = _angle_deg(tp, -tg_Rt)
+
+            # R^T @ t
+            tg_RtT = torch.einsum("bij,bj->bi", Rg.transpose(-1, -2), tg)
+            a_RtT = _angle_deg(tp, tg_RtT)
+            a_RtT_flip = _angle_deg(tp, -tg_RtT)
+
+            chk_raw.append(a_raw.detach().cpu())
+            chk_flip.append(a_flip.detach().cpu())
+            chk_Rt.append(a_Rt.detach().cpu())
+            chk_Rt_flip.append(a_Rt_flip.detach().cpu())
+            chk_RtT.append(a_RtT.detach().cpu())
+            chk_RtT_flip.append(a_RtT_flip.detach().cpu())
+
+            diag_seen += IA.size(0)
 
         seen += IA.size(0)
         if max_batches is not None and seen >= max_batches:
             break
 
-    rot_err = torch.cat(rot_errs).mean().item() if rot_errs else float("nan")
-    t_err = torch.cat(t_errs).mean().item() if t_errs else float("nan")
-    t_abs_err = torch.cat(t_abs_errs).mean().item() if t_abs_errs else float("nan")
+    def _mean(xs):
+        if not xs:
+            return float("nan")
+        return torch.cat(xs).mean().item()
+
+    rot_err = _mean(rot_errs)
+    t_raw_err = _mean(t_raw_errs)
+    t_abs_err = _mean(t_abs_errs)
+
+    diag = {
+        "n": int(min(diag_seen, diag_batches)),
+        "raw": _mean(chk_raw),
+        "flip": _mean(chk_flip),
+        "R_t": _mean(chk_Rt),
+        "R_neg_t": _mean(chk_Rt_flip),
+        "Rt_t": _mean(chk_RtT),
+        "Rt_neg_t": _mean(chk_RtT_flip),
+    }
 
     model.train()
-    return rot_err, t_err, t_abs_err
+    return rot_err, t_raw_err, t_abs_err, diag
 
 
 def main():
@@ -154,7 +214,9 @@ def main():
 
     _print_startup_info(cfg, device, amp_enabled)
 
+    # -------------------------
     # Dataset / loader
+    # -------------------------
     if cfg.use_mixed_k:
         train_ds = RflyPanoPanoramaPairsMixedK(
             data_root=cfg.data_root,
@@ -168,12 +230,11 @@ def main():
             max_tries=cfg.max_tries,
             seed=cfg.seed,
         )
-        max_dt = getattr(cfg, "max_dt", None)
-        train_ds.max_dt = float(max_dt) if max_dt is not None else None
-        print(
-            f"[Data] MixedK strict dt: min_dt={cfg.min_dt} max_dt={max_dt} "
-            f"k_choices={cfg.k_choices} k_probs={cfg.k_probs}"
-        )
+        if getattr(cfg, "max_dt", None) is not None:
+            train_ds.max_dt = float(cfg.max_dt)
+        else:
+            train_ds.max_dt = None
+        print(f"[Data] MixedK strict dt: min_dt={cfg.min_dt} max_dt={getattr(cfg, 'max_dt', None)} k_choices={cfg.k_choices} k_probs={cfg.k_probs}")
     else:
         train_ds = RflyPanoPanoramaPairs(
             data_root=cfg.data_root,
@@ -207,6 +268,7 @@ def main():
         shuffle=True,
         **loader_kwargs,
     )
+
     test_loader = DataLoader(
         test_ds,
         batch_size=1,
@@ -220,28 +282,17 @@ def main():
     print(f"[Data] len(test_ds)={len(test_ds)}")
     print("-" * 80)
 
+    # -------------------------
     # Model / optim
+    # -------------------------
     model = PanoramaRelPoseModel(cfg, device=device).to(device)
     opt = torch.optim.AdamW(model.parameters(), lr=float(cfg.lr), weight_decay=float(cfg.weight_decay))
-    scaler = torch.amp.GradScaler(
-    "cuda",
-    enabled=amp_enabled,
-    init_scale=1024.0,
-    growth_interval=2000,
-    )
+    scaler = torch.amp.GradScaler("cuda", enabled=amp_enabled)
     model.train()
 
-    # probe param (to verify weights actually change)
-    probe_param = None
-    for p in model.parameters():
-        probe_param = p
-        break
-
     accum_steps = max(1, int(cfg.grad_accum))
-    accum_count = 0  # only increment after successful backward
-
-    update_step = 0           # REAL successful optimizer updates
-    skip_updates = 0          # AMP skipped updates due to inf/nan grads
+    update_step = 0
+    skip_updates = 0
 
     train_it = iter(train_loader)
     epoch_like = 0
@@ -254,11 +305,8 @@ def main():
 
     last_iter_t0 = time.perf_counter()
 
-    last_grad_norm = float("nan")
-    last_scale = scaler.get_scale() if amp_enabled else 1.0
-
     for step in range(int(cfg.max_steps)):
-        # data time
+        # ---- data time ----
         t0 = time.perf_counter()
         try:
             batch = next(train_it)
@@ -274,10 +322,16 @@ def main():
         R_gt = batch["R_gt"].to(device, non_blocking=True)
         t_gt = batch["t_gt_dir"].to(device, non_blocking=True)
 
-        # forward + loss
+        # ---- forward + loss ----
         t2 = time.perf_counter()
         with torch.amp.autocast("cuda", enabled=amp_enabled):
             R_pred, t_pred, aux = model(IA, IB)
+            if step == 0:
+                print("[DBG] Wf_ab:", aux["Wf_ab"].shape)
+                print("[DBG] bearingA_f:", None if "bearingA_f" not in aux else aux["bearingA_f"].shape)
+                print("[DBG] bearingB_f:", None if "bearingB_f" not in aux else aux["bearingB_f"].shape)
+                print("[DBG] fine_bearing:", model.module2.hier.fine_bearing.shape)
+
 
             L_pose = pose_loss(R_pred, t_pred, R_gt, t_gt)
             L_x = xlevel_loss(aux["Wc_tilde"], aux["Wc_ab"])
@@ -312,86 +366,58 @@ def main():
                 + float(cfg.lam_e) * L_epi
             )
             L = L_total / accum_steps
-
         t3 = time.perf_counter()
         fwd_t = t3 - t2
 
-        # NaN/Inf guard (loss-level)
-        if not torch.isfinite(L_total.detach()).item():
+        # ---- NaN/Inf guard ----
+        if not torch.isfinite(L_total):
             meta = batch.get("meta", {})
             print("[NaN] non-finite loss detected. meta=", meta)
-            print("      L_pose=", float(L_pose.detach().float().cpu()) if torch.isfinite(L_pose) else L_pose)
-            print("      L_x   =", float(L_x.detach().float().cpu()) if torch.isfinite(L_x) else L_x)
-            print("      L_cyc =", float(L_cycle.detach().float().cpu()) if torch.isfinite(L_cycle) else L_cycle)
-            print("      L_rel =", float(L_rel.detach().float().cpu()) if torch.isfinite(L_rel) else L_rel)
-            print("      L_epi =", float(L_epi.detach().float().cpu()) if torch.isfinite(L_epi) else L_epi)
+            print("      L_pose=", float(L_pose.detach().cpu()) if torch.isfinite(L_pose) else L_pose)
+            print("      L_x   =", float(L_x.detach().cpu()) if torch.isfinite(L_x) else L_x)
+            print("      L_cyc =", float(L_cycle.detach().cpu()) if torch.isfinite(L_cycle) else L_cycle)
+            print("      L_rel =", float(L_rel.detach().cpu()) if torch.isfinite(L_rel) else L_rel)
+            print("      L_epi =", float(L_epi.detach().cpu()) if torch.isfinite(L_epi) else L_epi)
             opt.zero_grad(set_to_none=True)
-            accum_count = 0
             continue
 
-        # backward
+        # ---- backward ----
         t4 = time.perf_counter()
         scaler.scale(L).backward()
         t5 = time.perf_counter()
         bwd_t = t5 - t4
 
-        accum_count += 1
-
+        # ---- opt step (only when update) ----
         did_update = False
         opt_t = 0.0
+        grad_norm = float("nan")
 
-        if accum_count >= accum_steps:
+        if (step + 1) % accum_steps == 0:
             t6 = time.perf_counter()
 
-            scale_before = scaler.get_scale() if amp_enabled else 1.0
+            prev_scale = float(scaler.get_scale()) if amp_enabled else 1.0
 
             if amp_enabled:
                 scaler.unscale_(opt)
 
-            grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
-            last_grad_norm = float(grad_norm.detach().float().cpu()) if torch.isfinite(grad_norm) else float("nan")
+            # clip returns pre-clip norm
+            grad_norm = float(torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0).detach().cpu())
 
-            # if grad_norm is non-finite, force skip (avoid fake update_step)
-            if not torch.isfinite(grad_norm):
-                skip_updates += 1
-                opt.zero_grad(set_to_none=True)
-                scaler.update()  # shrink scale
-                accum_count = 0
-                last_scale = scaler.get_scale() if amp_enabled else 1.0
-            else:
-                p_before = probe_param.detach().float().clone()
+            scaler.step(opt)
+            scaler.update()
+            opt.zero_grad(set_to_none=True)
+            update_step += 1
+            did_update = True
 
-                scaler.step(opt)
-                scaler.update()
-
-                p_after = probe_param.detach().float()
-                did_real_step = (p_after - p_before).abs().max().item() > 0.0
-                if did_real_step:
-                    update_step += 1
-                else:
+            if amp_enabled:
+                new_scale = float(scaler.get_scale())
+                if new_scale < prev_scale:
                     skip_updates += 1
-
-                opt.zero_grad(set_to_none=True)
-
-                scale_after = scaler.get_scale() if amp_enabled else 1.0
-                last_scale = float(scale_after)
-
-                # Heuristic: if scale decreased, scaler detected inf and skipped the step
-                stepped = (scale_after >= scale_before) if amp_enabled else True
-
-                if stepped:
-                    update_step += 1
-                    did_update = True
-                else:
-                    skip_updates += 1
-                    did_update = False
-
-                accum_count = 0
 
             t7 = time.perf_counter()
             opt_t = t7 - t6
 
-        # iter timing
+        # ---- iteration timing ----
         now = time.perf_counter()
         iter_t = now - last_iter_t0
         last_iter_t0 = now
@@ -402,12 +428,19 @@ def main():
         ema_opt.update(opt_t)
         ema_iter.update(iter_t)
 
-        # logging
+        # ---- Logging ----
         if step % int(cfg.log_every) == 0:
             it = ema_iter.v if ema_iter.v else 1e-6
             sps = 1.0 / it
 
-            p0_mean = float(probe_param.detach().float().mean().cpu()) if probe_param is not None else float("nan")
+            # p0_mean (sanity)
+            try:
+                p0 = next(model.parameters()).detach()
+                p0_mean = float(p0.float().mean().cpu())
+            except Exception:
+                p0_mean = float("nan")
+
+            scaler_scale = float(scaler.get_scale()) if amp_enabled else 1.0
 
             print(
                 f"[Train] step {step:05d} upd {update_step:05d} ep{epoch_like:03d} | "
@@ -421,25 +454,34 @@ def main():
                 f"bwd={ema_bwd.v*1000:.1f}ms opt={ema_opt.v*1000:.1f}ms"
             )
             print(
-                f"[Stat ] grad_norm={last_grad_norm:.4f} | scaler_scale={last_scale:.1f} | "
+                f"[Stat ] grad_norm={grad_norm:.4f} | scaler_scale={scaler_scale:.1f} | "
                 f"skip_updates={skip_updates} | p0_mean={p0_mean:.6e}"
             )
             if step == 0:
                 print("[Shapes] IA", tuple(IA.shape), "| R", tuple(R_pred.shape), "| t", tuple(t_pred.shape))
                 print("-" * 80)
 
-        # eval only after REAL updates
+        # ---- Eval (by update_step) ----
         if did_update and int(cfg.eval_every) > 0 and (update_step % int(cfg.eval_every) == 0):
             t_eval0 = time.perf_counter()
-            rot_err, t_err, t_abs_err = eval_model(model, test_loader, device, max_batches=int(cfg.max_eval_batches))
+            rot_err, t_err, t_abs_err, diag = eval_model(
+                model,
+                test_loader,
+                device,
+                max_batches=int(cfg.max_eval_batches),
+                diag_batches=min(100, int(cfg.max_eval_batches)),
+            )
             t_eval1 = time.perf_counter()
             print(
                 f"[Eval ] upd {update_step:05d} (step {step:05d}) | "
                 f"rot={rot_err:.4f}° | tdir={t_err:.4f}° | tdir_abs={t_abs_err:.4f}° | "
                 f"time={(t_eval1-t_eval0):.2f}s"
             )
-            # avoid eval time contaminating next iter_t
-            last_iter_t0 = time.perf_counter()
+            print(
+                f"[TDIR-CHK] raw={diag['raw']:.2f}  flip={diag['flip']:.2f}  "
+                f"R@t={diag['R_t']:.2f}  R@(-t)={diag['R_neg_t']:.2f}  "
+                f"Rt@t={diag['Rt_t']:.2f}  Rt@(-t)={diag['Rt_neg_t']:.2f}  (n={diag['n']})"
+            )
 
     print("[Done] training finished.")
 
