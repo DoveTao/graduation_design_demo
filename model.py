@@ -101,9 +101,11 @@ class PanoramaRelPoseModel(nn.Module):
       Module2 -> Module3 coarse -> routing+epi -> Module3 fine -> Module4 pose decoder
       (included in fine head)
     """
-    def __init__(self, cfg: Config, device: torch.device):
+    def __init__(self, cfg: Config, device: torch.device | None = None):
         super().__init__()
         self.cfg = cfg
+        if device is None:
+            device = torch.device("cpu")
         self.module2 = Module2Sampler(cfg, device=device)
         self.coarse = CoarseInteraction(cfg.D)
         self.fine = FineInteraction(cfg.D)
@@ -123,15 +125,14 @@ class PanoramaRelPoseModel(nn.Module):
         out_c = self.coarse(TokA_c, TokB_c)
         Wc_ab = out_c["Wc_ab"]
         Rc = out_c["Rc"]
-        tc_dir = out_c["tc_dir"]
-
-        # Module3 fine (routing + strict spherical epipolar band + sparse matching)
+        # coarse translation direction is available as out_c["tc_dir"], but the current
+        # fine epipolar placeholder only uses rotation Rc.
+        # Module3 fine (routing + spherical epipolar placeholder + sparse matching)
         out_f = self.fine(
             TokA_f=TokA_f,
             TokB_f=TokB_f,
             Wc_ab=Wc_ab,
             Rc=Rc,
-            tc_dir=tc_dir,
             topk_coarse=self.cfg.topk_coarse,
             epi_angle_thresh_deg=self.cfg.epi_angle_thresh_deg,
             epi_bias_strength=self.cfg.epi_bias_strength,

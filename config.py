@@ -1,112 +1,80 @@
-# config.py
-from dataclasses import dataclass, field
-from pathlib import Path
-from typing import List, Optional
-
-
-PROJECT_ROOT = Path(__file__).resolve().parent  # config.py 在项目根目录时成立
+from dataclasses import dataclass
+from typing import Tuple
 
 
 @dataclass
 class Config:
-    # =========================
-    # Paths
-    # =========================
-    data_root: str = str(PROJECT_ROOT / "data")
-
-    # =========================
-    # Dataset split (only in scene01)
-    # =========================
-    train_scenes: Optional[List[str]] = field(default_factory=lambda: ["scene01"])
-    train_seqs: Optional[List[str]] = field(default_factory=lambda: ["seq01", "seq02"])
-
-    test_scenes: Optional[List[str]] = field(default_factory=lambda: ["scene01"])
-    test_seqs: Optional[List[str]] = field(default_factory=lambda: ["seq03"])
-
-    # ERP panorama resolution
+    # ---------------- Data ----------------
+    data_root: str = "data"
     H: int = 1024
     W: int = 2048
-    in_ch: int = 3
 
-    # Pair building for fixed-k dataset
-    pair_step: int = 1
+    # Group-aware dataset split.
+    # scene_seq: split by complete (scene, seq) folders, no pair leakage across train/test.
+    # scene    : split by complete scenes (stricter, but train/test may become imbalanced if scenes are few).
+    split_by: str = "scene_seq"
+    train_ratio: float = 0.8
+    split_seed: int = 3407
+    data_seed: int = 1234
 
-    # =========================
-    # k sampling strategy (align train with test, still help tdir)
-    # =========================
-    use_mixed_k: bool = True
-
-    # 训练主要对齐 test_k_stride=10（避免分布偏移导致 tdir@k=10 变差）
-    # 同时少量引入更长基线，帮助网络学习更明确的平移方向
-    k_choices: List[int] = field(default_factory=lambda: [10, 20])
-    k_probs: List[float] = field(default_factory=lambda: [0.84, 0.16])
-
-    # 过滤太短基线，但不要高到大量拒绝 k=10（否则等价于训练/测试不匹配）
+    # strict dt sampling for MixedK
     min_dt: float = 0.06
-    max_tries: int = 10
-    # Optional: filter too-large baseline pairs (meters). None disables.
-    max_dt: float | None = 5.0
+    max_dt: float = 5.0
+    k_choices: Tuple[int, ...] = (10, 20)
+    k_probs: Tuple[float, ...] = (0.84, 0.16)
 
-    # Test: fixed k for comparable metrics
-    test_k_stride: int = 10
-
-    # =========================
-    # Token / Transformer
-    # =========================
+    # ---------------- Model ----------------
     D: int = 256
-    p: int = 8
     Nc: int = 192
     Nf: int = 768
+    topk_coarse: int = 16
+
+    # Patch/token encoder hyper-params used by model.py
+    p: int = 16
+    in_ch: int = 3
     n_layers: int = 4
     n_heads: int = 8
     mlp_ratio: float = 4.0
     dropout: float = 0.0
 
-    # =========================
-    # Matching / routing
-    # =========================
-    topk_coarse: int = 16
-    topk_fine: int = 32
-
-    # =========================
-    # Epipolar-guided band (keep looser early for stability)
-    # =========================
+    # Epipolar band (used inside interaction.py as a bias/mask)
     epi_angle_thresh_deg: float = 30.0
     epi_bias_strength: float = 10.0
 
-    # =========================
-    # Loss weights
-    # =========================
-    lam_x: float = 1.0
-    lam_c: float = 0.5
-
-    # reliability 正则不要太大（否则会压过 pose 监督）
-    lam_r: float = 0.05
-
-    # epipolar 项适度（不要太大导致早期粗位姿误导 fine）
-    lam_e: float = 0.2
-
-    # =========================
-    # Train / Optim
-    # =========================
+    # ---------------- Optimization ----------------
     batch_size: int = 1
     grad_accum: int = 4
-    lr: float = 5e-5
-    weight_decay: float = 1e-4
-    amp: bool = True
-    seed: int = 1234
+    lr: float = 1e-4
+    wd: float = 0.01
+    max_grad_norm: float = 1.0
 
-    # DataLoader
+    # Loss weights
+    w_pose: float = 0.75
+    w_x: float = 1.0
+    w_cyc: float = 1.0
+    w_rel: float = 0.1
+    w_epi: float = 0.1
+
+    # pose loss hyperparam
+    pose_t_alpha: float = 1.0
+
+    # ---------------- Schedule / logging ----------------
+    max_steps: int = 5000
+    log_every: int = 50
+    eval_every: int = 200  # in update steps (after grad_accum)
+    max_eval_batches: int = 100
+
+    # ---------------- Dataloader ----------------
     num_workers: int = 4
     pin_memory: bool = True
 
-    # Loop
-    max_steps: int = 20000
-    log_every: int = 50
+    # ---------------- AMP / perf ----------------
+    amp: bool = False
+    # "auto" => bf16 if supported else fp16; "bf16" => bf16; "fp16" => fp16
+    amp_dtype: str = "auto"
 
-    # Eval
-    eval_every: int = 200
-    max_eval_batches: int = 100
-
-    # Speed / reproducibility
+    # Torch perf knobs
+    tf32: bool = True
+    matmul_precision: str = "high"  # "highest"|"high"|"medium"
     deterministic: bool = False
+    benchmark: bool = True

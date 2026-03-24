@@ -3,13 +3,13 @@ import os
 import re
 import glob
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 from PIL import Image
 
 import torch
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, get_worker_info
 
 
 @dataclass
@@ -67,14 +67,18 @@ def _parse_label_13(path: str) -> Tuple[np.ndarray, np.ndarray]:
     roll, pitch, yaw = float(v[1]), float(v[2]), float(v[3])  # degrees
     x, y, z = float(v[4]), float(v[5]), float(v[6])           # meters
 
-    # 根据你给的说明：BCS relative to NED => body->world
+    # 根据说明：BCS relative to NED => body->world
     R_wb = _rpy_to_R_zyx(roll, pitch, yaw)                    # NED<-BCS
     t_w = np.array([x, y, z], dtype=np.float32)
     return R_wb, t_w
 
 
-def _relative_pose_A_to_B_in_B(R_wA: np.ndarray, t_wA: np.ndarray,
-                              R_wB: np.ndarray, t_wB: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+def _relative_pose_A_to_B_in_B(
+    R_wA: np.ndarray,
+    t_wA: np.ndarray,
+    R_wB: np.ndarray,
+    t_wB: np.ndarray,
+) -> Tuple[np.ndarray, np.ndarray]:
     """
     If label gives body->world: p_w = R_wX p_X + t_wX
     Then relative (A->B) in B frame:
@@ -86,74 +90,227 @@ def _relative_pose_A_to_B_in_B(R_wA: np.ndarray, t_wA: np.ndarray,
     return R_BA, t_BA
 
 
+def _list_pano_paths(data_root: str) -> Tuple[str, List[str]]:
+    cand = os.path.join(data_root, "PanoramaView")
+    pano_root = cand if os.path.isdir(cand) else data_root
+
+    patterns = [
+        os.path.join(pano_root, "scene*", "seq*", "panorama_*.jpg"),
+        os.path.join(pano_root, "scene*", "seq*", "panorama_*.JPG"),
+        os.path.join(pano_root, "scene*", "seq*", "panorama_*.jpeg"),
+        os.path.join(pano_root, "scene*", "seq*", "panorama_*.JPEG"),
+        os.path.join(pano_root, "scene*", "seq*", "panorama_*.png"),
+        os.path.join(pano_root, "scene*", "seq*", "panorama_*.PNG"),
+        os.path.join(pano_root, "scene*", "seq*", "panorama*.jpg"),
+        os.path.join(pano_root, "scene*", "seq*", "panorama*.JPG"),
+        os.path.join(pano_root, "scene*", "seq*", "panorama*.png"),
+        os.path.join(pano_root, "scene*", "seq*", "panorama*.PNG"),
+    ]
+
+    pano_paths: List[str] = []
+    for pat in patterns:
+        pano_paths.extend(glob.glob(pat))
+    pano_paths = sorted(set(pano_paths))
+
+    if len(pano_paths) == 0:
+        raise FileNotFoundError(f"No panorama images found under pano_root={pano_root}")
+    return pano_root, pano_paths
+
+
+def _scan_seq_frames(
+    data_root: str,
+    scenes: Optional[List[str]] = None,
+    seqs: Optional[List[str]] = None,
+) -> Dict[Tuple[str, str], List[FrameRec]]:
+    _pano_root, pano_paths = _list_pano_paths(data_root)
+    seq_frames: Dict[Tuple[str, str], List[FrameRec]] = {}
+
+    for pano_path in pano_paths:
+        seq_dir = os.path.dirname(pano_path)
+        seq = os.path.basename(seq_dir)
+        scene = os.path.basename(os.path.dirname(seq_dir))
+
+        if scenes is not None and scene not in scenes:
+            continue
+        if seqs is not None and seq not in seqs:
+            continue
+
+        stem, _ext = os.path.splitext(os.path.basename(pano_path))
+        if stem.startswith("panorama_"):
+            ts_str = stem[len("panorama_"):]
+        elif stem.startswith("panorama"):
+            ts_str = stem[len("panorama"):].lstrip("_")
+        else:
+            continue
+
+        try:
+            ts_val = float(ts_str)
+        except Exception:
+            continue
+
+        label_path = os.path.join(seq_dir, f"label_{ts_str}.txt")
+        if not os.path.exists(label_path):
+            continue
+
+        rec = FrameRec(scene=scene, seq=seq, ts_str=ts_str, ts_val=ts_val, pano_path=pano_path, label_path=label_path)
+        seq_frames.setdefault((scene, seq), []).append(rec)
+
+    for key in list(seq_frames.keys()):
+        seq_frames[key].sort(key=lambda r: r.ts_val)
+    return seq_frames
+
+
+def _normalize_split_mode(split_by: str) -> str:
+    split_by = str(split_by).strip().lower()
+    if split_by in {"scene_seq", "scene/seq", "scene-seq", "scene+seq"}:
+        return "scene_seq"
+    if split_by == "scene":
+        return "scene"
+    raise ValueError(f"Unsupported split_by={split_by!r}. Use 'scene_seq' or 'scene'.")
+
+
+def _group_key(scene: str, seq: str, split_by: str) -> Any:
+    mode = _normalize_split_mode(split_by)
+    if mode == "scene":
+        return scene
+    return (scene, seq)
+
+
+def _partition_seq_keys(
+    seq_keys: List[Tuple[str, str]],
+    split: Optional[str],
+    split_by: str,
+    train_ratio: float,
+    split_seed: int,
+) -> Tuple[List[Tuple[str, str]], Dict[str, Any]]:
+    """
+    Deterministically split complete groups into train/test.
+
+    split_by='scene_seq' => group is a full (scene, seq) folder.
+    split_by='scene'     => all seq under one scene are kept together.
+    """
+    seq_keys = sorted(set(seq_keys))
+    mode = _normalize_split_mode(split_by)
+
+    if split is None:
+        return seq_keys, {
+            "enabled": False,
+            "split": None,
+            "split_by": mode,
+            "num_total_seq": len(seq_keys),
+            "num_selected_seq": len(seq_keys),
+            "num_total_groups": len({_group_key(s, q, mode) for s, q in seq_keys}),
+            "num_selected_groups": len({_group_key(s, q, mode) for s, q in seq_keys}),
+            "selected_seq_keys": list(seq_keys),
+            "selected_groups": sorted({_group_key(s, q, mode) for s, q in seq_keys}, key=str),
+        }
+
+    split = str(split).strip().lower()
+    if split not in {"train", "test"}:
+        raise ValueError(f"Unsupported split={split!r}. Use 'train', 'test', or None.")
+
+    if not (0.0 < float(train_ratio) < 1.0):
+        raise ValueError(f"train_ratio must be in (0,1), got {train_ratio}")
+
+    group_to_seqs: Dict[Any, List[Tuple[str, str]]] = {}
+    for scene, seq in seq_keys:
+        g = _group_key(scene, seq, mode)
+        group_to_seqs.setdefault(g, []).append((scene, seq))
+
+    all_groups = sorted(group_to_seqs.keys(), key=str)
+    n_groups = len(all_groups)
+    if n_groups < 2:
+        raise RuntimeError(
+            f"Need at least 2 groups to split train/test, but only found {n_groups} group(s) with split_by={mode}."
+        )
+
+    rng = np.random.default_rng(int(split_seed))
+    perm = rng.permutation(n_groups)
+
+    n_train = int(round(n_groups * float(train_ratio)))
+    n_train = max(1, min(n_groups - 1, n_train))
+
+    train_groups = {all_groups[i] for i in perm[:n_train]}
+    test_groups = {all_groups[i] for i in perm[n_train:]}
+    selected_groups = train_groups if split == "train" else test_groups
+
+    selected_seq_keys: List[Tuple[str, str]] = []
+    for g in sorted(selected_groups, key=str):
+        selected_seq_keys.extend(sorted(group_to_seqs[g]))
+
+    summary = {
+        "enabled": True,
+        "split": split,
+        "split_by": mode,
+        "train_ratio": float(train_ratio),
+        "split_seed": int(split_seed),
+        "num_total_seq": len(seq_keys),
+        "num_selected_seq": len(selected_seq_keys),
+        "num_total_groups": n_groups,
+        "num_selected_groups": len(selected_groups),
+        "selected_seq_keys": list(selected_seq_keys),
+        "selected_groups": sorted(selected_groups, key=str),
+        "all_groups": all_groups,
+    }
+    return selected_seq_keys, summary
+
+
 class RflyPanoPanoramaPairs(Dataset):
     """
     只使用 PanoramaView 下的 panorama_*.jpg + label_*.txt（同目录同 ts）。
     配对规则：同一 scene/seq 内按 ts 排序，取 (i, i+k_stride)。
+
+    split='train'/'test' 时，会按完整的 (scene, seq) 或完整 scene 作真正划分，
+    不会把同一个组里的 pair 同时放进 train/test。
     """
     def __init__(
         self,
         data_root: str,
+        split: str | None = None,
         hw: Tuple[int, int] = (1024, 2048),
         k_stride: int = 5,
         pair_step: int = 1,
         scenes: Optional[List[str]] = None,
         seqs: Optional[List[str]] = None,
+        split_by: str = "scene_seq",
+        train_ratio: float = 0.8,
+        split_seed: int = 3407,
     ):
         self.data_root = data_root
         self.hw = hw
         self.k_stride = int(k_stride)
         self.pair_step = int(pair_step)
+        self.split = split
+        self.split_by = _normalize_split_mode(split_by)
+        self.train_ratio = float(train_ratio)
+        self.split_seed = int(split_seed)
 
-        pano_root = os.path.join(data_root, "PanoramaView")
-        pattern = os.path.join(pano_root, "scene*", "seq*", "panorama_*.jpg")
-        pano_paths = sorted(glob.glob(pattern))
-        if len(pano_paths) == 0:
-            raise FileNotFoundError(f"No panorama_*.jpg found under: {pattern}")
+        seq_frames = _scan_seq_frames(data_root=data_root, scenes=scenes, seqs=seqs)
+        selected_seq_keys, self.split_summary = _partition_seq_keys(
+            seq_keys=list(seq_frames.keys()),
+            split=split,
+            split_by=self.split_by,
+            train_ratio=self.train_ratio,
+            split_seed=self.split_seed,
+        )
+        selected_seq_key_set = set(selected_seq_keys)
+        self.sequence_keys = sorted(selected_seq_key_set)
 
-        # index frames per seq
-        seq_frames: Dict[Tuple[str, str], List[FrameRec]] = {}
-
-        for pano_path in pano_paths:
-            seq_dir = os.path.dirname(pano_path)
-            seq = os.path.basename(seq_dir)
-            scene = os.path.basename(os.path.dirname(seq_dir))
-
-            if scenes is not None and scene not in scenes:
-                continue
-            if seqs is not None and seq not in seqs:
-                continue
-
-            base = os.path.basename(pano_path)
-            ts_str = base[len("panorama_"):-len(".jpg")]
-            try:
-                ts_val = float(ts_str)
-            except Exception:
-                continue
-
-            # label 与 pano 同目录
-            label_path = os.path.join(seq_dir, f"label_{ts_str}.txt")
-            if not os.path.exists(label_path):
-                continue
-
-            rec = FrameRec(scene, seq, ts_str, ts_val, pano_path, label_path)
-            seq_frames.setdefault((scene, seq), []).append(rec)
-
-        # sort by timestamp
-        for k in list(seq_frames.keys()):
-            seq_frames[k].sort(key=lambda r: r.ts_val)
-
-        # build pairs
         self.pairs: List[Tuple[FrameRec, FrameRec]] = []
-        for (scene, seq), recs in seq_frames.items():
+        for (scene, seq), recs in sorted(seq_frames.items()):
+            if (scene, seq) not in selected_seq_key_set:
+                continue
             n = len(recs)
             if n <= self.k_stride:
                 continue
             for i in range(0, n - self.k_stride, self.pair_step):
                 self.pairs.append((recs[i], recs[i + self.k_stride]))
 
+        self.split_summary["num_pairs"] = len(self.pairs)
         if len(self.pairs) == 0:
-            raise RuntimeError("No valid pairs built. Check k_stride/pair_step and label existence.")
+            raise RuntimeError(
+                f"No valid pairs built for split={split!r}. Check split ratio, k_stride, and label existence."
+            )
 
     def __len__(self) -> int:
         return len(self.pairs)
@@ -173,15 +330,11 @@ class RflyPanoPanoramaPairs(Dataset):
         return {
             "IA": IA,
             "IB": IB,
-            "R_gt": torch.from_numpy(R_BA),        # [3,3]
-            "t_gt_dir": torch.from_numpy(t_dir),   # [3]
+            "R_gt": torch.from_numpy(R_BA),
+            "t_gt_dir": torch.from_numpy(t_dir),
             "meta": {"scene": A.scene, "seq": A.seq, "tsA": A.ts_str, "tsB": B.ts_str},
         }
 
-
-
-
-from torch.utils.data import get_worker_info
 
 class RflyPanoPanoramaPairsMixedK(Dataset):
     """
@@ -190,13 +343,10 @@ class RflyPanoPanoramaPairsMixedK(Dataset):
     - Pre-scan frames in (scene,seq), parse label once for each frame (R_wb, t_w).
     - Build base indices i where i+max_k is valid.
     - __getitem__: sample k ~ categorical(k_choices, k_probs), return pair (i, i+k).
-    - Optional: reject pairs with too small world displacement (min_dt meters).
+    - Optional: reject pairs with too small / too large world displacement.
 
-    Return dict:
-      IA: [3,H,W], IB: [3,H,W]
-      R_gt: [3,3]  (relative rotation A->B expressed in B frame)
-      t_gt_dir: [3] (unit translation direction A->B expressed in B frame)
-      meta: includes scene/seq/ts/k/dt_world
+    关键点：split='train'/'test' 时，先按完整 group 划分，再在各自 split 内构造 pairs，
+    从而避免同一 (scene, seq) 泄漏到 train/test 两边。
     """
     def __init__(
         self,
@@ -207,13 +357,30 @@ class RflyPanoPanoramaPairsMixedK(Dataset):
         pair_step: int = 1,
         scenes: Optional[List[str]] = None,
         seqs: Optional[List[str]] = None,
-        min_dt: float = 0.0,            # world displacement threshold (meters), 0 disables
-        max_tries: int = 10,            # resample k up to this times to satisfy min_dt
+        min_dt: float = 0.0,
+        max_tries: int = 10,
         seed: int = 1234,
+        # ---- compatibility args used by train_mvp.py ----
+        split: str | None = None,
+        H: int | None = None,
+        W: int | None = None,
+        strict_dt: bool | None = None,
+        # ---- real group split args ----
+        split_by: str = "scene_seq",
+        train_ratio: float = 0.8,
+        split_seed: int = 3407,
     ):
         self.data_root = data_root
+        if (H is not None) and (W is not None):
+            hw = (int(H), int(W))
         self.hw = hw
         self.pair_step = int(pair_step)
+        self.split = split
+        self.strict_dt = strict_dt
+        self.split_by = _normalize_split_mode(split_by)
+        self.train_ratio = float(train_ratio)
+        self.split_seed = int(split_seed)
+
         self.k_choices = [int(k) for k in k_choices]
         assert len(self.k_choices) > 0
         self.max_k = max(self.k_choices)
@@ -230,87 +397,39 @@ class RflyPanoPanoramaPairsMixedK(Dataset):
         self.max_tries = int(max_tries)
         self.seed = int(seed)
 
-        # --- robust pano_root + patterns (jpg/jpeg/png) ---
-        cand = os.path.join(data_root, "PanoramaView")
-        pano_root = cand if os.path.isdir(cand) else data_root
-
-        patterns = [
-            os.path.join(pano_root, "scene*", "seq*", "panorama_*.jpg"),
-            os.path.join(pano_root, "scene*", "seq*", "panorama_*.JPG"),
-            os.path.join(pano_root, "scene*", "seq*", "panorama_*.jpeg"),
-            os.path.join(pano_root, "scene*", "seq*", "panorama_*.JPEG"),
-            os.path.join(pano_root, "scene*", "seq*", "panorama_*.png"),
-            os.path.join(pano_root, "scene*", "seq*", "panorama_*.PNG"),
-            os.path.join(pano_root, "scene*", "seq*", "panorama*.jpg"),
-            os.path.join(pano_root, "scene*", "seq*", "panorama*.JPG"),
-            os.path.join(pano_root, "scene*", "seq*", "panorama*.png"),
-            os.path.join(pano_root, "scene*", "seq*", "panorama*.PNG"),
-        ]
-        pano_paths = []
-        for pat in patterns:
-            pano_paths.extend(glob.glob(pat))
-        pano_paths = sorted(set(pano_paths))
-        if len(pano_paths) == 0:
-            raise FileNotFoundError(f"No panorama images found under pano_root={pano_root}")
-
-        # --- build seq -> frames list ---
-        seq_frames: Dict[Tuple[str, str], List[FrameRec]] = {}
-
-        for pano_path in pano_paths:
-            seq_dir = os.path.dirname(pano_path)
-            seq = os.path.basename(seq_dir)
-            scene = os.path.basename(os.path.dirname(seq_dir))
-
-            if scenes is not None and scene not in scenes:
-                continue
-            if seqs is not None and seq not in seqs:
-                continue
-
-            base = os.path.basename(pano_path)
-            stem, _ext = os.path.splitext(base)
-
-            if stem.startswith("panorama_"):
-                ts_str = stem[len("panorama_"):]
-            elif stem.startswith("panorama"):
-                ts_str = stem[len("panorama"):].lstrip("_")
-            else:
-                continue
-
-            try:
-                ts_val = float(ts_str)
-            except Exception:
-                continue
-
-            label_path = os.path.join(seq_dir, f"label_{ts_str}.txt")
-            if not os.path.exists(label_path):
-                continue
-
-            rec = FrameRec(scene, seq, ts_str, ts_val, pano_path, label_path)
-            seq_frames.setdefault((scene, seq), []).append(rec)
-
-        for k in list(seq_frames.keys()):
-            seq_frames[k].sort(key=lambda r: r.ts_val)
+        seq_frames = _scan_seq_frames(data_root=data_root, scenes=scenes, seqs=seqs)
+        selected_seq_keys, self.split_summary = _partition_seq_keys(
+            seq_keys=list(seq_frames.keys()),
+            split=split,
+            split_by=self.split_by,
+            train_ratio=self.train_ratio,
+            split_seed=self.split_seed,
+        )
+        selected_seq_key_set = set(selected_seq_keys)
+        self.sequence_keys = sorted(selected_seq_key_set)
 
         # --- pack sequences & pre-parse labels once ---
-        self.seqs_data = []  # list of dict
-        for (scene, seq), frames in seq_frames.items():
+        self.seqs_data: List[Dict[str, Any]] = []
+        for (scene, seq), frames in sorted(seq_frames.items()):
+            if (scene, seq) not in selected_seq_key_set:
+                continue
+
             n = len(frames)
             if n <= self.max_k:
                 continue
 
             R_w = np.zeros((n, 3, 3), dtype=np.float32)
             t_w = np.zeros((n, 3), dtype=np.float32)
-            pano_list = []
-            ts_list = []
+            pano_list: List[str] = []
+            ts_list: List[str] = []
 
             for i, fr in enumerate(frames):
-                R_i, t_i = _parse_label_13(fr.label_path)  # R_wb, t_w
+                R_i, t_i = _parse_label_13(fr.label_path)
                 R_w[i] = R_i
                 t_w[i] = t_i
                 pano_list.append(fr.pano_path)
                 ts_list.append(fr.ts_str)
 
-            # valid base indices i where i+max_k exists
             valid_i = list(range(0, n - self.max_k, self.pair_step))
             if len(valid_i) == 0:
                 continue
@@ -327,15 +446,22 @@ class RflyPanoPanoramaPairsMixedK(Dataset):
             })
 
         if len(self.seqs_data) == 0:
-            raise RuntimeError("No valid sequences for mixed-k dataset (check scenes/seqs/max_k).")
+            raise RuntimeError(
+                f"No valid sequences for split={split!r} after group split. Check train_ratio, split_by, scenes/seqs, or max_k."
+            )
 
-        # create a flat index map (seq_idx, local_i_index)
-        self.index_map = []
+        self.index_map: List[Tuple[int, int]] = []
         for sidx, sd in enumerate(self.seqs_data):
             for li in sd["valid_i"]:
                 self.index_map.append((sidx, li))
 
-        # RNG placeholder (per-process and per-worker)
+        self.split_summary["num_pairs"] = len(self.index_map)
+        self.split_summary["num_sequences_after_filter"] = len(self.seqs_data)
+        if len(self.index_map) == 0:
+            raise RuntimeError(
+                f"No valid base indices for split={split!r}. Check k_choices/max_k, pair_step, and sequence lengths."
+            )
+
         self._rng = np.random.default_rng(self.seed)
 
     def __len__(self) -> int:
@@ -345,7 +471,6 @@ class RflyPanoPanoramaPairsMixedK(Dataset):
         info = get_worker_info()
         if info is None:
             return self._rng
-        # Create one RNG per worker
         if not hasattr(self, "_worker_rng"):
             wseed = (self.seed + 1000003 * info.id) % (2**32)
             self._worker_rng = np.random.default_rng(wseed)
@@ -354,29 +479,19 @@ class RflyPanoPanoramaPairsMixedK(Dataset):
     def __getitem__(self, idx: int):
         """
         Strict min_dt (and optional max_dt) sampling.
-
-        - We NEVER "fall back" to a pair with dt < min_dt when min_dt > 0.
-        - If a given (seq, i) can't find a valid k after max_tries, we resample i within the same seq.
-        - If the seq seems hopeless, we jump to another seq via index_map.
-        - If still no valid pair is found after bounded attempts, raise RuntimeError with diagnostics.
-
-        Optional max_dt:
-          set train_ds.max_dt = <float meters>  (or None to disable)
+        - Never falls back to dt < min_dt when min_dt > 0.
+        - If a given (seq, i) cannot find valid k, it resamples within/beyond the split only.
         """
         rng = self._get_rng()
 
-        # optional max_dt: user may set attribute externally
         max_dt = getattr(self, "max_dt", None)
         if max_dt is not None:
             max_dt = float(max_dt)
             if max_dt <= 0:
                 max_dt = None
 
-        # fast path if min_dt disabled and max_dt disabled:
-        # still sample k by probs on the given (seq,i)
         strict = (self.min_dt > 0.0) or (max_dt is not None)
 
-        # helper: dt check
         def _ok_dt(dt: float) -> bool:
             if (self.min_dt > 0.0) and (dt < self.min_dt):
                 return False
@@ -384,73 +499,51 @@ class RflyPanoPanoramaPairsMixedK(Dataset):
                 return False
             return True
 
-        # bounded global retries to guarantee termination
-        # (strict filtering can make some datasets infeasible; then we raise)
         GLOBAL_TRIES = max(50, self.max_tries * 50)
-
-        # start from the given mapping (keeps sampling close to deterministic)
         base_seq_idx, base_i = self.index_map[idx]
 
-        chosen = None  # tuple (seq_idx, i, j, k, dt_world)
+        chosen = None
         tries_global = 0
 
         while chosen is None and tries_global < GLOBAL_TRIES:
             tries_global += 1
-
-            # Choose a candidate (seq_idx, i)
             if tries_global == 1:
                 seq_idx, i = base_seq_idx, base_i
             else:
-                # resample from the same seq for a while; then jump globally
                 if tries_global < (GLOBAL_TRIES // 3):
                     seq_idx = base_seq_idx
                     sd0 = self.seqs_data[seq_idx]
                     i = int(rng.choice(sd0["valid_i"]))
                 else:
-                    # jump to another (seq,i) across dataset
                     seq_idx, i = self.index_map[int(rng.integers(0, len(self.index_map)))]
 
             sd = self.seqs_data[seq_idx]
             n = sd["n"]
 
-            # Try to find a valid k for this i
-            ok = False
-            best = None  # keep best dt in case you want debugging later (but we won't return it if strict)
             for _ in range(max(1, self.max_tries)):
                 k = int(rng.choice(self.k_choices, p=self.k_probs))
                 j = i + k
-                # i is from valid_i, so j should always be < n, but keep safety:
                 if j >= n:
                     continue
 
                 dt_world = float(np.linalg.norm(sd["t_w"][j] - sd["t_w"][i]))
-                if best is None or dt_world > best[4]:
-                    best = (seq_idx, i, j, k, dt_world)
-
                 if (not strict) or _ok_dt(dt_world):
                     chosen = (seq_idx, i, j, k, dt_world)
-                    ok = True
                     break
 
-            # if not ok, loop continues (strict mode will keep searching)
-            # if strict disabled, best should always be valid, but chosen already set above.
-
         if chosen is None:
-            # strict mode but cannot satisfy dt constraints
             raise RuntimeError(
                 f"MixedK strict dt sampling failed after {GLOBAL_TRIES} attempts. "
-                f"min_dt={self.min_dt} max_dt={max_dt}. "
-                f"Try lowering min_dt, disabling max_dt, or ensuring your sequences contain sufficient motion."
+                f"split={self.split!r} split_by={self.split_by} min_dt={self.min_dt} max_dt={max_dt}. "
+                f"Try lowering min_dt, disabling max_dt, or using a less aggressive split."
             )
 
         seq_idx, i, j, k, dt_world = chosen
         sd = self.seqs_data[seq_idx]
 
-        # load images
-        IA = _read_pano_rgb(sd["pano"][i], self.hw)  # [3,H,W]
+        IA = _read_pano_rgb(sd["pano"][i], self.hw)
         IB = _read_pano_rgb(sd["pano"][j], self.hw)
 
-        # relative pose A->B expressed in B frame
         R_wA = sd["R_w"][i]
         t_wA = sd["t_w"][i]
         R_wB = sd["R_w"][j]
@@ -463,8 +556,8 @@ class RflyPanoPanoramaPairsMixedK(Dataset):
         return {
             "IA": IA,
             "IB": IB,
-            "R_gt": torch.from_numpy(R_BA),        # [3,3]
-            "t_gt_dir": torch.from_numpy(t_dir),   # [3]
+            "R_gt": torch.from_numpy(R_BA),
+            "t_gt_dir": torch.from_numpy(t_dir),
             "meta": {
                 "scene": sd["scene"],
                 "seq": sd["seq"],
