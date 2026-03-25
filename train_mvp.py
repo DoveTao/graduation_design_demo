@@ -30,37 +30,22 @@ def _first_not_none(*vals):
     return None
 
 
-def _scheduler_lambda(
-    total_updates: int,
-    warmup_updates: int,
-    min_lr_scale: float,
-    hold_updates: int = 200,
-    drop1_updates: int = 300,
-    drop1_scale: float = 0.25,
-    drop2_scale: float = 0.10,
-):
-    total_updates = max(int(total_updates), 1)
+def _scheduler_lambda(warmup_updates: int, hold_updates: int, drop1_updates: int, drop1_scale: float, drop2_scale: float):
     warmup_updates = max(int(warmup_updates), 0)
     hold_updates = max(int(hold_updates), warmup_updates)
     drop1_updates = max(int(drop1_updates), hold_updates)
+
     drop1_scale = float(drop1_scale)
     drop2_scale = float(drop2_scale)
 
     def fn(step_idx: int):
-        s = min(int(step_idx), total_updates)
-
-        # Linear warmup to peak LR.
+        s = int(step_idx)
         if warmup_updates > 0 and s < warmup_updates:
-            return max((s + 1) / max(warmup_updates, 1), 1e-6)
-
-        # Short plateau around the region where earlier runs achieved the best tdir.
+            return max(s / max(warmup_updates, 1), 1e-6)
         if s < hold_updates:
             return 1.0
-
-        # Hard decay after the likely best region to preserve a good checkpoint.
         if s < drop1_updates:
             return drop1_scale
-
         return drop2_scale
 
     return fn
@@ -139,9 +124,6 @@ def eval_model(model, loader, device, cfg: Config):
         tdir_abs_sum += float(ang_abs.sum().cpu())
         n += bsz
 
-        # Dual translation metrics:
-        #   raw_B      : compare final output t_pred against gt in output B-frame
-        #   local_A    : compare local translation head output against gt mapped into A-local
         tg_R = F.normalize(torch.matmul(R_gt.float(), tg.unsqueeze(-1)).squeeze(-1), dim=-1, eps=1e-6)
         tg_Rt = F.normalize(torch.matmul(R_gt.float().transpose(-1, -2), tg.unsqueeze(-1)).squeeze(-1), dim=-1, eps=1e-6)
 
@@ -230,8 +212,10 @@ def main():
     print(f"[Cfg ] model_variant: coarse_interaction={cfg.use_coarse_interaction} | fine_stage={cfg.use_fine_stage} | epi_bias={cfg.use_epipolar_bias} | epi_loss={cfg.use_epipolar_loss}")
     print(f"[Cfg ] HxW={cfg.H}x{cfg.W} | D={cfg.D} | Nc={cfg.Nc} | Nf={cfg.Nf} | p={cfg.p}")
     print(f"[Cfg ] temp(coarse/fine)={cfg.coarse_temperature}/{cfg.fine_temperature} | logits_clip={cfg.logits_clip} | topk_coarse={cfg.topk_coarse}")
-    print(f"[Cfg ] lr={cfg.lr} | wd={cfg.wd} | warmup_updates={cfg.warmup_updates} | min_lr_scale={cfg.min_lr_scale}")
-    print(f"[Cfg ] piecewise_lr: hold<{getattr(cfg, 'lr_hold_updates', 200)} | drop1<{getattr(cfg, 'lr_drop1_updates', 300)}@{getattr(cfg, 'lr_drop1_scale', 0.25)} | drop2@{getattr(cfg, 'lr_drop2_scale', 0.10)}")
+    print(
+        f"[Cfg ] lr={cfg.lr} | wd={cfg.wd} | warmup_updates={cfg.warmup_updates} | "
+        f"hold<{cfg.lr_hold_updates} | drop1<{cfg.lr_drop1_updates}@{cfg.lr_drop1_scale} | drop2@{cfg.lr_drop2_scale}"
+    )
     print(f"[Cfg ] split_by={cfg.split_by} | train_ratio={cfg.train_ratio} | split_seed={cfg.split_seed} | data_seed={cfg.data_seed}")
     print("=" * 80)
 
@@ -274,10 +258,8 @@ def main():
         raise RuntimeError(f"train/test split leakage detected: {len(overlap)} overlapping groups, e.g. {sorted(list(overlap))[:8]}")
 
     for tag, ds in [("train", train_ds), ("test", test_ds)]:
-        summary = getattr(ds, "split_summary", None)
-        if summary is not None:
-            preview = summary.get("selected_seq_keys", [])[:6]
-            print(f"[Split] {tag} by {summary.get('split_by')} | groups={summary.get('num_selected_groups')} | seqs={summary.get('num_selected_seq')} | pairs={summary.get('num_pairs')} | preview={preview}")
+        groups = getattr(ds, "sequence_keys", [])
+        print(f"[Split] {tag} by {cfg.split_by} | groups={len(groups)} | seqs={len(groups)} | pairs={len(ds)} | preview={groups[:4]}")
 
     train_loader = DataLoader(
         train_ds,
@@ -296,20 +278,17 @@ def main():
         drop_last=False,
     )
 
-    model = PanoramaRelPoseModel(cfg, device=dev).to(dev)
+    model = PanoramaRelPoseModel(cfg, dev).to(dev)
     optimizer = AdamW(model.parameters(), lr=cfg.lr, weight_decay=cfg.wd)
 
-    total_updates = math.ceil(cfg.max_steps / max(cfg.grad_accum, 1))
     scheduler = LambdaLR(
         optimizer,
         lr_lambda=_scheduler_lambda(
-            total_updates=total_updates,
             warmup_updates=cfg.warmup_updates,
-            min_lr_scale=cfg.min_lr_scale,
-            hold_updates=getattr(cfg, "lr_hold_updates", 200),
-            drop1_updates=getattr(cfg, "lr_drop1_updates", 300),
-            drop1_scale=getattr(cfg, "lr_drop1_scale", 0.25),
-            drop2_scale=getattr(cfg, "lr_drop2_scale", 0.10),
+            hold_updates=cfg.lr_hold_updates,
+            drop1_updates=cfg.lr_drop1_updates,
+            drop1_scale=cfg.lr_drop1_scale,
+            drop2_scale=cfg.lr_drop2_scale,
         ),
     )
 
@@ -337,6 +316,7 @@ def main():
     best_tdir_raw = float("inf")
     best_tdir_local_A = float("inf")
     best_tdir_local_A_abs = float("inf")
+    best_joint = float("inf")
 
     model.train()
     optimizer.zero_grad(set_to_none=True)
@@ -481,19 +461,25 @@ def main():
                         t_eval0 = time.perf_counter()
                         rot, tdir, tdir_abs, tdir_local_A, tdir_local_A_abs, tdiag, tdir_msg, tdir_local_msg = eval_model(model, test_loader, dev, cfg)
                         t_eval = time.perf_counter() - t_eval0
+                        joint_score = tdir + float(cfg.joint_rot_weight) * rot
+                        joint_eligible = (rot < float(cfg.joint_rot_thresh_deg)) and (tdir < float(cfg.joint_tdir_thresh_deg))
+
                         metrics = {
                             "rot": rot,
                             "tdir": tdir,
                             "tdir_abs": tdir_abs,
                             "tdir_local_A": tdir_local_A,
                             "tdir_local_A_abs": tdir_local_A_abs,
+                            "joint_score": joint_score,
+                            "joint_eligible": int(joint_eligible),
                             **{f"tdir_diag_{k}": v for k, v in tdiag.items()},
                         }
+
                         print(
                             f"[Eval ] upd {upd:05d} (step {step:05d}) | rot={rot:.4f}° | "
                             f"tdir={tdir:.4f}° | tdir_abs={tdir_abs:.4f}° | "
                             f"tdir_local_A={tdir_local_A:.4f}° | tdir_local_A_abs={tdir_local_A_abs:.4f}° | "
-                            f"time={t_eval:.2f}s"
+                            f"joint={joint_score:.4f} | joint_ok={int(joint_eligible)} | time={t_eval:.2f}s"
                         )
                         print(tdir_msg)
                         print(tdir_local_msg)
@@ -508,12 +494,15 @@ def main():
                         if tdir_abs < best_tdir_abs:
                             best_tdir_abs = tdir_abs
                             _save_ckpt(os.path.join(ckpt_root, "best_tdir_abs.pt"), model, optimizer, scaler, scheduler, cfg, step, upd, metrics)
-                        if math.isfinite(tdir_local_A) and tdir_local_A < best_tdir_local_A:
+                        if tdir_local_A < best_tdir_local_A:
                             best_tdir_local_A = tdir_local_A
                             _save_ckpt(os.path.join(ckpt_root, "best_tdir_local_A.pt"), model, optimizer, scaler, scheduler, cfg, step, upd, metrics)
-                        if math.isfinite(tdir_local_A_abs) and tdir_local_A_abs < best_tdir_local_A_abs:
+                        if tdir_local_A_abs < best_tdir_local_A_abs:
                             best_tdir_local_A_abs = tdir_local_A_abs
                             _save_ckpt(os.path.join(ckpt_root, "best_tdir_local_A_abs.pt"), model, optimizer, scaler, scheduler, cfg, step, upd, metrics)
+                        if joint_eligible and joint_score < best_joint:
+                            best_joint = joint_score
+                            _save_ckpt(os.path.join(ckpt_root, "best_joint.pt"), model, optimizer, scaler, scheduler, cfg, step, upd, metrics)
 
         t_opt = time.perf_counter()
 
@@ -564,13 +553,14 @@ def main():
             "best_tdir_abs": best_tdir_abs,
             "best_tdir_local_A": best_tdir_local_A,
             "best_tdir_local_A_abs": best_tdir_local_A_abs,
+            "best_joint": best_joint,
         },
     )
     print(
         f"[Done ] training finished | best_rot={best_rot:.4f}° | "
         f"best_tdir_raw={best_tdir_raw:.4f}° | best_tdir_abs={best_tdir_abs:.4f}° | "
         f"best_tdir_local_A={best_tdir_local_A:.4f}° | best_tdir_local_A_abs={best_tdir_local_A_abs:.4f}° | "
-        f"ckpt_dir={ckpt_root}"
+        f"best_joint={best_joint:.4f} | ckpt_dir={ckpt_root}"
     )
 
 
