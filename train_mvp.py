@@ -30,23 +30,38 @@ def _first_not_none(*vals):
     return None
 
 
-def _scheduler_lambda(total_updates: int, warmup_updates: int, min_lr_scale: float):
+def _scheduler_lambda(
+    total_updates: int,
+    warmup_updates: int,
+    min_lr_scale: float,
+    hold_updates: int = 200,
+    drop1_updates: int = 300,
+    drop1_scale: float = 0.25,
+    drop2_scale: float = 0.10,
+):
     total_updates = max(int(total_updates), 1)
     warmup_updates = max(int(warmup_updates), 0)
-    min_lr_scale = float(min_lr_scale)
+    hold_updates = max(int(hold_updates), warmup_updates)
+    drop1_updates = max(int(drop1_updates), hold_updates)
+    drop1_scale = float(drop1_scale)
+    drop2_scale = float(drop2_scale)
 
     def fn(step_idx: int):
-        step_idx = min(int(step_idx), total_updates)
-        if warmup_updates > 0 and step_idx < warmup_updates:
-            return max(step_idx / max(warmup_updates, 1), 1e-6)
+        s = min(int(step_idx), total_updates)
 
-        if total_updates <= warmup_updates:
+        # Linear warmup to peak LR.
+        if warmup_updates > 0 and s < warmup_updates:
+            return max((s + 1) / max(warmup_updates, 1), 1e-6)
+
+        # Short plateau around the region where earlier runs achieved the best tdir.
+        if s < hold_updates:
             return 1.0
 
-        progress = (step_idx - warmup_updates) / max(total_updates - warmup_updates, 1)
-        progress = min(max(progress, 0.0), 1.0)
-        cosine = 0.5 * (1.0 + math.cos(math.pi * progress))
-        return min_lr_scale + (1.0 - min_lr_scale) * cosine
+        # Hard decay after the likely best region to preserve a good checkpoint.
+        if s < drop1_updates:
+            return drop1_scale
+
+        return drop2_scale
 
     return fn
 
@@ -216,6 +231,7 @@ def main():
     print(f"[Cfg ] HxW={cfg.H}x{cfg.W} | D={cfg.D} | Nc={cfg.Nc} | Nf={cfg.Nf} | p={cfg.p}")
     print(f"[Cfg ] temp(coarse/fine)={cfg.coarse_temperature}/{cfg.fine_temperature} | logits_clip={cfg.logits_clip} | topk_coarse={cfg.topk_coarse}")
     print(f"[Cfg ] lr={cfg.lr} | wd={cfg.wd} | warmup_updates={cfg.warmup_updates} | min_lr_scale={cfg.min_lr_scale}")
+    print(f"[Cfg ] piecewise_lr: hold<{getattr(cfg, 'lr_hold_updates', 200)} | drop1<{getattr(cfg, 'lr_drop1_updates', 300)}@{getattr(cfg, 'lr_drop1_scale', 0.25)} | drop2@{getattr(cfg, 'lr_drop2_scale', 0.10)}")
     print(f"[Cfg ] split_by={cfg.split_by} | train_ratio={cfg.train_ratio} | split_seed={cfg.split_seed} | data_seed={cfg.data_seed}")
     print("=" * 80)
 
@@ -290,6 +306,10 @@ def main():
             total_updates=total_updates,
             warmup_updates=cfg.warmup_updates,
             min_lr_scale=cfg.min_lr_scale,
+            hold_updates=getattr(cfg, "lr_hold_updates", 200),
+            drop1_updates=getattr(cfg, "lr_drop1_updates", 300),
+            drop1_scale=getattr(cfg, "lr_drop1_scale", 0.25),
+            drop2_scale=getattr(cfg, "lr_drop2_scale", 0.10),
         ),
     )
 

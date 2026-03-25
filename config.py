@@ -57,13 +57,17 @@ class Config:
     grad_accum: int = 4
 
     # Lower the peak LR to avoid the early good point being destroyed later.
-    lr: float = 4.5e-5
+    lr: float = 5.5e-5
     wd: float = 0.01
     max_grad_norm: float = 1.0
 
     # Shorter warmup so the run does not spend too long climbing toward a peak LR.
     warmup_updates: int = 50
     min_lr_scale: float = 0.03
+    lr_hold_updates: int = 200
+    lr_drop1_updates: int = 300
+    lr_drop1_scale: float = 0.25
+    lr_drop2_scale: float = 0.10
 
     # ---------------- Loss weights ----------------
     w_pose: float = 1.0
@@ -76,12 +80,12 @@ class Config:
     # ---------------- Schedule / logging ----------------
     # Keep the run short and evaluate densely around the likely best region.
     # With grad_accum=4, max_steps=1000 is about 250 optimizer updates.
-    max_steps: int = 1000
+    max_steps: int = 1400
     log_every: int = 50
     eval_every: int = 25       # in update steps
     max_eval_batches: int = 100
     ckpt_dir: str = "checkpoints"
-    exp_name: str = "week4_week5_impl_low_peak_early_stop"
+    exp_name: str = "week4_week5_impl_piecewise_lr"
 
     # ---------------- Dataloader ----------------
     num_workers: int = 4
