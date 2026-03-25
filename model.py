@@ -81,6 +81,19 @@ class Module2Sampler(nn.Module):
         }
 
 
+def _local_t_to_output_frame(R: torch.Tensor, t_local: torch.Tensor) -> torch.Tensor:
+    """
+    Heads regress translation in frame A (feature-anchor frame).
+    Convert to the dataset/output convention: frame B, baseline B->A.
+    """
+    t_local = nn.functional.normalize(t_local.float(), dim=-1, eps=1e-6)
+    # Empirically the local translation head is anchored in frame A, while the
+    # dataset/eval translation direction is compared in frame B. The correct
+    # conversion here is R^T, not R.
+    t_out = torch.matmul(R.float().transpose(-1, -2), t_local.unsqueeze(-1)).squeeze(-1)
+    return nn.functional.normalize(t_out, dim=-1, eps=1e-6)
+
+
 class PanoramaRelPoseModel(nn.Module):
     def __init__(self, cfg: Config, device: torch.device):
         super().__init__()
@@ -110,21 +123,27 @@ class PanoramaRelPoseModel(nn.Module):
             "bearingB_c": TokB_c.bearing,
             "bearingA_f": TokA_f.bearing,
             "bearingB_f": TokB_f.bearing,
+            "t_local_frame": self.cfg.translation_local_frame,
+            "t_output_frame": self.cfg.translation_output_frame,
         }
 
         # Ablation: encoder only + regression, no cross-image interaction.
         if not self.cfg.use_coarse_interaction:
-            R, t_dir = self.direct_head(TokA_c.feat, TokB_c.feat)
+            R, t_local = self.direct_head(TokA_c.feat, TokB_c.feat)
+            t_dir = _local_t_to_output_frame(R, t_local)
+            aux["t_dir_local"] = t_local
             aux["stage"] = "encoder_only"
             return R, t_dir, aux
 
         # Week-5 core chain: encoding -> coarse interaction -> coarse pose
         out_c = self.coarse(TokA_c, TokB_c)
         aux.update(out_c)
+        aux["tc_dir_local"] = out_c["tc_dir"]
+        aux["tc_dir"] = _local_t_to_output_frame(out_c["Rc"], out_c["tc_dir"])
         aux["stage"] = "coarse_only"
 
         if not self.cfg.use_fine_stage:
-            return out_c["Rc"], out_c["tc_dir"], aux
+            return out_c["Rc"], aux["tc_dir"], aux
 
         # Optional routed fine stage for later extension / ablation.
         out_f = self.fine(
@@ -139,6 +158,8 @@ class PanoramaRelPoseModel(nn.Module):
             epi_mode=self.cfg.epi_mode,
         )
         aux.update(out_f)
+        aux["t_dir_local"] = out_f["t_dir"]
+        aux["t_dir"] = _local_t_to_output_frame(out_f["R"], out_f["t_dir"])
         aux["stage"] = "coarse_to_fine"
         aux["Wc_tilde"] = aggregate_fine_to_coarse(
             Wf_ab=out_f["Wf_ab"],
@@ -147,4 +168,4 @@ class PanoramaRelPoseModel(nn.Module):
             NcA=self.cfg.Nc,
             NcB=self.cfg.Nc,
         )
-        return out_f["R"], out_f["t_dir"], aux
+        return out_f["R"], aux["t_dir"], aux

@@ -75,7 +75,10 @@ def eval_model(model, loader, device, cfg: Config):
     rot_sum = 0.0
     tdir_sum = 0.0
     tdir_abs_sum = 0.0
+    tdir_local_A_sum = 0.0
+    tdir_local_A_abs_sum = 0.0
     n = 0
+    n_local = 0
 
     acc = {
         "raw": 0.0,
@@ -87,12 +90,12 @@ def eval_model(model, loader, device, cfg: Config):
         "cnt": 0,
     }
     variant_desc = {
-        "raw": "B-frame, baseline B->A",
-        "flip": "B-frame, baseline A->B",
-        "R@t": "B-frame, gt-in-A, baseline B->A",
-        "R@(-t)": "B-frame, gt-in-A, baseline A->B",
-        "Rt@t": "A-frame, gt-in-B, baseline B->A",
-        "Rt@(-t)": "A-frame, gt-in-B, baseline A->B",
+        "raw": "output frame B, baseline B->A",
+        "flip": "output frame B, baseline A->B",
+        "R@t": "compare to R*t_gt (B->A mapped to A-local)",
+        "R@(-t)": "compare to -R*t_gt",
+        "Rt@t": "compare to R^T*t_gt",
+        "Rt@(-t)": "compare to -R^T*t_gt",
     }
 
     for bi, batch in enumerate(loader):
@@ -104,7 +107,7 @@ def eval_model(model, loader, device, cfg: Config):
         R_gt = batch["R_gt"].to(device, non_blocking=True)
         t_gt = batch["t_gt_dir"].to(device, non_blocking=True)
 
-        R_pred, t_pred, _aux = model(IA, IB)
+        R_pred, t_pred, aux = model(IA, IB)
 
         rot_rad = matrix_geodesic_distance(R_pred.float(), R_gt.float())
         rot_deg = rot_rad * (180.0 / math.pi)
@@ -121,8 +124,21 @@ def eval_model(model, loader, device, cfg: Config):
         tdir_abs_sum += float(ang_abs.sum().cpu())
         n += bsz
 
+        # Dual translation metrics:
+        #   raw_B      : compare final output t_pred against gt in output B-frame
+        #   local_A    : compare local translation head output against gt mapped into A-local
         tg_R = F.normalize(torch.matmul(R_gt.float(), tg.unsqueeze(-1)).squeeze(-1), dim=-1, eps=1e-6)
         tg_Rt = F.normalize(torch.matmul(R_gt.float().transpose(-1, -2), tg.unsqueeze(-1)).squeeze(-1), dim=-1, eps=1e-6)
+
+        t_local_pred = aux.get("t_dir_local", None) if isinstance(aux, dict) else None
+        t_local_frame = aux.get("t_local_frame", None) if isinstance(aux, dict) else None
+        if t_local_pred is not None and t_local_frame == "A":
+            tp_local = F.normalize(t_local_pred.float(), dim=-1, eps=1e-6)
+            ang_local = torch.acos(torch.sum(tp_local * tg_R, dim=-1).clamp(-1.0, 1.0)) * (180.0 / math.pi)
+            ang_local_abs = torch.minimum(ang_local, 180.0 - ang_local)
+            tdir_local_A_sum += float(ang_local.sum().cpu())
+            tdir_local_A_abs_sum += float(ang_local_abs.sum().cpu())
+            n_local += bsz
 
         def ang_deg(a, b):
             c = torch.sum(a * b, dim=-1).clamp(-1.0, 1.0)
@@ -139,6 +155,8 @@ def eval_model(model, loader, device, cfg: Config):
     rot = rot_sum / max(n, 1)
     tdir = tdir_sum / max(n, 1)
     tdir_abs = tdir_abs_sum / max(n, 1)
+    tdir_local_A = tdir_local_A_sum / max(n_local, 1) if n_local > 0 else float("nan")
+    tdir_local_A_abs = tdir_local_A_abs_sum / max(n_local, 1) if n_local > 0 else float("nan")
 
     if acc["cnt"] > 0:
         denom = float(acc["cnt"])
@@ -153,10 +171,19 @@ def eval_model(model, loader, device, cfg: Config):
             f"Rt@t={mean_map['Rt@t']:.2f} Rt@(-t)={mean_map['Rt@(-t)']:.2f} (n={int(denom)})"
         )
     else:
+        mean_map = {}
         msg = "[TDIR-CHK] n=0"
 
+    if n_local > 0:
+        msg_local = (
+            f"[TDIR-LOCAL] local_A={tdir_local_A:.2f}° | local_A_abs={tdir_local_A_abs:.2f}° | "
+            f"gt_local_A=R*t_gt | n={n_local}"
+        )
+    else:
+        msg_local = "[TDIR-LOCAL] unavailable"
+
     model.train()
-    return rot, tdir, tdir_abs, msg
+    return rot, tdir, tdir_abs, tdir_local_A, tdir_local_A_abs, mean_map, msg, msg_local
 
 
 def main():
@@ -287,6 +314,9 @@ def main():
     last_grad_norm = float("nan")
     best_rot = float("inf")
     best_tdir_abs = float("inf")
+    best_tdir_raw = float("inf")
+    best_tdir_local_A = float("inf")
+    best_tdir_local_A_abs = float("inf")
 
     model.train()
     optimizer.zero_grad(set_to_none=True)
@@ -309,7 +339,16 @@ def main():
         with torch.autocast(device_type=dev.type, dtype=amp_dtype, enabled=use_amp):
             R_pred, t_pred, aux = model(IA, IB)
 
-            L_pose = pose_loss(R_pred, t_pred, R_gt, t_gt, pose_t_alpha=cfg.pose_t_alpha)
+            t_pose_pred = aux.get("t_dir_local", t_pred)
+            t_pose_frame = aux.get("t_local_frame", "B") if aux.get("t_dir_local", None) is not None else "B"
+            L_pose = pose_loss(
+                R_pred,
+                t_pose_pred,
+                R_gt,
+                t_gt,
+                pose_t_alpha=cfg.pose_t_alpha,
+                pred_t_frame=t_pose_frame,
+            )
 
             W_ab = _first_not_none(aux.get("Wf_ab", None), aux.get("Wc_ab", None))
             W_ba = _first_not_none(aux.get("Wf_ba", None), aux.get("Wc_ba", None))
@@ -336,12 +375,17 @@ def main():
             else:
                 L_rel = torch.zeros((), device=dev)
 
-            if cfg.use_epipolar_loss and bearingA is not None and bearingB is not None and cfg.w_epi > 0:
+            if cfg.use_epipolar_loss and W_ab is not None and bearingA is not None and bearingB is not None and cfg.w_epi > 0:
                 L_epi = epipolar_simplified_loss(
-                    bearingA,
-                    bearingB,
-                    R_gt,
+                    W_ab=W_ab,
+                    W_ba=W_ba,
+                    bearing_a=bearingA,
+                    bearing_b=bearingB,
+                    R_gt=R_gt,
+                    t_gt=t_gt,
+                    allowed_mask=aux.get("allowed_mask", None),
                     angle_thresh_deg=cfg.epi_angle_thresh_deg,
+                    use_bidir=cfg.epi_loss_use_bidir,
                 )
             else:
                 L_epi = torch.zeros((), device=dev)
@@ -415,19 +459,41 @@ def main():
 
                     if cfg.eval_every and upd % cfg.eval_every == 0:
                         t_eval0 = time.perf_counter()
-                        rot, tdir, tdir_abs, tdir_msg = eval_model(model, test_loader, dev, cfg)
+                        rot, tdir, tdir_abs, tdir_local_A, tdir_local_A_abs, tdiag, tdir_msg, tdir_local_msg = eval_model(model, test_loader, dev, cfg)
                         t_eval = time.perf_counter() - t_eval0
-                        metrics = {"rot": rot, "tdir": tdir, "tdir_abs": tdir_abs}
-                        print(f"[Eval ] upd {upd:05d} (step {step:05d}) | rot={rot:.4f}° | tdir={tdir:.4f}° | tdir_abs={tdir_abs:.4f}° | time={t_eval:.2f}s")
+                        metrics = {
+                            "rot": rot,
+                            "tdir": tdir,
+                            "tdir_abs": tdir_abs,
+                            "tdir_local_A": tdir_local_A,
+                            "tdir_local_A_abs": tdir_local_A_abs,
+                            **{f"tdir_diag_{k}": v for k, v in tdiag.items()},
+                        }
+                        print(
+                            f"[Eval ] upd {upd:05d} (step {step:05d}) | rot={rot:.4f}° | "
+                            f"tdir={tdir:.4f}° | tdir_abs={tdir_abs:.4f}° | "
+                            f"tdir_local_A={tdir_local_A:.4f}° | tdir_local_A_abs={tdir_local_A_abs:.4f}° | "
+                            f"time={t_eval:.2f}s"
+                        )
                         print(tdir_msg)
+                        print(tdir_local_msg)
 
                         _save_ckpt(os.path.join(ckpt_root, "last_eval.pt"), model, optimizer, scaler, scheduler, cfg, step, upd, metrics)
                         if rot < best_rot:
                             best_rot = rot
                             _save_ckpt(os.path.join(ckpt_root, "best_rot.pt"), model, optimizer, scaler, scheduler, cfg, step, upd, metrics)
+                        if tdir < best_tdir_raw:
+                            best_tdir_raw = tdir
+                            _save_ckpt(os.path.join(ckpt_root, "best_tdir_raw.pt"), model, optimizer, scaler, scheduler, cfg, step, upd, metrics)
                         if tdir_abs < best_tdir_abs:
                             best_tdir_abs = tdir_abs
                             _save_ckpt(os.path.join(ckpt_root, "best_tdir_abs.pt"), model, optimizer, scaler, scheduler, cfg, step, upd, metrics)
+                        if math.isfinite(tdir_local_A) and tdir_local_A < best_tdir_local_A:
+                            best_tdir_local_A = tdir_local_A
+                            _save_ckpt(os.path.join(ckpt_root, "best_tdir_local_A.pt"), model, optimizer, scaler, scheduler, cfg, step, upd, metrics)
+                        if math.isfinite(tdir_local_A_abs) and tdir_local_A_abs < best_tdir_local_A_abs:
+                            best_tdir_local_A_abs = tdir_local_A_abs
+                            _save_ckpt(os.path.join(ckpt_root, "best_tdir_local_A_abs.pt"), model, optimizer, scaler, scheduler, cfg, step, upd, metrics)
 
         t_opt = time.perf_counter()
 
@@ -458,7 +524,7 @@ def main():
                 for k in ["Wc_ab", "Wf_ab", "bearingA_c", "bearingA_f", "routing_mask", "allowed_mask"]:
                     if isinstance(aux, dict) and k in aux and aux[k] is not None:
                         print(f"[DBG] {k}: {tuple(aux[k].shape)}")
-                print(f"[Shapes] IA {tuple(IA.shape)} | R {tuple(R_gt.shape)} | t {tuple(t_gt.shape)} | stage={aux.get('stage', '-')}")
+                print(f"[Shapes] IA {tuple(IA.shape)} | R {tuple(R_gt.shape)} | t {tuple(t_gt.shape)} | stage={aux.get('stage', '-')} | t_local={aux.get('t_local_frame', '-')} -> t_out={aux.get('t_output_frame', '-')}")
                 print("-" * 80)
 
         step += 1
@@ -472,9 +538,20 @@ def main():
         cfg,
         step,
         upd,
-        {"best_rot": best_rot, "best_tdir_abs": best_tdir_abs},
+        {
+            "best_rot": best_rot,
+            "best_tdir_raw": best_tdir_raw,
+            "best_tdir_abs": best_tdir_abs,
+            "best_tdir_local_A": best_tdir_local_A,
+            "best_tdir_local_A_abs": best_tdir_local_A_abs,
+        },
     )
-    print(f"[Done ] training finished | best_rot={best_rot:.4f}° | best_tdir_abs={best_tdir_abs:.4f}° | ckpt_dir={ckpt_root}")
+    print(
+        f"[Done ] training finished | best_rot={best_rot:.4f}° | "
+        f"best_tdir_raw={best_tdir_raw:.4f}° | best_tdir_abs={best_tdir_abs:.4f}° | "
+        f"best_tdir_local_A={best_tdir_local_A:.4f}° | best_tdir_local_A_abs={best_tdir_local_A_abs:.4f}° | "
+        f"ckpt_dir={ckpt_root}"
+    )
 
 
 if __name__ == "__main__":

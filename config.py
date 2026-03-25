@@ -30,7 +30,11 @@ class Config:
     n_layers: int = 4
     n_heads: int = 8
     mlp_ratio: float = 4.0
-    dropout: float = 0.0
+    dropout: float = 0.05
+
+    # Translation convention
+    translation_local_frame: str = "A"
+    translation_output_frame: str = "B"
 
     # ---------------- Model: interaction / routing / geometry ----------------
     use_coarse_interaction: bool = True
@@ -46,32 +50,38 @@ class Config:
 
     epi_angle_thresh_deg: float = 30.0
     epi_bias_strength: float = 8.0
+    epi_loss_use_bidir: bool = True
 
     # ---------------- Optimization ----------------
     batch_size: int = 1
     grad_accum: int = 4
-    lr: float = 1e-4
+
+    # Lower the peak LR to avoid the early good point being destroyed later.
+    lr: float = 4.5e-5
     wd: float = 0.01
     max_grad_norm: float = 1.0
 
-    warmup_updates: int = 100
-    min_lr_scale: float = 0.10
+    # Shorter warmup so the run does not spend too long climbing toward a peak LR.
+    warmup_updates: int = 50
+    min_lr_scale: float = 0.03
 
     # ---------------- Loss weights ----------------
     w_pose: float = 1.0
     w_x: float = 0.10
-    w_cyc: float = 0.10
-    w_rel: float = 0.05
-    w_epi: float = 0.05
+    w_cyc: float = 0.05
+    w_rel: float = 0.02
+    w_epi: float = 0.02
     pose_t_alpha: float = 1.0
 
     # ---------------- Schedule / logging ----------------
-    max_steps: int = 5000
+    # Keep the run short and evaluate densely around the likely best region.
+    # With grad_accum=4, max_steps=1000 is about 250 optimizer updates.
+    max_steps: int = 1000
     log_every: int = 50
-    eval_every: int = 200      # in update steps
+    eval_every: int = 25       # in update steps
     max_eval_batches: int = 100
     ckpt_dir: str = "checkpoints"
-    exp_name: str = "week4_week5_impl"
+    exp_name: str = "week4_week5_impl_low_peak_early_stop"
 
     # ---------------- Dataloader ----------------
     num_workers: int = 4
