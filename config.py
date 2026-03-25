@@ -9,10 +9,8 @@ class Config:
     H: int = 1024
     W: int = 2048
 
-    # Group-aware dataset split.
-    # scene_seq: split by complete (scene, seq) folders, no pair leakage across train/test.
-    # scene    : split by complete scenes (stricter, but train/test may become imbalanced if scenes are few).
-    split_by: str = "scene_seq"
+    # Group-aware dataset split
+    split_by: str = "scene_seq"   # "scene_seq" | "scene"
     train_ratio: float = 0.8
     split_seed: int = 3407
     data_seed: int = 1234
@@ -23,13 +21,10 @@ class Config:
     k_choices: Tuple[int, ...] = (10, 20)
     k_probs: Tuple[float, ...] = (0.84, 0.16)
 
-    # ---------------- Model ----------------
+    # ---------------- Model: spherical tokenization / encoder ----------------
     D: int = 256
     Nc: int = 192
     Nf: int = 768
-    topk_coarse: int = 16
-
-    # Patch/token encoder hyper-params used by model.py
     p: int = 16
     in_ch: int = 3
     n_layers: int = 4
@@ -37,9 +32,20 @@ class Config:
     mlp_ratio: float = 4.0
     dropout: float = 0.0
 
-    # Epipolar band (used inside interaction.py as a bias/mask)
+    # ---------------- Model: interaction / routing / geometry ----------------
+    use_coarse_interaction: bool = True
+    use_fine_stage: bool = True
+    use_epipolar_bias: bool = True
+    use_epipolar_loss: bool = True
+    epi_mode: str = "bias"   # "bias" | "mask"
+
+    coarse_temperature: float = 0.10
+    fine_temperature: float = 0.07
+    logits_clip: float = 20.0
+    topk_coarse: int = 16
+
     epi_angle_thresh_deg: float = 30.0
-    epi_bias_strength: float = 10.0
+    epi_bias_strength: float = 8.0
 
     # ---------------- Optimization ----------------
     batch_size: int = 1
@@ -48,21 +54,24 @@ class Config:
     wd: float = 0.01
     max_grad_norm: float = 1.0
 
-    # Loss weights
-    w_pose: float = 0.75
-    w_x: float = 1.0
-    w_cyc: float = 1.0
-    w_rel: float = 0.1
-    w_epi: float = 0.1
+    warmup_updates: int = 100
+    min_lr_scale: float = 0.10
 
-    # pose loss hyperparam
+    # ---------------- Loss weights ----------------
+    w_pose: float = 1.0
+    w_x: float = 0.10
+    w_cyc: float = 0.10
+    w_rel: float = 0.05
+    w_epi: float = 0.05
     pose_t_alpha: float = 1.0
 
     # ---------------- Schedule / logging ----------------
     max_steps: int = 5000
     log_every: int = 50
-    eval_every: int = 200  # in update steps (after grad_accum)
+    eval_every: int = 200      # in update steps
     max_eval_batches: int = 100
+    ckpt_dir: str = "checkpoints"
+    exp_name: str = "week4_week5_impl"
 
     # ---------------- Dataloader ----------------
     num_workers: int = 4
@@ -70,11 +79,8 @@ class Config:
 
     # ---------------- AMP / perf ----------------
     amp: bool = False
-    # "auto" => bf16 if supported else fp16; "bf16" => bf16; "fp16" => fp16
-    amp_dtype: str = "auto"
-
-    # Torch perf knobs
+    amp_dtype: str = "auto"   # "auto" | "bf16" | "fp16"
     tf32: bool = True
-    matmul_precision: str = "high"  # "highest"|"high"|"medium"
+    matmul_precision: str = "high"
     deterministic: bool = False
     benchmark: bool = True

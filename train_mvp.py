@@ -1,22 +1,71 @@
-\
+import math
 import os
 import time
-import math
 from dataclasses import asdict
 
 import torch
 import torch.nn.functional as F
+from torch.optim import AdamW
+from torch.optim.lr_scheduler import LambdaLR
 from torch.utils.data import DataLoader
 
 from config import Config
 from dataset_pano_only import RflyPanoPanoramaPairsMixedK
+from losses import epipolar_simplified_loss, pose_loss
 from model import PanoramaRelPoseModel
-from losses import pose_loss, epipolar_simplified_loss
 from pose_head import matrix_geodesic_distance
 
 
-def _fmt_deg(x: torch.Tensor) -> float:
-    return float(x.detach().cpu().item())
+def _cfg_to_dict(cfg):
+    try:
+        return asdict(cfg)
+    except Exception:
+        return {k: v for k, v in vars(cfg).items() if not k.startswith("_")}
+
+
+def _first_not_none(*vals):
+    for v in vals:
+        if v is not None:
+            return v
+    return None
+
+
+def _scheduler_lambda(total_updates: int, warmup_updates: int, min_lr_scale: float):
+    total_updates = max(int(total_updates), 1)
+    warmup_updates = max(int(warmup_updates), 0)
+    min_lr_scale = float(min_lr_scale)
+
+    def fn(step_idx: int):
+        step_idx = min(int(step_idx), total_updates)
+        if warmup_updates > 0 and step_idx < warmup_updates:
+            return max(step_idx / max(warmup_updates, 1), 1e-6)
+
+        if total_updates <= warmup_updates:
+            return 1.0
+
+        progress = (step_idx - warmup_updates) / max(total_updates - warmup_updates, 1)
+        progress = min(max(progress, 0.0), 1.0)
+        cosine = 0.5 * (1.0 + math.cos(math.pi * progress))
+        return min_lr_scale + (1.0 - min_lr_scale) * cosine
+
+    return fn
+
+
+def _save_ckpt(path, model, optimizer, scaler, scheduler, cfg, step, upd, metrics):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    torch.save(
+        {
+            "model": model.state_dict(),
+            "optimizer": optimizer.state_dict(),
+            "scaler": scaler.state_dict() if scaler is not None else None,
+            "scheduler": scheduler.state_dict() if scheduler is not None else None,
+            "cfg": _cfg_to_dict(cfg),
+            "step": int(step),
+            "upd": int(upd),
+            "metrics": dict(metrics),
+        },
+        path,
+    )
 
 
 @torch.no_grad()
@@ -28,7 +77,6 @@ def eval_model(model, loader, device, cfg: Config):
     tdir_abs_sum = 0.0
     n = 0
 
-    # TDIR-CHK accumulators (diagnose frame/sign convention)
     acc = {
         "raw": 0.0,
         "flip": 0.0,
@@ -38,8 +86,15 @@ def eval_model(model, loader, device, cfg: Config):
         "Rt@(-t)": 0.0,
         "cnt": 0,
     }
+    variant_desc = {
+        "raw": "B-frame, baseline B->A",
+        "flip": "B-frame, baseline A->B",
+        "R@t": "B-frame, gt-in-A, baseline B->A",
+        "R@(-t)": "B-frame, gt-in-A, baseline A->B",
+        "Rt@t": "A-frame, gt-in-B, baseline B->A",
+        "Rt@(-t)": "A-frame, gt-in-B, baseline A->B",
+    }
 
-    # AMP in eval: usually safe to disable (keep fp32)
     for bi, batch in enumerate(loader):
         if cfg.max_eval_batches and bi >= cfg.max_eval_batches:
             break
@@ -51,15 +106,13 @@ def eval_model(model, loader, device, cfg: Config):
 
         R_pred, t_pred, _aux = model(IA, IB)
 
-        # rotation error (deg)
-        rot_rad = matrix_geodesic_distance(R_pred.float(), R_gt.float())  # [B]
+        rot_rad = matrix_geodesic_distance(R_pred.float(), R_gt.float())
         rot_deg = rot_rad * (180.0 / math.pi)
 
-        # translation-direction error (deg)
         tp = F.normalize(t_pred.float(), dim=-1, eps=1e-6)
         tg = F.normalize(t_gt.float(), dim=-1, eps=1e-6)
         cos = torch.sum(tp * tg, dim=-1).clamp(-1.0, 1.0)
-        ang = torch.acos(cos) * (180.0 / math.pi)  # [B]
+        ang = torch.acos(cos) * (180.0 / math.pi)
         ang_abs = torch.minimum(ang, 180.0 - ang)
 
         bsz = IA.shape[0]
@@ -68,22 +121,6 @@ def eval_model(model, loader, device, cfg: Config):
         tdir_abs_sum += float(ang_abs.sum().cpu())
         n += bsz
 
-        # ---- TDIR-CHK: what if the convention is different? ----
-        # Dataset convention:
-        #   - R_gt = R_{B<-A} (rotation A -> B)
-        #   - t_gt = t_{BA} in frame B (baseline B -> A; origin(A) in B)
-        #
-        # The checks below compare t_pred to several transformed variants of t_gt:
-        #
-        #   raw      : tp vs  tg               => tp is B-frame, baseline B->A (matches dataset)
-        #   flip     : tp vs -tg               => tp is B-frame, baseline A->B
-        #   R@t      : tp vs  R_gt @ tg        => tp is B-frame, but tg was actually A-frame (B->A), rotate A->B
-        #   R@(-t)   : tp vs -R_gt @ tg        => tp is B-frame, but tg was A-frame (A->B), rotate A->B
-        #   Rt@t     : tp vs  R_gt^T @ tg      => tp is A-frame, baseline B->A (rotate B->A into A)
-        #   Rt@(-t)  : tp vs -R_gt^T @ tg      => tp is A-frame, baseline A->B
-        #
-        # If one of these is consistently much smaller than the others, that is the
-        # convention your network is implicitly using.
         tg_R = F.normalize(torch.matmul(R_gt.float(), tg.unsqueeze(-1)).squeeze(-1), dim=-1, eps=1e-6)
         tg_Rt = F.normalize(torch.matmul(R_gt.float().transpose(-1, -2), tg.unsqueeze(-1)).squeeze(-1), dim=-1, eps=1e-6)
 
@@ -105,15 +142,15 @@ def eval_model(model, loader, device, cfg: Config):
 
     if acc["cnt"] > 0:
         denom = float(acc["cnt"])
+        mean_map = {k: acc[k] / denom for k in ["raw", "flip", "R@t", "R@(-t)", "Rt@t", "Rt@(-t)"]}
+        ranked = sorted(mean_map.items(), key=lambda kv: kv[1])
+        best_key, best_val = ranked[0]
+        gap2 = ranked[1][1] - ranked[0][1] if len(ranked) > 1 else float("nan")
         msg = (
-            f"[TDIR-CHK] "
-            f"raw(B: B->A)={acc['raw']/denom:.2f}  "
-            f"flip(B: A->B)={acc['flip']/denom:.2f}  "
-            f"R@t(B, gt-in-A,B->A)={acc['R@t']/denom:.2f}  "
-            f"R@(-t)(B, gt-in-A,A->B)={acc['R@(-t)']/denom:.2f}  "
-            f"Rt@t(A, gt-in-B,B->A)={acc['Rt@t']/denom:.2f}  "
-            f"Rt@(-t)(A, gt-in-B,A->B)={acc['Rt@(-t)']/denom:.2f}  "
-            f"(n={int(denom)})"
+            f"[TDIR-CHK] best={best_key} ({variant_desc[best_key]})={best_val:.2f}° | gap2={gap2:.2f}° | "
+            f"raw={mean_map['raw']:.2f} flip={mean_map['flip']:.2f} "
+            f"R@t={mean_map['R@t']:.2f} R@(-t)={mean_map['R@(-t)']:.2f} "
+            f"Rt@t={mean_map['Rt@t']:.2f} Rt@(-t)={mean_map['Rt@(-t)']:.2f} (n={int(denom)})"
         )
     else:
         msg = "[TDIR-CHK] n=0"
@@ -124,8 +161,6 @@ def eval_model(model, loader, device, cfg: Config):
 
 def main():
     cfg = Config()
-
-    # ---------------- Env / perf knobs ----------------
     os.environ.setdefault("PYTORCH_ALLOC_CONF", "expandable_segments:True")
 
     print("=" * 80)
@@ -150,25 +185,13 @@ def main():
     torch.backends.cudnn.deterministic = bool(cfg.deterministic)
     torch.backends.cudnn.benchmark = bool(cfg.benchmark)
 
-    print(f"[Env ] AMP  : {cfg.amp} (dtype={cfg.amp_dtype})")
-    print(f"[Env ] TF32 : matmul={torch.backends.cuda.matmul.allow_tf32} | cudnn={torch.backends.cudnn.allow_tf32}")
-    print(f"[Env ] matmul_precision: {cfg.matmul_precision}")
-    print(f"[Env ] cudnn: deterministic={torch.backends.cudnn.deterministic} | benchmark={torch.backends.cudnn.benchmark}")
-    print("-" * 80)
-
-    # ---------------- Config print ----------------
-    eff_bs = cfg.batch_size * cfg.grad_accum
-    print(f"[Cfg ] data_root: {cfg.data_root}")
-    print(f"[Cfg ] HxW={cfg.H}x{cfg.W} | D={cfg.D} | Nc={cfg.Nc} | Nf={cfg.Nf}")
-    print(f"[Cfg ] topk_coarse={cfg.topk_coarse} | epi_angle={cfg.epi_angle_thresh_deg} | epi_bias={cfg.epi_bias_strength}")
-    print(f"[Cfg ] bs={cfg.batch_size} | grad_accum={cfg.grad_accum} | eff_bs={eff_bs}")
-    print(f"[Cfg ] lr={cfg.lr} | wd={cfg.wd} | amp={cfg.amp}")
-    print(f"[Cfg ] max_steps={cfg.max_steps} | log_every={cfg.log_every} | eval_every(upd)={cfg.eval_every} | max_eval_batches={cfg.max_eval_batches}")
-    print(f"[Cfg ] num_workers={cfg.num_workers} | pin_memory={cfg.pin_memory}")
+    print(f"[Cfg ] model_variant: coarse_interaction={cfg.use_coarse_interaction} | fine_stage={cfg.use_fine_stage} | epi_bias={cfg.use_epipolar_bias} | epi_loss={cfg.use_epipolar_loss}")
+    print(f"[Cfg ] HxW={cfg.H}x{cfg.W} | D={cfg.D} | Nc={cfg.Nc} | Nf={cfg.Nf} | p={cfg.p}")
+    print(f"[Cfg ] temp(coarse/fine)={cfg.coarse_temperature}/{cfg.fine_temperature} | logits_clip={cfg.logits_clip} | topk_coarse={cfg.topk_coarse}")
+    print(f"[Cfg ] lr={cfg.lr} | wd={cfg.wd} | warmup_updates={cfg.warmup_updates} | min_lr_scale={cfg.min_lr_scale}")
     print(f"[Cfg ] split_by={cfg.split_by} | train_ratio={cfg.train_ratio} | split_seed={cfg.split_seed} | data_seed={cfg.data_seed}")
     print("=" * 80)
 
-    # ---------------- Data ----------------
     train_ds = RflyPanoPanoramaPairsMixedK(
         data_root=cfg.data_root,
         split="train",
@@ -205,8 +228,13 @@ def main():
     test_keys = set(getattr(test_ds, "sequence_keys", []))
     overlap = train_keys & test_keys
     if overlap:
-        overlap_preview = sorted(list(overlap))[:8]
-        raise RuntimeError(f"train/test split leakage detected: {len(overlap)} overlapping (scene, seq), e.g. {overlap_preview}")
+        raise RuntimeError(f"train/test split leakage detected: {len(overlap)} overlapping groups, e.g. {sorted(list(overlap))[:8]}")
+
+    for tag, ds in [("train", train_ds), ("test", test_ds)]:
+        summary = getattr(ds, "split_summary", None)
+        if summary is not None:
+            preview = summary.get("selected_seq_keys", [])[:6]
+            print(f"[Split] {tag} by {summary.get('split_by')} | groups={summary.get('num_selected_groups')} | seqs={summary.get('num_selected_seq')} | pairs={summary.get('num_pairs')} | preview={preview}")
 
     train_loader = DataLoader(
         train_ds,
@@ -225,57 +253,43 @@ def main():
         drop_last=False,
     )
 
-    train_summary = getattr(train_ds, "split_summary", None)
-    test_summary = getattr(test_ds, "split_summary", None)
-    if train_summary is not None:
-        train_preview = train_summary.get("selected_seq_keys", [])[:5]
-        print(
-            f"[Split] train by {train_summary['split_by']} | "
-            f"groups={train_summary['num_selected_groups']}/{train_summary['num_total_groups']} | "
-            f"seqs={train_summary['num_selected_seq']}/{train_summary['num_total_seq']} | "
-            f"pairs={train_summary.get('num_pairs', 'NA')} | preview={train_preview}"
-        )
-    if test_summary is not None:
-        test_preview = test_summary.get("selected_seq_keys", [])[:5]
-        print(
-            f"[Split] test  by {test_summary['split_by']} | "
-            f"groups={test_summary['num_selected_groups']}/{test_summary['num_total_groups']} | "
-            f"seqs={test_summary['num_selected_seq']}/{test_summary['num_total_seq']} | "
-            f"pairs={test_summary.get('num_pairs', 'NA')} | preview={test_preview}"
-        )
-
-    print(f"[Data] MixedK strict dt: min_dt={cfg.min_dt} max_dt={cfg.max_dt} k_choices={list(cfg.k_choices)} k_probs={list(cfg.k_probs)}")
-    print(f"[Data] len(train_ds)={len(train_ds)} | len(train_loader)={len(train_loader)} (batches per epoch-like)")
-    print(f"[Data] len(test_ds)={len(test_ds)}")
-    print("-" * 80)
-
-    # ---------------- Model ----------------
     model = PanoramaRelPoseModel(cfg, device=dev).to(dev)
-    optimizer = torch.optim.AdamW(model.parameters(), lr=cfg.lr, weight_decay=cfg.wd)
+    optimizer = AdamW(model.parameters(), lr=cfg.lr, weight_decay=cfg.wd)
 
-    # AMP mode selection
+    total_updates = math.ceil(cfg.max_steps / max(cfg.grad_accum, 1))
+    scheduler = LambdaLR(
+        optimizer,
+        lr_lambda=_scheduler_lambda(
+            total_updates=total_updates,
+            warmup_updates=cfg.warmup_updates,
+            min_lr_scale=cfg.min_lr_scale,
+        ),
+    )
+
     use_amp = bool(cfg.amp) and dev.type == "cuda"
-    if cfg.amp_dtype == "auto":
-        amp_dtype = torch.bfloat16 if (use_amp and torch.cuda.is_bf16_supported()) else torch.float16
+    if cfg.amp_dtype.lower() == "auto":
+        amp_dtype = torch.bfloat16 if (dev.type == "cuda" and torch.cuda.is_bf16_supported()) else torch.float16
     elif cfg.amp_dtype.lower() in ("bf16", "bfloat16"):
         amp_dtype = torch.bfloat16
     else:
         amp_dtype = torch.float16
-
     use_scaler = use_amp and (amp_dtype == torch.float16)
     scaler = torch.amp.GradScaler("cuda", enabled=use_scaler)
 
-    # ---------------- Training loop ----------------
+    ckpt_root = os.path.join(cfg.ckpt_dir, cfg.exp_name)
+    os.makedirs(ckpt_root, exist_ok=True)
+
     step = 0
     upd = 0
     skip_updates = 0
     bad_forward = 0
     last_bad_grad_name = "-"
-    t_last = time.perf_counter()
+    last_grad_norm = float("nan")
+    best_rot = float("inf")
+    best_tdir_abs = float("inf")
 
     model.train()
     optimizer.zero_grad(set_to_none=True)
-
     train_iter = iter(train_loader)
 
     while step < cfg.max_steps:
@@ -286,53 +300,46 @@ def main():
             batch = next(train_iter)
 
         t0 = time.perf_counter()
-
         IA = batch["IA"].to(dev, non_blocking=True)
         IB = batch["IB"].to(dev, non_blocking=True)
         R_gt = batch["R_gt"].to(dev, non_blocking=True)
         t_gt = batch["t_gt_dir"].to(dev, non_blocking=True)
-
         t_data = time.perf_counter()
 
-        # Forward
-        with torch.autocast(device_type="cuda", dtype=amp_dtype, enabled=use_amp):
+        with torch.autocast(device_type=dev.type, dtype=amp_dtype, enabled=use_amp):
             R_pred, t_pred, aux = model(IA, IB)
 
-            # core pose loss (float32 inside)
             L_pose = pose_loss(R_pred, t_pred, R_gt, t_gt, pose_t_alpha=cfg.pose_t_alpha)
 
-            # optional regularizers (guarded if aux is missing keys)
-            Wf_ab = aux.get("Wf_ab", None)
-            Wf_ba = aux.get("Wf_ba", None)
-            cA_f = aux.get("cA_f", None)
-            cB_f = aux.get("cB_f", None)
+            W_ab = _first_not_none(aux.get("Wf_ab", None), aux.get("Wc_ab", None))
+            W_ba = _first_not_none(aux.get("Wf_ba", None), aux.get("Wc_ba", None))
+            cA = _first_not_none(aux.get("cA_f", None), aux.get("cA_c", None))
+            cB = _first_not_none(aux.get("cB_f", None), aux.get("cB_c", None))
+            bearingA = _first_not_none(aux.get("bearingA_f", None), aux.get("bearingA_c", None))
+            bearingB = _first_not_none(aux.get("bearingB_f", None), aux.get("bearingB_c", None))
 
-            # entropy: encourage peaky assignment (very small in practice)
-            if Wf_ab is not None:
-                P = Wf_ab.float().clamp(min=1e-9)
+            if W_ab is not None and cfg.w_x > 0:
+                P = W_ab.float().clamp_min(1e-9)
                 L_x = (-P * P.log()).sum(dim=-1).mean()
             else:
                 L_x = torch.zeros((), device=dev)
 
-            # cycle: W_ab @ W_ba ≈ I
-            if (Wf_ab is not None) and (Wf_ba is not None):
-                C = torch.matmul(Wf_ab.float(), Wf_ba.float())  # [B,NfA,NfA]
-                I = torch.eye(C.shape[-1], device=dev).unsqueeze(0)
-                L_cyc = F.mse_loss(C, I)
+            if W_ab is not None and W_ba is not None and cfg.w_cyc > 0:
+                cyc = torch.matmul(W_ab.float(), W_ba.float())
+                I = torch.eye(cyc.shape[-1], device=dev).unsqueeze(0)
+                L_cyc = F.mse_loss(cyc, I)
             else:
                 L_cyc = torch.zeros((), device=dev)
 
-            # reliability: logits should be high (target=1)
-            if (cA_f is not None) and (cB_f is not None):
-                L_rel = 0.5 * (F.softplus(-cA_f.float()).mean() + F.softplus(-cB_f.float()).mean())
+            if cA is not None and cB is not None and cfg.w_rel > 0:
+                L_rel = 0.5 * (F.softplus(-cA.float()).mean() + F.softplus(-cB.float()).mean())
             else:
                 L_rel = torch.zeros((), device=dev)
 
-            # epipolar (rotation-only, uses fine bearings if present)
-            if ("bearingA_f" in aux) and ("bearingB_f" in aux):
+            if cfg.use_epipolar_loss and bearingA is not None and bearingB is not None and cfg.w_epi > 0:
                 L_epi = epipolar_simplified_loss(
-                    aux["bearingA_f"],
-                    aux["bearingB_f"],
+                    bearingA,
+                    bearingB,
                     R_gt,
                     angle_thresh_deg=cfg.epi_angle_thresh_deg,
                 )
@@ -346,23 +353,15 @@ def main():
                 + cfg.w_rel * L_rel
                 + cfg.w_epi * L_epi
             )
-
-            # scale for grad accumulation
             L_scaled = L / float(cfg.grad_accum)
 
         t_fwd = time.perf_counter()
 
-        forward_ok = (
-            torch.isfinite(R_pred).all() and
-            torch.isfinite(t_pred).all() and
-            torch.isfinite(L_pose) and
-            torch.isfinite(L_x) and
-            torch.isfinite(L_cyc) and
-            torch.isfinite(L_rel) and
-            torch.isfinite(L_epi) and
-            torch.isfinite(L)
+        forward_ok = all(
+            bool(torch.isfinite(x).all())
+            for x in [R_pred, t_pred, L_pose, L_x, L_cyc, L_rel, L_epi, L]
         )
-        if not bool(forward_ok):
+        if not forward_ok:
             bad_forward += 1
             optimizer.zero_grad(set_to_none=True)
             step += 1
@@ -370,114 +369,112 @@ def main():
                 print(f"[Warn ] non-finite forward detected, batch skipped | bad_forward={bad_forward}")
             continue
 
-        # Backward
         if use_scaler:
             scaler.scale(L_scaled).backward()
         else:
             L_scaled.backward()
-
         t_bwd = time.perf_counter()
 
-        # Step on accumulation boundary
         if (step + 1) % cfg.grad_accum == 0:
-            # unscale before clipping when using scaler
             if use_scaler:
                 scaler.unscale_(optimizer)
 
             bad_name = None
             for name, p in model.named_parameters():
-                if p.grad is None:
-                    continue
-                if not torch.isfinite(p.grad).all():
+                if p.grad is not None and not torch.isfinite(p.grad).all():
                     bad_name = name
                     break
 
             if bad_name is not None:
                 skip_updates += 1
                 last_bad_grad_name = bad_name
+                last_grad_norm = float("nan")
                 optimizer.zero_grad(set_to_none=True)
                 if use_scaler:
                     scaler.update()
-                grad_norm = torch.tensor(float("nan"), device=dev)
             else:
                 grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=cfg.max_grad_norm)
                 if not torch.isfinite(grad_norm):
                     skip_updates += 1
                     last_bad_grad_name = "clip_grad_norm"
+                    last_grad_norm = float("nan")
                     optimizer.zero_grad(set_to_none=True)
                     if use_scaler:
                         scaler.update()
                 else:
+                    last_grad_norm = float(grad_norm.detach().cpu())
+                    last_bad_grad_name = "-"
                     if use_scaler:
                         scaler.step(optimizer)
                         scaler.update()
                     else:
                         optimizer.step()
+                    scheduler.step()
                     optimizer.zero_grad(set_to_none=True)
                     upd += 1
 
-                    # periodic eval
-                    if cfg.eval_every and (upd % cfg.eval_every == 0):
+                    if cfg.eval_every and upd % cfg.eval_every == 0:
                         t_eval0 = time.perf_counter()
                         rot, tdir, tdir_abs, tdir_msg = eval_model(model, test_loader, dev, cfg)
                         t_eval = time.perf_counter() - t_eval0
+                        metrics = {"rot": rot, "tdir": tdir, "tdir_abs": tdir_abs}
                         print(f"[Eval ] upd {upd:05d} (step {step:05d}) | rot={rot:.4f}° | tdir={tdir:.4f}° | tdir_abs={tdir_abs:.4f}° | time={t_eval:.2f}s")
                         print(tdir_msg)
 
+                        _save_ckpt(os.path.join(ckpt_root, "last_eval.pt"), model, optimizer, scaler, scheduler, cfg, step, upd, metrics)
+                        if rot < best_rot:
+                            best_rot = rot
+                            _save_ckpt(os.path.join(ckpt_root, "best_rot.pt"), model, optimizer, scaler, scheduler, cfg, step, upd, metrics)
+                        if tdir_abs < best_tdir_abs:
+                            best_tdir_abs = tdir_abs
+                            _save_ckpt(os.path.join(ckpt_root, "best_tdir_abs.pt"), model, optimizer, scaler, scheduler, cfg, step, upd, metrics)
+
         t_opt = time.perf_counter()
 
-        # logging
         if step % cfg.log_every == 0:
-            # p0_mean as quick param sanity
             with torch.no_grad():
-                p0 = next(model.parameters())
-                p0_mean = float(p0.mean().detach().cpu())
-
-            # AMP scale
+                p0_mean = float(next(model.parameters()).mean().detach().cpu())
             scaler_scale = float(scaler.get_scale()) if use_scaler else 1.0
-
+            lr_now = optimizer.param_groups[0]["lr"]
             dt = time.perf_counter() - t0
-            data_ms = (t_data - t0) * 1000.0
-            fwd_ms = (t_fwd - t_data) * 1000.0
-            bwd_ms = (t_bwd - t_fwd) * 1000.0
-            opt_ms = (t_opt - t_bwd) * 1000.0
-
-            # show current "ep" approximately
             ep = step // max(len(train_loader), 1)
-
             print(
                 f"[Train] step {step:05d} upd {upd:05d} ep{ep:03d} | "
-                f"L={float(L.detach().cpu()):.3f} | "
-                f"pose={float(L_pose.detach().cpu()):.3f} | "
-                f"x={float(L_x.detach().cpu()):.4f} | "
-                f"cyc={float(L_cyc.detach().cpu()):.4f} | "
-                f"rel={float(L_rel.detach().cpu()):.3f} | "
-                f"epi={float(L_epi.detach().cpu()):.3f}"
+                f"L={float(L.detach().cpu()):.3f} | pose={float(L_pose.detach().cpu()):.3f} | "
+                f"x={float(L_x.detach().cpu()):.4f} | cyc={float(L_cyc.detach().cpu()):.4f} | "
+                f"rel={float(L_rel.detach().cpu()):.4f} | epi={float(L_epi.detach().cpu()):.4f} | "
+                f"lr={lr_now:.6e}"
             )
-            it_s = 1.0 / max(dt, 1e-9)
             print(
-                f"[Time ] avg/iter={dt*1000.0:.1f}ms ({it_s:.2f} it/s) | "
-                f"data={data_ms:.1f}ms fwd={fwd_ms:.1f}ms bwd={bwd_ms:.1f}ms opt={opt_ms:.1f}ms"
+                f"[Time ] avg/iter={dt*1000.0:.1f}ms | data={(t_data-t0)*1000.0:.1f}ms "
+                f"fwd={(t_fwd-t_data)*1000.0:.1f}ms bwd={(t_bwd-t_fwd)*1000.0:.1f}ms opt={(t_opt-t_bwd)*1000.0:.1f}ms"
             )
-
-            # grad_norm is only valid on update boundary; otherwise print NaN-like
-            if (step + 1) % cfg.grad_accum == 0:
-                g = float(grad_norm.detach().cpu()) if torch.isfinite(grad_norm) else float("nan")
-            else:
-                g = float("nan")
-
-            print(f"[Stat ] grad_norm={g} | scaler_scale={scaler_scale} | skip_updates={skip_updates} | bad_forward={bad_forward} | bad_grad={last_bad_grad_name} | p0_mean={p0_mean:.6e}")
+            print(
+                f"[Stat ] grad_norm={last_grad_norm:.6f} | scaler_scale={scaler_scale} | "
+                f"skip_updates={skip_updates} | bad_forward={bad_forward} | bad_grad={last_bad_grad_name} | p0_mean={p0_mean:.6e}"
+            )
 
             if step == 0:
-                # debug shapes
-                if isinstance(aux, dict):
-                    for k in ["Wc_ab", "Wf_ab", "bearingA_f", "bearingB_f"]:
-                        if k in aux:
-                            print(f"[DBG] {k}: {tuple(aux[k].shape)}")
-                print(f"[Shapes] IA {tuple(IA.shape)} | R {tuple(R_gt.shape)} | t {tuple(t_gt.shape)}")
+                for k in ["Wc_ab", "Wf_ab", "bearingA_c", "bearingA_f", "routing_mask", "allowed_mask"]:
+                    if isinstance(aux, dict) and k in aux and aux[k] is not None:
+                        print(f"[DBG] {k}: {tuple(aux[k].shape)}")
+                print(f"[Shapes] IA {tuple(IA.shape)} | R {tuple(R_gt.shape)} | t {tuple(t_gt.shape)} | stage={aux.get('stage', '-')}")
                 print("-" * 80)
 
         step += 1
+
+    _save_ckpt(
+        os.path.join(ckpt_root, "last_train_state.pt"),
+        model,
+        optimizer,
+        scaler,
+        scheduler,
+        cfg,
+        step,
+        upd,
+        {"best_rot": best_rot, "best_tdir_abs": best_tdir_abs},
+    )
+    print(f"[Done ] training finished | best_rot={best_rot:.4f}° | best_tdir_abs={best_tdir_abs:.4f}° | ckpt_dir={ckpt_root}")
 
 
 if __name__ == "__main__":
