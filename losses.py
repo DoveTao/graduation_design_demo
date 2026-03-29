@@ -24,10 +24,10 @@ def _gt_translation_in_pred_frame(
     if pred_t_frame == "B":
         return t_gt
     if pred_t_frame == "A":
-        # t_gt is stored in frame B. The translation heads are A-anchored, and
-        # model.py converts local A -> output B with R^T. Therefore the matching
-        # inverse transform for supervision is B -> A with R (not R^T).
-        return _normalize(torch.matmul(R_gt, t_gt.unsqueeze(-1)).squeeze(-1))
+        # t_gt is stored in frame B as the B->A baseline. If the head predicts
+        # the same baseline direction in frame A, the correct supervision target
+        # is R^T t_gt.
+        return _normalize(torch.matmul(R_gt.transpose(-1, -2), t_gt.unsqueeze(-1)).squeeze(-1))
     raise ValueError(f"Unsupported pred_t_frame={pred_t_frame!r}, expected 'A' or 'B'.")
 
 
@@ -47,10 +47,9 @@ def pose_loss(
       - R_gt is R_{B<-A} (rotation A -> B)
       - t_gt is t_{BA} expressed in frame B (baseline B -> A, origin(A) in B)
 
-    The translation head is often naturally anchored in frame A because the fused
-    tokens are A-centric. In the current model, local A-frame predictions are
-    converted to the output B-frame with R^T, so the inverse supervision path
-    for pred_t_frame='A' must rotate t_gt with R.
+    The translation head is anchored in frame A because the fused tokens are
+    A-centric. We keep the dataset baseline direction (B->A) unchanged and only
+    change its coordinate frame, so the A-frame supervision target is R^T t_gt.
     """
     R_pred = R_pred.float()
     R_gt = R_gt.float()

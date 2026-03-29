@@ -83,14 +83,21 @@ class Module2Sampler(nn.Module):
 
 def _local_t_to_output_frame(R: torch.Tensor, t_local: torch.Tensor) -> torch.Tensor:
     """
-    Heads regress translation in frame A (feature-anchor frame).
-    Convert to the dataset/output convention: frame B, baseline B->A.
+    Heads regress translation in frame A (feature-anchor frame), using the same
+    baseline direction as the dataset target (B->A).
+
+    Dataset convention:
+      - R = R_{B<-A}
+      - t_gt is the B->A baseline expressed in frame B
+
+    Therefore the same baseline expressed in frame A is:
+      t_local_A = R^T t_gt
+
+    Mapping that local A-frame direction back to the output B-frame uses R:
+      t_out_B = R t_local_A
     """
     t_local = nn.functional.normalize(t_local.float(), dim=-1, eps=1e-6)
-    # Empirically the local translation head is anchored in frame A, while the
-    # dataset/eval translation direction is compared in frame B. The correct
-    # conversion here is R^T, not R.
-    t_out = torch.matmul(R.float().transpose(-1, -2), t_local.unsqueeze(-1)).squeeze(-1)
+    t_out = torch.matmul(R.float(), t_local.unsqueeze(-1)).squeeze(-1)
     return nn.functional.normalize(t_out, dim=-1, eps=1e-6)
 
 
@@ -145,12 +152,13 @@ class PanoramaRelPoseModel(nn.Module):
         if not self.cfg.use_fine_stage:
             return out_c["Rc"], aux["tc_dir"], aux
 
-        # Optional routed fine stage for later extension / ablation.
+        # Routed fine stage with translation-aware epipolar prior.
         out_f = self.fine(
             TokA_f=TokA_f,
             TokB_f=TokB_f,
             Wc_ab=out_c["Wc_ab"],
             Rc=out_c["Rc"],
+            tc_dir=aux["tc_dir"],
             topk_coarse=self.cfg.topk_coarse,
             use_epipolar_bias=self.cfg.use_epipolar_bias,
             epi_angle_thresh_deg=self.cfg.epi_angle_thresh_deg,

@@ -49,7 +49,9 @@ def build_level_grid_from_patch_bearings(
     Returns grid for grid_sample: [1, N*p, p, 2] normalized.
     Uses width wrap by sampling from concatenated image [B,3,H,3W] and shifting u by +W.
 
-    TODO: For strict ERP wrap + pole handling, consider custom sampling or padding schemes.
+    Width wrap is handled explicitly by sampling from the center copy of a 3W panorama.
+    Vertical boundary values are clamped and sampled with border padding, which avoids
+    spurious zeros near the poles.
     """
     device = patch_bearing.device
     N, p, _, _ = patch_bearing.shape
@@ -86,7 +88,7 @@ def sample_patches_erp(
         img3,
         gridB,
         mode="bilinear",
-        padding_mode="zeros",
+        padding_mode="border",
         align_corners=True,
     )  # [B,3,N*p,p]
     out = out.view(B, C, N, p, p).permute(0, 2, 1, 3, 4).contiguous()  # [B,N,3,p,p]

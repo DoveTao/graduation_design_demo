@@ -158,6 +158,7 @@ def build_routing_mask_from_coarse_topk(
 
 def epipolar_band_bias_or_mask(
     R: torch.Tensor,
+    t_dir: torch.Tensor,
     bearing_a: torch.Tensor,
     bearing_b: torch.Tensor,
     angle_thresh_deg: float,
@@ -165,21 +166,40 @@ def epipolar_band_bias_or_mask(
     mode: str = "bias",
 ) -> Tuple[Optional[torch.Tensor], Optional[torch.Tensor]]:
     """
-    Rotation-only geometric prior used in week-5 style ablations.
-    This is a soft/minimal version, not strict spherical epipolar geometry.
+    Translation-aware spherical epipolar prior.
+
+    For a correspondence (a,b), ideal geometry satisfies:
+        b^T [t]_x R a = 0
+    We convert that into a soft band around the epipolar great circle and use it
+    either as a continuous logit bias or as a hard mask.
     """
     bA_rot = torch.matmul(bearing_a.float(), R.float().transpose(-1, -2))
     bA_rot = F.normalize(bA_rot, dim=-1, eps=1e-6)
     bB = F.normalize(bearing_b.float(), dim=-1, eps=1e-6)
+    t_dir = F.normalize(t_dir.float(), dim=-1, eps=1e-6)
 
-    cos = torch.matmul(bA_rot, bB.transpose(-1, -2)).clamp(-1.0, 1.0)
-    cos_thresh = math.cos(math.radians(float(angle_thresh_deg)))
-    allowed = cos >= cos_thresh
+    t_expand = t_dir[:, None, :].expand_as(bA_rot)
+    plane_n = torch.cross(t_expand, bA_rot, dim=-1)                 # [B,Na,3]
+    plane_norm = plane_n.norm(dim=-1, keepdim=True)                 # [B,Na,1]
+    safe_plane = plane_norm > 1e-6
+    plane_n = plane_n / plane_norm.clamp_min(1e-6)
+
+    # Residual is the sine of angular distance to the epipolar plane.
+    residual = torch.abs(torch.einsum("bnc,bmc->bnm", plane_n, bB)).clamp(0.0, 1.0)
+    residual = torch.where(safe_plane.expand_as(residual), residual, torch.zeros_like(residual))
+
+    band = math.sin(math.radians(float(angle_thresh_deg)))
+    band = max(band, 1e-6)
+    allowed = residual <= band
+    allowed = allowed | (~safe_plane).expand_as(allowed)
 
     if mode == "mask":
         return None, allowed
 
-    bias = -(~allowed).to(cos.dtype) * float(bias_strength)
+    # Continuous negative bias outside the epipolar band.
+    over = (residual - band).clamp_min(0.0) / band
+    bias = -float(bias_strength) * over
+    bias = torch.where(safe_plane.expand_as(bias), bias, torch.zeros_like(bias))
     return bias, None
 
 
@@ -233,6 +253,7 @@ class FineInteraction(nn.Module):
         TokB_f: Tokens,
         Wc_ab: torch.Tensor,
         Rc: torch.Tensor,
+        tc_dir: torch.Tensor,
         *,
         topk_coarse: int,
         use_epipolar_bias: bool,
@@ -253,6 +274,7 @@ class FineInteraction(nn.Module):
         if use_epipolar_bias:
             epi_bias, epi_mask = epipolar_band_bias_or_mask(
                 R=Rc,
+                t_dir=tc_dir,
                 bearing_a=TokA_f.bearing,
                 bearing_b=TokB_f.bearing,
                 angle_thresh_deg=epi_angle_thresh_deg,
@@ -263,7 +285,6 @@ class FineInteraction(nn.Module):
         allowed = routing_mask
         if epi_mask is not None:
             allowed = allowed & epi_mask
-            # if epi mask is too strict, fall back to routing only for those rows
             row_has_valid = allowed.any(dim=-1, keepdim=True)
             allowed = torch.where(row_has_valid, allowed, routing_mask)
 

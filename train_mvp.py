@@ -92,9 +92,9 @@ def eval_model(model, loader, device, cfg: Config):
     variant_desc = {
         "raw": "output frame B, baseline B->A",
         "flip": "output frame B, baseline A->B",
-        "R@t": "compare to R*t_gt (B->A mapped to A-local)",
+        "R@t": "compare to R*t_gt (algebraic diagnostic only)",
         "R@(-t)": "compare to -R*t_gt",
-        "Rt@t": "compare to R^T*t_gt",
+        "Rt@t": "compare to R^T*t_gt (B->A mapped to A-local)",
         "Rt@(-t)": "compare to -R^T*t_gt",
     }
 
@@ -131,7 +131,7 @@ def eval_model(model, loader, device, cfg: Config):
         t_local_frame = aux.get("t_local_frame", None) if isinstance(aux, dict) else None
         if t_local_pred is not None and t_local_frame == "A":
             tp_local = F.normalize(t_local_pred.float(), dim=-1, eps=1e-6)
-            ang_local = torch.acos(torch.sum(tp_local * tg_R, dim=-1).clamp(-1.0, 1.0)) * (180.0 / math.pi)
+            ang_local = torch.acos(torch.sum(tp_local * tg_Rt, dim=-1).clamp(-1.0, 1.0)) * (180.0 / math.pi)
             ang_local_abs = torch.minimum(ang_local, 180.0 - ang_local)
             tdir_local_A_sum += float(ang_local.sum().cpu())
             tdir_local_A_abs_sum += float(ang_local_abs.sum().cpu())
@@ -174,7 +174,7 @@ def eval_model(model, loader, device, cfg: Config):
     if n_local > 0:
         msg_local = (
             f"[TDIR-LOCAL] local_A={tdir_local_A:.2f}° | local_A_abs={tdir_local_A_abs:.2f}° | "
-            f"gt_local_A=R*t_gt | n={n_local}"
+            f"gt_local_A=R^T*t_gt | n={n_local}"
         )
     else:
         msg_local = "[TDIR-LOCAL] unavailable"

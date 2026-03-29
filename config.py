@@ -46,10 +46,10 @@ class Config:
     coarse_temperature: float = 0.10
     fine_temperature: float = 0.07
     logits_clip: float = 20.0
-    topk_coarse: int = 16
+    topk_coarse: int = 32
 
     epi_angle_thresh_deg: float = 30.0
-    epi_bias_strength: float = 8.0
+    epi_bias_strength: float = 2.0
     epi_loss_use_bidir: bool = True
 
     # ---------------- Optimization ----------------
@@ -74,7 +74,7 @@ class Config:
     w_x: float = 0.10
     w_cyc: float = 0.05
     w_rel: float = 0.02
-    w_epi: float = 0.02
+    w_epi: float = 0.005
     pose_t_alpha: float = 1.0
 
     # ---------------- Schedule / logging ----------------
@@ -83,7 +83,7 @@ class Config:
     eval_every: int = 25       # in update steps
     max_eval_batches: int = 100
     ckpt_dir: str = "checkpoints"
-    exp_name: str = "week4_week5_impl_piecewise_joint"
+    exp_name: str = "week5_translation_fix_soft_epi"
 
     # Joint checkpoint selection:
     # only checkpoints passing these thresholds participate in best_joint.
