@@ -153,12 +153,15 @@ class PanoramaRelPoseModel(nn.Module):
             return out_c["Rc"], aux["tc_dir"], aux
 
         # Routed fine stage with translation-aware epipolar prior.
+        # Important: detach coarse geometric guidance before feeding it into the
+        # fine routing prior. This keeps the prior useful at inference time but
+        # prevents unstable self-reinforcement when coarse translation flips.
         out_f = self.fine(
             TokA_f=TokA_f,
             TokB_f=TokB_f,
-            Wc_ab=out_c["Wc_ab"],
-            Rc=out_c["Rc"],
-            tc_dir=aux["tc_dir"],
+            Wc_ab=out_c["Wc_ab"].detach(),
+            Rc=out_c["Rc"].detach(),
+            tc_dir=aux["tc_dir"].detach(),
             topk_coarse=self.cfg.topk_coarse,
             use_epipolar_bias=self.cfg.use_epipolar_bias,
             epi_angle_thresh_deg=self.cfg.epi_angle_thresh_deg,

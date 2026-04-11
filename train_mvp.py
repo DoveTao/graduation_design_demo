@@ -1,8 +1,11 @@
+import json
 import math
 import os
+import random
 import time
 from dataclasses import asdict
 
+import numpy as np
 import torch
 import torch.nn.functional as F
 from torch.optim import AdamW
@@ -10,7 +13,7 @@ from torch.optim.lr_scheduler import LambdaLR
 from torch.utils.data import DataLoader
 
 from config import Config
-from dataset_pano_only import RflyPanoPanoramaPairsMixedK
+from dataset_pano_only import RflyPanoPanoramaPairsEvalFixedKList, RflyPanoPanoramaPairsMixedK
 from losses import epipolar_simplified_loss, pose_loss
 from model import PanoramaRelPoseModel
 from pose_head import matrix_geodesic_distance
@@ -50,6 +53,53 @@ def _scheduler_lambda(warmup_updates: int, hold_updates: int, drop1_updates: int
 
     return fn
 
+
+
+
+def _seed_everything(seed: int, deterministic: bool = False):
+    seed = int(seed)
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+    if deterministic:
+        os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":4096:8")
+        try:
+            torch.use_deterministic_algorithms(True, warn_only=True)
+        except Exception:
+            pass
+
+
+def _make_worker_init_fn(base_seed: int):
+    base_seed = int(base_seed)
+
+    def _worker_init_fn(worker_id: int):
+        s = base_seed + int(worker_id)
+        random.seed(s)
+        np.random.seed(s % (2**32))
+        torch.manual_seed(s)
+
+    return _worker_init_fn
+
+
+def _save_eval_manifest(path: str, ds, cfg):
+    if not hasattr(ds, "manifest"):
+        return
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    payload = {
+        "split_summary": getattr(ds, "split_summary", {}),
+        "eval_pairs": ds.manifest(),
+        "cfg_eval": {
+            "eval_use_fixed_pairs": getattr(cfg, "eval_use_fixed_pairs", False),
+            "eval_k_list": list(getattr(cfg, "eval_k_list", [])),
+            "eval_pair_step": int(getattr(cfg, "eval_pair_step", 1)),
+            "eval_min_dt": float(getattr(cfg, "eval_min_dt", 0.0)),
+            "eval_max_dt": None if getattr(cfg, "eval_max_dt", None) is None else float(getattr(cfg, "eval_max_dt")),
+        },
+    }
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(payload, f, ensure_ascii=False, indent=2)
 
 def _save_ckpt(path, model, optimizer, scaler, scheduler, cfg, step, upd, metrics):
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -186,6 +236,7 @@ def eval_model(model, loader, device, cfg: Config):
 def main():
     cfg = Config()
     os.environ.setdefault("PYTORCH_ALLOC_CONF", "expandable_segments:True")
+    _seed_everything(cfg.data_seed, deterministic=bool(cfg.deterministic))
 
     print("=" * 80)
     print(f"[Env ] torch {torch.__version__}")
@@ -235,21 +286,36 @@ def main():
     )
     train_ds.max_dt = cfg.max_dt
 
-    test_ds = RflyPanoPanoramaPairsMixedK(
-        data_root=cfg.data_root,
-        split="test",
-        split_by=cfg.split_by,
-        train_ratio=cfg.train_ratio,
-        split_seed=cfg.split_seed,
-        seed=cfg.data_seed,
-        H=cfg.H,
-        W=cfg.W,
-        min_dt=cfg.min_dt,
-        k_choices=cfg.k_choices,
-        k_probs=cfg.k_probs,
-        strict_dt=True,
-    )
-    test_ds.max_dt = cfg.max_dt
+    if bool(cfg.eval_use_fixed_pairs):
+        test_ds = RflyPanoPanoramaPairsEvalFixedKList(
+            data_root=cfg.data_root,
+            split="test",
+            split_by=cfg.split_by,
+            train_ratio=cfg.train_ratio,
+            split_seed=cfg.split_seed,
+            H=cfg.H,
+            W=cfg.W,
+            k_list=cfg.eval_k_list,
+            pair_step=cfg.eval_pair_step,
+            min_dt=cfg.eval_min_dt,
+            max_dt=cfg.eval_max_dt,
+        )
+    else:
+        test_ds = RflyPanoPanoramaPairsMixedK(
+            data_root=cfg.data_root,
+            split="test",
+            split_by=cfg.split_by,
+            train_ratio=cfg.train_ratio,
+            split_seed=cfg.split_seed,
+            seed=cfg.data_seed,
+            H=cfg.H,
+            W=cfg.W,
+            min_dt=cfg.min_dt,
+            k_choices=cfg.k_choices,
+            k_probs=cfg.k_probs,
+            strict_dt=True,
+        )
+        test_ds.max_dt = cfg.max_dt
 
     train_keys = set(getattr(train_ds, "sequence_keys", []))
     test_keys = set(getattr(test_ds, "sequence_keys", []))
@@ -260,6 +326,18 @@ def main():
     for tag, ds in [("train", train_ds), ("test", test_ds)]:
         groups = getattr(ds, "sequence_keys", [])
         print(f"[Split] {tag} by {cfg.split_by} | groups={len(groups)} | seqs={len(groups)} | pairs={len(ds)} | preview={groups[:4]}")
+    print(f"[Eval ] protocol={'fixed_pairs' if bool(cfg.eval_use_fixed_pairs) else 'mixed_k_random'} | max_eval_batches={cfg.max_eval_batches}")
+
+    ckpt_root = os.path.join(cfg.ckpt_dir, cfg.exp_name)
+    os.makedirs(ckpt_root, exist_ok=True)
+    if bool(cfg.eval_use_fixed_pairs):
+        _save_eval_manifest(os.path.join(ckpt_root, "eval_pairs_manifest.json"), test_ds, cfg)
+
+    worker_init = _make_worker_init_fn(cfg.data_seed)
+    train_gen = torch.Generator()
+    train_gen.manual_seed(int(cfg.data_seed))
+    test_gen = torch.Generator()
+    test_gen.manual_seed(int(cfg.data_seed) + 1)
 
     train_loader = DataLoader(
         train_ds,
@@ -268,14 +346,18 @@ def main():
         num_workers=cfg.num_workers,
         pin_memory=cfg.pin_memory,
         drop_last=True,
+        worker_init_fn=worker_init,
+        generator=train_gen,
     )
     test_loader = DataLoader(
         test_ds,
         batch_size=cfg.batch_size,
         shuffle=False,
-        num_workers=cfg.num_workers,
+        num_workers=0 if bool(cfg.eval_use_fixed_pairs) else cfg.num_workers,
         pin_memory=cfg.pin_memory,
         drop_last=False,
+        worker_init_fn=worker_init if not bool(cfg.eval_use_fixed_pairs) else None,
+        generator=test_gen,
     )
 
     model = PanoramaRelPoseModel(cfg, dev).to(dev)
@@ -301,9 +383,6 @@ def main():
         amp_dtype = torch.float16
     use_scaler = use_amp and (amp_dtype == torch.float16)
     scaler = torch.amp.GradScaler("cuda", enabled=use_scaler)
-
-    ckpt_root = os.path.join(cfg.ckpt_dir, cfg.exp_name)
-    os.makedirs(ckpt_root, exist_ok=True)
 
     step = 0
     upd = 0

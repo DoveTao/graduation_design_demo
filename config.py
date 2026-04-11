@@ -21,6 +21,13 @@ class Config:
     k_choices: Tuple[int, ...] = (10, 20)
     k_probs: Tuple[float, ...] = (0.84, 0.16)
 
+    # Deterministic evaluation protocol
+    eval_use_fixed_pairs: bool = True
+    eval_k_list: Tuple[int, ...] = (10, 20)
+    eval_pair_step: int = 1
+    eval_min_dt: float = 0.06
+    eval_max_dt: float = 5.0
+
     # ---------------- Model: spherical tokenization / encoder ----------------
     D: int = 256
     Nc: int = 192
@@ -46,10 +53,10 @@ class Config:
     coarse_temperature: float = 0.10
     fine_temperature: float = 0.07
     logits_clip: float = 20.0
-    topk_coarse: int = 32
+    topk_coarse: int = 24
 
     epi_angle_thresh_deg: float = 30.0
-    epi_bias_strength: float = 2.0
+    epi_bias_strength: float = 1.5
     epi_loss_use_bidir: bool = True
 
     # ---------------- Optimization ----------------
@@ -74,14 +81,14 @@ class Config:
     w_x: float = 0.10
     w_cyc: float = 0.05
     w_rel: float = 0.02
-    w_epi: float = 0.005
+    w_epi: float = 0.003
     pose_t_alpha: float = 1.0
 
     # ---------------- Schedule / logging ----------------
     max_steps: int = 1000
     log_every: int = 50
     eval_every: int = 25       # in update steps
-    max_eval_batches: int = 100
+    max_eval_batches: int = 0
     ckpt_dir: str = "checkpoints"
     exp_name: str = "week5_translation_fix_soft_epi"
 
@@ -100,5 +107,5 @@ class Config:
     amp_dtype: str = "auto"   # "auto" | "bf16" | "fp16"
     tf32: bool = True
     matmul_precision: str = "high"
-    deterministic: bool = False
-    benchmark: bool = True
+    deterministic: bool = True
+    benchmark: bool = False
