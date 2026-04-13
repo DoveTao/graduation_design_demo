@@ -164,7 +164,7 @@ def epipolar_band_bias_or_mask(
     angle_thresh_deg: float,
     bias_strength: float,
     mode: str = "bias",
-) -> Tuple[Optional[torch.Tensor], Optional[torch.Tensor]]:
+) -> Tuple[Optional[torch.Tensor], Optional[torch.Tensor], torch.Tensor, torch.Tensor, float]:
     """
     Translation-aware spherical epipolar prior.
 
@@ -172,6 +172,9 @@ def epipolar_band_bias_or_mask(
         b^T [t]_x R a = 0
     We convert that into a soft band around the epipolar great circle and use it
     either as a continuous logit bias or as a hard mask.
+
+    Returns:
+      bias, allowed_mask, residual, normalized_cost, band_sin
     """
     bA_rot = torch.matmul(bearing_a.float(), R.float().transpose(-1, -2))
     bA_rot = F.normalize(bA_rot, dim=-1, eps=1e-6)
@@ -184,7 +187,6 @@ def epipolar_band_bias_or_mask(
     safe_plane = plane_norm > 1e-6
     plane_n = plane_n / plane_norm.clamp_min(1e-6)
 
-    # Residual is the sine of angular distance to the epipolar plane.
     residual = torch.abs(torch.einsum("bnc,bmc->bnm", plane_n, bB)).clamp(0.0, 1.0)
     residual = torch.where(safe_plane.expand_as(residual), residual, torch.zeros_like(residual))
 
@@ -193,14 +195,15 @@ def epipolar_band_bias_or_mask(
     allowed = residual <= band
     allowed = allowed | (~safe_plane).expand_as(allowed)
 
-    if mode == "mask":
-        return None, allowed
-
-    # Continuous negative bias outside the epipolar band.
     over = (residual - band).clamp_min(0.0) / band
+    over = torch.where(safe_plane.expand_as(over), over, torch.zeros_like(over))
+
+    if mode == "mask":
+        return None, allowed, residual, over, float(band)
+
     bias = -float(bias_strength) * over
     bias = torch.where(safe_plane.expand_as(bias), bias, torch.zeros_like(bias))
-    return bias, None
+    return bias, None, residual, over, float(band)
 
 
 class CoarseInteraction(nn.Module):
@@ -270,9 +273,9 @@ class FineInteraction(nn.Module):
             topk=topk_coarse,
         )
 
-        epi_bias, epi_mask = None, None
+        epi_bias, epi_mask, epi_residual, epi_cost, epi_band_sin = None, None, None, None, None
         if use_epipolar_bias:
-            epi_bias, epi_mask = epipolar_band_bias_or_mask(
+            epi_bias, epi_mask, epi_residual, epi_cost, epi_band_sin = epipolar_band_bias_or_mask(
                 R=Rc,
                 t_dir=tc_dir,
                 bearing_a=TokA_f.bearing,
@@ -294,6 +297,11 @@ class FineInteraction(nn.Module):
             temperature=self.temperature,
             logits_clip=self.logits_clip,
         )
+
+        # Before geometry bias: useful for vis/ablation plots.
+        Wf_ab_raw = stable_softmax(sim, dim=-1, mask=routing_mask)
+        Wf_ba_raw = stable_softmax(sim.transpose(-1, -2).contiguous(), dim=-1, mask=routing_mask.transpose(-1, -2).contiguous())
+
         sim_ab = sim.clone()
         if epi_bias is not None:
             sim_ab = sim_ab + epi_bias.float()
@@ -312,15 +320,22 @@ class FineInteraction(nn.Module):
         return {
             "Wf_ab": Wf_ab,
             "Wf_ba": Wf_ba,
+            "Wf_ab_raw": Wf_ab_raw,
+            "Wf_ba_raw": Wf_ba_raw,
             "Ff": Ff,
             "R": R,
             "t_dir": t_dir,
             "routing_mask": routing_mask,
             "allowed_mask": allowed,
             "epi_bias": epi_bias if epi_bias is not None else torch.zeros_like(sim_ab),
+            "epi_residual": epi_residual if epi_residual is not None else torch.zeros_like(sim_ab),
+            "epi_cost": epi_cost if epi_cost is not None else torch.zeros_like(sim_ab),
+            "epi_band_sin": torch.tensor(float(epi_band_sin if epi_band_sin is not None else 0.0), device=sim_ab.device),
             "cA_f": self.rel_head(TokA_f.feat.float()),
             "cB_f": self.rel_head(TokB_f.feat.float()),
             "logits_f": sim,
+            "logits_f_biased": sim_ab,
+            "allowed_mask_ba": allowed_ba,
         }
 
 
