@@ -206,7 +206,7 @@ def _save_vis_payload_npz(path: str, payload: Dict[str, Any]) -> None:
     flat = {}
     for k, v in payload.items():
         if isinstance(v, dict):
-            flat[k] = np.array(json.dumps(v, ensure_ascii=False), dtype=object)
+            flat[k] = np.array(json.dumps(v, ensure_ascii=False, default=_json_default), dtype=object)
         elif v is None:
             flat[k] = np.array([], dtype=np.float32)
         elif isinstance(v, str):
