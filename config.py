@@ -19,7 +19,7 @@ class Config:
     min_dt: float = 0.06
     max_dt: float = 5.0
     k_choices: Tuple[int, ...] = (10, 20)
-    k_probs: Tuple[float, ...] = (0.84, 0.16)
+    k_probs: Tuple[int, ...] = (0.84, 0.16)
 
     # Deterministic evaluation protocol
     eval_use_fixed_pairs: bool = True
@@ -59,6 +59,23 @@ class Config:
     epi_bias_strength: float = 2.0
     epi_loss_use_bidir: bool = True
 
+    # ---------------- Auxiliary depth branch ----------------
+    use_depth_branch: bool = True
+    depth_feat_dim: int = 32
+    depth_pred_scales: Tuple[int, ...] = (16, 32)
+    depth_fuse_scale: int = 16
+    depth_loss_scale: int = 16
+    depth_inv_min: float = 0.0125      # 1 / 80 m
+    depth_inv_max: float = 10.0        # 1 / 0.1 m
+    depth_min: float = 0.10
+    depth_max: float = 80.0
+    depth_fuse_to_translation_only: bool = True
+    depth_use_detached_pose: bool = True
+    depth_warmup_updates: int = 100
+    depth_photo_ramp_updates: int = 100
+    depth_fuse_start_updates: int = 150
+    depth_use_automask: bool = True
+
     # ---------------- Optimization ----------------
     batch_size: int = 1
     grad_accum: int = 4
@@ -83,14 +100,16 @@ class Config:
     w_rel: float = 0.02
     w_epi: float = 0.005
     pose_t_alpha: float = 1.0
+    w_photo: float = 0.05
+    w_smooth: float = 0.002
 
     # ---------------- Schedule / logging ----------------
-    max_steps: int = 1000
+    max_steps: int = 2000
     log_every: int = 50
-    eval_every: int = 25       # in update steps
+    eval_every: int = 50       # in update steps
     max_eval_batches: int = 0
     ckpt_dir: str = "checkpoints"
-    exp_name: str = "week5_translation_fix_soft_epi"
+    exp_name: str = "week5_depth_branch_tuned"
 
     # Export helpers for PPT figures / tables
     save_eval_history: bool = True
@@ -104,7 +123,7 @@ class Config:
     # Joint checkpoint selection:
     # only checkpoints passing these thresholds participate in best_joint.
     joint_rot_thresh_deg: float = 6.0
-    joint_tdir_thresh_deg: float = 40.0
+    joint_tdir_thresh_deg: float = 60.0
     joint_rot_weight: float = 2.0
 
     # ---------------- Dataloader ----------------

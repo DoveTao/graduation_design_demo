@@ -24,9 +24,6 @@ def _gt_translation_in_pred_frame(
     if pred_t_frame == "B":
         return t_gt
     if pred_t_frame == "A":
-        # t_gt is stored in frame B as the B->A baseline. If the head predicts
-        # the same baseline direction in frame A, the correct supervision target
-        # is R^T t_gt.
         return _normalize(torch.matmul(R_gt.transpose(-1, -2), t_gt.unsqueeze(-1)).squeeze(-1))
     raise ValueError(f"Unsupported pred_t_frame={pred_t_frame!r}, expected 'A' or 'B'.")
 
@@ -40,17 +37,6 @@ def pose_loss(
     pose_t_alpha: float = 1.0,
     pred_t_frame: str = "B",
 ) -> torch.Tensor:
-    """
-    Pose loss with explicit translation-frame handling.
-
-    Dataset convention:
-      - R_gt is R_{B<-A} (rotation A -> B)
-      - t_gt is t_{BA} expressed in frame B (baseline B -> A, origin(A) in B)
-
-    The translation head is anchored in frame A because the fused tokens are
-    A-centric. We keep the dataset baseline direction (B->A) unchanged and only
-    change its coordinate frame, so the A-frame supervision target is R^T t_gt.
-    """
     R_pred = R_pred.float()
     R_gt = R_gt.float()
 
@@ -75,55 +61,111 @@ def epipolar_simplified_loss(
     angle_thresh_deg: float = 30.0,
     use_bidir: bool = True,
 ) -> torch.Tensor:
-    """
-    Weighted epipolar loss with *effective gradients* through the soft matching map.
-
-    Instead of a constant rotation-only regularizer, this loss computes the expected
-    epipolar violation under the predicted correspondence distribution W_ab (and
-    optionally W_ba). This makes the loss depend directly on the matching logits.
-
-    Inputs:
-      - W_ab: [B, Na, Nb], row-stochastic soft correspondences A -> B
-      - W_ba: optional [B, Nb, Na], soft correspondences B -> A
-      - bearing_a / bearing_b: unit rays
-      - R_gt, t_gt: ground-truth relative pose in the dataset convention
-    """
     W_ab = W_ab.float()
     bearing_a = _normalize(bearing_a)
     bearing_b = _normalize(bearing_b)
     R_gt = R_gt.float()
     t_gt = _normalize(t_gt)
 
-    # Rotate A-rays into B-frame: b_a^B = R_{B<-A} b_a^A
-    bA_in_B = torch.matmul(bearing_a, R_gt.transpose(-1, -2))  # [B, Na, 3]
-
-    # Unit epipolar plane normal for each A-ray: n = normalize(t x (R a))
+    bA_in_B = torch.matmul(bearing_a, R_gt.transpose(-1, -2))
     t_expand = t_gt[:, None, :].expand_as(bA_in_B)
     plane_n = torch.cross(t_expand, bA_in_B, dim=-1)
     plane_n = _normalize(plane_n)
-
-    # Residual = sine of angle from b_B to the epipolar plane, in [0,1]
     residual = torch.abs(torch.einsum("bnc,bmc->bnm", plane_n, bearing_b)).clamp(0.0, 1.0)
 
-    # Optional soft band: no penalty inside threshold, linear penalty outside.
     band = math.sin(math.radians(float(angle_thresh_deg)))
     if band > 0:
         cost = (residual - band).clamp_min(0.0) / max(band, 1e-6)
     else:
         cost = residual
 
-    def _weighted_expectation(W: torch.Tensor, C: torch.Tensor, mask: Optional[torch.Tensor]) -> torch.Tensor:
-        if mask is not None:
-            mask = mask.to(torch.bool)
-            W = W * mask.to(W.dtype)
-            W = W / W.sum(dim=-1, keepdim=True).clamp_min(1e-9)
-        return (W * C).sum(dim=-1).mean()
+    if allowed_mask is not None:
+        allowed = allowed_mask.to(cost.dtype)
+        row_sum = allowed.sum(dim=-1, keepdim=True).clamp_min(1.0)
+        loss_ab = (W_ab * cost * allowed).sum() / row_sum.sum().clamp_min(1.0)
+    else:
+        loss_ab = (W_ab * cost).sum(dim=-1).mean()
 
-    loss_ab = _weighted_expectation(W_ab, cost, allowed_mask)
-
-    if W_ba is None or not bool(use_bidir):
+    if (not use_bidir) or (W_ba is None):
         return loss_ab
 
-    mask_ba = None if allowed_mask is None else allowed_mask.transpose(-1, -2).contiguous()
-    loss_ba = _weighted_expectation(W_ba.float(), cost.transpose(-1, -2).contiguous(), mask_ba)
+    cost_ba = cost.transpose(-1, -2).contiguous()
+    if allowed_mask is not None:
+        mask_ba = allowed_mask.transpose(-1, -2).contiguous().to(cost_ba.dtype)
+        row_sum = mask_ba.sum(dim=-1, keepdim=True).clamp_min(1.0)
+        loss_ba = (W_ba.float() * cost_ba * mask_ba).sum() / row_sum.sum().clamp_min(1.0)
+    else:
+        loss_ba = (W_ba.float() * cost_ba).sum(dim=-1).mean()
     return 0.5 * (loss_ab + loss_ba)
+
+
+def _avg_pool3(x: torch.Tensor) -> torch.Tensor:
+    return F.avg_pool2d(x, kernel_size=3, stride=1, padding=1)
+
+
+def ssim_map(x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+    C1 = 0.01 ** 2
+    C2 = 0.03 ** 2
+    mu_x = _avg_pool3(x)
+    mu_y = _avg_pool3(y)
+    sigma_x = _avg_pool3(x * x) - mu_x * mu_x
+    sigma_y = _avg_pool3(y * y) - mu_y * mu_y
+    sigma_xy = _avg_pool3(x * y) - mu_x * mu_y
+    num = (2.0 * mu_x * mu_y + C1) * (2.0 * sigma_xy + C2)
+    den = (mu_x * mu_x + mu_y * mu_y + C1) * (sigma_x + sigma_y + C2)
+    ssim = num / den.clamp_min(1e-6)
+    return ssim.clamp(0.0, 1.0)
+
+
+def erp_photometric_loss(
+    I_ref: torch.Tensor,
+    I_warp: torch.Tensor,
+    valid_mask: torch.Tensor,
+    *,
+    I_tgt_identity: Optional[torch.Tensor] = None,
+    alpha: float = 0.85,
+    use_automask: bool = True,
+) -> torch.Tensor:
+    I_ref = I_ref.float()
+    I_warp = I_warp.float()
+    valid = valid_mask.float()
+
+    l1 = torch.abs(I_ref - I_warp).mean(dim=1, keepdim=True)
+    ssim = ssim_map(I_ref, I_warp)
+    ssim_term = (1.0 - ssim).mean(dim=1, keepdim=True) * 0.5
+    photometric = alpha * ssim_term + (1.0 - alpha) * l1
+
+    if use_automask and I_tgt_identity is not None:
+        with torch.no_grad():
+            l1_id = torch.abs(I_ref - I_tgt_identity.float()).mean(dim=1, keepdim=True)
+            ssim_id = ssim_map(I_ref, I_tgt_identity.float())
+            ssim_term_id = (1.0 - ssim_id).mean(dim=1, keepdim=True) * 0.5
+            identity = alpha * ssim_term_id + (1.0 - alpha) * l1_id
+            auto = (photometric < identity).to(photometric.dtype)
+        valid = valid * auto
+
+    denom = valid.sum().clamp_min(1.0)
+    return (photometric * valid).sum() / denom
+
+
+def _gradient_x(img: torch.Tensor) -> torch.Tensor:
+    return img[..., :, 1:] - img[..., :, :-1]
+
+
+def _gradient_y(img: torch.Tensor) -> torch.Tensor:
+    return img[..., 1:, :] - img[..., :-1, :]
+
+
+def depth_smoothness_loss(inv_depth: torch.Tensor, image: torch.Tensor) -> torch.Tensor:
+    inv_depth = inv_depth.float()
+    image = image.float()
+    # normalize depth scale to reduce sensitivity to global inverse-depth magnitude
+    mean_inv = inv_depth.mean(dim=(-2, -1), keepdim=True).clamp_min(1e-6)
+    inv_depth = inv_depth / mean_inv
+    dx = _gradient_x(inv_depth)
+    dy = _gradient_y(inv_depth)
+    img_dx = _gradient_x(image).abs().mean(dim=1, keepdim=True)
+    img_dy = _gradient_y(image).abs().mean(dim=1, keepdim=True)
+    loss_x = (dx.abs() * torch.exp(-img_dx)).mean()
+    loss_y = (dy.abs() * torch.exp(-img_dy)).mean()
+    return loss_x + loss_y

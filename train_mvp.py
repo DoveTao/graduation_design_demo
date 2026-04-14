@@ -18,8 +18,9 @@ from torch.utils.data import DataLoader
 
 from config import Config
 from dataset_pano_only import RflyPanoPanoramaPairsEvalFixedKList, RflyPanoPanoramaPairsMixedK
-from losses import epipolar_simplified_loss, pose_loss
+from losses import depth_smoothness_loss, epipolar_simplified_loss, erp_photometric_loss, pose_loss
 from model import PanoramaRelPoseModel
+from erp_sampling import warp_erp_with_depth_pose
 from pose_head import matrix_geodesic_distance
 
 
@@ -173,6 +174,27 @@ def _crop_mat(mat: Optional[np.ndarray], max_side: int) -> Optional[np.ndarray]:
     return mat[:h, :w]
 
 
+
+def _downsample_to_like(img: torch.Tensor, ref: torch.Tensor) -> torch.Tensor:
+    if img.shape[-2:] == ref.shape[-2:]:
+        return img
+    return F.interpolate(img, size=ref.shape[-2:], mode="bilinear", align_corners=False)
+
+
+def _depth_weight_ramp(upd: int, cfg: Config) -> float:
+    start = int(getattr(cfg, "depth_warmup_updates", 0))
+    ramp = max(int(getattr(cfg, "depth_photo_ramp_updates", 1)), 1)
+    if upd < start:
+        return 0.0
+    return float(min(1.0, (upd - start + 1) / float(ramp)))
+
+
+
+def _downsample_to_like(img: torch.Tensor, ref: torch.Tensor) -> torch.Tensor:
+    if img.shape[-2:] == ref.shape[-2:]:
+        return img
+    return F.interpolate(img, size=ref.shape[-2:], mode='bilinear', align_corners=False)
+
 def _extract_vis_payload(batch: Dict[str, Any], aux: Dict[str, Any], cfg: Config) -> Dict[str, Any]:
     meta = _meta_first(batch.get("meta", {}))
     payload: Dict[str, Any] = {
@@ -191,6 +213,7 @@ def _extract_vis_payload(batch: Dict[str, Any], aux: Dict[str, Any], cfg: Config
         "logits_f": _to_numpy(_first_item(aux.get("logits_f"))),
         "logits_f_biased": _to_numpy(_first_item(aux.get("logits_f_biased"))),
         "stage": aux.get("stage", "-"),
+        "inv_depth_s16": _to_numpy(_first_item(aux.get("inv_depth_s16"))),
     }
     payload["Wf_ab_raw_crop"] = _crop_mat(payload["Wf_ab_raw"], cfg.vis_plot_max_side)
     payload["Wf_ab_crop"] = _crop_mat(payload["Wf_ab"], cfg.vis_plot_max_side)
@@ -342,7 +365,7 @@ def eval_model(model, loader, device, cfg: Config, *, collect_vis: bool = False,
         R_gt = batch["R_gt"].to(device, non_blocking=True)
         t_gt = batch["t_gt_dir"].to(device, non_blocking=True)
 
-        R_pred, t_pred, aux = model(IA, IB)
+        R_pred, t_pred, aux = model(IA, IB, enable_depth_fusion=True)
 
         if collect_vis and vis_payload is None and bi == int(vis_index):
             vis_payload = _extract_vis_payload(batch, aux, cfg)
@@ -448,7 +471,7 @@ def main():
     torch.backends.cudnn.deterministic = bool(cfg.deterministic)
     torch.backends.cudnn.benchmark = bool(cfg.benchmark)
 
-    print(f"[Cfg ] model_variant: coarse_interaction={cfg.use_coarse_interaction} | fine_stage={cfg.use_fine_stage} | epi_bias={cfg.use_epipolar_bias} | epi_loss={cfg.use_epipolar_loss}")
+    print(f"[Cfg ] model_variant: coarse_interaction={cfg.use_coarse_interaction} | fine_stage={cfg.use_fine_stage} | epi_bias={cfg.use_epipolar_bias} | epi_loss={cfg.use_epipolar_loss} | depth={cfg.use_depth_branch}")
     print(f"[Cfg ] HxW={cfg.H}x{cfg.W} | D={cfg.D} | Nc={cfg.Nc} | Nf={cfg.Nf} | p={cfg.p}")
     print(f"[Cfg ] temp(coarse/fine)={cfg.coarse_temperature}/{cfg.fine_temperature} | logits_clip={cfg.logits_clip} | topk_coarse={cfg.topk_coarse}")
     print(
@@ -608,7 +631,8 @@ def main():
         t_data = time.perf_counter()
 
         with torch.autocast(device_type=dev.type, dtype=amp_dtype, enabled=use_amp):
-            R_pred, t_pred, aux = model(IA, IB)
+            depth_fusion_active = bool(cfg.use_depth_branch) and (upd >= int(getattr(cfg, "depth_fuse_start_updates", 0)))
+            R_pred, t_pred, aux = model(IA, IB, enable_depth_fusion=depth_fusion_active)
 
             t_pose_pred = aux.get("t_dir_local", t_pred)
             t_pose_frame = aux.get("t_local_frame", "B") if aux.get("t_dir_local", None) is not None else "B"
@@ -646,6 +670,7 @@ def main():
             else:
                 L_rel = torch.zeros((), device=dev)
 
+
             if cfg.use_epipolar_loss and W_ab is not None and bearingA is not None and bearingB is not None and cfg.w_epi > 0:
                 L_epi = epipolar_simplified_loss(
                     W_ab=W_ab,
@@ -661,12 +686,48 @@ def main():
             else:
                 L_epi = torch.zeros((), device=dev)
 
+            depth_key = f"inv_depth_s{int(cfg.depth_loss_scale)}"
+            depth_ramp = _depth_weight_ramp(upd, cfg)
+            if bool(cfg.use_depth_branch) and (depth_ramp > 0.0) and depth_key in aux and cfg.w_photo > 0:
+                inv_depth = aux[depth_key]
+                IA_small = _downsample_to_like(IA, inv_depth)
+                IB_small = _downsample_to_like(IB, inv_depth)
+                R_warp = R_pred.detach() if bool(cfg.depth_use_detached_pose) else R_pred
+                t_warp = aux.get("t_dir", t_pred)
+                t_warp = t_warp.detach() if bool(cfg.depth_use_detached_pose) else t_warp
+                Iwarp, valid = warp_erp_with_depth_pose(
+                    inv_depth,
+                    R_warp,
+                    t_warp,
+                    IB_small,
+                    translation_scale=1.0,
+                    min_depth=cfg.depth_min,
+                    max_depth=cfg.depth_max,
+                )
+                L_photo = erp_photometric_loss(
+                    IA_small,
+                    Iwarp,
+                    valid,
+                    I_tgt_identity=IB_small if bool(getattr(cfg, "depth_use_automask", True)) else None,
+                    use_automask=bool(getattr(cfg, "depth_use_automask", True)),
+                )
+                L_smooth = depth_smoothness_loss(inv_depth, IA_small) if cfg.w_smooth > 0 else torch.zeros((), device=dev)
+                aux["Iwarp_s"] = Iwarp.detach()
+                aux["warp_valid_s"] = valid.detach()
+            else:
+                L_photo = torch.zeros((), device=dev)
+                L_smooth = torch.zeros((), device=dev)
+
+            photo_w = float(cfg.w_photo) * depth_ramp
+            smooth_w = float(cfg.w_smooth) * depth_ramp
             L = (
                 cfg.w_pose * L_pose
                 + cfg.w_x * L_x
                 + cfg.w_cyc * L_cyc
                 + cfg.w_rel * L_rel
                 + cfg.w_epi * L_epi
+                + photo_w * L_photo
+                + smooth_w * L_smooth
             )
             L_scaled = L / float(cfg.grad_accum)
 
@@ -674,7 +735,7 @@ def main():
 
         forward_ok = all(
             bool(torch.isfinite(x).all())
-            for x in [R_pred, t_pred, L_pose, L_x, L_cyc, L_rel, L_epi, L]
+            for x in [R_pred, t_pred, L_pose, L_x, L_cyc, L_rel, L_epi, L_photo, L_smooth, L]
         )
         if not forward_ok:
             bad_forward += 1
@@ -823,6 +884,7 @@ def main():
                 f"L={float(L.detach().cpu()):.3f} | pose={float(L_pose.detach().cpu()):.3f} | "
                 f"x={float(L_x.detach().cpu()):.4f} | cyc={float(L_cyc.detach().cpu()):.4f} | "
                 f"rel={float(L_rel.detach().cpu()):.4f} | epi={float(L_epi.detach().cpu()):.4f} | "
+                f"photo={float(L_photo.detach().cpu()):.4f} | smooth={float(L_smooth.detach().cpu()):.4f} | depth_ramp={depth_ramp:.2f} | "
                 f"lr={lr_now:.6e}"
             )
             print(
@@ -835,7 +897,7 @@ def main():
             )
 
             if step == 0:
-                for k in ["Wc_ab", "Wf_ab", "bearingA_c", "bearingA_f", "routing_mask", "allowed_mask", "Wf_ab_raw", "epi_residual"]:
+                for k in ["Wc_ab", "Wf_ab", "bearingA_c", "bearingA_f", "routing_mask", "allowed_mask", "Wf_ab_raw", "epi_residual", "inv_depth_s16"]:
                     if isinstance(aux, dict) and k in aux and aux[k] is not None:
                         print(f"[DBG] {k}: {tuple(aux[k].shape)}")
                 print(f"[Shapes] IA {tuple(IA.shape)} | R {tuple(R_gt.shape)} | t {tuple(t_gt.shape)} | stage={aux.get('stage', '-')} | t_local={aux.get('t_local_frame', '-')} -> t_out={aux.get('t_output_frame', '-')}")

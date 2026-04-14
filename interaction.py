@@ -94,8 +94,26 @@ class CoarsePoseHead(nn.Module):
         return R, t_dir
 
 
+
 class FinePoseHead(CoarsePoseHead):
     pass
+
+
+class TranslationOnlyHead(nn.Module):
+    def __init__(self, D: int):
+        super().__init__()
+        self.mlp = nn.Sequential(
+            nn.LayerNorm(D),
+            nn.Linear(D, D),
+            nn.GELU(),
+            nn.Linear(D, D),
+            nn.GELU(),
+        )
+        self.t = nn.Linear(D, 3)
+
+    def forward(self, feat: torch.Tensor) -> torch.Tensor:
+        z = self.mlp(feat.mean(dim=1))
+        return normalize_vec(self.t(z))
 
 
 def cosine_logits(
@@ -242,13 +260,22 @@ class CoarseInteraction(nn.Module):
 
 
 class FineInteraction(nn.Module):
-    def __init__(self, D: int, *, temperature: float, logits_clip: float):
+    def __init__(self, D: int, *, temperature: float, logits_clip: float, use_depth_fusion: bool = False):
         super().__init__()
         self.temperature = float(temperature)
         self.logits_clip = float(logits_clip)
         self.fuse = FuseMLP(D)
         self.pose_head = FinePoseHead(D)
         self.rel_head = TokenReliabilityHead(D)
+        self.use_depth_fusion = bool(use_depth_fusion)
+        if self.use_depth_fusion:
+            self.depth_fuse = nn.Sequential(
+                nn.LayerNorm(2 * D),
+                nn.Linear(2 * D, D),
+                nn.GELU(),
+                nn.Linear(D, D),
+            )
+            self.t_head = TranslationOnlyHead(D)
 
     def forward(
         self,
@@ -258,6 +285,7 @@ class FineInteraction(nn.Module):
         Rc: torch.Tensor,
         tc_dir: torch.Tensor,
         *,
+        depth_tok_a: Optional[torch.Tensor] = None,
         topk_coarse: int,
         use_epipolar_bias: bool,
         epi_angle_thresh_deg: float,
@@ -313,9 +341,16 @@ class FineInteraction(nn.Module):
             sim_ba = sim_ba + epi_bias.transpose(-1, -2).contiguous().float()
         Wf_ba = stable_softmax(sim_ba, dim=-1, mask=allowed_ba)
 
+
         feat_b_att = torch.matmul(Wf_ab, TokB_f.feat.float())
         Ff = self.fuse(TokA_f.feat.float(), feat_b_att)
-        R, t_dir = self.pose_head(Ff)
+        R, t_dir_base = self.pose_head(Ff)
+        if self.use_depth_fusion and depth_tok_a is not None:
+            Ff_t = self.depth_fuse(torch.cat([Ff, depth_tok_a.float()], dim=-1))
+            t_dir = self.t_head(Ff_t)
+        else:
+            Ff_t = Ff
+            t_dir = t_dir_base
 
         return {
             "Wf_ab": Wf_ab,
@@ -323,6 +358,7 @@ class FineInteraction(nn.Module):
             "Wf_ab_raw": Wf_ab_raw,
             "Wf_ba_raw": Wf_ba_raw,
             "Ff": Ff,
+            "Ff_t": Ff_t,
             "R": R,
             "t_dir": t_dir,
             "routing_mask": routing_mask,

@@ -1,12 +1,17 @@
 from __future__ import annotations
 
-from typing import Dict, Tuple
+from typing import Dict, Optional, Tuple
 
 import torch
 import torch.nn as nn
 
 from config import Config
-from erp_sampling import build_level_grid_from_patch_bearings, sample_patches_erp
+from depth_branch import LightERPDepthNet
+from erp_sampling import (
+    build_level_grid_from_patch_bearings,
+    sample_dense_features_from_bearings,
+    sample_patches_erp,
+)
 from healpix_utils import HealpixHierarchy
 from interaction import (
     CoarseInteraction,
@@ -19,11 +24,6 @@ from transformer_encoder import BearingPosEnc, PatchEmbed, TokenEncoder
 
 
 class Module2Sampler(nn.Module):
-    """
-    Week-4 style spherical feature extraction / encoding:
-      ERP -> sphere-aware patch sampling -> token embed -> positional encoding -> transformer encoder.
-    """
-
     def __init__(self, cfg: Config, device: torch.device):
         super().__init__()
         self.cfg = cfg
@@ -82,20 +82,6 @@ class Module2Sampler(nn.Module):
 
 
 def _local_t_to_output_frame(R: torch.Tensor, t_local: torch.Tensor) -> torch.Tensor:
-    """
-    Heads regress translation in frame A (feature-anchor frame), using the same
-    baseline direction as the dataset target (B->A).
-
-    Dataset convention:
-      - R = R_{B<-A}
-      - t_gt is the B->A baseline expressed in frame B
-
-    Therefore the same baseline expressed in frame A is:
-      t_local_A = R^T t_gt
-
-    Mapping that local A-frame direction back to the output B-frame uses R:
-      t_out_B = R t_local_A
-    """
     t_local = nn.functional.normalize(t_local.float(), dim=-1, eps=1e-6)
     t_out = torch.matmul(R.float(), t_local.unsqueeze(-1)).squeeze(-1)
     return nn.functional.normalize(t_out, dim=-1, eps=1e-6)
@@ -116,14 +102,37 @@ class PanoramaRelPoseModel(nn.Module):
             cfg.D,
             temperature=cfg.fine_temperature,
             logits_clip=cfg.logits_clip,
+            use_depth_fusion=bool(cfg.use_depth_branch and cfg.depth_fuse_to_translation_only),
         )
 
-    def forward(self, IA: torch.Tensor, IB: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor, Dict[str, torch.Tensor]]:
+        self.depth = None
+        self.depth_token_proj = None
+        if bool(cfg.use_depth_branch):
+            self.depth = LightERPDepthNet(
+                in_ch=cfg.in_ch,
+                feat_dim=cfg.depth_feat_dim,
+                inv_depth_min=cfg.depth_inv_min,
+                inv_depth_max=cfg.depth_inv_max,
+            )
+            self.depth_token_proj = nn.Linear(cfg.depth_feat_dim, cfg.D)
+
+    def forward(
+        self,
+        IA: torch.Tensor,
+        IB: torch.Tensor,
+        *,
+        enable_depth_fusion: Optional[bool] = None,
+    ) -> Tuple[torch.Tensor, torch.Tensor, Dict[str, torch.Tensor]]:
         tokens = self.module2(IA, IB)
         TokA_c = tokens["TokA_c"]
         TokB_c = tokens["TokB_c"]
         TokA_f = tokens["TokA_f"]
         TokB_f = tokens["TokB_f"]
+
+        inv_depths: Dict[str, torch.Tensor] = {}
+        depth_feats: Dict[str, torch.Tensor] = {}
+        if self.depth is not None:
+            inv_depths, depth_feats = self.depth(IA)
 
         aux: Dict[str, torch.Tensor] = {
             "bearingA_c": TokA_c.bearing,
@@ -133,8 +142,12 @@ class PanoramaRelPoseModel(nn.Module):
             "t_local_frame": self.cfg.translation_local_frame,
             "t_output_frame": self.cfg.translation_output_frame,
         }
+        if inv_depths:
+            for k, v in inv_depths.items():
+                aux[f"inv_depth_{k}"] = v
+            for k, v in depth_feats.items():
+                aux[f"depth_feat_{k}"] = v
 
-        # Ablation: encoder only + regression, no cross-image interaction.
         if not self.cfg.use_coarse_interaction:
             R, t_local = self.direct_head(TokA_c.feat, TokB_c.feat)
             t_dir = _local_t_to_output_frame(R, t_local)
@@ -142,7 +155,6 @@ class PanoramaRelPoseModel(nn.Module):
             aux["stage"] = "encoder_only"
             return R, t_dir, aux
 
-        # Week-5 core chain: encoding -> coarse interaction -> coarse pose
         out_c = self.coarse(TokA_c, TokB_c)
         aux.update(out_c)
         aux["tc_dir_local"] = out_c["tc_dir"]
@@ -152,16 +164,24 @@ class PanoramaRelPoseModel(nn.Module):
         if not self.cfg.use_fine_stage:
             return out_c["Rc"], aux["tc_dir"], aux
 
-        # Routed fine stage with translation-aware epipolar prior.
-        # Important: detach coarse geometric guidance before feeding it into the
-        # fine routing prior. This keeps the prior useful at inference time but
-        # prevents unstable self-reinforcement when coarse translation flips.
+        if enable_depth_fusion is None:
+            enable_depth_fusion = bool(self.cfg.use_depth_branch and self.cfg.depth_fuse_to_translation_only)
+
+        depth_tok_a = None
+        if enable_depth_fusion and self.depth is not None and self.depth_token_proj is not None:
+            scale_key = f"s{int(self.cfg.depth_fuse_scale)}"
+            if scale_key in depth_feats:
+                depth_tok_a = sample_dense_features_from_bearings(depth_feats[scale_key], TokA_f.bearing)
+                depth_tok_a = self.depth_token_proj(depth_tok_a.float())
+                aux["depth_tok_a"] = depth_tok_a
+
         out_f = self.fine(
             TokA_f=TokA_f,
             TokB_f=TokB_f,
             Wc_ab=out_c["Wc_ab"].detach(),
             Rc=out_c["Rc"].detach(),
             tc_dir=aux["tc_dir"].detach(),
+            depth_tok_a=depth_tok_a,
             topk_coarse=self.cfg.topk_coarse,
             use_epipolar_bias=self.cfg.use_epipolar_bias,
             epi_angle_thresh_deg=self.cfg.epi_angle_thresh_deg,
