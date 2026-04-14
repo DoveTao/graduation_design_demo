@@ -104,7 +104,7 @@ class Config:
     w_smooth: float = 0.002
 
     # ---------------- Schedule / logging ----------------
-    max_steps: int = 2000
+    max_steps: int = 5000
     log_every: int = 50
     eval_every: int = 50       # in update steps
     max_eval_batches: int = 0

@@ -190,10 +190,191 @@ def _depth_weight_ramp(upd: int, cfg: Config) -> float:
 
 
 
-def _downsample_to_like(img: torch.Tensor, ref: torch.Tensor) -> torch.Tensor:
-    if img.shape[-2:] == ref.shape[-2:]:
-        return img
-    return F.interpolate(img, size=ref.shape[-2:], mode='bilinear', align_corners=False)
+
+def _to_hwc_img01(x: Optional[np.ndarray]) -> Optional[np.ndarray]:
+    if x is None:
+        return None
+    x = np.asarray(x)
+    if x.ndim == 3 and x.shape[0] in (1, 3):
+        x = np.transpose(x, (1, 2, 0))
+    if x.ndim == 2:
+        x = x[..., None]
+    if x.ndim != 3:
+        return None
+    if x.shape[-1] == 1:
+        x = np.repeat(x, 3, axis=-1)
+    x = np.nan_to_num(x.astype(np.float32), nan=0.0, posinf=0.0, neginf=0.0)
+    return np.clip(x, 0.0, 1.0)
+
+
+def _robust_vis_map(x: Optional[np.ndarray], mask: Optional[np.ndarray] = None, q_low: float = 5.0, q_high: float = 95.0) -> Optional[np.ndarray]:
+    if x is None:
+        return None
+    x = np.asarray(x).astype(np.float32)
+    if x.ndim == 3 and x.shape[0] == 1:
+        x = x[0]
+    if x.ndim == 3 and x.shape[-1] == 1:
+        x = x[..., 0]
+    if x.ndim != 2:
+        return None
+    valid = np.isfinite(x)
+    if mask is not None:
+        m = np.asarray(mask)
+        if m.ndim == 3 and m.shape[0] == 1:
+            m = m[0]
+        if m.ndim == 3 and m.shape[-1] == 1:
+            m = m[..., 0]
+        if m.shape == x.shape:
+            valid = valid & (m > 0.5)
+    vals = x[valid]
+    if vals.size == 0:
+        return np.zeros_like(x, dtype=np.float32)
+    lo = float(np.percentile(vals, q_low))
+    hi = float(np.percentile(vals, q_high))
+    if not np.isfinite(lo):
+        lo = float(vals.min())
+    if not np.isfinite(hi):
+        hi = float(vals.max())
+    if hi <= lo:
+        hi = lo + 1e-6
+    y = (x - lo) / (hi - lo)
+    y = np.clip(y, 0.0, 1.0)
+    y[~np.isfinite(y)] = 0.0
+    return y.astype(np.float32)
+
+
+def _payload_diag(payload: Dict[str, Any]) -> Dict[str, Any]:
+    diag: Dict[str, Any] = {}
+    inv_depth = payload.get("inv_depth_s16")
+    valid = payload.get("warp_valid_s")
+    photo_err = payload.get("photo_err_s")
+    Wf = payload.get("Wf_ab")
+    Wf_raw = payload.get("Wf_ab_raw")
+    routing = payload.get("routing_mask")
+    allowed = payload.get("allowed_mask")
+    epi_residual = payload.get("epi_residual")
+
+    if inv_depth is not None:
+        d = np.asarray(inv_depth, dtype=np.float32)
+        vals = d[np.isfinite(d)]
+        if vals.size > 0:
+            diag["inv_depth_min"] = float(vals.min())
+            diag["inv_depth_p05"] = float(np.percentile(vals, 5))
+            diag["inv_depth_p50"] = float(np.percentile(vals, 50))
+            diag["inv_depth_p95"] = float(np.percentile(vals, 95))
+            diag["inv_depth_max"] = float(vals.max())
+
+    if valid is not None:
+        v = np.asarray(valid, dtype=np.float32)
+        diag["warp_valid_ratio"] = float(v.mean())
+
+    if photo_err is not None:
+        e = np.asarray(photo_err, dtype=np.float32)
+        if valid is not None:
+            vm = np.asarray(valid, dtype=np.float32) > 0.5
+            vals = e[vm]
+        else:
+            vals = e[np.isfinite(e)]
+        if vals.size > 0:
+            diag["photo_err_mean_valid"] = float(vals.mean())
+            diag["photo_err_p90_valid"] = float(np.percentile(vals, 90))
+
+    if routing is not None:
+        diag["routing_keep_ratio"] = float(np.asarray(routing, dtype=np.float32).mean())
+    if allowed is not None:
+        diag["allowed_ratio"] = float(np.asarray(allowed, dtype=np.float32).mean())
+
+    if Wf is not None:
+        W = np.asarray(Wf, dtype=np.float32)
+        W = np.clip(W, 1e-9, 1.0)
+        ent = -(W * np.log(W)).sum(axis=-1)
+        diag["softcorr_row_entropy_mean"] = float(ent.mean())
+        diag["softcorr_row_entropy_std"] = float(ent.std())
+    if Wf is not None and epi_residual is not None:
+        W = np.asarray(Wf, dtype=np.float32)
+        R = np.asarray(epi_residual, dtype=np.float32)
+        denom = float(np.clip(W.sum(), 1e-9, None))
+        diag["epi_residual_weighted_mean"] = float((W * R).sum() / denom)
+    if Wf is not None and Wf_raw is not None:
+        W = np.asarray(Wf, dtype=np.float32)
+        Wr = np.asarray(Wf_raw, dtype=np.float32)
+        diag["guided_minus_raw_l1"] = float(np.mean(np.abs(W - Wr)))
+    return diag
+
+
+def _plot_depth_overview(payload: Dict[str, Any], path: str) -> None:
+    IA_s = _to_hwc_img01(payload.get("IA_s"))
+    IB_s = _to_hwc_img01(payload.get("IB_s"))
+    Iwarp_s = _to_hwc_img01(payload.get("Iwarp_s"))
+    valid = payload.get("warp_valid_s")
+    inv_depth = payload.get("inv_depth_s16")
+    photo_err = payload.get("photo_err_s")
+    if IA_s is None or inv_depth is None:
+        return
+
+    valid2 = None
+    if valid is not None:
+        v = np.asarray(valid)
+        if v.ndim == 3 and v.shape[0] == 1:
+            v = v[0]
+        if v.ndim == 3 and v.shape[-1] == 1:
+            v = v[..., 0]
+        valid2 = v.astype(np.float32)
+
+    depth_vis = _robust_vis_map(inv_depth, None)
+    err_vis = _robust_vis_map(photo_err, valid2 if valid2 is not None else None, q_low=0.0, q_high=95.0)
+
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    fig, axes = plt.subplots(2, 3, figsize=(12, 7.5), constrained_layout=True)
+    axs = axes.ravel()
+
+    axs[0].imshow(IA_s)
+    axs[0].set_title("Reference IA_s")
+    axs[0].axis("off")
+
+    if Iwarp_s is not None:
+        axs[1].imshow(Iwarp_s)
+        axs[1].set_title("Warped from IB")
+    else:
+        axs[1].text(0.5, 0.5, "Iwarp unavailable", ha="center", va="center")
+    axs[1].axis("off")
+
+    if err_vis is not None:
+        im2 = axs[2].imshow(err_vis, cmap="magma", vmin=0.0, vmax=1.0)
+        axs[2].set_title("Photometric error")
+        plt.colorbar(im2, ax=axs[2], fraction=0.046)
+    else:
+        axs[2].text(0.5, 0.5, "photo_err unavailable", ha="center", va="center")
+    axs[2].axis("off")
+
+    if depth_vis is not None:
+        im3 = axs[3].imshow(depth_vis, cmap="inferno", vmin=0.0, vmax=1.0)
+        axs[3].set_title("Inverse depth s16")
+        plt.colorbar(im3, ax=axs[3], fraction=0.046)
+    else:
+        axs[3].text(0.5, 0.5, "inv_depth unavailable", ha="center", va="center")
+    axs[3].axis("off")
+
+    if valid2 is not None:
+        im4 = axs[4].imshow(valid2, cmap="gray", vmin=0.0, vmax=1.0)
+        axs[4].set_title("Warp valid mask")
+        plt.colorbar(im4, ax=axs[4], fraction=0.046)
+    elif IB_s is not None:
+        axs[4].imshow(IB_s)
+        axs[4].set_title("Target IB_s")
+    else:
+        axs[4].text(0.5, 0.5, "valid/IB unavailable", ha="center", va="center")
+    axs[4].axis("off")
+
+    diag = payload.get("diag", {})
+    diag_lines = [f"{k}: {v:.4f}" if isinstance(v, (int, float, np.floating)) else f"{k}: {v}" for k, v in diag.items()]
+    axs[5].axis("off")
+    axs[5].text(0.01, 0.99, "\n".join(diag_lines[:14]) if diag_lines else "No diagnostics", va="top", ha="left", fontsize=9, family="monospace")
+
+    meta = payload.get("meta", {})
+    fig.suptitle(f"Depth visualization | {meta}", fontsize=12)
+    fig.savefig(path, dpi=180)
+    plt.close(fig)
 
 def _extract_vis_payload(batch: Dict[str, Any], aux: Dict[str, Any], cfg: Config) -> Dict[str, Any]:
     meta = _meta_first(batch.get("meta", {}))
@@ -201,6 +382,11 @@ def _extract_vis_payload(batch: Dict[str, Any], aux: Dict[str, Any], cfg: Config
         "meta": meta,
         "IA": _to_numpy(_first_item(batch.get("IA"))),
         "IB": _to_numpy(_first_item(batch.get("IB"))),
+        "IA_s": _to_numpy(_first_item(aux.get("IA_s"))),
+        "IB_s": _to_numpy(_first_item(aux.get("IB_s"))),
+        "Iwarp_s": _to_numpy(_first_item(aux.get("Iwarp_s"))),
+        "warp_valid_s": _to_numpy(_first_item(aux.get("warp_valid_s"))),
+        "photo_err_s": _to_numpy(_first_item(aux.get("photo_err_s"))),
         "R_gt": _to_numpy(_first_item(batch.get("R_gt"))),
         "t_gt_dir": _to_numpy(_first_item(batch.get("t_gt_dir"))),
         "Wf_ab_raw": _to_numpy(_first_item(aux.get("Wf_ab_raw"))),
@@ -221,8 +407,8 @@ def _extract_vis_payload(batch: Dict[str, Any], aux: Dict[str, Any], cfg: Config
     payload["allowed_mask_crop"] = _crop_mat(payload["allowed_mask"], cfg.vis_plot_max_side)
     payload["epi_bias_crop"] = _crop_mat(payload["epi_bias"], cfg.vis_plot_max_side)
     payload["epi_residual_crop"] = _crop_mat(payload["epi_residual"], cfg.vis_plot_max_side)
+    payload["diag"] = _payload_diag(payload)
     return payload
-
 
 def _save_vis_payload_npz(path: str, payload: Dict[str, Any]) -> None:
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -368,6 +554,27 @@ def eval_model(model, loader, device, cfg: Config, *, collect_vis: bool = False,
         R_pred, t_pred, aux = model(IA, IB, enable_depth_fusion=True)
 
         if collect_vis and vis_payload is None and bi == int(vis_index):
+            depth_key = f"inv_depth_s{int(cfg.depth_loss_scale)}"
+            if depth_key in aux and aux.get(depth_key) is not None:
+                inv_depth = aux[depth_key]
+                IA_small = _downsample_to_like(IA, inv_depth)
+                IB_small = _downsample_to_like(IB, inv_depth)
+                t_warp = aux.get("t_dir", t_pred)
+                Iwarp, valid = warp_erp_with_depth_pose(
+                    inv_depth,
+                    R_pred,
+                    t_warp,
+                    IB_small,
+                    translation_scale=1.0,
+                    min_depth=cfg.depth_min,
+                    max_depth=cfg.depth_max,
+                )
+                photo_err = (IA_small - Iwarp).abs().mean(dim=1, keepdim=True)
+                aux["IA_s"] = IA_small.detach()
+                aux["IB_s"] = IB_small.detach()
+                aux["Iwarp_s"] = Iwarp.detach()
+                aux["warp_valid_s"] = valid.detach()
+                aux["photo_err_s"] = (photo_err * valid.float()).detach()
             vis_payload = _extract_vis_payload(batch, aux, cfg)
 
         rot_rad = matrix_geodesic_distance(R_pred.float(), R_gt.float())
@@ -712,8 +919,12 @@ def main():
                     use_automask=bool(getattr(cfg, "depth_use_automask", True)),
                 )
                 L_smooth = depth_smoothness_loss(inv_depth, IA_small) if cfg.w_smooth > 0 else torch.zeros((), device=dev)
+                photo_err = (IA_small - Iwarp).abs().mean(dim=1, keepdim=True)
+                aux["IA_s"] = IA_small.detach()
+                aux["IB_s"] = IB_small.detach()
                 aux["Iwarp_s"] = Iwarp.detach()
                 aux["warp_valid_s"] = valid.detach()
+                aux["photo_err_s"] = (photo_err * valid.float()).detach()
             else:
                 L_photo = torch.zeros((), device=dev)
                 L_smooth = torch.zeros((), device=dev)
@@ -866,8 +1077,12 @@ def main():
                             tag = f"upd{upd:05d}"
                             _save_vis_payload_npz(os.path.join(vis_root, f"vis_example_{tag}.npz"), vis_payload)
                             _save_vis_payload_npz(os.path.join(vis_root, "vis_example_latest.npz"), vis_payload)
+                            _save_json(os.path.join(vis_root, f"vis_diag_{tag}.json"), vis_payload.get("diag", {}))
+                            _save_json(os.path.join(vis_root, "vis_diag_latest.json"), vis_payload.get("diag", {}))
                             _plot_softcorr_overview(vis_payload, os.path.join(vis_root, f"vis_softcorr_{tag}.png"))
                             _plot_softcorr_overview(vis_payload, os.path.join(vis_root, "vis_softcorr_latest.png"))
+                            _plot_depth_overview(vis_payload, os.path.join(vis_root, f"vis_depth_{tag}.png"))
+                            _plot_depth_overview(vis_payload, os.path.join(vis_root, "vis_depth_latest.png"))
                             vis_dumped = True
 
         t_opt = time.perf_counter()
@@ -897,7 +1112,7 @@ def main():
             )
 
             if step == 0:
-                for k in ["Wc_ab", "Wf_ab", "bearingA_c", "bearingA_f", "routing_mask", "allowed_mask", "Wf_ab_raw", "epi_residual", "inv_depth_s16"]:
+                for k in ["Wc_ab", "Wf_ab", "bearingA_c", "bearingA_f", "routing_mask", "allowed_mask", "Wf_ab_raw", "epi_residual", "inv_depth_s16", "Iwarp_s", "warp_valid_s", "photo_err_s"]:
                     if isinstance(aux, dict) and k in aux and aux[k] is not None:
                         print(f"[DBG] {k}: {tuple(aux[k].shape)}")
                 print(f"[Shapes] IA {tuple(IA.shape)} | R {tuple(R_gt.shape)} | t {tuple(t_gt.shape)} | stage={aux.get('stage', '-')} | t_local={aux.get('t_local_frame', '-')} -> t_out={aux.get('t_output_frame', '-')}")
