@@ -100,19 +100,39 @@ class FinePoseHead(CoarsePoseHead):
 
 
 class TranslationOnlyHead(nn.Module):
+    """A slightly stronger translation head than plain mean-pooling.
+
+    It pools token features with confidence-weighted mean + max + std statistics,
+    which makes the translation branch more sensitive to a few highly informative
+    fine correspondences.
+    """
+
     def __init__(self, D: int):
         super().__init__()
-        self.mlp = nn.Sequential(
-            nn.LayerNorm(D),
-            nn.Linear(D, D),
+        self.net = nn.Sequential(
+            nn.LayerNorm(3 * D),
+            nn.Linear(3 * D, 2 * D),
             nn.GELU(),
-            nn.Linear(D, D),
+            nn.Linear(2 * D, D),
             nn.GELU(),
         )
         self.t = nn.Linear(D, 3)
 
-    def forward(self, feat: torch.Tensor) -> torch.Tensor:
-        z = self.mlp(feat.mean(dim=1))
+    def forward(self, feat: torch.Tensor, token_weight: Optional[torch.Tensor] = None) -> torch.Tensor:
+        feat = feat.float()
+        if token_weight is None:
+            z_mean = feat.mean(dim=1)
+            z_var = feat.var(dim=1, unbiased=False)
+        else:
+            w = token_weight.float().clamp_min(1e-6)
+            w = w / w.sum(dim=1, keepdim=True).clamp_min(1e-6)
+            z_mean = torch.sum(feat * w.unsqueeze(-1), dim=1)
+            diff2 = (feat - z_mean.unsqueeze(1)).pow(2)
+            z_var = torch.sum(diff2 * w.unsqueeze(-1), dim=1)
+        z_std = torch.sqrt(z_var.clamp_min(1e-8))
+        z_max = feat.max(dim=1).values
+        z = torch.cat([z_mean, z_max, z_std], dim=-1)
+        z = self.net(z)
         return normalize_vec(self.t(z))
 
 
@@ -275,7 +295,14 @@ class FineInteraction(nn.Module):
                 nn.GELU(),
                 nn.Linear(D, D),
             )
-            self.t_head = TranslationOnlyHead(D)
+            self.depth_gate = nn.Sequential(
+                nn.LayerNorm(2 * D),
+                nn.Linear(2 * D, D),
+                nn.GELU(),
+                nn.Linear(D, D),
+                nn.Sigmoid(),
+            )
+        self.t_head = TranslationOnlyHead(D)
 
     def forward(
         self,
@@ -344,13 +371,23 @@ class FineInteraction(nn.Module):
 
         feat_b_att = torch.matmul(Wf_ab, TokB_f.feat.float())
         Ff = self.fuse(TokA_f.feat.float(), feat_b_att)
-        R, t_dir_base = self.pose_head(Ff)
+        R, _ = self.pose_head(Ff)
+
         if self.use_depth_fusion and depth_tok_a is not None:
-            Ff_t = self.depth_fuse(torch.cat([Ff, depth_tok_a.float()], dim=-1))
-            t_dir = self.t_head(Ff_t)
+            fuse_in = torch.cat([Ff, depth_tok_a.float()], dim=-1)
+            depth_delta = self.depth_fuse(fuse_in)
+            depth_gate = self.depth_gate(fuse_in)
+            Ff_t = Ff + depth_gate * depth_delta
         else:
             Ff_t = Ff
-            t_dir = t_dir_base
+
+        match_conf = Wf_ab.max(dim=-1).values
+        if epi_cost is not None:
+            geom_conf = torch.exp(-epi_cost.detach().min(dim=-1).values)
+            token_weight = match_conf * geom_conf
+        else:
+            token_weight = match_conf
+        t_dir = self.t_head(Ff_t, token_weight=token_weight)
 
         return {
             "Wf_ab": Wf_ab,
@@ -372,6 +409,7 @@ class FineInteraction(nn.Module):
             "logits_f": sim,
             "logits_f_biased": sim_ab,
             "allowed_mask_ba": allowed_ba,
+            "token_weight_f": token_weight,
         }
 
 

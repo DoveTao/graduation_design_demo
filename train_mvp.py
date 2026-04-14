@@ -121,6 +121,129 @@ def _save_eval_manifest(path: str, ds, cfg):
     _save_json(path, payload)
 
 
+def _meta_batch_field(meta: Any, key: str, bsz: int, default=None):
+    if not isinstance(meta, dict) or key not in meta:
+        return [default] * int(bsz)
+    v = meta[key]
+    if torch.is_tensor(v):
+        if v.ndim == 0:
+            return [v.detach().cpu().item()] * int(bsz)
+        arr = v.detach().cpu().view(-1).tolist()
+        if len(arr) == int(bsz):
+            return arr
+        if len(arr) == 1:
+            return arr * int(bsz)
+        return (arr + [default] * int(bsz))[: int(bsz)]
+    if isinstance(v, np.ndarray):
+        arr = v.reshape(-1).tolist()
+        if len(arr) == int(bsz):
+            return arr
+        if len(arr) == 1:
+            return arr * int(bsz)
+        return (arr + [default] * int(bsz))[: int(bsz)]
+    if isinstance(v, (list, tuple)):
+        arr = list(v)
+        if len(arr) == int(bsz):
+            return arr
+        if len(arr) == 1:
+            return arr * int(bsz)
+        return (arr + [default] * int(bsz))[: int(bsz)]
+    return [v] * int(bsz)
+
+
+def _dt_bucket_label(dt_world: Optional[float], edges) -> str:
+    if dt_world is None:
+        return 'dt=unknown'
+    try:
+        x = float(dt_world)
+    except Exception:
+        return 'dt=unknown'
+    prev = None
+    for edge in edges:
+        edge = float(edge)
+        if x < edge:
+            if prev is None:
+                return f'dt<{edge:g}'
+            return f'{prev:g}<=dt<{edge:g}'
+        prev = edge
+    return f'dt>={float(edges[-1]):g}' if len(edges) > 0 else 'dt=all'
+
+
+def _bucket_init() -> Dict[str, Dict[str, float]]:
+    return {}
+
+
+def _bucket_update(store: Dict[str, Dict[str, float]], label: str, rot: float, tdir: float, tdir_abs: float, tdir_local_A: float, tdir_local_A_abs: float):
+    rec = store.setdefault(label, {
+        'count': 0,
+        'rot_sum': 0.0,
+        'tdir_sum': 0.0,
+        'tdir_abs_sum': 0.0,
+        'tdir_local_A_sum': 0.0,
+        'tdir_local_A_abs_sum': 0.0,
+    })
+    rec['count'] += 1
+    rec['rot_sum'] += float(rot)
+    rec['tdir_sum'] += float(tdir)
+    rec['tdir_abs_sum'] += float(tdir_abs)
+    if np.isfinite(tdir_local_A):
+        rec['tdir_local_A_sum'] += float(tdir_local_A)
+    if np.isfinite(tdir_local_A_abs):
+        rec['tdir_local_A_abs_sum'] += float(tdir_local_A_abs)
+
+
+def _bucket_finalize(store: Dict[str, Dict[str, float]]) -> Dict[str, Dict[str, float]]:
+    out = {}
+    for k, v in store.items():
+        n = max(int(v['count']), 1)
+        out[k] = {
+            'count': int(v['count']),
+            'rot': float(v['rot_sum'] / n),
+            'tdir': float(v['tdir_sum'] / n),
+            'tdir_abs': float(v['tdir_abs_sum'] / n),
+            'tdir_local_A': float(v['tdir_local_A_sum'] / n),
+            'tdir_local_A_abs': float(v['tdir_local_A_abs_sum'] / n),
+        }
+    return out
+
+
+def _bucket_sort_key(label: str):
+    if label.startswith('k='):
+        try:
+            return (0, float(label.split('=')[1]))
+        except Exception:
+            return (0, 1e9)
+    if label.startswith('dt<'):
+        try:
+            return (1, float(label.split('<')[1]))
+        except Exception:
+            return (1, 1e9)
+    if '<=dt<' in label:
+        try:
+            lo = float(label.split('<=dt<')[0])
+            return (1, lo)
+        except Exception:
+            return (1, 1e9)
+    if label.startswith('dt>='):
+        try:
+            return (1, float(label.split('>=')[1]))
+        except Exception:
+            return (1, 1e9)
+    return (9, label)
+
+
+def _format_bucket_summary(prefix: str, bucket: Dict[str, Dict[str, float]]) -> str:
+    if not bucket:
+        return f'[{prefix}] none'
+    parts = []
+    for label in sorted(bucket.keys(), key=_bucket_sort_key):
+        rec = bucket[label]
+        parts.append(
+            f"{label}:n={rec['count']} rot={rec['rot']:.2f} tdir_abs={rec['tdir_abs']:.2f} local_abs={rec['tdir_local_A_abs']:.2f}"
+        )
+    return f'[{prefix}] ' + ' | '.join(parts)
+
+
 def _save_ckpt(path, model, optimizer, scaler, scheduler, cfg, step, upd, metrics):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     torch.save(
@@ -524,32 +647,38 @@ def eval_model(model, loader, device, cfg: Config, *, collect_vis: bool = False,
     n_local = 0
     vis_payload = None
 
+    bucket_k = _bucket_init()
+    bucket_dt = _bucket_init()
+    bucket_k_dt = _bucket_init()
+    dt_edges = tuple(float(x) for x in getattr(cfg, 'eval_dt_bucket_edges', (0.2, 0.5, 1.0, 2.0)))
+
     acc = {
-        "raw": 0.0,
-        "flip": 0.0,
-        "R@t": 0.0,
-        "R@(-t)": 0.0,
-        "Rt@t": 0.0,
-        "Rt@(-t)": 0.0,
-        "cnt": 0,
+        'raw': 0.0,
+        'flip': 0.0,
+        'R@t': 0.0,
+        'R@(-t)': 0.0,
+        'Rt@t': 0.0,
+        'Rt@(-t)': 0.0,
+        'cnt': 0,
     }
     variant_desc = {
-        "raw": "output frame B, baseline B->A",
-        "flip": "output frame B, baseline A->B",
-        "R@t": "compare to R*t_gt (algebraic diagnostic only)",
-        "R@(-t)": "compare to -R*t_gt",
-        "Rt@t": "compare to R^T*t_gt (B->A mapped to A-local)",
-        "Rt@(-t)": "compare to -R^T*t_gt",
+        'raw': 'output frame B, baseline B->A',
+        'flip': 'output frame B, baseline A->B',
+        'R@t': 'compare to R*t_gt (algebraic diagnostic only)',
+        'R@(-t)': 'compare to -R*t_gt',
+        'Rt@t': 'compare to R^T*t_gt (B->A mapped to A-local)',
+        'Rt@(-t)': 'compare to -R^T*t_gt',
     }
 
     for bi, batch in enumerate(loader):
         if cfg.max_eval_batches and bi >= cfg.max_eval_batches:
             break
 
-        IA = batch["IA"].to(device, non_blocking=True)
-        IB = batch["IB"].to(device, non_blocking=True)
-        R_gt = batch["R_gt"].to(device, non_blocking=True)
-        t_gt = batch["t_gt_dir"].to(device, non_blocking=True)
+        IA = batch['IA'].to(device, non_blocking=True)
+        IB = batch['IB'].to(device, non_blocking=True)
+        R_gt = batch['R_gt'].to(device, non_blocking=True)
+        t_gt = batch['t_gt_dir'].to(device, non_blocking=True)
+        meta = batch.get('meta', {})
 
         R_pred, t_pred, aux = model(IA, IB, enable_depth_fusion=True)
 
@@ -559,7 +688,7 @@ def eval_model(model, loader, device, cfg: Config, *, collect_vis: bool = False,
                 inv_depth = aux[depth_key]
                 IA_small = _downsample_to_like(IA, inv_depth)
                 IB_small = _downsample_to_like(IB, inv_depth)
-                t_warp = aux.get("t_dir", t_pred)
+                t_warp = aux.get('t_dir', t_pred)
                 Iwarp, valid = warp_erp_with_depth_pose(
                     inv_depth,
                     R_pred,
@@ -570,11 +699,11 @@ def eval_model(model, loader, device, cfg: Config, *, collect_vis: bool = False,
                     max_depth=cfg.depth_max,
                 )
                 photo_err = (IA_small - Iwarp).abs().mean(dim=1, keepdim=True)
-                aux["IA_s"] = IA_small.detach()
-                aux["IB_s"] = IB_small.detach()
-                aux["Iwarp_s"] = Iwarp.detach()
-                aux["warp_valid_s"] = valid.detach()
-                aux["photo_err_s"] = (photo_err * valid.float()).detach()
+                aux['IA_s'] = IA_small.detach()
+                aux['IB_s'] = IB_small.detach()
+                aux['Iwarp_s'] = Iwarp.detach()
+                aux['warp_valid_s'] = valid.detach()
+                aux['photo_err_s'] = (photo_err * valid.float()).detach()
             vis_payload = _extract_vis_payload(batch, aux, cfg)
 
         rot_rad = matrix_geodesic_distance(R_pred.float(), R_gt.float())
@@ -592,43 +721,61 @@ def eval_model(model, loader, device, cfg: Config, *, collect_vis: bool = False,
         tdir_abs_sum += float(ang_abs.sum().cpu())
         n += bsz
 
+        rot_np = rot_deg.detach().cpu().view(-1).numpy()
+        tdir_np = ang.detach().cpu().view(-1).numpy()
+        tdir_abs_np = ang_abs.detach().cpu().view(-1).numpy()
+
         tg_R = F.normalize(torch.matmul(R_gt.float(), tg.unsqueeze(-1)).squeeze(-1), dim=-1, eps=1e-6)
         tg_Rt = F.normalize(torch.matmul(R_gt.float().transpose(-1, -2), tg.unsqueeze(-1)).squeeze(-1), dim=-1, eps=1e-6)
 
-        t_local_pred = aux.get("t_dir_local", None) if isinstance(aux, dict) else None
-        t_local_frame = aux.get("t_local_frame", None) if isinstance(aux, dict) else None
-        if t_local_pred is not None and t_local_frame == "A":
+        t_local_pred = aux.get('t_dir_local', None) if isinstance(aux, dict) else None
+        t_local_frame = aux.get('t_local_frame', None) if isinstance(aux, dict) else None
+        if t_local_pred is not None and t_local_frame == 'A':
             tp_local = F.normalize(t_local_pred.float(), dim=-1, eps=1e-6)
             ang_local = torch.acos(torch.sum(tp_local * tg_Rt, dim=-1).clamp(-1.0, 1.0)) * (180.0 / math.pi)
             ang_local_abs = torch.minimum(ang_local, 180.0 - ang_local)
             tdir_local_A_sum += float(ang_local.sum().cpu())
             tdir_local_A_abs_sum += float(ang_local_abs.sum().cpu())
             n_local += bsz
+            tdir_local_np = ang_local.detach().cpu().view(-1).numpy()
+            tdir_local_abs_np = ang_local_abs.detach().cpu().view(-1).numpy()
+        else:
+            tdir_local_np = np.full((bsz,), np.nan, dtype=np.float32)
+            tdir_local_abs_np = np.full((bsz,), np.nan, dtype=np.float32)
+
+        meta_k = _meta_batch_field(meta, 'k', bsz, default=None)
+        meta_dt = _meta_batch_field(meta, 'dt_world', bsz, default=None)
+        for i in range(bsz):
+            k_label = f"k={int(meta_k[i])}" if meta_k[i] is not None else 'k=unknown'
+            dt_label = _dt_bucket_label(meta_dt[i], dt_edges)
+            _bucket_update(bucket_k, k_label, rot_np[i], tdir_np[i], tdir_abs_np[i], tdir_local_np[i], tdir_local_abs_np[i])
+            _bucket_update(bucket_dt, dt_label, rot_np[i], tdir_np[i], tdir_abs_np[i], tdir_local_np[i], tdir_local_abs_np[i])
+            _bucket_update(bucket_k_dt, f"{k_label}|{dt_label}", rot_np[i], tdir_np[i], tdir_abs_np[i], tdir_local_np[i], tdir_local_abs_np[i])
 
         def ang_deg(a, b):
             c = torch.sum(a * b, dim=-1).clamp(-1.0, 1.0)
             return torch.acos(c) * (180.0 / math.pi)
 
-        acc["raw"] += float(ang_deg(tp, tg).sum().cpu())
-        acc["flip"] += float(ang_deg(tp, -tg).sum().cpu())
-        acc["R@t"] += float(ang_deg(tp, tg_R).sum().cpu())
-        acc["R@(-t)"] += float(ang_deg(tp, -tg_R).sum().cpu())
-        acc["Rt@t"] += float(ang_deg(tp, tg_Rt).sum().cpu())
-        acc["Rt@(-t)"] += float(ang_deg(tp, -tg_Rt).sum().cpu())
-        acc["cnt"] += bsz
+        acc['raw'] += float(ang_deg(tp, tg).sum().cpu())
+        acc['flip'] += float(ang_deg(tp, -tg).sum().cpu())
+        acc['R@t'] += float(ang_deg(tp, tg_R).sum().cpu())
+        acc['R@(-t)'] += float(ang_deg(tp, -tg_R).sum().cpu())
+        acc['Rt@t'] += float(ang_deg(tp, tg_Rt).sum().cpu())
+        acc['Rt@(-t)'] += float(ang_deg(tp, -tg_Rt).sum().cpu())
+        acc['cnt'] += bsz
 
     rot = rot_sum / max(n, 1)
     tdir = tdir_sum / max(n, 1)
     tdir_abs = tdir_abs_sum / max(n, 1)
-    tdir_local_A = tdir_local_A_sum / max(n_local, 1) if n_local > 0 else float("nan")
-    tdir_local_A_abs = tdir_local_A_abs_sum / max(n_local, 1) if n_local > 0 else float("nan")
+    tdir_local_A = tdir_local_A_sum / max(n_local, 1) if n_local > 0 else float('nan')
+    tdir_local_A_abs = tdir_local_A_abs_sum / max(n_local, 1) if n_local > 0 else float('nan')
 
-    if acc["cnt"] > 0:
-        denom = float(acc["cnt"])
-        mean_map = {k: acc[k] / denom for k in ["raw", "flip", "R@t", "R@(-t)", "Rt@t", "Rt@(-t)"]}
+    if acc['cnt'] > 0:
+        denom = float(acc['cnt'])
+        mean_map = {k: acc[k] / denom for k in ['raw', 'flip', 'R@t', 'R@(-t)', 'Rt@t', 'Rt@(-t)']}
         ranked = sorted(mean_map.items(), key=lambda kv: kv[1])
         best_key, best_val = ranked[0]
-        gap2 = ranked[1][1] - ranked[0][1] if len(ranked) > 1 else float("nan")
+        gap2 = ranked[1][1] - ranked[0][1] if len(ranked) > 1 else float('nan')
         msg = (
             f"[TDIR-CHK] best={best_key} ({variant_desc[best_key]})={best_val:.2f}° | gap2={gap2:.2f}° | "
             f"raw={mean_map['raw']:.2f} flip={mean_map['flip']:.2f} "
@@ -637,7 +784,7 @@ def eval_model(model, loader, device, cfg: Config, *, collect_vis: bool = False,
         )
     else:
         mean_map = {}
-        msg = "[TDIR-CHK] n=0"
+        msg = '[TDIR-CHK] n=0'
 
     if n_local > 0:
         msg_local = (
@@ -645,10 +792,21 @@ def eval_model(model, loader, device, cfg: Config, *, collect_vis: bool = False,
             f"gt_local_A=R^T*t_gt | n={n_local}"
         )
     else:
-        msg_local = "[TDIR-LOCAL] unavailable"
+        msg_local = '[TDIR-LOCAL] unavailable'
+
+    bucket_k_fin = _bucket_finalize(bucket_k)
+    bucket_dt_fin = _bucket_finalize(bucket_dt)
+    bucket_k_dt_fin = _bucket_finalize(bucket_k_dt)
+    bucket_msgs = [
+        _format_bucket_summary('Eval-BKT-k', bucket_k_fin),
+        _format_bucket_summary('Eval-BKT-dt', bucket_dt_fin),
+    ]
 
     model.train()
-    return rot, tdir, tdir_abs, tdir_local_A, tdir_local_A_abs, mean_map, msg, msg_local, vis_payload
+    return (
+        rot, tdir, tdir_abs, tdir_local_A, tdir_local_A_abs, mean_map, msg, msg_local, vis_payload,
+        bucket_k_fin, bucket_dt_fin, bucket_k_dt_fin, bucket_msgs,
+    )
 
 
 def main():
@@ -1003,7 +1161,7 @@ def main():
                     if cfg.eval_every and upd % cfg.eval_every == 0:
                         t_eval0 = time.perf_counter()
                         want_vis = bool(cfg.save_vis_examples) and (bool(cfg.vis_dump_every_eval) or not vis_dumped)
-                        rot, tdir, tdir_abs, tdir_local_A, tdir_local_A_abs, tdiag, tdir_msg, tdir_local_msg, vis_payload = eval_model(
+                        rot, tdir, tdir_abs, tdir_local_A, tdir_local_A_abs, tdiag, tdir_msg, tdir_local_msg, vis_payload, bucket_k, bucket_dt, bucket_k_dt, bucket_msgs = eval_model(
                             model,
                             test_loader,
                             dev,
@@ -1023,6 +1181,9 @@ def main():
                             "tdir_local_A_abs": tdir_local_A_abs,
                             "joint_score": joint_score,
                             "joint_eligible": int(joint_eligible),
+                            "bucket_k": bucket_k,
+                            "bucket_dt": bucket_dt,
+                            "bucket_k_dt": bucket_k_dt,
                             **{f"tdir_diag_{k}": v for k, v in tdiag.items()},
                         }
 
@@ -1034,6 +1195,8 @@ def main():
                         )
                         print(tdir_msg)
                         print(tdir_local_msg)
+                        for _bucket_msg in bucket_msgs:
+                            print(_bucket_msg)
 
                         _save_ckpt(os.path.join(ckpt_root, "last_eval.pt"), model, optimizer, scaler, scheduler, cfg, step, upd, metrics)
                         if rot < best_rot:
@@ -1066,12 +1229,25 @@ def main():
                             "tdir_local_A_abs": float(tdir_local_A_abs),
                             "joint_score": float(joint_score),
                             "joint_eligible": int(joint_eligible),
+                            "bucket_k": bucket_k,
+                            "bucket_dt": bucket_dt,
+                            "bucket_k_dt": bucket_k_dt,
                             "bad_forward": int(bad_forward),
                             "skip_updates": int(skip_updates),
                         }
                         eval_history.append(eval_rec)
                         if bool(cfg.save_eval_history):
                             _save_json(os.path.join(ckpt_root, "eval_history.json"), {"history": eval_history})
+                        if bool(getattr(cfg, 'save_eval_bucket_history', True)):
+                            bucket_payload = {
+                                'step': int(step),
+                                'upd': int(upd),
+                                'bucket_k': bucket_k,
+                                'bucket_dt': bucket_dt,
+                                'bucket_k_dt': bucket_k_dt,
+                            }
+                            _save_json(os.path.join(ckpt_root, f"eval_buckets_upd{upd:05d}.json"), bucket_payload)
+                            _save_json(os.path.join(ckpt_root, 'eval_buckets_latest.json'), bucket_payload)
 
                         if want_vis and vis_payload is not None:
                             tag = f"upd{upd:05d}"

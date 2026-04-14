@@ -27,6 +27,8 @@ class Config:
     eval_pair_step: int = 1
     eval_min_dt: float = 0.06
     eval_max_dt: float = 5.0
+    eval_dt_bucket_edges: Tuple[float, ...] = (0.2, 0.5, 1.0, 2.0)
+    save_eval_bucket_history: bool = True
 
     # ---------------- Model: spherical tokenization / encoder ----------------
     D: int = 256
@@ -104,12 +106,12 @@ class Config:
     w_smooth: float = 0.002
 
     # ---------------- Schedule / logging ----------------
-    max_steps: int = 5000
+    max_steps: int = 1000
     log_every: int = 50
-    eval_every: int = 50       # in update steps
+    eval_every: int = 25       # in update steps
     max_eval_batches: int = 0
     ckpt_dir: str = "checkpoints"
-    exp_name: str = "week5_depth_branch_tuned"
+    exp_name: str = "week5_depth_branch_tuned_bucket_thead"
 
     # Export helpers for PPT figures / tables
     save_eval_history: bool = True
@@ -123,7 +125,7 @@ class Config:
     # Joint checkpoint selection:
     # only checkpoints passing these thresholds participate in best_joint.
     joint_rot_thresh_deg: float = 6.0
-    joint_tdir_thresh_deg: float = 60.0
+    joint_tdir_thresh_deg: float = 40.0
     joint_rot_weight: float = 2.0
 
     # ---------------- Dataloader ----------------
