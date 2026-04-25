@@ -169,6 +169,21 @@ def _dt_bucket_label(dt_world: Optional[float], edges) -> str:
     return f'dt>={float(edges[-1]):g}' if len(edges) > 0 else 'dt=all'
 
 
+
+
+def _translation_weight_from_dt(meta: Any, bsz: int, *, small_dt_thresh: float, small_dt_t_weight: float):
+    dt_list = _meta_batch_field(meta, 'dt_world', bsz, default=None)
+    w = []
+    for x in dt_list:
+        try:
+            if x is not None and float(x) < float(small_dt_thresh):
+                w.append(float(small_dt_t_weight))
+            else:
+                w.append(1.0)
+        except Exception:
+            w.append(1.0)
+    return w
+
 def _bucket_init() -> Dict[str, Dict[str, float]]:
     return {}
 
@@ -993,6 +1008,17 @@ def main():
         IB = batch["IB"].to(dev, non_blocking=True)
         R_gt = batch["R_gt"].to(dev, non_blocking=True)
         t_gt = batch["t_gt_dir"].to(dev, non_blocking=True)
+        meta = batch.get("meta", None)
+        dt_t_weight = torch.tensor(
+            _translation_weight_from_dt(
+                meta,
+                IA.shape[0],
+                small_dt_thresh=float(getattr(cfg, "small_dt_thresh", 0.2)),
+                small_dt_t_weight=float(getattr(cfg, "small_dt_t_weight", 0.35)),
+            ),
+            device=dev,
+            dtype=torch.float32,
+        )
         t_data = time.perf_counter()
 
         with torch.autocast(device_type=dev.type, dtype=amp_dtype, enabled=use_amp):
@@ -1008,6 +1034,7 @@ def main():
                 t_gt,
                 pose_t_alpha=cfg.pose_t_alpha,
                 pred_t_frame=t_pose_frame,
+                t_sample_weight=dt_t_weight,
             )
 
             W_ab = _first_not_none(aux.get("Wf_ab", None), aux.get("Wc_ab", None))

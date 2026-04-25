@@ -16,16 +16,16 @@ class Config:
     data_seed: int = 1234
 
     # strict dt sampling for MixedK
-    min_dt: float = 0.06
+    min_dt: float = 0.5
     max_dt: float = 5.0
-    k_choices: Tuple[int, ...] = (10, 20)
-    k_probs: Tuple[int, ...] = (0.84, 0.16)
+    k_choices: Tuple[int, ...] = (20,)
+    k_probs: Tuple[float, ...] = (1.0,)
 
     # Deterministic evaluation protocol
     eval_use_fixed_pairs: bool = True
-    eval_k_list: Tuple[int, ...] = (10, 20)
+    eval_k_list: Tuple[int, ...] = (20,)
     eval_pair_step: int = 1
-    eval_min_dt: float = 0.06
+    eval_min_dt: float = 0.5
     eval_max_dt: float = 5.0
     eval_dt_bucket_edges: Tuple[float, ...] = (0.2, 0.5, 1.0, 2.0)
     save_eval_bucket_history: bool = True
@@ -47,9 +47,9 @@ class Config:
 
     # ---------------- Model: interaction / routing / geometry ----------------
     use_coarse_interaction: bool = True
-    use_fine_stage: bool = True
-    use_epipolar_bias: bool = True
-    use_epipolar_loss: bool = True
+    use_fine_stage: bool = False
+    use_epipolar_bias: bool = False
+    use_epipolar_loss: bool = False
     epi_mode: str = "bias"   # "bias" | "mask"
 
     coarse_temperature: float = 0.10
@@ -62,7 +62,7 @@ class Config:
     epi_loss_use_bidir: bool = True
 
     # ---------------- Auxiliary depth branch ----------------
-    use_depth_branch: bool = True
+    use_depth_branch: bool = False
     depth_feat_dim: int = 32
     depth_pred_scales: Tuple[int, ...] = (16, 32)
     depth_fuse_scale: int = 16
@@ -71,7 +71,7 @@ class Config:
     depth_inv_max: float = 10.0        # 1 / 0.1 m
     depth_min: float = 0.10
     depth_max: float = 80.0
-    depth_fuse_to_translation_only: bool = True
+    depth_fuse_to_translation_only: bool = False
     depth_use_detached_pose: bool = True
     depth_warmup_updates: int = 100
     depth_photo_ramp_updates: int = 100
@@ -83,39 +83,39 @@ class Config:
     # ---------------- Optimization ----------------
     batch_size: int = 1
     grad_accum: int = 4
-    lr: float = 5.0e-5
+    lr: float = 1.0e-4
     wd: float = 0.01
     max_grad_norm: float = 1.0
 
     # Piecewise LR schedule:
     # warmup -> short hold -> sharp drop -> low tail
-    warmup_updates: int = 40
+    warmup_updates: int = 100
     min_lr_scale: float = 0.03  # kept for compatibility; piecewise schedule is used
 
-    lr_hold_updates: int = 75
-    lr_drop1_updates: int = 150
-    lr_drop1_scale: float = 0.20
-    lr_drop2_scale: float = 0.05
+    lr_hold_updates: int = 1000
+    lr_drop1_updates: int = 3000
+    lr_drop1_scale: float = 0.30
+    lr_drop2_scale: float = 0.10
 
     # ---------------- Loss weights ----------------
     w_pose: float = 1.0
     w_x: float = 0.10
     w_cyc: float = 0.05
     w_rel: float = 0.02
-    w_epi: float = 0.005
+    w_epi: float = 0.0
     pose_t_alpha: float = 1.0
     small_dt_thresh: float = 0.2
     small_dt_t_weight: float = 0.35
-    w_photo: float = 0.05
-    w_smooth: float = 0.002
+    w_photo: float = 0.0
+    w_smooth: float = 0.0
 
     # ---------------- Schedule / logging ----------------
-    max_steps: int = 1000
+    max_steps: int = 5000
     log_every: int = 50
-    eval_every: int = 25       # in update steps
+    eval_every: int = 100       # in update steps
     max_eval_batches: int = 0
     ckpt_dir: str = "checkpoints"
-    exp_name: str = "week5_depth_branch_tuned_bucket_thead_v2"
+    exp_name: str = "stage1_coarse_only_no_depth_no_epi_dt05_k20"
 
     # Export helpers for PPT figures / tables
     save_eval_history: bool = True

@@ -36,6 +36,7 @@ def pose_loss(
     *,
     pose_t_alpha: float = 1.0,
     pred_t_frame: str = "B",
+    t_sample_weight: Optional[torch.Tensor] = None,
 ) -> torch.Tensor:
     R_pred = R_pred.float()
     R_gt = R_gt.float()
@@ -46,7 +47,13 @@ def pose_loss(
     rot_ang = matrix_geodesic_distance(R_pred, R_gt)
     cos_t = torch.sum(t_pred * t_gt_use, dim=-1).clamp(-1.0, 1.0)
     t_loss = 1.0 - cos_t
-    return rot_ang.mean() + float(pose_t_alpha) * t_loss.mean()
+    if t_sample_weight is not None:
+        w = t_sample_weight.float().view(-1).to(t_loss.device)
+        w = w.clamp_min(1e-6)
+        t_term = (t_loss.view(-1) * w).sum() / w.sum().clamp_min(1e-6)
+    else:
+        t_term = t_loss.mean()
+    return rot_ang.mean() + float(pose_t_alpha) * t_term
 
 
 def epipolar_simplified_loss(

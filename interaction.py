@@ -280,7 +280,7 @@ class CoarseInteraction(nn.Module):
 
 
 class FineInteraction(nn.Module):
-    def __init__(self, D: int, *, temperature: float, logits_clip: float, use_depth_fusion: bool = False):
+    def __init__(self, D: int, *, temperature: float, logits_clip: float, use_depth_fusion: bool = False, depth_fuse_strength: float = 1.0, depth_fuse_detach_feature: bool = False):
         super().__init__()
         self.temperature = float(temperature)
         self.logits_clip = float(logits_clip)
@@ -288,6 +288,8 @@ class FineInteraction(nn.Module):
         self.pose_head = FinePoseHead(D)
         self.rel_head = TokenReliabilityHead(D)
         self.use_depth_fusion = bool(use_depth_fusion)
+        self.depth_fuse_strength = float(depth_fuse_strength)
+        self.depth_fuse_detach_feature = bool(depth_fuse_detach_feature)
         if self.use_depth_fusion:
             self.depth_fuse = nn.Sequential(
                 nn.LayerNorm(2 * D),
@@ -374,10 +376,11 @@ class FineInteraction(nn.Module):
         R, _ = self.pose_head(Ff)
 
         if self.use_depth_fusion and depth_tok_a is not None:
-            fuse_in = torch.cat([Ff, depth_tok_a.float()], dim=-1)
+            depth_feat = depth_tok_a.detach() if self.depth_fuse_detach_feature else depth_tok_a
+            fuse_in = torch.cat([Ff, depth_feat.float()], dim=-1)
             depth_delta = self.depth_fuse(fuse_in)
             depth_gate = self.depth_gate(fuse_in)
-            Ff_t = Ff + depth_gate * depth_delta
+            Ff_t = Ff + self.depth_fuse_strength * (depth_gate * depth_delta)
         else:
             Ff_t = Ff
 

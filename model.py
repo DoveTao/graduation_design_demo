@@ -103,6 +103,8 @@ class PanoramaRelPoseModel(nn.Module):
             temperature=cfg.fine_temperature,
             logits_clip=cfg.logits_clip,
             use_depth_fusion=bool(cfg.use_depth_branch and cfg.depth_fuse_to_translation_only),
+            depth_fuse_strength=float(getattr(cfg, "depth_fuse_strength", 1.0)),
+            depth_fuse_detach_feature=bool(getattr(cfg, "depth_fuse_detach_feature", False)),
         )
 
         self.depth = None
