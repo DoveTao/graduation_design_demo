@@ -60,25 +60,51 @@ class TokenEncoder(nn.Module):
 
 class PatchEmbed(nn.Module):
     """
-    Embed a sampled patch [3,p,p] -> token feature [D]
-    Input patches: [B,N,3,p,p]
-    Output: [B,N,D]
+    CNN patch embedding for sampled ERP/spherical patches.
+
+    Input:
+        patches: [B, N, C, p, p]
+    Output:
+        token features: [B, N, D]
+
+    Compared with the previous flatten+MLP version, this keeps the local 2D
+    structure inside each sampled patch and extracts edge/texture-like local
+    features before pooling to one token.
     """
     def __init__(self, p: int, dim: int, in_ch: int = 3):
         super().__init__()
-        self.p = p
-        self.dim = dim
+        self.p = int(p)
+        self.dim = int(dim)
+
+        # Keep this lightweight because it is applied to B*N patches.
+        # For the current setting p=16, this gives:
+        #   [C,16,16] -> [32,16,16] -> [64,8,8] -> pooled -> D
+        self.cnn = nn.Sequential(
+            nn.Conv2d(in_ch, 32, kernel_size=3, stride=1, padding=1, bias=False),
+            nn.GroupNorm(4, 32),
+            nn.GELU(),
+            nn.Conv2d(32, 64, kernel_size=3, stride=2, padding=1, bias=False),
+            nn.GroupNorm(8, 64),
+            nn.GELU(),
+            nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1, bias=False),
+            nn.GroupNorm(8, 64),
+            nn.GELU(),
+            nn.AdaptiveAvgPool2d(1),
+            nn.Flatten(),
+        )
         self.proj = nn.Sequential(
-            nn.LayerNorm(in_ch * p * p),
-            nn.Linear(in_ch * p * p, dim),
+            nn.LayerNorm(64),
+            nn.Linear(64, dim),
             nn.GELU(),
             nn.Linear(dim, dim),
         )
 
     def forward(self, patches: torch.Tensor) -> torch.Tensor:
         B, N, C, p1, p2 = patches.shape
-        x = patches.view(B, N, C * p1 * p2)
+        x = patches.reshape(B * N, C, p1, p2).contiguous()
+        x = self.cnn(x)
         x = self.proj(x)
+        x = x.view(B, N, self.dim)
         return x
 
 
