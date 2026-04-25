@@ -908,16 +908,39 @@ def main():
         )
         test_ds.max_dt = cfg.max_dt
 
+    # Fixed-pair train evaluation set for diagnosing train/test gap.
+    # It uses the same deterministic evaluation protocol as test_ds, but on the train split.
+    train_eval_ds = RflyPanoPanoramaPairsEvalFixedKList(
+        data_root=cfg.data_root,
+        split="train",
+        split_by=cfg.split_by,
+        train_ratio=cfg.train_ratio,
+        split_seed=cfg.split_seed,
+        H=cfg.H,
+        W=cfg.W,
+        k_list=cfg.eval_k_list,
+        pair_step=cfg.eval_pair_step,
+        min_dt=cfg.eval_min_dt,
+        max_dt=cfg.eval_max_dt,
+    )
+
     train_keys = set(getattr(train_ds, "sequence_keys", []))
     test_keys = set(getattr(test_ds, "sequence_keys", []))
     overlap = train_keys & test_keys
     if overlap:
         raise RuntimeError(f"train/test split leakage detected: {len(overlap)} overlapping groups, e.g. {sorted(list(overlap))[:8]}")
 
-    for tag, ds in [("train", train_ds), ("test", test_ds)]:
+    for tag, ds in [("train", train_ds), ("train_eval", train_eval_ds), ("test", test_ds)]:
         groups = getattr(ds, "sequence_keys", [])
-        print(f"[Split] {tag} by {cfg.split_by} | groups={len(groups)} | seqs={len(groups)} | pairs={len(ds)} | preview={groups[:4]}")
-    print(f"[Eval ] protocol={'fixed_pairs' if bool(cfg.eval_use_fixed_pairs) else 'mixed_k_random'} | max_eval_batches={cfg.max_eval_batches}")
+        print(
+            f"[Split] {tag} by {cfg.split_by} | groups={len(groups)} | "
+            f"seqs={len(groups)} | pairs={len(ds)} | preview={groups[:4]}"
+        )
+    print(
+        f"[Eval ] protocol={'fixed_pairs' if bool(cfg.eval_use_fixed_pairs) else 'mixed_k_random'} | "
+        f"test_max_eval_batches={cfg.max_eval_batches} | "
+        f"train_max_eval_batches={getattr(cfg, 'max_train_eval_batches', 128)}"
+    )
 
     ckpt_root = os.path.join(cfg.ckpt_dir, cfg.exp_name)
     vis_root = os.path.join(ckpt_root, "vis")
@@ -950,6 +973,17 @@ def main():
         pin_memory=cfg.pin_memory,
         drop_last=False,
         worker_init_fn=worker_init if not bool(cfg.eval_use_fixed_pairs) else None,
+        generator=test_gen,
+    )
+
+    train_eval_loader = DataLoader(
+        train_eval_ds,
+        batch_size=cfg.batch_size,
+        shuffle=False,
+        num_workers=0,
+        pin_memory=cfg.pin_memory,
+        drop_last=False,
+        worker_init_fn=None,
         generator=test_gen,
     )
 
@@ -1186,9 +1220,72 @@ def main():
                     upd += 1
 
                     if cfg.eval_every and upd % cfg.eval_every == 0:
-                        t_eval0 = time.perf_counter()
                         want_vis = bool(cfg.save_vis_examples) and (bool(cfg.vis_dump_every_eval) or not vis_dumped)
-                        rot, tdir, tdir_abs, tdir_local_A, tdir_local_A_abs, tdiag, tdir_msg, tdir_local_msg, vis_payload, bucket_k, bucket_dt, bucket_k_dt, bucket_msgs = eval_model(
+
+                        # ------------------------------------------------------------
+                        # 1) Train split evaluation: diagnose train/test generalization gap.
+                        # ------------------------------------------------------------
+                        old_max_eval_batches = cfg.max_eval_batches
+                        cfg.max_eval_batches = int(getattr(cfg, "max_train_eval_batches", 128))
+
+                        t_train_eval0 = time.perf_counter()
+                        (
+                            train_rot,
+                            train_tdir,
+                            train_tdir_abs,
+                            train_tdir_local_A,
+                            train_tdir_local_A_abs,
+                            train_tdiag,
+                            train_tdir_msg,
+                            train_tdir_local_msg,
+                            _train_vis_payload,
+                            train_bucket_k,
+                            train_bucket_dt,
+                            train_bucket_k_dt,
+                            train_bucket_msgs,
+                        ) = eval_model(
+                            model,
+                            train_eval_loader,
+                            dev,
+                            cfg,
+                            collect_vis=False,
+                            vis_index=0,
+                        )
+                        t_train_eval = time.perf_counter() - t_train_eval0
+                        cfg.max_eval_batches = old_max_eval_batches
+
+                        print(
+                            f"[Eval-Train] upd {upd:05d} (step {step:05d}) | "
+                            f"rot={train_rot:.4f}° | tdir={train_tdir:.4f}° | "
+                            f"tdir_abs={train_tdir_abs:.4f}° | "
+                            f"tdir_local_A={train_tdir_local_A:.4f}° | "
+                            f"tdir_local_A_abs={train_tdir_local_A_abs:.4f}° | "
+                            f"time={t_train_eval:.2f}s"
+                        )
+                        print("[Eval-Train] " + train_tdir_msg.replace("[TDIR-CHK] ", ""))
+                        print("[Eval-Train] " + train_tdir_local_msg.replace("[TDIR-LOCAL] ", ""))
+                        for _bucket_msg in train_bucket_msgs:
+                            print("[Eval-Train] " + _bucket_msg)
+
+                        # ------------------------------------------------------------
+                        # 2) Test split evaluation: still used for checkpoint selection.
+                        # ------------------------------------------------------------
+                        t_eval0 = time.perf_counter()
+                        (
+                            rot,
+                            tdir,
+                            tdir_abs,
+                            tdir_local_A,
+                            tdir_local_A_abs,
+                            tdiag,
+                            tdir_msg,
+                            tdir_local_msg,
+                            vis_payload,
+                            bucket_k,
+                            bucket_dt,
+                            bucket_k_dt,
+                            bucket_msgs,
+                        ) = eval_model(
                             model,
                             test_loader,
                             dev,
@@ -1201,6 +1298,7 @@ def main():
                         joint_eligible = (rot < float(cfg.joint_rot_thresh_deg)) and (tdir < float(cfg.joint_tdir_thresh_deg))
 
                         metrics = {
+                            # test metrics: checkpoint selection still uses these
                             "rot": rot,
                             "tdir": tdir,
                             "tdir_abs": tdir_abs,
@@ -1211,7 +1309,19 @@ def main():
                             "bucket_k": bucket_k,
                             "bucket_dt": bucket_dt,
                             "bucket_k_dt": bucket_k_dt,
+
+                            # train-eval metrics: diagnostic only
+                            "train_rot": train_rot,
+                            "train_tdir": train_tdir,
+                            "train_tdir_abs": train_tdir_abs,
+                            "train_tdir_local_A": train_tdir_local_A,
+                            "train_tdir_local_A_abs": train_tdir_local_A_abs,
+                            "train_bucket_k": train_bucket_k,
+                            "train_bucket_dt": train_bucket_dt,
+                            "train_bucket_k_dt": train_bucket_k_dt,
+
                             **{f"tdir_diag_{k}": v for k, v in tdiag.items()},
+                            **{f"train_tdir_diag_{k}": v for k, v in train_tdiag.items()},
                         }
 
                         print(
@@ -1249,6 +1359,8 @@ def main():
                             "step": int(step),
                             "upd": int(upd),
                             "lr": float(optimizer.param_groups[0]["lr"]),
+
+                            # test
                             "rot": float(rot),
                             "tdir": float(tdir),
                             "tdir_abs": float(tdir_abs),
@@ -1259,6 +1371,17 @@ def main():
                             "bucket_k": bucket_k,
                             "bucket_dt": bucket_dt,
                             "bucket_k_dt": bucket_k_dt,
+
+                            # train-eval
+                            "train_rot": float(train_rot),
+                            "train_tdir": float(train_tdir),
+                            "train_tdir_abs": float(train_tdir_abs),
+                            "train_tdir_local_A": float(train_tdir_local_A),
+                            "train_tdir_local_A_abs": float(train_tdir_local_A_abs),
+                            "train_bucket_k": train_bucket_k,
+                            "train_bucket_dt": train_bucket_dt,
+                            "train_bucket_k_dt": train_bucket_k_dt,
+
                             "bad_forward": int(bad_forward),
                             "skip_updates": int(skip_updates),
                         }
@@ -1272,6 +1395,9 @@ def main():
                                 'bucket_k': bucket_k,
                                 'bucket_dt': bucket_dt,
                                 'bucket_k_dt': bucket_k_dt,
+                                'train_bucket_k': train_bucket_k,
+                                'train_bucket_dt': train_bucket_dt,
+                                'train_bucket_k_dt': train_bucket_k_dt,
                             }
                             _save_json(os.path.join(ckpt_root, f"eval_buckets_upd{upd:05d}.json"), bucket_payload)
                             _save_json(os.path.join(ckpt_root, 'eval_buckets_latest.json'), bucket_payload)
