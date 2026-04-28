@@ -154,17 +154,22 @@ class PanoramaRelPoseModel(nn.Module):
             R, t_local = self.direct_head(TokA_c.feat, TokB_c.feat)
             t_dir = _local_t_to_output_frame(R, t_local)
             aux["t_dir_local"] = t_local
+            aux["t_dir_out"] = t_dir
             aux["stage"] = "encoder_only"
             return R, t_dir, aux
 
         out_c = self.coarse(TokA_c, TokB_c)
         aux.update(out_c)
         aux["tc_dir_local"] = out_c["tc_dir"]
-        aux["tc_dir"] = _local_t_to_output_frame(out_c["Rc"], out_c["tc_dir"])
+        aux["tc_dir_out"] = _local_t_to_output_frame(out_c["Rc"], out_c["tc_dir"])
+        aux["tc_dir"] = out_c["tc_dir"]
+        aux["t_dir_local"] = out_c["tc_dir"]
+        aux["t_dir"] = aux["tc_dir"]
+        aux["t_dir_out"] = aux["tc_dir_out"]
         aux["stage"] = "coarse_only"
 
         if not self.cfg.use_fine_stage:
-            return out_c["Rc"], aux["tc_dir"], aux
+            return out_c["Rc"], aux["t_dir"], aux
 
         if enable_depth_fusion is None:
             enable_depth_fusion = bool(self.cfg.use_depth_branch and self.cfg.depth_fuse_to_translation_only)
@@ -182,7 +187,7 @@ class PanoramaRelPoseModel(nn.Module):
             TokB_f=TokB_f,
             Wc_ab=out_c["Wc_ab"].detach(),
             Rc=out_c["Rc"].detach(),
-            tc_dir=aux["tc_dir"].detach(),
+            tc_dir=aux["tc_dir_out"].detach(),
             depth_tok_a=depth_tok_a,
             topk_coarse=self.cfg.topk_coarse,
             use_epipolar_bias=self.cfg.use_epipolar_bias,
@@ -193,6 +198,7 @@ class PanoramaRelPoseModel(nn.Module):
         aux.update(out_f)
         aux["t_dir_local"] = out_f["t_dir"]
         aux["t_dir"] = _local_t_to_output_frame(out_f["R"], out_f["t_dir"])
+        aux["t_dir_out"] = aux["t_dir"]
         aux["stage"] = "coarse_to_fine"
         aux["Wc_tilde"] = aggregate_fine_to_coarse(
             Wf_ab=out_f["Wf_ab"],

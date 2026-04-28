@@ -18,7 +18,14 @@ from torch.utils.data import DataLoader
 
 from config import Config
 from dataset_pano_only import RflyPanoPanoramaPairsEvalFixedKList, RflyPanoPanoramaPairsMixedK
-from losses import depth_smoothness_loss, epipolar_simplified_loss, erp_photometric_loss, pose_loss
+from losses import (
+    depth_smoothness_loss,
+    epipolar_gt_band_nll_loss,
+    epipolar_gt_matching_loss,
+    epipolar_simplified_loss,
+    erp_photometric_loss,
+    pose_loss,
+)
 from model import PanoramaRelPoseModel
 from erp_sampling import warp_erp_with_depth_pose
 from pose_head import matrix_geodesic_distance
@@ -121,6 +128,59 @@ def _save_eval_manifest(path: str, ds, cfg):
     _save_json(path, payload)
 
 
+def _print_dataset_sanity(name: str, ds) -> None:
+    seqs_data = getattr(ds, "seqs_data", None)
+    if not seqs_data:
+        print(f"[Sanity-{name}] unavailable")
+        return
+
+    rot_k1 = []
+    dt_k1 = []
+    for sd in seqs_data:
+        R_w = sd.get("R_w", None)
+        t_w = sd.get("t_w", None)
+        if R_w is None or t_w is None:
+            continue
+        n = int(sd.get("n", len(R_w)))
+        for i in range(max(n - 1, 0)):
+            R_rel = R_w[i + 1].T @ R_w[i]
+            tr = float(np.trace(R_rel))
+            cos = np.clip((tr - 1.0) * 0.5, -1.0, 1.0)
+            rot_k1.append(float(np.degrees(np.arccos(cos))))
+            dt_k1.append(float(np.linalg.norm(t_w[i + 1] - t_w[i])))
+
+    if not rot_k1:
+        print(f"[Sanity-{name}] no adjacent k=1 pairs")
+        return
+
+    rot_k1 = np.asarray(rot_k1, dtype=np.float32)
+    dt_k1 = np.asarray(dt_k1, dtype=np.float32)
+    print(
+        f"[Sanity-{name}] k=1 rot_deg mean={rot_k1.mean():.3f} p50={np.percentile(rot_k1, 50):.3f} "
+        f"p90={np.percentile(rot_k1, 90):.3f} max={rot_k1.max():.3f} | "
+        f"dt_world mean={dt_k1.mean():.3f} p50={np.percentile(dt_k1, 50):.3f} "
+        f"p90={np.percentile(dt_k1, 90):.3f} max={dt_k1.max():.3f} | n={rot_k1.size}"
+    )
+
+
+def _print_manifest_dt_sanity(name: str, ds) -> None:
+    if not hasattr(ds, "manifest"):
+        return
+    manifest = ds.manifest()
+    if not manifest:
+        print(f"[Sanity-{name}] manifest empty")
+        return
+    dt = np.asarray([float(m["dt_world"]) for m in manifest if m.get("dt_world", None) is not None], dtype=np.float32)
+    ks = sorted({int(m["k"]) for m in manifest if m.get("k", None) is not None})
+    if dt.size == 0:
+        print(f"[Sanity-{name}] no dt_world in manifest")
+        return
+    print(
+        f"[Sanity-{name}] manifest k_list={ks} | dt_world min={dt.min():.3f} p10={np.percentile(dt, 10):.3f} "
+        f"p50={np.percentile(dt, 50):.3f} p90={np.percentile(dt, 90):.3f} max={dt.max():.3f} | n={dt.size}"
+    )
+
+
 def _meta_batch_field(meta: Any, key: str, bsz: int, default=None):
     if not isinstance(meta, dict) or key not in meta:
         return [default] * int(bsz)
@@ -188,7 +248,21 @@ def _bucket_init() -> Dict[str, Dict[str, float]]:
     return {}
 
 
-def _bucket_update(store: Dict[str, Dict[str, float]], label: str, rot: float, tdir: float, tdir_abs: float, tdir_local_A: float, tdir_local_A_abs: float):
+def _bucket_update(
+    store: Dict[str, Dict[str, float]],
+    label: str,
+    rot: float,
+    tdir: float,
+    tdir_abs: float,
+    tdir_local_A: float,
+    tdir_local_A_abs: float,
+    epi_mass_in_gt_band: float,
+    top1_in_gt_band: float,
+    top5_in_gt_band: float,
+    matching_entropy: float,
+    max_matching_prob: float,
+    cycle_error: float,
+):
     rec = store.setdefault(label, {
         'count': 0,
         'rot_sum': 0.0,
@@ -196,6 +270,12 @@ def _bucket_update(store: Dict[str, Dict[str, float]], label: str, rot: float, t
         'tdir_abs_sum': 0.0,
         'tdir_local_A_sum': 0.0,
         'tdir_local_A_abs_sum': 0.0,
+        'epi_mass_in_gt_band_sum': 0.0,
+        'top1_in_gt_band_sum': 0.0,
+        'top5_in_gt_band_sum': 0.0,
+        'matching_entropy_sum': 0.0,
+        'max_matching_prob_sum': 0.0,
+        'cycle_error_sum': 0.0,
     })
     rec['count'] += 1
     rec['rot_sum'] += float(rot)
@@ -205,6 +285,18 @@ def _bucket_update(store: Dict[str, Dict[str, float]], label: str, rot: float, t
         rec['tdir_local_A_sum'] += float(tdir_local_A)
     if np.isfinite(tdir_local_A_abs):
         rec['tdir_local_A_abs_sum'] += float(tdir_local_A_abs)
+    if np.isfinite(epi_mass_in_gt_band):
+        rec['epi_mass_in_gt_band_sum'] += float(epi_mass_in_gt_band)
+    if np.isfinite(top1_in_gt_band):
+        rec['top1_in_gt_band_sum'] += float(top1_in_gt_band)
+    if np.isfinite(top5_in_gt_band):
+        rec['top5_in_gt_band_sum'] += float(top5_in_gt_band)
+    if np.isfinite(matching_entropy):
+        rec['matching_entropy_sum'] += float(matching_entropy)
+    if np.isfinite(max_matching_prob):
+        rec['max_matching_prob_sum'] += float(max_matching_prob)
+    if np.isfinite(cycle_error):
+        rec['cycle_error_sum'] += float(cycle_error)
 
 
 def _bucket_finalize(store: Dict[str, Dict[str, float]]) -> Dict[str, Dict[str, float]]:
@@ -218,6 +310,12 @@ def _bucket_finalize(store: Dict[str, Dict[str, float]]) -> Dict[str, Dict[str, 
             'tdir_abs': float(v['tdir_abs_sum'] / n),
             'tdir_local_A': float(v['tdir_local_A_sum'] / n),
             'tdir_local_A_abs': float(v['tdir_local_A_abs_sum'] / n),
+            'epi_mass_in_gt_band': float(v['epi_mass_in_gt_band_sum'] / n),
+            'top1_in_gt_band': float(v['top1_in_gt_band_sum'] / n),
+            'top5_in_gt_band': float(v['top5_in_gt_band_sum'] / n),
+            'matching_entropy': float(v['matching_entropy_sum'] / n),
+            'max_matching_prob': float(v['max_matching_prob_sum'] / n),
+            'cycle_error': float(v['cycle_error_sum'] / n),
         }
     return out
 
@@ -254,9 +352,80 @@ def _format_bucket_summary(prefix: str, bucket: Dict[str, Dict[str, float]]) -> 
     for label in sorted(bucket.keys(), key=_bucket_sort_key):
         rec = bucket[label]
         parts.append(
-            f"{label}:n={rec['count']} rot={rec['rot']:.2f} tdir_abs={rec['tdir_abs']:.2f} local_abs={rec['tdir_local_A_abs']:.2f}"
+            f"{label}:n={rec['count']} rot={rec['rot']:.2f} tdir={rec['tdir']:.2f} "
+            f"tdir_abs={rec['tdir_abs']:.2f} local_abs={rec['tdir_local_A_abs']:.2f} "
+            f"epi_mass={rec['epi_mass_in_gt_band']:.3f} top1={rec['top1_in_gt_band']:.3f}"
         )
     return f'[{prefix}] ' + ' | '.join(parts)
+
+
+def _epipolar_matching_diagnostics(
+    W_ab: Optional[torch.Tensor],
+    W_ba: Optional[torch.Tensor],
+    bearing_a: Optional[torch.Tensor],
+    bearing_b: Optional[torch.Tensor],
+    R_gt: torch.Tensor,
+    t_gt: torch.Tensor,
+    *,
+    angle_thresh_deg: float,
+    allowed_mask: Optional[torch.Tensor] = None,
+    topk: int = 5,
+    min_plane_norm: float = 1e-4,
+) -> Dict[str, torch.Tensor]:
+    if W_ab is None or bearing_a is None or bearing_b is None:
+        return {}
+
+    W_ab = W_ab.float()
+    bearing_a = F.normalize(bearing_a.float(), dim=-1, eps=1e-6)
+    bearing_b = F.normalize(bearing_b.float(), dim=-1, eps=1e-6)
+    R_gt = R_gt.float()
+    t_gt = F.normalize(t_gt.float(), dim=-1, eps=1e-6)
+
+    bA_in_B = torch.matmul(bearing_a, R_gt.transpose(-1, -2))
+    plane_n_raw = torch.cross(t_gt[:, None, :].expand_as(bA_in_B), bA_in_B, dim=-1)
+    plane_norm = torch.linalg.norm(plane_n_raw, dim=-1)
+    valid_plane = plane_norm > float(min_plane_norm)
+    plane_n = F.normalize(plane_n_raw, dim=-1, eps=1e-6)
+    residual = torch.abs(torch.einsum("bnc,bmc->bnm", plane_n, bearing_b)).clamp(0.0, 1.0)
+
+    band = max(math.sin(math.radians(float(angle_thresh_deg))), 1e-6)
+    gt_band = residual <= band
+    if allowed_mask is not None:
+        gt_band = gt_band & allowed_mask.to(dtype=torch.bool)
+    gt_band = gt_band & valid_plane.unsqueeze(-1)
+
+    row_mass = (W_ab * gt_band.to(W_ab.dtype)).sum(dim=-1)
+    row_valid = gt_band.any(dim=-1).to(W_ab.dtype)
+    epi_mass = (row_mass * row_valid).sum(dim=-1) / row_valid.sum(dim=-1).clamp_min(1.0)
+
+    top1_idx = W_ab.argmax(dim=-1, keepdim=True)
+    top1_hit = torch.gather(gt_band, -1, top1_idx).squeeze(-1).to(W_ab.dtype)
+    top1 = (top1_hit * row_valid).sum(dim=-1) / row_valid.sum(dim=-1).clamp_min(1.0)
+
+    k = min(int(topk), int(W_ab.shape[-1]))
+    topk_idx = torch.topk(W_ab, k=k, dim=-1).indices
+    topk_hit = torch.gather(gt_band, -1, topk_idx).any(dim=-1).to(W_ab.dtype)
+    top5 = (topk_hit * row_valid).sum(dim=-1) / row_valid.sum(dim=-1).clamp_min(1.0)
+
+    entropy_rows = -(W_ab.clamp_min(1e-9) * W_ab.clamp_min(1e-9).log()).sum(dim=-1)
+    entropy = entropy_rows.mean(dim=-1)
+    max_prob = W_ab.max(dim=-1).values.mean(dim=-1)
+
+    if W_ba is not None:
+        cyc = torch.matmul(W_ab, W_ba.float())
+        I = torch.eye(cyc.shape[-1], device=cyc.device, dtype=cyc.dtype).unsqueeze(0)
+        cycle_error = ((cyc - I) ** 2).mean(dim=(-2, -1))
+    else:
+        cycle_error = torch.full((W_ab.shape[0],), float("nan"), device=W_ab.device, dtype=W_ab.dtype)
+
+    return {
+        "epi_mass_in_gt_band": epi_mass.detach(),
+        "top1_in_gt_band": top1.detach(),
+        "top5_in_gt_band": top5.detach(),
+        "matching_entropy": entropy.detach(),
+        "max_matching_prob": max_prob.detach(),
+        "cycle_error": cycle_error.detach(),
+    }
 
 
 def _save_ckpt(path, model, optimizer, scaler, scheduler, cfg, step, upd, metrics):
@@ -658,6 +827,14 @@ def eval_model(model, loader, device, cfg: Config, *, collect_vis: bool = False,
     tdir_abs_sum = 0.0
     tdir_local_A_sum = 0.0
     tdir_local_A_abs_sum = 0.0
+    diag_sums = {
+        "epi_mass_in_gt_band": 0.0,
+        "top1_in_gt_band": 0.0,
+        "top5_in_gt_band": 0.0,
+        "matching_entropy": 0.0,
+        "max_matching_prob": 0.0,
+        "cycle_error": 0.0,
+    }
     n = 0
     n_local = 0
     vis_payload = None
@@ -696,6 +873,33 @@ def eval_model(model, loader, device, cfg: Config, *, collect_vis: bool = False,
         meta = batch.get('meta', {})
 
         R_pred, t_pred, aux = model(IA, IB, enable_depth_fusion=True)
+        t_eval_pred = aux.get('t_dir_out', t_pred) if isinstance(aux, dict) else t_pred
+
+        use_fine_diag = bool(cfg.use_fine_stage) and (aux.get("Wf_ab", None) is not None)
+        if use_fine_diag:
+            W_eval = aux.get("Wf_ab", None)
+            W_eval_ba = aux.get("Wf_ba", None)
+            bearingA_eval = aux.get("bearingA_f", None)
+            bearingB_eval = aux.get("bearingB_f", None)
+            allowed_eval = aux.get("allowed_mask", None)
+        else:
+            W_eval = aux.get("Wc_ab", None)
+            W_eval_ba = aux.get("Wc_ba", None)
+            bearingA_eval = aux.get("bearingA_c", None)
+            bearingB_eval = aux.get("bearingB_c", None)
+            allowed_eval = None
+
+        diag_batch = _epipolar_matching_diagnostics(
+            W_eval,
+            W_eval_ba,
+            bearingA_eval,
+            bearingB_eval,
+            R_gt,
+            t_gt,
+            angle_thresh_deg=float(cfg.epi_angle_thresh_deg),
+            allowed_mask=allowed_eval,
+            topk=5,
+        )
 
         if collect_vis and vis_payload is None and bi == int(vis_index):
             depth_key = f"inv_depth_s{int(cfg.depth_loss_scale)}"
@@ -703,7 +907,7 @@ def eval_model(model, loader, device, cfg: Config, *, collect_vis: bool = False,
                 inv_depth = aux[depth_key]
                 IA_small = _downsample_to_like(IA, inv_depth)
                 IB_small = _downsample_to_like(IB, inv_depth)
-                t_warp = aux.get('t_dir', t_pred)
+                t_warp = aux.get('t_dir_out', aux.get('t_dir', t_pred))
                 Iwarp, valid = warp_erp_with_depth_pose(
                     inv_depth,
                     R_pred,
@@ -724,7 +928,7 @@ def eval_model(model, loader, device, cfg: Config, *, collect_vis: bool = False,
         rot_rad = matrix_geodesic_distance(R_pred.float(), R_gt.float())
         rot_deg = rot_rad * (180.0 / math.pi)
 
-        tp = F.normalize(t_pred.float(), dim=-1, eps=1e-6)
+        tp = F.normalize(t_eval_pred.float(), dim=-1, eps=1e-6)
         tg = F.normalize(t_gt.float(), dim=-1, eps=1e-6)
         cos = torch.sum(tp * tg, dim=-1).clamp(-1.0, 1.0)
         ang = torch.acos(cos) * (180.0 / math.pi)
@@ -739,6 +943,14 @@ def eval_model(model, loader, device, cfg: Config, *, collect_vis: bool = False,
         rot_np = rot_deg.detach().cpu().view(-1).numpy()
         tdir_np = ang.detach().cpu().view(-1).numpy()
         tdir_abs_np = ang_abs.detach().cpu().view(-1).numpy()
+        diag_np = {}
+        for key in diag_sums.keys():
+            if key in diag_batch:
+                arr = diag_batch[key].detach().cpu().view(-1).numpy()
+                diag_np[key] = arr
+                diag_sums[key] += float(arr.sum())
+            else:
+                diag_np[key] = np.full((bsz,), np.nan, dtype=np.float32)
 
         tg_R = F.normalize(torch.matmul(R_gt.float(), tg.unsqueeze(-1)).squeeze(-1), dim=-1, eps=1e-6)
         tg_Rt = F.normalize(torch.matmul(R_gt.float().transpose(-1, -2), tg.unsqueeze(-1)).squeeze(-1), dim=-1, eps=1e-6)
@@ -763,9 +975,21 @@ def eval_model(model, loader, device, cfg: Config, *, collect_vis: bool = False,
         for i in range(bsz):
             k_label = f"k={int(meta_k[i])}" if meta_k[i] is not None else 'k=unknown'
             dt_label = _dt_bucket_label(meta_dt[i], dt_edges)
-            _bucket_update(bucket_k, k_label, rot_np[i], tdir_np[i], tdir_abs_np[i], tdir_local_np[i], tdir_local_abs_np[i])
-            _bucket_update(bucket_dt, dt_label, rot_np[i], tdir_np[i], tdir_abs_np[i], tdir_local_np[i], tdir_local_abs_np[i])
-            _bucket_update(bucket_k_dt, f"{k_label}|{dt_label}", rot_np[i], tdir_np[i], tdir_abs_np[i], tdir_local_np[i], tdir_local_abs_np[i])
+            _bucket_update(
+                bucket_k, k_label, rot_np[i], tdir_np[i], tdir_abs_np[i], tdir_local_np[i], tdir_local_abs_np[i],
+                diag_np["epi_mass_in_gt_band"][i], diag_np["top1_in_gt_band"][i], diag_np["top5_in_gt_band"][i],
+                diag_np["matching_entropy"][i], diag_np["max_matching_prob"][i], diag_np["cycle_error"][i]
+            )
+            _bucket_update(
+                bucket_dt, dt_label, rot_np[i], tdir_np[i], tdir_abs_np[i], tdir_local_np[i], tdir_local_abs_np[i],
+                diag_np["epi_mass_in_gt_band"][i], diag_np["top1_in_gt_band"][i], diag_np["top5_in_gt_band"][i],
+                diag_np["matching_entropy"][i], diag_np["max_matching_prob"][i], diag_np["cycle_error"][i]
+            )
+            _bucket_update(
+                bucket_k_dt, f"{k_label}|{dt_label}", rot_np[i], tdir_np[i], tdir_abs_np[i], tdir_local_np[i], tdir_local_abs_np[i],
+                diag_np["epi_mass_in_gt_band"][i], diag_np["top1_in_gt_band"][i], diag_np["top5_in_gt_band"][i],
+                diag_np["matching_entropy"][i], diag_np["max_matching_prob"][i], diag_np["cycle_error"][i]
+            )
 
         def ang_deg(a, b):
             c = torch.sum(a * b, dim=-1).clamp(-1.0, 1.0)
@@ -784,6 +1008,7 @@ def eval_model(model, loader, device, cfg: Config, *, collect_vis: bool = False,
     tdir_abs = tdir_abs_sum / max(n, 1)
     tdir_local_A = tdir_local_A_sum / max(n_local, 1) if n_local > 0 else float('nan')
     tdir_local_A_abs = tdir_local_A_abs_sum / max(n_local, 1) if n_local > 0 else float('nan')
+    diag_mean = {k: (v / max(n, 1)) for k, v in diag_sums.items()}
 
     if acc['cnt'] > 0:
         denom = float(acc['cnt'])
@@ -815,11 +1040,12 @@ def eval_model(model, loader, device, cfg: Config, *, collect_vis: bool = False,
     bucket_msgs = [
         _format_bucket_summary('Eval-BKT-k', bucket_k_fin),
         _format_bucket_summary('Eval-BKT-dt', bucket_dt_fin),
+        _format_bucket_summary('Eval-BKT-kdt', bucket_k_dt_fin),
     ]
 
     model.train()
     return (
-        rot, tdir, tdir_abs, tdir_local_A, tdir_local_A_abs, mean_map, msg, msg_local, vis_payload,
+        rot, tdir, tdir_abs, tdir_local_A, tdir_local_A_abs, {**mean_map, **diag_mean}, msg, msg_local, vis_payload,
         bucket_k_fin, bucket_dt_fin, bucket_k_dt_fin, bucket_msgs,
     )
 
@@ -941,6 +1167,11 @@ def main():
         f"test_max_eval_batches={cfg.max_eval_batches} | "
         f"train_max_eval_batches={getattr(cfg, 'max_train_eval_batches', 128)}"
     )
+    _print_dataset_sanity("train", train_ds)
+    _print_dataset_sanity("train_eval", train_eval_ds)
+    _print_dataset_sanity("test", test_ds)
+    _print_manifest_dt_sanity("train_eval", train_eval_ds)
+    _print_manifest_dt_sanity("test", test_ds)
 
     ckpt_root = os.path.join(cfg.ckpt_dir, cfg.exp_name)
     vis_root = os.path.join(ckpt_root, "vis")
@@ -1070,13 +1301,44 @@ def main():
                 pred_t_frame=t_pose_frame,
                 t_sample_weight=dt_t_weight,
             )
+            if bool(cfg.use_fine_stage) and aux.get("Rc", None) is not None and aux.get("tc_dir", None) is not None:
+                L_pose_coarse = pose_loss(
+                    aux["Rc"],
+                    aux["tc_dir"],
+                    R_gt,
+                    t_gt,
+                    pose_t_alpha=cfg.pose_t_alpha,
+                    pred_t_frame=aux.get("t_local_frame", "A"),
+                    t_sample_weight=dt_t_weight,
+                )
+            else:
+                L_pose_coarse = torch.zeros((), device=dev)
 
-            W_ab = _first_not_none(aux.get("Wf_ab", None), aux.get("Wc_ab", None))
-            W_ba = _first_not_none(aux.get("Wf_ba", None), aux.get("Wc_ba", None))
-            cA = _first_not_none(aux.get("cA_f", None), aux.get("cA_c", None))
-            cB = _first_not_none(aux.get("cB_f", None), aux.get("cB_c", None))
-            bearingA = _first_not_none(aux.get("bearingA_f", None), aux.get("bearingA_c", None))
-            bearingB = _first_not_none(aux.get("bearingB_f", None), aux.get("bearingB_c", None))
+            use_fine_epi = bool(cfg.use_fine_stage) and (aux.get("Wf_ab", None) is not None)
+            if use_fine_epi:
+                W_ab = aux.get("Wf_ab", None)
+                W_ba = aux.get("Wf_ba", None)
+                cA = _first_not_none(aux.get("cA_f", None), aux.get("cA_c", None))
+                cB = _first_not_none(aux.get("cB_f", None), aux.get("cB_c", None))
+                bearingA = aux.get("bearingA_f", None)
+                bearingB = aux.get("bearingB_f", None)
+                epi_allowed_mask = aux.get("allowed_mask", None)
+            else:
+                W_ab = aux.get("Wc_ab", None)
+                W_ba = aux.get("Wc_ba", None)
+                cA = aux.get("cA_c", None)
+                cB = aux.get("cB_c", None)
+                bearingA = aux.get("bearingA_c", None)
+                bearingB = aux.get("bearingB_c", None)
+                epi_allowed_mask = None
+
+            if W_ab is not None and bearingA is not None and bearingB is not None:
+                assert W_ab.shape[1] == bearingA.shape[1], (
+                    f"Epipolar shape mismatch: W_ab={tuple(W_ab.shape)}, bearingA={tuple(bearingA.shape)}"
+                )
+                assert W_ab.shape[2] == bearingB.shape[1], (
+                    f"Epipolar shape mismatch: W_ab={tuple(W_ab.shape)}, bearingB={tuple(bearingB.shape)}"
+                )
 
             if W_ab is not None and cfg.w_x > 0:
                 P = W_ab.float().clamp_min(1e-9)
@@ -1098,19 +1360,72 @@ def main():
 
 
             if cfg.use_epipolar_loss and W_ab is not None and bearingA is not None and bearingB is not None and cfg.w_epi > 0:
-                L_epi = epipolar_simplified_loss(
-                    W_ab=W_ab,
-                    W_ba=W_ba,
-                    bearing_a=bearingA,
-                    bearing_b=bearingB,
+                epi_loss_type = str(getattr(cfg, "epi_loss_type", "gt_match_ce")).lower()
+                if epi_loss_type in ("gt_band_nll", "gt_band_mass", "band_nll", "mass"):
+                    L_epi = epipolar_gt_band_nll_loss(
+                        W_ab=W_ab,
+                        W_ba=W_ba,
+                        bearing_a=bearingA,
+                        bearing_b=bearingB,
+                        R_gt=R_gt,
+                        t_gt=t_gt,
+                        allowed_mask=epi_allowed_mask,
+                        angle_thresh_deg=cfg.epi_angle_thresh_deg,
+                        use_bidir=cfg.epi_loss_use_bidir,
+                    )
+                elif epi_loss_type in ("gt_match_ce", "gt_epipolar_match", "gt_soft_ce", "ce"):
+                    L_epi = epipolar_gt_matching_loss(
+                        W_ab=W_ab,
+                        W_ba=W_ba,
+                        bearing_a=bearingA,
+                        bearing_b=bearingB,
+                        R_gt=R_gt,
+                        t_gt=t_gt,
+                        allowed_mask=epi_allowed_mask,
+                        angle_thresh_deg=cfg.epi_angle_thresh_deg,
+                        use_bidir=cfg.epi_loss_use_bidir,
+                        temperature=float(getattr(cfg, "epi_gt_target_temp", 1.0)),
+                    )
+                else:
+                    L_epi = epipolar_simplified_loss(
+                        W_ab=W_ab,
+                        W_ba=W_ba,
+                        bearing_a=bearingA,
+                        bearing_b=bearingB,
+                        R_gt=R_gt,
+                        t_gt=t_gt,
+                        allowed_mask=epi_allowed_mask,
+                        angle_thresh_deg=cfg.epi_angle_thresh_deg,
+                        use_bidir=cfg.epi_loss_use_bidir,
+                    )
+            else:
+                L_epi = torch.zeros((), device=dev)
+
+            Wc_aux = aux.get("Wc_ab", None)
+            Wc_ba_aux = aux.get("Wc_ba", None)
+            bearingA_c_aux = aux.get("bearingA_c", None)
+            bearingB_c_aux = aux.get("bearingB_c", None)
+            if (
+                bool(cfg.use_fine_stage)
+                and cfg.use_epipolar_loss
+                and Wc_aux is not None
+                and bearingA_c_aux is not None
+                and bearingB_c_aux is not None
+                and float(getattr(cfg, "w_coarse_epi_aux", 0.0)) > 0.0
+            ):
+                L_epi_coarse = epipolar_gt_band_nll_loss(
+                    W_ab=Wc_aux,
+                    W_ba=Wc_ba_aux,
+                    bearing_a=bearingA_c_aux,
+                    bearing_b=bearingB_c_aux,
                     R_gt=R_gt,
                     t_gt=t_gt,
-                    allowed_mask=aux.get("allowed_mask", None),
+                    allowed_mask=None,
                     angle_thresh_deg=cfg.epi_angle_thresh_deg,
                     use_bidir=cfg.epi_loss_use_bidir,
                 )
             else:
-                L_epi = torch.zeros((), device=dev)
+                L_epi_coarse = torch.zeros((), device=dev)
 
             depth_key = f"inv_depth_s{int(cfg.depth_loss_scale)}"
             depth_ramp = _depth_weight_ramp(upd, cfg)
@@ -1119,7 +1434,7 @@ def main():
                 IA_small = _downsample_to_like(IA, inv_depth)
                 IB_small = _downsample_to_like(IB, inv_depth)
                 R_warp = R_pred.detach() if bool(cfg.depth_use_detached_pose) else R_pred
-                t_warp = aux.get("t_dir", t_pred)
+                t_warp = aux.get("t_dir_out", aux.get("t_dir", t_pred))
                 t_warp = t_warp.detach() if bool(cfg.depth_use_detached_pose) else t_warp
                 Iwarp, valid = warp_erp_with_depth_pose(
                     inv_depth,
@@ -1150,12 +1465,17 @@ def main():
 
             photo_w = float(cfg.w_photo) * depth_ramp
             smooth_w = float(cfg.w_smooth) * depth_ramp
+            epi_ramp_updates = int(getattr(cfg, "epi_ramp_updates", 0))
+            epi_ramp = 1.0 if epi_ramp_updates <= 0 else min(1.0, max(0.0, float(upd) / float(epi_ramp_updates)))
+            epi_w = float(cfg.w_epi) * epi_ramp
             L = (
                 cfg.w_pose * L_pose
+                + float(getattr(cfg, "w_coarse_pose_aux", 0.0)) * L_pose_coarse
                 + cfg.w_x * L_x
                 + cfg.w_cyc * L_cyc
                 + cfg.w_rel * L_rel
-                + cfg.w_epi * L_epi
+                + epi_w * L_epi
+                + float(getattr(cfg, "w_coarse_epi_aux", 0.0)) * epi_ramp * L_epi_coarse
                 + photo_w * L_photo
                 + smooth_w * L_smooth
             )
@@ -1165,7 +1485,7 @@ def main():
 
         forward_ok = all(
             bool(torch.isfinite(x).all())
-            for x in [R_pred, t_pred, L_pose, L_x, L_cyc, L_rel, L_epi, L_photo, L_smooth, L]
+            for x in [R_pred, t_pred, L_pose, L_pose_coarse, L_x, L_cyc, L_rel, L_epi, L_epi_coarse, L_photo, L_smooth, L]
         )
         if not forward_ok:
             bad_forward += 1
@@ -1260,6 +1580,12 @@ def main():
                             f"tdir_abs={train_tdir_abs:.4f}° | "
                             f"tdir_local_A={train_tdir_local_A:.4f}° | "
                             f"tdir_local_A_abs={train_tdir_local_A_abs:.4f}° | "
+                            f"epi_mass={train_tdiag.get('epi_mass_in_gt_band', float('nan')):.4f} | "
+                            f"top1={train_tdiag.get('top1_in_gt_band', float('nan')):.4f} | "
+                            f"top5={train_tdiag.get('top5_in_gt_band', float('nan')):.4f} | "
+                            f"ent={train_tdiag.get('matching_entropy', float('nan')):.4f} | "
+                            f"pmax={train_tdiag.get('max_matching_prob', float('nan')):.4f} | "
+                            f"cyc={train_tdiag.get('cycle_error', float('nan')):.4f} | "
                             f"time={t_train_eval:.2f}s"
                         )
                         print("[Eval-Train] " + train_tdir_msg.replace("[TDIR-CHK] ", ""))
@@ -1294,8 +1620,8 @@ def main():
                             vis_index=int(cfg.vis_eval_index),
                         )
                         t_eval = time.perf_counter() - t_eval0
-                        joint_score = tdir + float(cfg.joint_rot_weight) * rot
-                        joint_eligible = (rot < float(cfg.joint_rot_thresh_deg)) and (tdir < float(cfg.joint_tdir_thresh_deg))
+                        joint_score = tdir_abs + float(cfg.joint_rot_weight) * rot
+                        joint_eligible = (rot < float(cfg.joint_rot_thresh_deg)) and (tdir_abs < float(cfg.joint_tdir_thresh_deg))
 
                         metrics = {
                             # test metrics: checkpoint selection still uses these
@@ -1328,7 +1654,13 @@ def main():
                             f"[Eval ] upd {upd:05d} (step {step:05d}) | rot={rot:.4f}° | "
                             f"tdir={tdir:.4f}° | tdir_abs={tdir_abs:.4f}° | "
                             f"tdir_local_A={tdir_local_A:.4f}° | tdir_local_A_abs={tdir_local_A_abs:.4f}° | "
-                            f"joint={joint_score:.4f} | joint_ok={int(joint_eligible)} | time={t_eval:.2f}s"
+                            f"epi_mass={tdiag.get('epi_mass_in_gt_band', float('nan')):.4f} | "
+                            f"top1={tdiag.get('top1_in_gt_band', float('nan')):.4f} | "
+                            f"top5={tdiag.get('top5_in_gt_band', float('nan')):.4f} | "
+                            f"ent={tdiag.get('matching_entropy', float('nan')):.4f} | "
+                            f"pmax={tdiag.get('max_matching_prob', float('nan')):.4f} | "
+                            f"cyc={tdiag.get('cycle_error', float('nan')):.4f} | "
+                            f"joint_abs={joint_score:.4f} | joint_ok={int(joint_eligible)} | time={t_eval:.2f}s"
                         )
                         print(tdir_msg)
                         print(tdir_local_msg)
@@ -1384,6 +1716,8 @@ def main():
 
                             "bad_forward": int(bad_forward),
                             "skip_updates": int(skip_updates),
+                            **{k: float(v) for k, v in tdiag.items()},
+                            **{f"train_{k}": float(v) for k, v in train_tdiag.items()},
                         }
                         eval_history.append(eval_rec)
                         if bool(cfg.save_eval_history):
@@ -1426,8 +1760,9 @@ def main():
             print(
                 f"[Train] step {step:05d} upd {upd:05d} ep{ep:03d} | "
                 f"L={float(L.detach().cpu()):.3f} | pose={float(L_pose.detach().cpu()):.3f} | "
+                f"pose_c={float(L_pose_coarse.detach().cpu()):.3f} | "
                 f"x={float(L_x.detach().cpu()):.4f} | cyc={float(L_cyc.detach().cpu()):.4f} | "
-                f"rel={float(L_rel.detach().cpu()):.4f} | epi={float(L_epi.detach().cpu()):.4f} | "
+                f"rel={float(L_rel.detach().cpu()):.4f} | epi={float(L_epi.detach().cpu()):.4f} | epi_c={float(L_epi_coarse.detach().cpu()):.4f} | "
                 f"photo={float(L_photo.detach().cpu()):.4f} | smooth={float(L_smooth.detach().cpu()):.4f} | depth_ramp={depth_ramp:.2f} | "
                 f"lr={lr_now:.6e}"
             )
