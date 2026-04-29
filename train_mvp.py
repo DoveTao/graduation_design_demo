@@ -57,6 +57,7 @@ from losses import (
 )
 from model import PanoramaRelPoseModel
 from erp_sampling import warp_erp_with_depth_pose
+from geometry_refine import refine_pose_from_matches
 from pose_head import matrix_geodesic_distance
 
 
@@ -1087,6 +1088,14 @@ def eval_model(model, loader, device, cfg: Config, *, collect_vis: bool = False,
     n_tmag = 0
     trans_vec_l2_sum = 0.0
     n_trans_vec = 0
+    geom_refine_success_sum = 0.0
+    geom_refine_attempts = 0
+    geom_rot_sum = 0.0
+    geom_tdir_sum = 0.0
+    geom_tdir_abs_sum = 0.0
+    fused_rot_sum = 0.0
+    fused_tdir_abs_sum = 0.0
+    n_geom = 0
     stable_rot_sum = 0.0
     stable_tdir_sum = 0.0
     stable_tdir_abs_sum = 0.0
@@ -1265,6 +1274,61 @@ def eval_model(model, loader, device, cfg: Config, *, collect_vis: bool = False,
         tdir_flip_count += float((cos < 0.0).to(torch.float32).sum().cpu())
         n += bsz
 
+        if bool(getattr(cfg, "use_geometry_refine", False)):
+            use_refine_fine = (
+                bool(getattr(cfg, "geom_refine_use_fine_if_available", True))
+                and aux.get("Wf_ab", None) is not None
+            )
+            if use_refine_fine:
+                W_ref = aux.get("Wf_ab", None)
+                W_ref_ba = aux.get("Wf_ba", None)
+                bearingA_ref = aux.get("bearingA_f", None)
+                bearingB_ref = aux.get("bearingB_f", None)
+                allowed_ref = aux.get("allowed_mask", None)
+            else:
+                W_ref = aux.get("Wc_ab", None)
+                W_ref_ba = aux.get("Wc_ba", None)
+                bearingA_ref = aux.get("bearingA_c", None)
+                bearingB_ref = aux.get("bearingB_c", None)
+                allowed_ref = None
+            if W_ref is not None and bearingA_ref is not None and bearingB_ref is not None:
+                R_geom, t_geom, geom_diag = refine_pose_from_matches(
+                    W_ref,
+                    bearingA_ref,
+                    bearingB_ref,
+                    R_pred.float(),
+                    tp.float(),
+                    W_ba=W_ref_ba,
+                    allowed_mask=allowed_ref,
+                    min_prob=float(getattr(cfg, "geom_refine_min_prob", 0.01)),
+                    max_matches=int(getattr(cfg, "geom_refine_max_matches", 512)),
+                    mutual_check=bool(getattr(cfg, "geom_refine_mutual_check", False)),
+                )
+                success_mask = torch.tensor(geom_diag.get("success", []), device=device, dtype=torch.bool)
+                if success_mask.numel() == bsz:
+                    geom_refine_success_sum += float(success_mask.to(torch.float32).sum().cpu())
+                    geom_refine_attempts += bsz
+                    if bool(getattr(cfg, "geom_refine_fallback_to_network", True)):
+                        R_fused = torch.where(success_mask.view(-1, 1, 1), R_geom.float(), R_pred.float())
+                        t_fused = torch.where(success_mask.view(-1, 1), t_geom.float(), tp.float())
+                    else:
+                        R_fused = R_geom.float()
+                        t_fused = t_geom.float()
+                    geom_rot = matrix_geodesic_distance(R_geom.float(), R_gt.float()) * (180.0 / math.pi)
+                    geom_cos = torch.sum(F.normalize(t_geom.float(), dim=-1, eps=1e-6) * tg, dim=-1).clamp(-1.0, 1.0)
+                    geom_ang = torch.acos(geom_cos) * (180.0 / math.pi)
+                    geom_ang_abs = torch.minimum(geom_ang, 180.0 - geom_ang)
+                    fused_rot = matrix_geodesic_distance(R_fused.float(), R_gt.float()) * (180.0 / math.pi)
+                    fused_cos = torch.sum(F.normalize(t_fused.float(), dim=-1, eps=1e-6) * tg, dim=-1).clamp(-1.0, 1.0)
+                    fused_ang = torch.acos(fused_cos) * (180.0 / math.pi)
+                    fused_ang_abs = torch.minimum(fused_ang, 180.0 - fused_ang)
+                    geom_rot_sum += float(geom_rot.sum().cpu())
+                    geom_tdir_sum += float(geom_ang.sum().cpu())
+                    geom_tdir_abs_sum += float(geom_ang_abs.sum().cpu())
+                    fused_rot_sum += float(fused_rot.sum().cpu())
+                    fused_tdir_abs_sum += float(fused_ang_abs.sum().cpu())
+                    n_geom += bsz
+
         t_mag_pred = aux.get("t_mag", None) if isinstance(aux, dict) else None
         tmag_rel_np = np.full((bsz,), np.nan, dtype=np.float32)
         if t_mag_pred is not None and t_gt_mag is not None:
@@ -1403,6 +1467,14 @@ def eval_model(model, loader, device, cfg: Config, *, collect_vis: bool = False,
     diag_mean["stable_tdir_local_A_abs"] = stable_tdir_local_A_abs_sum / max(stable_n, 1)
     for key, total in extra_diag_sums.items():
         diag_mean[key] = total / max(int(extra_diag_counts.get(key, 0)), 1)
+    diag_mean["geom_refine_success_rate"] = (
+        geom_refine_success_sum / max(geom_refine_attempts, 1) if geom_refine_attempts > 0 else float("nan")
+    )
+    diag_mean["geom_rot"] = geom_rot_sum / max(n_geom, 1) if n_geom > 0 else float("nan")
+    diag_mean["geom_tdir"] = geom_tdir_sum / max(n_geom, 1) if n_geom > 0 else float("nan")
+    diag_mean["geom_tdir_abs"] = geom_tdir_abs_sum / max(n_geom, 1) if n_geom > 0 else float("nan")
+    diag_mean["fused_rot"] = fused_rot_sum / max(n_geom, 1) if n_geom > 0 else float("nan")
+    diag_mean["fused_tdir_abs"] = fused_tdir_abs_sum / max(n_geom, 1) if n_geom > 0 else float("nan")
 
     if acc['cnt'] > 0:
         denom = float(acc['cnt'])
@@ -2328,6 +2400,7 @@ def main():
                             f"tvec_l2={train_tdiag.get('trans_vec_l2', float('nan')):.3f} | "
                             f"raw_t_abs={train_tdiag.get('t_raw_local_A_abs', float('nan')):.2f}° | "
                             f"geo_t_abs={train_tdiag.get('t_geo_local_A_abs', float('nan')):.2f}° | "
+                            f"gref={train_tdiag.get('geom_refine_success_rate', float('nan')):.2f} | "
                             f"time={t_train_eval:.2f}s"
                         )
                         print("[Eval-Train] " + train_tdir_msg.replace("[TDIR-CHK] ", ""))
@@ -2418,6 +2491,9 @@ def main():
                             f"stable_local={tdiag.get('stable_tdir_local_A_abs', float('nan')):.2f}° | "
                             f"raw_t_abs={tdiag.get('t_raw_local_A_abs', float('nan')):.2f}° | "
                             f"geo_t_abs={tdiag.get('t_geo_local_A_abs', float('nan')):.2f}° | "
+                            f"gref={tdiag.get('geom_refine_success_rate', float('nan')):.2f} | "
+                            f"geom_rot={tdiag.get('geom_rot', float('nan')):.2f}° | "
+                            f"geom_abs={tdiag.get('geom_tdir_abs', float('nan')):.2f}° | "
                             f"joint_abs={joint_score:.4f} | joint_local={joint_local_A_abs_score:.4f} | "
                             f"joint_ok={int(joint_eligible)} | joint_local_ok={int(joint_local_A_abs_eligible)} | time={t_eval:.2f}s"
                         )
@@ -2621,6 +2697,8 @@ def main():
         "raw", "flip", "R@t", "R@(-t)", "Rt@t", "Rt@(-t)",
         "tdir_local_A", "tdir_local_A_abs",
         "tmag_abs_err", "tmag_rel_err", "trans_vec_l2",
+        "geom_refine_success_rate", "geom_rot", "geom_tdir", "geom_tdir_abs",
+        "fused_rot", "fused_tdir_abs",
     ]
     latest_eval_metrics = {
         k: float(latest_eval[k])

@@ -108,6 +108,12 @@ class Config:
     epi_ramp_updates: int = 100
     use_geometric_t_fusion: bool = False
     geometric_t_fuse_strength: float = 0.0
+    use_geometry_refine: bool = False
+    geom_refine_min_prob: float = 0.01
+    geom_refine_max_matches: int = 512
+    geom_refine_mutual_check: bool = False
+    geom_refine_use_fine_if_available: bool = True
+    geom_refine_fallback_to_network: bool = True
 
     # ---------------- Auxiliary depth branch ----------------
     use_depth_branch: bool = False
