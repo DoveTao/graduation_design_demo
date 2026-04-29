@@ -22,6 +22,8 @@ Notes:
     and checkpoint-based experiment comparison.
 """
 
+import argparse
+import ast
 import json
 import math
 import os
@@ -61,6 +63,70 @@ def _cfg_to_dict(cfg):
         return asdict(cfg)
     except Exception:
         return {k: v for k, v in vars(cfg).items() if not k.startswith("_")}
+
+
+def _parse_args():
+    parser = argparse.ArgumentParser(description="Train the panoramic relative pose MVP model.")
+    parser.add_argument(
+        "--set",
+        dest="overrides",
+        action="append",
+        default=[],
+        metavar="KEY=VALUE",
+        help="Override a Config field. Can be passed multiple times.",
+    )
+    return parser.parse_args()
+
+
+def _coerce_cfg_value(raw: str, current: Any) -> Any:
+    text = str(raw).strip()
+    if isinstance(current, bool):
+        lowered = text.lower()
+        if lowered in {"1", "true", "yes", "y", "on"}:
+            return True
+        if lowered in {"0", "false", "no", "n", "off"}:
+            return False
+        raise ValueError(f"Cannot parse boolean value: {raw}")
+    if isinstance(current, int) and not isinstance(current, bool):
+        return int(text)
+    if isinstance(current, float):
+        return float(text)
+    if isinstance(current, tuple):
+        try:
+            value = ast.literal_eval(text)
+        except Exception:
+            value = tuple(part.strip() for part in text.split(",") if part.strip())
+        if not isinstance(value, tuple):
+            value = tuple(value) if isinstance(value, list) else (value,)
+        if len(current) > 0:
+            elem_type = type(current[0])
+            value = tuple(elem_type(v) for v in value)
+        return value
+    if current is None:
+        try:
+            return ast.literal_eval(text)
+        except Exception:
+            return text
+    if isinstance(current, str):
+        return text
+    try:
+        return type(current)(text)
+    except Exception:
+        return text
+
+
+def _apply_cfg_overrides(cfg: Config, overrides: List[str]) -> None:
+    for item in overrides:
+        if "=" not in item:
+            raise ValueError(f"Invalid override '{item}'. Expected KEY=VALUE.")
+        key, raw_value = item.split("=", 1)
+        key = key.strip()
+        if not key or not hasattr(cfg, key):
+            raise ValueError(f"Unknown Config field: {key}")
+        old_value = getattr(cfg, key)
+        new_value = _coerce_cfg_value(raw_value, old_value)
+        setattr(cfg, key, new_value)
+        print(f"[CfgOverride] {key}: {old_value!r} -> {new_value!r}")
 
 
 def _first_not_none(*vals):
@@ -1166,7 +1232,9 @@ def eval_model(model, loader, device, cfg: Config, *, collect_vis: bool = False,
 
 
 def main():
+    args = _parse_args()
     cfg = Config()
+    _apply_cfg_overrides(cfg, args.overrides)
     os.environ.setdefault("PYTORCH_ALLOC_CONF", "expandable_segments:True")
     _seed_everything(cfg.data_seed, deterministic=bool(cfg.deterministic))
 
