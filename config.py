@@ -42,7 +42,7 @@ class Config:
     max_dt: float = 5.0
     k_choices: Tuple[int, ...] = (5, 10, 20, 40)
     k_probs: Tuple[float, ...] = (0.25, 0.30, 0.30, 0.15)
-    train_color_aug: bool = True
+    train_color_aug: bool = False
     train_color_aug_strength: float = 0.25
 
     # Deterministic evaluation protocol
