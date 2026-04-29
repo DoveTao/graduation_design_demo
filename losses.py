@@ -89,6 +89,26 @@ def pose_loss(
     return rot_term + float(pose_t_alpha) * t_term
 
 
+def translation_direction_loss(
+    t_pred: torch.Tensor,
+    t_gt: torch.Tensor,
+    R_gt: torch.Tensor,
+    *,
+    pred_t_frame: str = "B",
+    oriented_weight: float = 1.0,
+    axis_weight: float = 0.0,
+    sample_weight: Optional[torch.Tensor] = None,
+) -> torch.Tensor:
+    t_pred = _normalize(t_pred)
+    t_gt_use = _gt_translation_in_pred_frame(t_gt, R_gt, pred_t_frame=pred_t_frame)
+    cos_t = torch.sum(t_pred * t_gt_use, dim=-1).clamp(-1.0, 1.0)
+    loss = float(oriented_weight) * (1.0 - cos_t) + float(axis_weight) * (1.0 - cos_t.abs())
+    if sample_weight is not None:
+        w = sample_weight.float().view(-1).to(loss.device).clamp_min(1e-6)
+        return (loss.view(-1) * w).sum() / w.sum().clamp_min(1e-6)
+    return loss.mean()
+
+
 def epipolar_simplified_loss(
     W_ab: torch.Tensor,
     bearing_a: torch.Tensor,

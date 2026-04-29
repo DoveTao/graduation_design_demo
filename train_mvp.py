@@ -49,6 +49,7 @@ from losses import (
     epipolar_simplified_loss,
     erp_photometric_loss,
     pose_loss,
+    translation_direction_loss,
 )
 from model import PanoramaRelPoseModel
 from erp_sampling import warp_erp_with_depth_pose
@@ -1204,12 +1205,14 @@ def main():
         f"@{getattr(cfg, 'cross_context_strength', 0.25)} | "
         f"t_branch={getattr(cfg, 'use_translation_feature_branch', False)}"
         f":{getattr(cfg, 'translation_patch_pool_mode', 'gated_avgmax')}"
+        f":gate={getattr(cfg, 'translation_patch_pool_gate_init', -2.0)}"
+        f":pos={getattr(cfg, 'translation_pos_enc_scale', 1.0)}"
         f":L{getattr(cfg, 'translation_branch_encoder_layers', 0)}"
         f":detach={getattr(cfg, 'translation_branch_detach_match', True)} | "
         f"pose_stats_pool={getattr(cfg, 'pose_use_stats_pool', False)}"
     )
     print(
-        f"[Cfg ] loss: w_pose={cfg.w_pose} | t_alpha={cfg.pose_t_alpha} | "
+        f"[Cfg ] loss: w_pose={cfg.w_pose} | w_pose_out_t={getattr(cfg, 'w_pose_output_t', 0.0)} | t_alpha={cfg.pose_t_alpha} | "
         f"t_oriented={getattr(cfg, 'pose_t_oriented_weight', 1.0)} | "
         f"t_axis={getattr(cfg, 'pose_t_axis_weight', 0.0)} | "
         f"rot_k>={getattr(cfg, 'large_k_rot_thresh', 40)}x{getattr(cfg, 'large_k_rot_weight', 1.0)} | "
@@ -1407,6 +1410,7 @@ def main():
     best_tdir_local_A = float("inf")
     best_tdir_local_A_abs = float("inf")
     best_joint = float("inf")
+    best_joint_local_A_abs = float("inf")
     eval_history: List[Dict[str, Any]] = []
     vis_dumped = False
 
@@ -1467,6 +1471,20 @@ def main():
                 rot_sample_weight=rot_k_weight,
                 t_sample_weight=dt_t_weight,
             )
+            if (
+                float(getattr(cfg, "w_pose_output_t", 0.0)) > 0.0
+                and isinstance(aux, dict)
+                and aux.get("t_dir_out", None) is not None
+            ):
+                L_pose = L_pose + float(cfg.w_pose_output_t) * translation_direction_loss(
+                    aux["t_dir_out"],
+                    t_gt,
+                    R_gt,
+                    pred_t_frame="B",
+                    oriented_weight=float(getattr(cfg, "pose_t_oriented_weight", 1.0)),
+                    axis_weight=float(getattr(cfg, "pose_t_axis_weight", 0.0)),
+                    sample_weight=dt_t_weight,
+                )
             if bool(cfg.use_fine_stage) and aux.get("Rc", None) is not None and aux.get("tc_dir", None) is not None:
                 L_pose_coarse = pose_loss(
                     aux["Rc"],
@@ -1792,7 +1810,12 @@ def main():
                         )
                         t_eval = time.perf_counter() - t_eval0
                         joint_score = tdir_abs + float(cfg.joint_rot_weight) * rot
+                        joint_local_A_abs_score = tdir_local_A_abs + float(cfg.joint_rot_weight) * rot
                         joint_eligible = (rot < float(cfg.joint_rot_thresh_deg)) and (tdir_abs < float(cfg.joint_tdir_thresh_deg))
+                        joint_local_A_abs_eligible = (
+                            (rot < float(cfg.joint_rot_thresh_deg))
+                            and (tdir_local_A_abs < float(cfg.joint_tdir_thresh_deg))
+                        )
 
                         metrics = {
                             # test metrics: checkpoint selection still uses these
@@ -1802,7 +1825,9 @@ def main():
                             "tdir_local_A": tdir_local_A,
                             "tdir_local_A_abs": tdir_local_A_abs,
                             "joint_score": joint_score,
+                            "joint_local_A_abs_score": joint_local_A_abs_score,
                             "joint_eligible": int(joint_eligible),
+                            "joint_local_A_abs_eligible": int(joint_local_A_abs_eligible),
                             "bucket_k": bucket_k,
                             "bucket_dt": bucket_dt,
                             "bucket_k_dt": bucket_k_dt,
@@ -1837,7 +1862,8 @@ def main():
                             f"stable_local={tdiag.get('stable_tdir_local_A_abs', float('nan')):.2f}° | "
                             f"raw_t_abs={tdiag.get('t_raw_local_A_abs', float('nan')):.2f}° | "
                             f"geo_t_abs={tdiag.get('t_geo_local_A_abs', float('nan')):.2f}° | "
-                            f"joint_abs={joint_score:.4f} | joint_ok={int(joint_eligible)} | time={t_eval:.2f}s"
+                            f"joint_abs={joint_score:.4f} | joint_local={joint_local_A_abs_score:.4f} | "
+                            f"joint_ok={int(joint_eligible)} | joint_local_ok={int(joint_local_A_abs_eligible)} | time={t_eval:.2f}s"
                         )
                         print(tdir_msg)
                         print(tdir_local_msg)
@@ -1870,6 +1896,10 @@ def main():
                             best_joint = joint_score
                             if bool(getattr(cfg, "save_best_joint_checkpoint", True)):
                                 _save_model_ckpt(os.path.join(ckpt_root, "best_joint.pt"), model, cfg, step, upd, metrics)
+                        if joint_local_A_abs_eligible and joint_local_A_abs_score < best_joint_local_A_abs:
+                            best_joint_local_A_abs = joint_local_A_abs_score
+                            if bool(getattr(cfg, "save_best_local_joint_checkpoint", True)):
+                                _save_model_ckpt(os.path.join(ckpt_root, "best_joint_local_A_abs.pt"), model, cfg, step, upd, metrics)
 
                         eval_rec = {
                             "step": int(step),
@@ -1883,7 +1913,9 @@ def main():
                             "tdir_local_A": float(tdir_local_A),
                             "tdir_local_A_abs": float(tdir_local_A_abs),
                             "joint_score": float(joint_score),
+                            "joint_local_A_abs_score": float(joint_local_A_abs_score),
                             "joint_eligible": int(joint_eligible),
+                            "joint_local_A_abs_eligible": int(joint_local_A_abs_eligible),
                             "bucket_k": bucket_k,
                             "bucket_dt": bucket_dt,
                             "bucket_k_dt": bucket_k_dt,
@@ -1979,6 +2011,7 @@ def main():
         "best_tdir_local_A": best_tdir_local_A,
         "best_tdir_local_A_abs": best_tdir_local_A_abs,
         "best_joint": best_joint,
+        "best_joint_local_A_abs": best_joint_local_A_abs,
     }
     if bool(getattr(cfg, "save_last_train_state", True)):
         _save_ckpt(
@@ -2016,7 +2049,7 @@ def main():
         f"[Done ] training finished | best_rot={best_rot:.4f}° | "
         f"best_tdir_raw={best_tdir_raw:.4f}° | best_tdir_abs={best_tdir_abs:.4f}° | "
         f"best_tdir_local_A={best_tdir_local_A:.4f}° | best_tdir_local_A_abs={best_tdir_local_A_abs:.4f}° | "
-        f"best_joint={best_joint:.4f} | ckpt_dir={ckpt_root}"
+        f"best_joint={best_joint:.4f} | best_joint_local_A_abs={best_joint_local_A_abs:.4f} | ckpt_dir={ckpt_root}"
     )
 
 

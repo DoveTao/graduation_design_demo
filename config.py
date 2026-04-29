@@ -67,6 +67,7 @@ class Config:
     dropout: float = 0.05
     patch_embed_use_coords: bool = False
     patch_embed_pool_mode: str = "avg"  # "avg" | "avgmax" | "gated_avgmax"
+    patch_embed_pool_gate_init: float = -2.0
     patch_embed_avgmax_pool: bool = False
     use_bearing_fuse: bool = False
     use_cross_context: bool = False
@@ -74,6 +75,8 @@ class Config:
     cross_context_strength: float = 0.25
     use_translation_feature_branch: bool = True
     translation_patch_pool_mode: str = "gated_avgmax"
+    translation_patch_pool_gate_init: float = -2.0
+    translation_pos_enc_scale: float = 1.0
     translation_branch_encoder_layers: int = 0
     translation_branch_detach_match: bool = True
 
@@ -93,7 +96,7 @@ class Config:
     fine_temperature: float = 0.07
     logits_clip: float = 20.0
     topk_coarse: int = 64
-    pose_use_stats_pool: bool = False
+    pose_use_stats_pool: bool = True
 
     epi_angle_thresh_deg: float = 10.0
     epi_bias_strength: float = 2.0
@@ -149,6 +152,7 @@ class Config:
     w_epi: float = 0.01
     w_coarse_pose_aux: float = 0.30
     w_coarse_epi_aux: float = 0.0
+    w_pose_output_t: float = 0.0
     pose_t_alpha: float = 1.0
     pose_t_oriented_weight: float = 1.0
     pose_t_axis_weight: float = 0.0
@@ -179,6 +183,7 @@ class Config:
     save_last_train_state: bool = False
     save_metric_checkpoints: bool = False
     save_best_joint_checkpoint: bool = True
+    save_best_local_joint_checkpoint: bool = True
     vis_eval_index: int = 0
     vis_dump_every_eval: bool = False
     plot_curves_after_train: bool = False

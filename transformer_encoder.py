@@ -163,6 +163,7 @@ class PatchEmbed(nn.Module):
         use_coords: bool = False,
         use_avgmax_pool: bool = False,
         pool_mode: str = "avg",
+        pool_gate_init: float = -2.0,
     ):
         super().__init__()
         self.p = int(p)
@@ -194,7 +195,7 @@ class PatchEmbed(nn.Module):
             nn.GELU(),
         )
         if self.pool_mode == "gated_avgmax":
-            self.pool_gate = nn.Parameter(torch.full((64,), -2.0))
+            self.pool_gate = nn.Parameter(torch.full((64,), float(pool_gate_init)))
         proj_in = 128 if self.pool_mode == "avgmax" else 64
         self.proj = nn.Sequential(
             nn.LayerNorm(proj_in),

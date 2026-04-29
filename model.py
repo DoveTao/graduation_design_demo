@@ -65,6 +65,7 @@ class Module2Sampler(nn.Module):
             use_coords=bool(getattr(cfg, "patch_embed_use_coords", False)),
             use_avgmax_pool=bool(getattr(cfg, "patch_embed_avgmax_pool", False)),
             pool_mode=str(getattr(cfg, "patch_embed_pool_mode", "avg")),
+            pool_gate_init=float(getattr(cfg, "patch_embed_pool_gate_init", -2.0)),
         )
         self.patch_embed_f = PatchEmbed(
             cfg.p,
@@ -73,6 +74,7 @@ class Module2Sampler(nn.Module):
             use_coords=bool(getattr(cfg, "patch_embed_use_coords", False)),
             use_avgmax_pool=bool(getattr(cfg, "patch_embed_avgmax_pool", False)),
             pool_mode=str(getattr(cfg, "patch_embed_pool_mode", "avg")),
+            pool_gate_init=float(getattr(cfg, "patch_embed_pool_gate_init", -2.0)),
         )
         self.pos_enc = BearingPosEnc(cfg.D)
         self.enc_c = TokenEncoder(cfg.D, cfg.n_layers, cfg.n_heads, cfg.mlp_ratio, cfg.dropout)
@@ -88,6 +90,7 @@ class Module2Sampler(nn.Module):
                 in_ch=cfg.in_ch,
                 use_coords=bool(getattr(cfg, "patch_embed_use_coords", False)),
                 pool_mode=str(getattr(cfg, "translation_patch_pool_mode", "gated_avgmax")),
+                pool_gate_init=float(getattr(cfg, "translation_patch_pool_gate_init", -2.0)),
             )
             if t_layers > 0:
                 self.enc_c_t = TokenEncoder(cfg.D, t_layers, cfg.n_heads, cfg.mlp_ratio, cfg.dropout)
@@ -134,7 +137,10 @@ class Module2Sampler(nn.Module):
             enc = self.enc_f
 
         bearing_b = bearing.view(1, N, 3).expand(B, -1, -1)
-        feat = feat + self.pos_enc(bearing_b)
+        pos_scale = 1.0
+        if branch == "translation":
+            pos_scale = float(getattr(self.cfg, "translation_pos_enc_scale", 1.0))
+        feat = feat + self.pos_enc(bearing_b) * pos_scale
         feat = enc(feat)
 
         ids_b = ids.view(1, N).expand(B, -1)
