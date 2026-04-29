@@ -38,3 +38,4 @@ check_labels_pose.py
 config.md
 
 checkpoints/
+checkpoints_smoke/
