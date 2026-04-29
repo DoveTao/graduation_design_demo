@@ -43,6 +43,17 @@ class Config:
     n_heads: int = 8
     mlp_ratio: float = 4.0
     dropout: float = 0.05
+    patch_embed_use_coords: bool = False
+    patch_embed_pool_mode: str = "avg"  # "avg" | "avgmax" | "gated_avgmax"
+    patch_embed_avgmax_pool: bool = False
+    use_bearing_fuse: bool = False
+    use_cross_context: bool = False
+    cross_context_layers: int = 1
+    cross_context_strength: float = 0.25
+    use_translation_feature_branch: bool = True
+    translation_patch_pool_mode: str = "gated_avgmax"
+    translation_branch_encoder_layers: int = 0
+    translation_branch_detach_match: bool = True
 
     # Translation convention
     translation_local_frame: str = "A"
@@ -50,21 +61,23 @@ class Config:
 
     # ---------------- Model: interaction / routing / geometry ----------------
     use_coarse_interaction: bool = True
-    use_fine_stage: bool = True
+    use_fine_stage: bool = False
     use_epipolar_bias: bool = False
     use_epipolar_loss: bool = True
     epi_mode: str = "bias"   # "bias" | "mask"
+    fine_pose_fuse_strength: float = 0.0
 
     coarse_temperature: float = 0.10
     fine_temperature: float = 0.07
     logits_clip: float = 20.0
     topk_coarse: int = 64
+    pose_use_stats_pool: bool = False
 
     epi_angle_thresh_deg: float = 10.0
     epi_bias_strength: float = 2.0
     epi_loss_use_bidir: bool = True
     # GT-pose epipolar matching supervision: directly supervises W_ab/W_ba.
-    epi_loss_type: str = "gt_band_nll"
+    epi_loss_type: str = "gt_match_ce"
     epi_gt_target_temp: float = 0.25
     epi_ramp_updates: int = 100
     use_geometric_t_fusion: bool = False
@@ -101,8 +114,8 @@ class Config:
     warmup_updates: int = 100
     min_lr_scale: float = 0.03  # kept for compatibility; piecewise schedule is used
 
-    lr_hold_updates: int = 1000
-    lr_drop1_updates: int = 3000
+    lr_hold_updates: int = 100
+    lr_drop1_updates: int = 300
     lr_drop1_scale: float = 0.30
     lr_drop2_scale: float = 0.10
 
@@ -111,12 +124,14 @@ class Config:
     w_x: float = 0.0
     w_cyc: float = 0.0
     w_rel: float = 0.0
-    w_epi: float = 0.05
+    w_epi: float = 0.01
     w_coarse_pose_aux: float = 0.30
-    w_coarse_epi_aux: float = 0.02
+    w_coarse_epi_aux: float = 0.0
     pose_t_alpha: float = 1.0
     pose_t_oriented_weight: float = 1.0
     pose_t_axis_weight: float = 0.0
+    large_k_rot_thresh: int = 40
+    large_k_rot_weight: float = 1.0
     small_dt_thresh: float = 0.3
     small_dt_t_weight: float = 0.20
     w_photo: float = 0.0
@@ -129,7 +144,7 @@ class Config:
     max_eval_batches: int = 128
     max_train_eval_batches: int = 64
     ckpt_dir: str = "checkpoints"
-    exp_name: str = "C10_color_aug_stablemetric"
+    exp_name: str = "C11_tbranch_gated_L0"
 
     # Export helpers for PPT figures / tables
     save_eval_history: bool = True
@@ -160,7 +175,7 @@ class Config:
     prefetch_factor: int = 2
 
     # ---------------- AMP / perf ----------------
-    amp: bool = True
+    amp: bool = False
     amp_dtype: str = "bf16"   # "auto" | "bf16" | "fp16"
     tf32: bool = True
     matmul_precision: str = "high"

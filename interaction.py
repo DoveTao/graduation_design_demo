@@ -74,12 +74,31 @@ class TokenReliabilityHead(nn.Module):
         return self.net(feat)
 
 
-class CoarsePoseHead(nn.Module):
+class BearingFuse(nn.Module):
     def __init__(self, D: int):
         super().__init__()
-        self.mlp = nn.Sequential(
-            nn.LayerNorm(D),
+        self.net = nn.Sequential(
+            nn.LayerNorm(12),
+            nn.Linear(12, D),
+            nn.GELU(),
             nn.Linear(D, D),
+        )
+
+    def forward(self, bearing_a: torch.Tensor, bearing_b_att: torch.Tensor) -> torch.Tensor:
+        a = F.normalize(bearing_a.float(), dim=-1, eps=1e-6)
+        b = F.normalize(bearing_b_att.float(), dim=-1, eps=1e-6)
+        x = torch.cat([a, b, a - b, a * b], dim=-1)
+        return self.net(x)
+
+
+class CoarsePoseHead(nn.Module):
+    def __init__(self, D: int, *, use_stats_pool: bool = False):
+        super().__init__()
+        self.use_stats_pool = bool(use_stats_pool)
+        in_dim = 3 * D if self.use_stats_pool else D
+        self.mlp = nn.Sequential(
+            nn.LayerNorm(in_dim),
+            nn.Linear(in_dim, D),
             nn.GELU(),
             nn.Linear(D, D),
             nn.GELU(),
@@ -88,7 +107,15 @@ class CoarsePoseHead(nn.Module):
         self.t = nn.Linear(D, 3)
 
     def forward(self, feat: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
-        z = self.mlp(feat.mean(dim=1))
+        feat = feat.float()
+        if self.use_stats_pool:
+            z_mean = feat.mean(dim=1)
+            z_max = feat.max(dim=1).values
+            z_std = torch.sqrt(feat.var(dim=1, unbiased=False).clamp_min(1e-8))
+            z = torch.cat([z_mean, z_max, z_std], dim=-1)
+        else:
+            z = feat.mean(dim=1)
+        z = self.mlp(z)
         R = rot6d_to_matrix(self.rot(z))
         t_dir = normalize_vec(self.t(z))
         return R, t_dir
@@ -245,15 +272,38 @@ def epipolar_band_bias_or_mask(
 
 
 class CoarseInteraction(nn.Module):
-    def __init__(self, D: int, *, temperature: float, logits_clip: float):
+    def __init__(
+        self,
+        D: int,
+        *,
+        temperature: float,
+        logits_clip: float,
+        pose_use_stats_pool: bool = False,
+        use_bearing_fuse: bool = False,
+        use_translation_feature_branch: bool = False,
+        translation_branch_detach_match: bool = True,
+    ):
         super().__init__()
         self.temperature = float(temperature)
         self.logits_clip = float(logits_clip)
+        self.use_bearing_fuse = bool(use_bearing_fuse)
+        self.use_translation_feature_branch = bool(use_translation_feature_branch)
+        self.translation_branch_detach_match = bool(translation_branch_detach_match)
         self.fuse = FuseMLP(D)
-        self.pose_head = CoarsePoseHead(D)
+        self.bearing_fuse = BearingFuse(D) if self.use_bearing_fuse else None
+        self.pose_head = CoarsePoseHead(D, use_stats_pool=pose_use_stats_pool)
+        self.t_fuse = FuseMLP(D) if self.use_translation_feature_branch else None
+        self.t_head = TranslationOnlyHead(D) if self.use_translation_feature_branch else None
         self.rel_head = TokenReliabilityHead(D)
 
-    def forward(self, TokA: Tokens, TokB: Tokens) -> Dict[str, torch.Tensor]:
+    def forward(
+        self,
+        TokA: Tokens,
+        TokB: Tokens,
+        *,
+        tokens_a_t: Optional[Tokens] = None,
+        tokens_b_t: Optional[Tokens] = None,
+    ) -> Dict[str, torch.Tensor]:
         sim = cosine_logits(
             TokA.feat,
             TokB.feat,
@@ -265,18 +315,33 @@ class CoarseInteraction(nn.Module):
 
         feat_b_att = torch.matmul(Wc_ab, TokB.feat.float())
         Fc = self.fuse(TokA.feat.float(), feat_b_att)
+        if self.bearing_fuse is not None:
+            bearing_b_att = torch.matmul(Wc_ab, TokB.bearing.float())
+            Fc = Fc + self.bearing_fuse(TokA.bearing, bearing_b_att)
         Rc, tc_dir = self.pose_head(Fc)
+        Fc_t = None
+        tc_dir_pose = tc_dir
+        if self.t_fuse is not None and self.t_head is not None and tokens_a_t is not None and tokens_b_t is not None:
+            W_t = Wc_ab.detach() if self.translation_branch_detach_match else Wc_ab
+            feat_b_att_t = torch.matmul(W_t, tokens_b_t.feat.float())
+            Fc_t = self.t_fuse(tokens_a_t.feat.float(), feat_b_att_t)
+            match_conf = W_t.max(dim=-1).values
+            tc_dir = self.t_head(Fc_t, token_weight=match_conf)
 
-        return {
+        out = {
             "Wc_ab": Wc_ab,
             "Wc_ba": Wc_ba,
             "Fc": Fc,
             "Rc": Rc,
             "tc_dir": tc_dir,
+            "tc_dir_pose": tc_dir_pose,
             "cA_c": self.rel_head(TokA.feat.float()),
             "cB_c": self.rel_head(TokB.feat.float()),
             "logits_c": sim,
         }
+        if Fc_t is not None:
+            out["Fc_t"] = Fc_t
+        return out
 
 
 class FineInteraction(nn.Module):
@@ -291,12 +356,16 @@ class FineInteraction(nn.Module):
         depth_fuse_detach_feature: bool = False,
         use_geometric_t_fusion: bool = False,
         geometric_t_fuse_strength: float = 0.0,
+        pose_use_stats_pool: bool = False,
+        use_bearing_fuse: bool = False,
     ):
         super().__init__()
         self.temperature = float(temperature)
         self.logits_clip = float(logits_clip)
+        self.use_bearing_fuse = bool(use_bearing_fuse)
         self.fuse = FuseMLP(D)
-        self.pose_head = FinePoseHead(D)
+        self.bearing_fuse = BearingFuse(D) if self.use_bearing_fuse else None
+        self.pose_head = FinePoseHead(D, use_stats_pool=pose_use_stats_pool)
         self.rel_head = TokenReliabilityHead(D)
         self.use_depth_fusion = bool(use_depth_fusion)
         self.depth_fuse_strength = float(depth_fuse_strength)
@@ -426,6 +495,9 @@ class FineInteraction(nn.Module):
 
         feat_b_att = torch.matmul(Wf_ab, TokB_f.feat.float())
         Ff = self.fuse(TokA_f.feat.float(), feat_b_att)
+        if self.bearing_fuse is not None:
+            bearing_b_att = torch.matmul(Wf_ab, TokB_f.bearing.float())
+            Ff = Ff + self.bearing_fuse(TokA_f.bearing, bearing_b_att)
         R, _ = self.pose_head(Ff)
 
         if self.use_depth_fusion and depth_tok_a is not None:

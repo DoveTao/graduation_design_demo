@@ -244,6 +244,24 @@ def _translation_weight_from_dt(meta: Any, bsz: int, *, small_dt_thresh: float, 
             w.append(1.0)
     return w
 
+
+def _rotation_weight_from_k(meta: Any, bsz: int, *, large_k_thresh: int, large_k_rot_weight: float):
+    k_list = _meta_batch_field(meta, 'k', bsz, default=None)
+    weight_hi = float(large_k_rot_weight)
+    if weight_hi <= 0.0:
+        weight_hi = 1.0
+    w = []
+    for x in k_list:
+        try:
+            if x is not None and int(x) >= int(large_k_thresh):
+                w.append(weight_hi)
+            else:
+                w.append(1.0)
+        except Exception:
+            w.append(1.0)
+    return w
+
+
 def _bucket_init() -> Dict[str, Dict[str, float]]:
     return {}
 
@@ -1153,9 +1171,24 @@ def main():
     print(f"[Cfg ] HxW={cfg.H}x{cfg.W} | D={cfg.D} | Nc={cfg.Nc} | Nf={cfg.Nf} | p={cfg.p}")
     print(f"[Cfg ] temp(coarse/fine)={cfg.coarse_temperature}/{cfg.fine_temperature} | logits_clip={cfg.logits_clip} | topk_coarse={cfg.topk_coarse}")
     print(
+        f"[Cfg ] feature: patch_coords={getattr(cfg, 'patch_embed_use_coords', False)} | "
+        f"patch_pool={getattr(cfg, 'patch_embed_pool_mode', 'avg')} | "
+        f"patch_avgmax={getattr(cfg, 'patch_embed_avgmax_pool', False)} | "
+        f"bearing_fuse={getattr(cfg, 'use_bearing_fuse', False)} | "
+        f"cross_context={getattr(cfg, 'use_cross_context', False)}"
+        f"x{getattr(cfg, 'cross_context_layers', 1)}"
+        f"@{getattr(cfg, 'cross_context_strength', 0.25)} | "
+        f"t_branch={getattr(cfg, 'use_translation_feature_branch', False)}"
+        f":{getattr(cfg, 'translation_patch_pool_mode', 'gated_avgmax')}"
+        f":L{getattr(cfg, 'translation_branch_encoder_layers', 0)}"
+        f":detach={getattr(cfg, 'translation_branch_detach_match', True)} | "
+        f"pose_stats_pool={getattr(cfg, 'pose_use_stats_pool', False)}"
+    )
+    print(
         f"[Cfg ] loss: w_pose={cfg.w_pose} | t_alpha={cfg.pose_t_alpha} | "
         f"t_oriented={getattr(cfg, 'pose_t_oriented_weight', 1.0)} | "
         f"t_axis={getattr(cfg, 'pose_t_axis_weight', 0.0)} | "
+        f"rot_k>={getattr(cfg, 'large_k_rot_thresh', 40)}x{getattr(cfg, 'large_k_rot_weight', 1.0)} | "
         f"w_epi={cfg.w_epi} | w_coarse_pose_aux={getattr(cfg, 'w_coarse_pose_aux', 0.0)}"
     )
     print(
@@ -1380,6 +1413,16 @@ def main():
             device=dev,
             dtype=torch.float32,
         )
+        rot_k_weight = torch.tensor(
+            _rotation_weight_from_k(
+                meta,
+                IA.shape[0],
+                large_k_thresh=int(getattr(cfg, "large_k_rot_thresh", 40)),
+                large_k_rot_weight=float(getattr(cfg, "large_k_rot_weight", 1.0)),
+            ),
+            device=dev,
+            dtype=torch.float32,
+        )
         t_data = time.perf_counter()
 
         with torch.autocast(device_type=dev.type, dtype=amp_dtype, enabled=use_amp):
@@ -1397,6 +1440,7 @@ def main():
                 pose_t_oriented_weight=float(getattr(cfg, "pose_t_oriented_weight", 1.0)),
                 pose_t_axis_weight=float(getattr(cfg, "pose_t_axis_weight", 0.0)),
                 pred_t_frame=t_pose_frame,
+                rot_sample_weight=rot_k_weight,
                 t_sample_weight=dt_t_weight,
             )
             if bool(cfg.use_fine_stage) and aux.get("Rc", None) is not None and aux.get("tc_dir", None) is not None:
@@ -1409,6 +1453,7 @@ def main():
                     pose_t_oriented_weight=float(getattr(cfg, "pose_t_oriented_weight", 1.0)),
                     pose_t_axis_weight=float(getattr(cfg, "pose_t_axis_weight", 0.0)),
                     pred_t_frame=aux.get("t_local_frame", "A"),
+                    rot_sample_weight=rot_k_weight,
                     t_sample_weight=dt_t_weight,
                 )
             else:

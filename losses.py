@@ -38,6 +38,7 @@ def pose_loss(
     pose_t_oriented_weight: float = 1.0,
     pose_t_axis_weight: float = 0.0,
     pred_t_frame: str = "B",
+    rot_sample_weight: Optional[torch.Tensor] = None,
     t_sample_weight: Optional[torch.Tensor] = None,
 ) -> torch.Tensor:
     R_pred = R_pred.float()
@@ -47,6 +48,13 @@ def pose_loss(
     t_gt_use = _gt_translation_in_pred_frame(t_gt, R_gt, pred_t_frame=pred_t_frame)
 
     rot_ang = matrix_geodesic_distance(R_pred, R_gt)
+    if rot_sample_weight is not None:
+        rw = rot_sample_weight.float().view(-1).to(rot_ang.device)
+        rw = rw.clamp_min(1e-6)
+        rot_term = (rot_ang.view(-1) * rw).sum() / rw.sum().clamp_min(1e-6)
+    else:
+        rot_term = rot_ang.mean()
+
     cos_t = torch.sum(t_pred * t_gt_use, dim=-1).clamp(-1.0, 1.0)
     oriented_loss = 1.0 - cos_t
     axis_loss = 1.0 - cos_t.abs()
@@ -57,7 +65,7 @@ def pose_loss(
         t_term = (t_loss.view(-1) * w).sum() / w.sum().clamp_min(1e-6)
     else:
         t_term = t_loss.mean()
-    return rot_ang.mean() + float(pose_t_alpha) * t_term
+    return rot_term + float(pose_t_alpha) * t_term
 
 
 def epipolar_simplified_loss(
@@ -69,7 +77,7 @@ def epipolar_simplified_loss(
     *,
     W_ba: Optional[torch.Tensor] = None,
     allowed_mask: Optional[torch.Tensor] = None,
-    angle_thresh_deg: float = 30.0,
+    angle_thresh_deg: float = 10.0,
     use_bidir: bool = True,
 ) -> torch.Tensor:
     W_ab = W_ab.float()
@@ -119,7 +127,7 @@ def epipolar_gt_matching_loss(
     *,
     W_ba: Optional[torch.Tensor] = None,
     allowed_mask: Optional[torch.Tensor] = None,
-    angle_thresh_deg: float = 30.0,
+    angle_thresh_deg: float = 10.0,
     use_bidir: bool = True,
     temperature: float = 1.0,
     min_plane_norm: float = 1e-4,

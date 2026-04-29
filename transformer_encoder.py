@@ -58,6 +58,69 @@ class TokenEncoder(nn.Module):
         return self.norm(x)
 
 
+class CrossContextBlock(nn.Module):
+    """
+    Lightweight bidirectional cross-attention between the two panorama token sets.
+
+    This is intentionally small and residual-only: each side keeps its own token
+    identity, but can borrow context from the other image before matching logits
+    are computed.
+    """
+    def __init__(
+        self,
+        dim: int,
+        n_heads: int,
+        mlp_ratio: float = 2.0,
+        dropout: float = 0.0,
+        strength: float = 0.25,
+    ):
+        super().__init__()
+        self.strength = float(strength)
+        self.norm_q = nn.LayerNorm(dim)
+        self.norm_ctx = nn.LayerNorm(dim)
+        self.cross_attn = nn.MultiheadAttention(embed_dim=dim, num_heads=n_heads, dropout=dropout, batch_first=True)
+        self.drop = nn.Dropout(dropout)
+        self.norm_mlp = nn.LayerNorm(dim)
+        self.mlp = MLP(dim, int(dim * mlp_ratio), dropout=dropout)
+
+    def _update(self, x: torch.Tensor, ctx: torch.Tensor) -> torch.Tensor:
+        q = self.norm_q(x)
+        kv = self.norm_ctx(ctx)
+        h, _ = self.cross_attn(q, kv, kv, need_weights=False)
+        x = x + self.strength * self.drop(h)
+        x = x + self.strength * self.drop(self.mlp(self.norm_mlp(x)))
+        return x
+
+    def forward(self, a: torch.Tensor, b: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+        a0, b0 = a, b
+        a = self._update(a0, b0)
+        b = self._update(b0, a0)
+        return a, b
+
+
+class CrossContextEncoder(nn.Module):
+    def __init__(
+        self,
+        dim: int,
+        n_layers: int,
+        n_heads: int,
+        mlp_ratio: float = 2.0,
+        dropout: float = 0.0,
+        strength: float = 0.25,
+    ):
+        super().__init__()
+        self.blocks = nn.ModuleList([
+            CrossContextBlock(dim, n_heads, mlp_ratio=mlp_ratio, dropout=dropout, strength=strength)
+            for _ in range(max(1, int(n_layers)))
+        ])
+        self.norm = nn.LayerNorm(dim)
+
+    def forward(self, a: torch.Tensor, b: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+        for blk in self.blocks:
+            a, b = blk(a, b)
+        return self.norm(a), self.norm(b)
+
+
 class PatchEmbed(nn.Module):
     """
     CNN patch embedding for sampled ERP/spherical patches.
@@ -71,16 +134,35 @@ class PatchEmbed(nn.Module):
     structure inside each sampled patch and extracts edge/texture-like local
     features before pooling to one token.
     """
-    def __init__(self, p: int, dim: int, in_ch: int = 3):
+    def __init__(
+        self,
+        p: int,
+        dim: int,
+        in_ch: int = 3,
+        use_coords: bool = False,
+        use_avgmax_pool: bool = False,
+        pool_mode: str = "avg",
+    ):
         super().__init__()
         self.p = int(p)
         self.dim = int(dim)
+        self.use_coords = bool(use_coords)
+        self.pool_mode = str(pool_mode)
+        if bool(use_avgmax_pool):
+            self.pool_mode = "avgmax"
+        if self.pool_mode not in {"avg", "avgmax", "gated_avgmax"}:
+            raise ValueError(f"Unsupported patch pool_mode: {self.pool_mode}")
+        conv_in_ch = int(in_ch) + (2 if self.use_coords else 0)
+        if self.use_coords:
+            coord = torch.linspace(-1.0, 1.0, steps=self.p, dtype=torch.float32)
+            yy, xx = torch.meshgrid(coord, coord, indexing="ij")
+            self.register_buffer("patch_coords", torch.stack([xx, yy], dim=0).view(1, 1, 2, self.p, self.p), persistent=False)
 
         # Keep this lightweight because it is applied to B*N patches.
         # For the current setting p=16, this gives:
         #   [C,16,16] -> [32,16,16] -> [64,8,8] -> pooled -> D
         self.cnn = nn.Sequential(
-            nn.Conv2d(in_ch, 32, kernel_size=3, stride=1, padding=1, bias=False),
+            nn.Conv2d(conv_in_ch, 32, kernel_size=3, stride=1, padding=1, bias=False),
             nn.GroupNorm(4, 32),
             nn.GELU(),
             nn.Conv2d(32, 64, kernel_size=3, stride=2, padding=1, bias=False),
@@ -89,20 +171,36 @@ class PatchEmbed(nn.Module):
             nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1, bias=False),
             nn.GroupNorm(8, 64),
             nn.GELU(),
-            nn.AdaptiveAvgPool2d(1),
-            nn.Flatten(),
         )
+        if self.pool_mode == "gated_avgmax":
+            self.pool_gate = nn.Parameter(torch.full((64,), -2.0))
+        proj_in = 128 if self.pool_mode == "avgmax" else 64
         self.proj = nn.Sequential(
-            nn.LayerNorm(64),
-            nn.Linear(64, dim),
+            nn.LayerNorm(proj_in),
+            nn.Linear(proj_in, dim),
             nn.GELU(),
             nn.Linear(dim, dim),
         )
 
     def forward(self, patches: torch.Tensor) -> torch.Tensor:
         B, N, C, p1, p2 = patches.shape
+        if self.use_coords:
+            coords = self.patch_coords.expand(B, N, -1, -1, -1).to(dtype=patches.dtype, device=patches.device)
+            patches = torch.cat([patches, coords], dim=2)
+            C = patches.shape[2]
         x = patches.reshape(B * N, C, p1, p2).contiguous()
         x = self.cnn(x)
+        if self.pool_mode == "avgmax":
+            x_avg = F.adaptive_avg_pool2d(x, 1).flatten(1)
+            x_max = F.adaptive_max_pool2d(x, 1).flatten(1)
+            x = torch.cat([x_avg, x_max], dim=-1)
+        elif self.pool_mode == "gated_avgmax":
+            x_avg = F.adaptive_avg_pool2d(x, 1).flatten(1)
+            x_max = F.adaptive_max_pool2d(x, 1).flatten(1)
+            gate = torch.sigmoid(self.pool_gate).view(1, -1).to(dtype=x_avg.dtype)
+            x = x_avg + gate * (x_max - x_avg)
+        else:
+            x = F.adaptive_avg_pool2d(x, 1).flatten(1)
         x = self.proj(x)
         x = x.view(B, N, self.dim)
         return x
