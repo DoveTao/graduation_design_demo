@@ -1553,7 +1553,12 @@ def main():
                     axis_weight=float(getattr(cfg, "pose_t_axis_weight", 0.0)),
                     sample_weight=dt_t_weight,
                 )
-            if bool(cfg.use_fine_stage) and aux.get("Rc", None) is not None and aux.get("tc_dir", None) is not None:
+            fine_pose_fuse_strength = float(getattr(cfg, "fine_pose_fuse_strength", 1.0))
+            coarse_pose_aux_w = float(getattr(cfg, "w_coarse_pose_aux", 0.0))
+            if bool(cfg.use_fine_stage) and fine_pose_fuse_strength <= 1e-8:
+                coarse_pose_aux_w = 0.0
+
+            if coarse_pose_aux_w > 0.0 and bool(cfg.use_fine_stage) and aux.get("Rc", None) is not None and aux.get("tc_dir", None) is not None:
                 L_pose_coarse = pose_loss(
                     aux["Rc"],
                     aux["tc_dir"],
@@ -1725,7 +1730,7 @@ def main():
             epi_w = float(cfg.w_epi) * epi_ramp
             L = (
                 cfg.w_pose * L_pose
-                + float(getattr(cfg, "w_coarse_pose_aux", 0.0)) * L_pose_coarse
+                + coarse_pose_aux_w * L_pose_coarse
                 + cfg.w_x * L_x
                 + cfg.w_cyc * L_cyc
                 + cfg.w_rel * L_rel
