@@ -1,3 +1,24 @@
+"""
+File: depth_branch.py
+Description:
+    Lightweight ERP depth branch for optional self-supervised depth and pose
+    fusion experiments. The branch predicts inverse depth maps and exposes
+    intermediate features for token-level fusion.
+
+Main Components:
+    - Convolution, normalization, and activation blocks
+    - LightERPDepthNet for multi-scale inverse-depth prediction
+    - Feature outputs used by optional translation/depth fusion
+
+Usage / Role:
+    Provides an auxiliary depth module for ablation and future fine-stage
+    extensions.
+
+Notes:
+    This module is optional in the MVP and is kept lightweight for limited GPU
+    memory experiments.
+"""
+
 from __future__ import annotations
 
 from typing import Dict, Tuple

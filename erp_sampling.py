@@ -1,5 +1,23 @@
-# erp_sampling.py
-# bearing -> ERP (u,v) -> grid_sample utilities
+"""
+File: erp_sampling.py
+Description:
+    ERP sampling utilities for converting spherical bearings to equirectangular
+    image coordinates and extracting sampled patches or dense features.
+
+Main Components:
+    - Bearing-to-ERP coordinate conversion
+    - Grid construction for spherical patch sampling
+    - ERP patch sampling through torch grid_sample
+    - Dense feature sampling from bearing directions
+
+Usage / Role:
+    Provides the image sampling layer used by token construction and optional
+    depth-feature fusion.
+
+Notes:
+    These utilities connect the spherical matching representation with the
+    panorama image layout used in the graduation design MVP.
+"""
 
 from __future__ import annotations
 import math

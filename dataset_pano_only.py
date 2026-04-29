@@ -1,3 +1,24 @@
+"""
+File: dataset_pano_only.py
+Description:
+    Dataset definitions for loading panoramic image pairs and relative pose
+    labels from the RflyPano-style data layout. This file supports mixed-k
+    training pairs, fixed evaluation pairs, and pose metadata parsing.
+
+Main Components:
+    - Frame and pair metadata structures
+    - Label parsing and relative pose computation
+    - Training dataset with mixed temporal offsets and optional color augmentation
+    - Fixed-k evaluation dataset for deterministic validation
+
+Usage / Role:
+    Provides the primary dataset loading layer for training and evaluation.
+
+Notes:
+    The dataset is used by the graduation design MVP to evaluate coarse
+    matching, translation direction supervision, k buckets, and dt-world buckets.
+"""
+
 import os
 import re
 import glob

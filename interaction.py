@@ -1,3 +1,24 @@
+"""
+File: interaction.py
+Description:
+    Matching and interaction modules for coarse and fine spherical token sets.
+    This file computes similarity matrices, soft correspondence weights,
+    feature fusion, pose heads, reliability heads, and epipolar guidance.
+
+Main Components:
+    - Tokens dataclass for token features and spherical metadata
+    - CoarseInteraction and FineInteraction modules
+    - Fusion, reliability, rotation, and translation heads
+    - Epipolar band bias/mask utilities and fine-to-coarse aggregation
+
+Usage / Role:
+    Implements the core matching and pose-regression logic used by the model.
+
+Notes:
+    Supports the MVP coarse matching path, fine-stage routing, GT epipolar
+    matching diagnostics, and lightweight translation-specific feature fusion.
+"""
+
 from __future__ import annotations
 
 import math

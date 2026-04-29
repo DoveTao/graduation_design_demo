@@ -17,6 +17,10 @@ wandb/
 logs/
 *.log
 
+# ---- temporary patches / local notes ----
+*.patch
+*.diff
+
 # ---- python cache ----
 __pycache__/
 *.pyc

@@ -1,3 +1,26 @@
+"""
+File: model.py
+Description:
+    Main model definition for panoramic relative pose estimation. This file
+    builds sampled spherical tokens, applies token encoders, runs coarse and
+    optional fine interactions, and returns rotation and translation predictions.
+
+Main Components:
+    - Module2Sampler for ERP patch sampling and token construction
+    - PanoramaRelPoseModel for end-to-end relative pose prediction
+    - Coarse-only and coarse-to-fine inference paths
+    - Optional depth fusion and lightweight translation feature branch
+
+Usage / Role:
+    Serves as the model assembly layer used by the training and evaluation
+    pipeline.
+
+Notes:
+    The current MVP emphasizes coarse matching and local-frame translation
+    supervision while keeping optional fine-stage, epipolar-bias, and depth
+    branches available for ablation.
+"""
+
 from __future__ import annotations
 
 from typing import Dict, Optional, Tuple

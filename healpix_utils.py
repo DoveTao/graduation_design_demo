@@ -1,15 +1,23 @@
-# healpix_utils.py
-# Practical spherical hierarchy for panorama matching.
-#
-# This version removes the old "fine -> nearest coarse" placeholder by building
-# a deterministic hierarchical split: each coarse cell owns an explicit set of
-# fine children. When (Nf == 4 * Nc), the structure matches the intended
-# coarse-to-fine routing pattern used by the model.
-#
-# NOTE:
-#   This is still a lightweight in-repo implementation and not the official
-#   HEALPix library. It is, however, a true hierarchy with exact parent ids,
-#   unlike the previous placeholder assignment.
+"""
+File: healpix_utils.py
+Description:
+    Practical spherical hierarchy utilities for panorama matching. This file
+    builds deterministic coarse and fine spherical cells with explicit parent
+    relationships for coarse-to-fine routing.
+
+Main Components:
+    - LevelSpec metadata for hierarchy levels
+    - HealpixHierarchy for coarse/fine bearing and patch-bearing generation
+    - Deterministic fine-child assignment for each coarse cell
+
+Usage / Role:
+    Provides the spherical token layout used by the model sampler.
+
+Notes:
+    This is a lightweight in-repo hierarchy for the graduation design MVP, not
+    the official HEALPix library. It keeps exact parent ids for fine-stage and
+    routing experiments.
+"""
 
 from __future__ import annotations
 import math

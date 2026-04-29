@@ -1,4 +1,25 @@
-# transformer_encoder.py
+"""
+File: transformer_encoder.py
+Description:
+    Lightweight token encoders and patch embedding layers for panoramic
+    matching. The module converts sampled ERP patches into token features and
+    provides self-attention and optional cross-context blocks.
+
+Main Components:
+    - MLP and TransformerBlock building blocks
+    - TokenEncoder for per-image token sequence encoding
+    - CrossContextBlock and CrossContextEncoder for ablation experiments
+    - PatchEmbed and BearingPosEnc for local appearance and spherical position
+
+Usage / Role:
+    Provides feature extraction and token encoding modules used by the main
+    model definition.
+
+Notes:
+    Includes lightweight pooling variants for limited GPU memory experiments
+    and the MVP translation feature branch.
+"""
+
 from __future__ import annotations
 import torch
 import torch.nn as nn

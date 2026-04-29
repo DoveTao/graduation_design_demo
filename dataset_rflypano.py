@@ -1,4 +1,24 @@
-# dataset_rflypano.py
+"""
+File: dataset_rflypano.py
+Description:
+    Legacy dataset loader for RflyPano-style panoramic image pairs. It parses
+    image and label files, loads resized RGB panoramas, and prepares relative
+    pose samples.
+
+Main Components:
+    - RGB image loading and resizing helper
+    - Label parsing and pose metadata utilities
+    - Dataset class for panorama pair samples
+
+Usage / Role:
+    Provides an earlier dataset loading implementation retained for reference
+    and compatibility with previous experiments.
+
+Notes:
+    The current MVP training path primarily uses dataset_pano_only.py, while
+    this file remains useful for dataset checks and legacy ablations.
+"""
+
 import os
 import re
 import glob

@@ -1,3 +1,22 @@
+"""
+File: analyze_k_stats.py
+Description:
+    Utility script for summarizing relative rotation and translation-distance
+    statistics across different frame offsets.
+
+Main Components:
+    - Relative pose extraction from dataset frame records
+    - Rotation-angle and dt summary statistics
+    - Printed summaries for k-dependent data analysis
+
+Usage / Role:
+    Dataset analysis script for choosing and validating k buckets.
+
+Notes:
+    Supports the graduation design MVP evaluation protocol by checking whether
+    sampled frame offsets produce reasonable motion ranges.
+"""
+
 import numpy as np
 from dataset_pano_only import RflyPanoPanoramaPairs, _parse_label_13, FrameRec
 

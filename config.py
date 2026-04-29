@@ -1,3 +1,25 @@
+"""
+File: config.py
+Description:
+    Central configuration dataclass for the graduation design MVP experiments.
+    It defines data paths, model size, matching behavior, losses, optimization,
+    logging, evaluation, and checkpoint settings.
+
+Main Components:
+    - Dataset split, sampling, and evaluation protocol settings
+    - Model architecture and coarse/fine matching controls
+    - Epipolar, pose, depth, and auxiliary loss weights
+    - Optimizer, learning-rate schedule, dataloader, and AMP settings
+
+Usage / Role:
+    Provides the default experiment configuration consumed by training,
+    evaluation, datasets, and model construction.
+
+Notes:
+    Defaults are set for the current coarse-only MVP with a lightweight
+    translation feature branch, frequent evaluation, and limited-GPU training.
+"""
+
 from dataclasses import dataclass
 from typing import Tuple
 
@@ -138,9 +160,9 @@ class Config:
     w_smooth: float = 0.0
 
     # ---------------- Schedule / logging ----------------
-    max_steps: int = 5000
+    max_steps: int = 1200
     log_every: int = 50
-    eval_every: int = 300       # in update steps
+    eval_every: int = 100       # in update steps
     max_eval_batches: int = 128
     max_train_eval_batches: int = 64
     ckpt_dir: str = "checkpoints"

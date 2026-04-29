@@ -1,3 +1,24 @@
+"""
+File: losses.py
+Description:
+    Loss functions and geometric supervision utilities for panoramic relative
+    pose learning. This file combines pose losses, epipolar matching losses,
+    cycle/reliability losses, and optional depth-related losses.
+
+Main Components:
+    - Rotation and translation direction pose loss
+    - GT epipolar band and soft matching supervision
+    - Soft correspondence cycle and reliability losses
+    - Photometric and smoothness losses for optional depth experiments
+
+Usage / Role:
+    Provides training objectives used by the MVP training pipeline.
+
+Notes:
+    Includes local-frame translation supervision and allowed-mask support for
+    fine-stage epipolar matching ablations.
+"""
+
 import math
 from typing import Optional
 

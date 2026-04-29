@@ -1,3 +1,27 @@
+"""
+File: train_mvp.py
+Description:
+    Training entry point for the MVP version of the graduation design project.
+    This file handles experiment setup, dataset loading, model construction,
+    loss computation, optimization, validation, logging, and checkpoint saving.
+
+Main Components:
+    - Environment, random seed, and experiment directory initialization
+    - Dataset and DataLoader construction for train, train-eval, and test splits
+    - Model, optimizer, learning-rate scheduler, and AMP setup
+    - Training loop with pose, epipolar, reliability, and optional depth losses
+    - Evaluation diagnostics, bucketed metrics, visualization export, and checkpoints
+
+Usage / Role:
+    Serves as the main training script for relative pose learning on panoramic
+    image pairs.
+
+Notes:
+    This script is tailored for the graduation design MVP, coarse matching,
+    optional fine-stage extensions, epipolar matching loss, limited GPU memory,
+    and checkpoint-based experiment comparison.
+"""
+
 import json
 import math
 import os

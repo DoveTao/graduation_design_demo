@@ -1,3 +1,23 @@
+"""
+File: pose_head.py
+Description:
+    Basic pose representation utilities used by the relative pose heads.
+    The file provides vector normalization, 6D-to-rotation conversion, and
+    geodesic rotation distance computation.
+
+Main Components:
+    - normalize_vec for stable vector normalization
+    - rot6d_to_matrix for continuous rotation prediction
+    - matrix_geodesic_distance for rotation error and loss terms
+
+Usage / Role:
+    Provides shared pose math functions for model heads and loss computation.
+
+Notes:
+    The functions use float32 internally where needed to improve numerical
+    stability during mixed-precision or limited-GPU experiments.
+"""
+
 import torch
 import torch.nn.functional as F
 
