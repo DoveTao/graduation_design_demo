@@ -1294,6 +1294,250 @@ def eval_model(model, loader, device, cfg: Config, *, collect_vis: bool = False,
     )
 
 
+def _rot_geodesic_deg_np(R_pred: np.ndarray, R_gt: np.ndarray) -> float:
+    rel = R_pred.astype(np.float64) @ R_gt.astype(np.float64).T
+    cos = (float(np.trace(rel)) - 1.0) * 0.5
+    cos = max(-1.0, min(1.0, cos))
+    return float(math.degrees(math.acos(cos)))
+
+
+def _vec_angle_deg_np(a: np.ndarray, b: np.ndarray) -> float:
+    a = np.asarray(a, dtype=np.float64).reshape(3)
+    b = np.asarray(b, dtype=np.float64).reshape(3)
+    na = float(np.linalg.norm(a))
+    nb = float(np.linalg.norm(b))
+    if na < 1e-12 or nb < 1e-12:
+        return float("nan")
+    cos = float(np.dot(a, b) / (na * nb))
+    cos = max(-1.0, min(1.0, cos))
+    return float(math.degrees(math.acos(cos)))
+
+
+def _compose_rel_pose_np(R_rel: np.ndarray, t_rel: np.ndarray, R_cur0: np.ndarray, t_cur0: np.ndarray):
+    R_next0 = R_rel.astype(np.float64) @ R_cur0.astype(np.float64)
+    t_next0 = R_rel.astype(np.float64) @ t_cur0.astype(np.float64) + t_rel.astype(np.float64)
+    return R_next0, t_next0
+
+
+def _camera_center_from_T_c0_np(R_c0: np.ndarray, t_c0: np.ndarray) -> np.ndarray:
+    return -(R_c0.astype(np.float64).T @ t_c0.astype(np.float64))
+
+
+def _build_odometry_chains(manifest: List[Dict[str, Any]], selected_k: int, max_pairs: int = 0):
+    groups: Dict[Any, Dict[int, Dict[str, Any]]] = {}
+    for ds_idx, meta in enumerate(manifest):
+        try:
+            k = int(meta.get("k"))
+            i = int(meta.get("i"))
+        except Exception:
+            continue
+        if k != int(selected_k):
+            continue
+        key = (meta.get("scene", "unknown"), meta.get("seq", "unknown"))
+        item = dict(meta)
+        item["_ds_idx"] = int(ds_idx)
+        groups.setdefault(key, {})[i] = item
+
+    chains = []
+    used_pairs = 0
+    max_pairs = int(max_pairs)
+    for key in sorted(groups.keys()):
+        remaining = dict(groups[key])
+        while remaining:
+            cur_i = min(remaining.keys())
+            chain = []
+            while cur_i in remaining:
+                item = remaining.pop(cur_i)
+                chain.append(item)
+                used_pairs += 1
+                if max_pairs > 0 and used_pairs >= max_pairs:
+                    break
+                try:
+                    cur_i = int(item["j"])
+                except Exception:
+                    break
+            if chain:
+                chains.append({"scene_seq": key, "pairs": chain})
+            if max_pairs > 0 and used_pairs >= max_pairs:
+                return chains
+    return chains
+
+
+@torch.no_grad()
+def eval_odometry_sequence(model, ds, device, cfg: Config) -> Dict[str, Any]:
+    if not hasattr(ds, "manifest"):
+        return {"odom_status": "skipped", "odom_reason": "dataset_has_no_manifest"}
+
+    manifest = ds.manifest()
+    if not manifest:
+        return {"odom_status": "skipped", "odom_reason": "empty_manifest"}
+
+    available_k = sorted({int(m["k"]) for m in manifest if m.get("k", None) is not None})
+    if not available_k:
+        return {"odom_status": "skipped", "odom_reason": "manifest_has_no_k"}
+
+    prefer_k = int(getattr(cfg, "odom_eval_prefer_k", 1))
+    if prefer_k in available_k:
+        selected_k = prefer_k
+        fallback = False
+        reason = "preferred_k"
+    elif bool(getattr(cfg, "odom_eval_fallback_to_min_k", True)):
+        selected_k = int(available_k[0])
+        fallback = True
+        reason = f"preferred_k_{prefer_k}_missing_fallback_to_k_{selected_k}"
+    else:
+        return {
+            "odom_status": "skipped",
+            "odom_reason": f"preferred_k_{prefer_k}_missing",
+            "odom_available_k": available_k,
+        }
+
+    chains = _build_odometry_chains(
+        manifest,
+        selected_k,
+        max_pairs=int(getattr(cfg, "odom_eval_max_pairs", 0)),
+    )
+    chains = [c for c in chains if len(c.get("pairs", [])) > 0]
+    if not chains:
+        return {
+            "odom_status": "skipped",
+            "odom_reason": "no_valid_chains",
+            "odom_selected_k": int(selected_k),
+            "odom_available_k": available_k,
+        }
+
+    model.eval()
+
+    metric_pos_err_sq = []
+    dir_pos_err_sq = []
+    metric_rpe_rot = []
+    metric_rpe_trans_dir = []
+    metric_rpe_trans_mag = []
+    dir_rpe_rot = []
+    dir_rpe_trans_dir = []
+    metric_endpoint_err_sum = 0.0
+    dir_endpoint_err_sum = 0.0
+    total_traj_len = 0.0
+    metric_segments = 0
+    dir_segments = 0
+    num_pairs = 0
+    metric_pairs = 0
+
+    for chain in chains:
+        R_gt_c0 = np.eye(3, dtype=np.float64)
+        t_gt_c0 = np.zeros(3, dtype=np.float64)
+        R_metric_c0 = np.eye(3, dtype=np.float64)
+        t_metric_c0 = np.zeros(3, dtype=np.float64)
+        R_dir_c0 = np.eye(3, dtype=np.float64)
+        t_dir_c0 = np.zeros(3, dtype=np.float64)
+        chain_len = 0.0
+        chain_metric_ok = True
+
+        for item in chain["pairs"]:
+            sample = ds[int(item["_ds_idx"])]
+            IA = sample["IA"].unsqueeze(0).to(device, non_blocking=True)
+            IB = sample["IB"].unsqueeze(0).to(device, non_blocking=True)
+            R_gt = sample["R_gt"].float().numpy()
+            t_gt_vec = sample.get("t_gt_vec", None)
+            if t_gt_vec is not None:
+                t_gt = t_gt_vec.float().numpy()
+            else:
+                t_gt_dir = sample["t_gt_dir"].float().numpy()
+                t_gt_mag = float(sample["t_gt_mag"])
+                t_gt = t_gt_dir * t_gt_mag
+            t_gt_mag = float(np.linalg.norm(t_gt))
+            if t_gt_mag <= 1e-12:
+                continue
+
+            R_pred, t_pred, aux = model(IA, IB, enable_depth_fusion=True)
+            R_pred_np = R_pred.detach().float().cpu().numpy()[0]
+            t_dir_pred_t = aux.get("t_dir_out", t_pred) if isinstance(aux, dict) else t_pred
+            t_dir_pred = F.normalize(t_dir_pred_t.detach().float(), dim=-1, eps=1e-6).cpu().numpy()[0]
+
+            t_vec_metric = None
+            if isinstance(aux, dict):
+                if aux.get("t_vec_out", None) is not None:
+                    t_vec_metric = aux["t_vec_out"].detach().float().cpu().numpy()[0]
+                elif aux.get("t_mag", None) is not None:
+                    t_mag_pred = float(aux["t_mag"].detach().float().view(-1).cpu().numpy()[0])
+                    t_vec_metric = t_dir_pred * t_mag_pred
+
+            metric_rpe_rot.append(_rot_geodesic_deg_np(R_pred_np, R_gt))
+            dir_rpe_rot.append(metric_rpe_rot[-1])
+            metric_rpe_trans_dir.append(_vec_angle_deg_np(t_vec_metric, t_gt) if t_vec_metric is not None else float("nan"))
+            dir_rpe_trans_dir.append(_vec_angle_deg_np(t_dir_pred, t_gt))
+            if t_vec_metric is not None:
+                metric_rpe_trans_mag.append(abs(float(np.linalg.norm(t_vec_metric)) - t_gt_mag))
+                metric_pairs += 1
+            else:
+                chain_metric_ok = False
+
+            t_dir_only = t_dir_pred * t_gt_mag
+            R_gt_c0, t_gt_c0 = _compose_rel_pose_np(R_gt, t_gt, R_gt_c0, t_gt_c0)
+            if t_vec_metric is not None:
+                R_metric_c0, t_metric_c0 = _compose_rel_pose_np(R_pred_np, t_vec_metric, R_metric_c0, t_metric_c0)
+            R_dir_c0, t_dir_c0 = _compose_rel_pose_np(R_pred_np, t_dir_only, R_dir_c0, t_dir_c0)
+
+            p_gt = _camera_center_from_T_c0_np(R_gt_c0, t_gt_c0)
+            if t_vec_metric is not None:
+                p_metric = _camera_center_from_T_c0_np(R_metric_c0, t_metric_c0)
+                metric_pos_err_sq.append(float(np.sum((p_metric - p_gt) ** 2)))
+            p_dir = _camera_center_from_T_c0_np(R_dir_c0, t_dir_c0)
+            dir_pos_err_sq.append(float(np.sum((p_dir - p_gt) ** 2)))
+
+            chain_len += t_gt_mag
+            num_pairs += 1
+
+        if chain_len > 1e-12:
+            p_gt_end = _camera_center_from_T_c0_np(R_gt_c0, t_gt_c0)
+            if chain_metric_ok and metric_pairs > 0:
+                p_metric_end = _camera_center_from_T_c0_np(R_metric_c0, t_metric_c0)
+                metric_endpoint_err_sum += float(np.linalg.norm(p_metric_end - p_gt_end))
+                metric_segments += 1
+            p_dir_end = _camera_center_from_T_c0_np(R_dir_c0, t_dir_c0)
+            dir_endpoint_err_sum += float(np.linalg.norm(p_dir_end - p_gt_end))
+            dir_segments += 1
+            total_traj_len += float(chain_len)
+
+    def _nanmean(vals):
+        arr = np.asarray(vals, dtype=np.float64)
+        arr = arr[np.isfinite(arr)]
+        return float(arr.mean()) if arr.size > 0 else float("nan")
+
+    def _rmse(vals):
+        arr = np.asarray(vals, dtype=np.float64)
+        arr = arr[np.isfinite(arr)]
+        return float(math.sqrt(float(arr.mean()))) if arr.size > 0 else float("nan")
+
+    status = "ok" if num_pairs > 0 else "skipped"
+    payload: Dict[str, Any] = {
+        "odom_status": status,
+        "odom_reason": reason if status == "ok" else "no_valid_pairs",
+        "odom_available_k": available_k,
+        "odom_selected_k": int(selected_k),
+        "odom_used_fallback": bool(fallback),
+        "odom_num_chains": int(len(chains)),
+        "odom_num_pairs": int(num_pairs),
+        "odom_metric_num_pairs": int(metric_pairs),
+        "odom_direction_only_num_pairs": int(num_pairs),
+        "odom_metric_RPE_rot": _nanmean(metric_rpe_rot),
+        "odom_metric_RPE_trans_dir": _nanmean(metric_rpe_trans_dir),
+        "odom_metric_RPE_trans_mag": _nanmean(metric_rpe_trans_mag),
+        "odom_metric_ATE": _rmse(metric_pos_err_sq),
+        "odom_metric_drift": float(metric_endpoint_err_sum / max(metric_segments, 1)) if metric_segments > 0 else float("nan"),
+        "odom_metric_trajectory_length": float(total_traj_len),
+        "odom_metric_length_normalized_drift": float(metric_endpoint_err_sum / max(total_traj_len, 1e-12)) if metric_segments > 0 else float("nan"),
+        "odom_direction_only_RPE_rot": _nanmean(dir_rpe_rot),
+        "odom_direction_only_RPE_trans_dir": _nanmean(dir_rpe_trans_dir),
+        "odom_direction_only_ATE": _rmse(dir_pos_err_sq),
+        "odom_direction_only_drift": float(dir_endpoint_err_sum / max(dir_segments, 1)) if dir_segments > 0 else float("nan"),
+        "odom_direction_only_trajectory_length": float(total_traj_len),
+        "odom_direction_only_length_normalized_drift": float(dir_endpoint_err_sum / max(total_traj_len, 1e-12)) if dir_segments > 0 else float("nan"),
+    }
+    model.train()
+    return payload
+
+
 def main():
     args = _parse_args()
     cfg = Config()
@@ -2032,6 +2276,31 @@ def main():
                         for _bucket_msg in bucket_msgs:
                             print(_bucket_msg)
 
+                        odom_metrics: Dict[str, Any] = {}
+                        if bool(getattr(cfg, "use_odometry_eval", True)):
+                            t_odom0 = time.perf_counter()
+                            odom_metrics = eval_odometry_sequence(model, test_ds, dev, cfg)
+                            t_odom = time.perf_counter() - t_odom0
+                            if odom_metrics.get("odom_status") == "ok":
+                                print(
+                                    f"[OdomEval] k={odom_metrics.get('odom_selected_k')} "
+                                    f"fallback={int(bool(odom_metrics.get('odom_used_fallback', False)))} | "
+                                    f"pairs={odom_metrics.get('odom_num_pairs', 0)} | "
+                                    f"RPE_rot={odom_metrics.get('odom_metric_RPE_rot', float('nan')):.4f}° | "
+                                    f"ATE={odom_metrics.get('odom_metric_ATE', float('nan')):.4f} | "
+                                    f"drift={odom_metrics.get('odom_metric_drift', float('nan')):.4f} | "
+                                    f"dir_ATE={odom_metrics.get('odom_direction_only_ATE', float('nan')):.4f} | "
+                                    f"time={t_odom:.2f}s"
+                                )
+                            else:
+                                print(f"[OdomEval] skipped: {odom_metrics.get('odom_reason', 'unknown')} | time={t_odom:.2f}s")
+                            if bool(getattr(cfg, "save_odom_metrics_latest", True)):
+                                _save_json(
+                                    os.path.join(ckpt_root, "odom_metrics_latest.json"),
+                                    {"step": int(step), "upd": int(upd), **odom_metrics},
+                                )
+                            metrics.update(odom_metrics)
+
                         if bool(getattr(cfg, "save_last_eval_checkpoint", False)):
                             _save_ckpt(os.path.join(ckpt_root, "last_eval.pt"), model, optimizer, scaler, scheduler, cfg, step, upd, metrics)
                         if rot < best_rot:
@@ -2094,6 +2363,7 @@ def main():
 
                             "bad_forward": int(bad_forward),
                             "skip_updates": int(skip_updates),
+                            **odom_metrics,
                             **{k: float(v) for k, v in tdiag.items()},
                             **{f"train_{k}": float(v) for k, v in train_tdiag.items()},
                         }
@@ -2202,6 +2472,12 @@ def main():
         for k in latest_eval_keys
         if k in latest_eval and isinstance(latest_eval[k], (int, float))
     }
+    for k, v in latest_eval.items():
+        if k.startswith("odom_"):
+            if isinstance(v, (int, float)):
+                latest_eval_metrics[k] = float(v)
+            elif isinstance(v, (str, bool, list)):
+                latest_eval_metrics[k] = v
     final_summary = {
         **final_metrics,
         "bad_forward": int(bad_forward),

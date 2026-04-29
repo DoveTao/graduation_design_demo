@@ -185,6 +185,11 @@ class Config:
     save_eval_history: bool = True
     save_eval_buckets_latest: bool = True
     save_final_summary: bool = True
+    use_odometry_eval: bool = True
+    odom_eval_prefer_k: int = 1
+    odom_eval_fallback_to_min_k: bool = True
+    odom_eval_max_pairs: int = 0
+    save_odom_metrics_latest: bool = True
     save_vis_examples: bool = False
     save_vis_payload_npz: bool = False
     save_vis_diag_json: bool = True
