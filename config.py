@@ -20,6 +20,8 @@ class Config:
     max_dt: float = 5.0
     k_choices: Tuple[int, ...] = (5, 10, 20, 40)
     k_probs: Tuple[float, ...] = (0.25, 0.30, 0.30, 0.15)
+    train_color_aug: bool = True
+    train_color_aug_strength: float = 0.75
 
     # Deterministic evaluation protocol
     eval_use_fixed_pairs: bool = True
@@ -28,7 +30,8 @@ class Config:
     eval_min_dt: float = 0.1
     eval_max_dt: float = 5.0
     eval_dt_bucket_edges: Tuple[float, ...] = (0.1, 0.3, 0.5, 1.0, 2.0, 3.5, 5.0)
-    save_eval_bucket_history: bool = True
+    stable_eval_min_dt: float = 0.5
+    save_eval_bucket_history: bool = False
 
     # ---------------- Model: spherical tokenization / encoder ----------------
     D: int = 256
@@ -64,6 +67,8 @@ class Config:
     epi_loss_type: str = "gt_band_nll"
     epi_gt_target_temp: float = 0.25
     epi_ramp_updates: int = 100
+    use_geometric_t_fusion: bool = False
+    geometric_t_fuse_strength: float = 0.0
 
     # ---------------- Auxiliary depth branch ----------------
     use_depth_branch: bool = False
@@ -110,6 +115,8 @@ class Config:
     w_coarse_pose_aux: float = 0.30
     w_coarse_epi_aux: float = 0.02
     pose_t_alpha: float = 1.0
+    pose_t_oriented_weight: float = 1.0
+    pose_t_axis_weight: float = 0.0
     small_dt_thresh: float = 0.3
     small_dt_t_weight: float = 0.20
     w_photo: float = 0.0
@@ -120,14 +127,21 @@ class Config:
     log_every: int = 50
     eval_every: int = 100       # in update steps
     max_eval_batches: int = 0
-    max_train_eval_batches: int = 128
+    max_train_eval_batches: int = 256
     ckpt_dir: str = "checkpoints"
-    exp_name: str = "C_fine_gt_bandnll_coarse_aux"
+    exp_name: str = "C10_color_aug_stablemetric"
 
     # Export helpers for PPT figures / tables
     save_eval_history: bool = True
+    save_eval_buckets_latest: bool = True
     save_final_summary: bool = True
     save_vis_examples: bool = True
+    save_vis_payload_npz: bool = False
+    save_vis_diag_json: bool = True
+    save_last_eval_checkpoint: bool = False
+    save_last_train_state: bool = False
+    save_metric_checkpoints: bool = False
+    save_best_joint_checkpoint: bool = True
     vis_eval_index: int = 0
     vis_dump_every_eval: bool = False
     plot_curves_after_train: bool = True

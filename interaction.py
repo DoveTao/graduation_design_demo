@@ -280,7 +280,18 @@ class CoarseInteraction(nn.Module):
 
 
 class FineInteraction(nn.Module):
-    def __init__(self, D: int, *, temperature: float, logits_clip: float, use_depth_fusion: bool = False, depth_fuse_strength: float = 1.0, depth_fuse_detach_feature: bool = False):
+    def __init__(
+        self,
+        D: int,
+        *,
+        temperature: float,
+        logits_clip: float,
+        use_depth_fusion: bool = False,
+        depth_fuse_strength: float = 1.0,
+        depth_fuse_detach_feature: bool = False,
+        use_geometric_t_fusion: bool = False,
+        geometric_t_fuse_strength: float = 0.0,
+    ):
         super().__init__()
         self.temperature = float(temperature)
         self.logits_clip = float(logits_clip)
@@ -290,6 +301,8 @@ class FineInteraction(nn.Module):
         self.use_depth_fusion = bool(use_depth_fusion)
         self.depth_fuse_strength = float(depth_fuse_strength)
         self.depth_fuse_detach_feature = bool(depth_fuse_detach_feature)
+        self.use_geometric_t_fusion = bool(use_geometric_t_fusion)
+        self.geometric_t_fuse_strength = float(geometric_t_fuse_strength)
         if self.use_depth_fusion:
             self.depth_fuse = nn.Sequential(
                 nn.LayerNorm(2 * D),
@@ -305,6 +318,42 @@ class FineInteraction(nn.Module):
                 nn.Sigmoid(),
             )
         self.t_head = TranslationOnlyHead(D)
+
+    @staticmethod
+    def _geometric_translation_from_matches(
+        W_ab: torch.Tensor,
+        bearing_a: torch.Tensor,
+        bearing_b: torch.Tensor,
+        R: torch.Tensor,
+        token_weight: Optional[torch.Tensor] = None,
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        W_ab = W_ab.float()
+        bearing_a = F.normalize(bearing_a.float(), dim=-1, eps=1e-6)
+        bearing_b = F.normalize(bearing_b.float(), dim=-1, eps=1e-6)
+        R = R.float()
+
+        a_in_b = torch.matmul(bearing_a, R.transpose(-1, -2))
+        b_match = torch.matmul(W_ab, bearing_b)
+        b_match = F.normalize(b_match, dim=-1, eps=1e-6)
+
+        plane_n = torch.cross(a_in_b, b_match, dim=-1)
+        plane_norm = torch.linalg.norm(plane_n, dim=-1)
+        plane_n = F.normalize(plane_n, dim=-1, eps=1e-6)
+
+        if token_weight is None:
+            w = plane_norm
+        else:
+            w = token_weight.float() * plane_norm
+        w = w.clamp_min(1e-6)
+        w = w / w.sum(dim=-1, keepdim=True).clamp_min(1e-6)
+
+        cov = torch.einsum("bn,bni,bnj->bij", w, plane_n, plane_n)
+        eye = torch.eye(3, device=cov.device, dtype=cov.dtype).unsqueeze(0)
+        cov = cov + 1e-5 * eye
+        _, vec = torch.linalg.eigh(cov)
+        t_out = F.normalize(vec[..., 0], dim=-1, eps=1e-6)
+        t_local = F.normalize(torch.matmul(R.transpose(-1, -2), t_out.unsqueeze(-1)).squeeze(-1), dim=-1, eps=1e-6)
+        return t_out, t_local
 
     def forward(
         self,
@@ -390,7 +439,22 @@ class FineInteraction(nn.Module):
             token_weight = match_conf * geom_conf
         else:
             token_weight = match_conf
-        t_dir = self.t_head(Ff_t, token_weight=token_weight)
+        t_dir_raw = self.t_head(Ff_t, token_weight=token_weight)
+        t_geo_out, t_geo_local = self._geometric_translation_from_matches(
+            Wf_ab,
+            TokA_f.bearing,
+            TokB_f.bearing,
+            R,
+            token_weight=token_weight,
+        )
+        align = torch.sign(torch.sum(t_geo_local.detach() * t_dir_raw.detach(), dim=-1, keepdim=True))
+        align = torch.where(align == 0, torch.ones_like(align), align)
+        t_geo_local = t_geo_local * align
+        t_geo_out = t_geo_out * align
+        if self.use_geometric_t_fusion and self.geometric_t_fuse_strength > 0.0:
+            t_dir = F.normalize(t_dir_raw + self.geometric_t_fuse_strength * t_geo_local.detach(), dim=-1, eps=1e-6)
+        else:
+            t_dir = t_dir_raw
 
         return {
             "Wf_ab": Wf_ab,
@@ -401,6 +465,9 @@ class FineInteraction(nn.Module):
             "Ff_t": Ff_t,
             "R": R,
             "t_dir": t_dir,
+            "t_dir_raw": t_dir_raw,
+            "t_geo_out": t_geo_out,
+            "t_geo_local": t_geo_local,
             "routing_mask": routing_mask,
             "allowed_mask": allowed,
             "epi_bias": epi_bias if epi_bias is not None else torch.zeros_like(sim_ab),

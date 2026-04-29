@@ -35,6 +35,8 @@ def pose_loss(
     t_gt: torch.Tensor,
     *,
     pose_t_alpha: float = 1.0,
+    pose_t_oriented_weight: float = 1.0,
+    pose_t_axis_weight: float = 0.0,
     pred_t_frame: str = "B",
     t_sample_weight: Optional[torch.Tensor] = None,
 ) -> torch.Tensor:
@@ -46,7 +48,9 @@ def pose_loss(
 
     rot_ang = matrix_geodesic_distance(R_pred, R_gt)
     cos_t = torch.sum(t_pred * t_gt_use, dim=-1).clamp(-1.0, 1.0)
-    t_loss = 1.0 - cos_t
+    oriented_loss = 1.0 - cos_t
+    axis_loss = 1.0 - cos_t.abs()
+    t_loss = float(pose_t_oriented_weight) * oriented_loss + float(pose_t_axis_weight) * axis_loss
     if t_sample_weight is not None:
         w = t_sample_weight.float().view(-1).to(t_loss.device)
         w = w.clamp_min(1e-6)

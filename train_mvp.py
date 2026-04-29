@@ -445,6 +445,20 @@ def _save_ckpt(path, model, optimizer, scaler, scheduler, cfg, step, upd, metric
     )
 
 
+def _save_model_ckpt(path, model, cfg, step, upd, metrics):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    torch.save(
+        {
+            "model": model.state_dict(),
+            "cfg": _cfg_to_dict(cfg),
+            "step": int(step),
+            "upd": int(upd),
+            "metrics": dict(metrics),
+        },
+        path,
+    )
+
+
 def _first_item(v: Any) -> Any:
     if torch.is_tensor(v):
         return v[0]
@@ -827,6 +841,17 @@ def eval_model(model, loader, device, cfg: Config, *, collect_vis: bool = False,
     tdir_abs_sum = 0.0
     tdir_local_A_sum = 0.0
     tdir_local_A_abs_sum = 0.0
+    t_raw_local_A_abs_sum = 0.0
+    t_geo_local_A_abs_sum = 0.0
+    tdir_cos_sum = 0.0
+    tdir_flip_count = 0.0
+    tdir_local_A_cos_sum = 0.0
+    tdir_local_A_flip_count = 0.0
+    stable_rot_sum = 0.0
+    stable_tdir_sum = 0.0
+    stable_tdir_abs_sum = 0.0
+    stable_tdir_local_A_abs_sum = 0.0
+    stable_n = 0
     diag_sums = {
         "epi_mass_in_gt_band": 0.0,
         "top1_in_gt_band": 0.0,
@@ -837,12 +862,15 @@ def eval_model(model, loader, device, cfg: Config, *, collect_vis: bool = False,
     }
     n = 0
     n_local = 0
+    n_t_raw = 0
+    n_t_geo = 0
     vis_payload = None
 
     bucket_k = _bucket_init()
     bucket_dt = _bucket_init()
     bucket_k_dt = _bucket_init()
     dt_edges = tuple(float(x) for x in getattr(cfg, 'eval_dt_bucket_edges', (0.2, 0.5, 1.0, 2.0)))
+    stable_min_dt = float(getattr(cfg, "stable_eval_min_dt", 0.5))
 
     acc = {
         'raw': 0.0,
@@ -938,6 +966,8 @@ def eval_model(model, loader, device, cfg: Config, *, collect_vis: bool = False,
         rot_sum += float(rot_deg.sum().cpu())
         tdir_sum += float(ang.sum().cpu())
         tdir_abs_sum += float(ang_abs.sum().cpu())
+        tdir_cos_sum += float(cos.sum().cpu())
+        tdir_flip_count += float((cos < 0.0).to(torch.float32).sum().cpu())
         n += bsz
 
         rot_np = rot_deg.detach().cpu().view(-1).numpy()
@@ -959,10 +989,13 @@ def eval_model(model, loader, device, cfg: Config, *, collect_vis: bool = False,
         t_local_frame = aux.get('t_local_frame', None) if isinstance(aux, dict) else None
         if t_local_pred is not None and t_local_frame == 'A':
             tp_local = F.normalize(t_local_pred.float(), dim=-1, eps=1e-6)
-            ang_local = torch.acos(torch.sum(tp_local * tg_Rt, dim=-1).clamp(-1.0, 1.0)) * (180.0 / math.pi)
+            cos_local = torch.sum(tp_local * tg_Rt, dim=-1).clamp(-1.0, 1.0)
+            ang_local = torch.acos(cos_local) * (180.0 / math.pi)
             ang_local_abs = torch.minimum(ang_local, 180.0 - ang_local)
             tdir_local_A_sum += float(ang_local.sum().cpu())
             tdir_local_A_abs_sum += float(ang_local_abs.sum().cpu())
+            tdir_local_A_cos_sum += float(cos_local.sum().cpu())
+            tdir_local_A_flip_count += float((cos_local < 0.0).to(torch.float32).sum().cpu())
             n_local += bsz
             tdir_local_np = ang_local.detach().cpu().view(-1).numpy()
             tdir_local_abs_np = ang_local_abs.detach().cpu().view(-1).numpy()
@@ -970,9 +1003,36 @@ def eval_model(model, loader, device, cfg: Config, *, collect_vis: bool = False,
             tdir_local_np = np.full((bsz,), np.nan, dtype=np.float32)
             tdir_local_abs_np = np.full((bsz,), np.nan, dtype=np.float32)
 
+        t_raw_local = aux.get("t_dir_raw", None) if isinstance(aux, dict) else None
+        if t_raw_local is not None:
+            traw = F.normalize(t_raw_local.float(), dim=-1, eps=1e-6)
+            ang_raw_local = torch.acos(torch.sum(traw * tg_Rt, dim=-1).clamp(-1.0, 1.0)) * (180.0 / math.pi)
+            ang_raw_local_abs = torch.minimum(ang_raw_local, 180.0 - ang_raw_local)
+            t_raw_local_A_abs_sum += float(ang_raw_local_abs.sum().cpu())
+            n_t_raw += bsz
+
+        t_geo_local = aux.get("t_geo_local", None) if isinstance(aux, dict) else None
+        if t_geo_local is not None:
+            tgeo = F.normalize(t_geo_local.float(), dim=-1, eps=1e-6)
+            ang_geo_local = torch.acos(torch.sum(tgeo * tg_Rt, dim=-1).clamp(-1.0, 1.0)) * (180.0 / math.pi)
+            ang_geo_local_abs = torch.minimum(ang_geo_local, 180.0 - ang_geo_local)
+            t_geo_local_A_abs_sum += float(ang_geo_local_abs.sum().cpu())
+            n_t_geo += bsz
+
         meta_k = _meta_batch_field(meta, 'k', bsz, default=None)
         meta_dt = _meta_batch_field(meta, 'dt_world', bsz, default=None)
         for i in range(bsz):
+            try:
+                is_stable_dt = (meta_dt[i] is not None) and (float(meta_dt[i]) >= stable_min_dt)
+            except Exception:
+                is_stable_dt = False
+            if is_stable_dt:
+                stable_rot_sum += float(rot_np[i])
+                stable_tdir_sum += float(tdir_np[i])
+                stable_tdir_abs_sum += float(tdir_abs_np[i])
+                if np.isfinite(tdir_local_abs_np[i]):
+                    stable_tdir_local_A_abs_sum += float(tdir_local_abs_np[i])
+                stable_n += 1
             k_label = f"k={int(meta_k[i])}" if meta_k[i] is not None else 'k=unknown'
             dt_label = _dt_bucket_label(meta_dt[i], dt_edges)
             _bucket_update(
@@ -1009,6 +1069,18 @@ def eval_model(model, loader, device, cfg: Config, *, collect_vis: bool = False,
     tdir_local_A = tdir_local_A_sum / max(n_local, 1) if n_local > 0 else float('nan')
     tdir_local_A_abs = tdir_local_A_abs_sum / max(n_local, 1) if n_local > 0 else float('nan')
     diag_mean = {k: (v / max(n, 1)) for k, v in diag_sums.items()}
+    diag_mean["t_raw_local_A_abs"] = t_raw_local_A_abs_sum / max(n_t_raw, 1) if n_t_raw > 0 else float("nan")
+    diag_mean["t_geo_local_A_abs"] = t_geo_local_A_abs_sum / max(n_t_geo, 1) if n_t_geo > 0 else float("nan")
+    diag_mean["tdir_cos"] = tdir_cos_sum / max(n, 1)
+    diag_mean["tdir_flip_rate"] = tdir_flip_count / max(n, 1)
+    diag_mean["tdir_local_A_cos"] = tdir_local_A_cos_sum / max(n_local, 1) if n_local > 0 else float("nan")
+    diag_mean["tdir_local_A_flip_rate"] = tdir_local_A_flip_count / max(n_local, 1) if n_local > 0 else float("nan")
+    diag_mean["stable_n"] = float(stable_n)
+    diag_mean["stable_min_dt"] = float(stable_min_dt)
+    diag_mean["stable_rot"] = stable_rot_sum / max(stable_n, 1)
+    diag_mean["stable_tdir"] = stable_tdir_sum / max(stable_n, 1)
+    diag_mean["stable_tdir_abs"] = stable_tdir_abs_sum / max(stable_n, 1)
+    diag_mean["stable_tdir_local_A_abs"] = stable_tdir_local_A_abs_sum / max(stable_n, 1)
 
     if acc['cnt'] > 0:
         denom = float(acc['cnt'])
@@ -1081,10 +1153,20 @@ def main():
     print(f"[Cfg ] HxW={cfg.H}x{cfg.W} | D={cfg.D} | Nc={cfg.Nc} | Nf={cfg.Nf} | p={cfg.p}")
     print(f"[Cfg ] temp(coarse/fine)={cfg.coarse_temperature}/{cfg.fine_temperature} | logits_clip={cfg.logits_clip} | topk_coarse={cfg.topk_coarse}")
     print(
+        f"[Cfg ] loss: w_pose={cfg.w_pose} | t_alpha={cfg.pose_t_alpha} | "
+        f"t_oriented={getattr(cfg, 'pose_t_oriented_weight', 1.0)} | "
+        f"t_axis={getattr(cfg, 'pose_t_axis_weight', 0.0)} | "
+        f"w_epi={cfg.w_epi} | w_coarse_pose_aux={getattr(cfg, 'w_coarse_pose_aux', 0.0)}"
+    )
+    print(
         f"[Cfg ] lr={cfg.lr} | wd={cfg.wd} | warmup_updates={cfg.warmup_updates} | "
         f"hold<{cfg.lr_hold_updates} | drop1<{cfg.lr_drop1_updates}@{cfg.lr_drop1_scale} | drop2@{cfg.lr_drop2_scale}"
     )
     print(f"[Cfg ] split_by={cfg.split_by} | train_ratio={cfg.train_ratio} | split_seed={cfg.split_seed} | data_seed={cfg.data_seed}")
+    print(
+        f"[Cfg ] train_aug: color={getattr(cfg, 'train_color_aug', False)} | "
+        f"strength={getattr(cfg, 'train_color_aug_strength', 0.0)}"
+    )
     print("=" * 80)
 
     train_ds = RflyPanoPanoramaPairsMixedK(
@@ -1100,6 +1182,8 @@ def main():
         k_choices=cfg.k_choices,
         k_probs=cfg.k_probs,
         strict_dt=True,
+        color_aug=bool(getattr(cfg, "train_color_aug", False)),
+        color_aug_strength=float(getattr(cfg, "train_color_aug_strength", 1.0)),
     )
     train_ds.max_dt = cfg.max_dt
 
@@ -1298,6 +1382,8 @@ def main():
                 R_gt,
                 t_gt,
                 pose_t_alpha=cfg.pose_t_alpha,
+                pose_t_oriented_weight=float(getattr(cfg, "pose_t_oriented_weight", 1.0)),
+                pose_t_axis_weight=float(getattr(cfg, "pose_t_axis_weight", 0.0)),
                 pred_t_frame=t_pose_frame,
                 t_sample_weight=dt_t_weight,
             )
@@ -1308,6 +1394,8 @@ def main():
                     R_gt,
                     t_gt,
                     pose_t_alpha=cfg.pose_t_alpha,
+                    pose_t_oriented_weight=float(getattr(cfg, "pose_t_oriented_weight", 1.0)),
+                    pose_t_axis_weight=float(getattr(cfg, "pose_t_axis_weight", 0.0)),
                     pred_t_frame=aux.get("t_local_frame", "A"),
                     t_sample_weight=dt_t_weight,
                 )
@@ -1586,6 +1674,8 @@ def main():
                             f"ent={train_tdiag.get('matching_entropy', float('nan')):.4f} | "
                             f"pmax={train_tdiag.get('max_matching_prob', float('nan')):.4f} | "
                             f"cyc={train_tdiag.get('cycle_error', float('nan')):.4f} | "
+                            f"raw_t_abs={train_tdiag.get('t_raw_local_A_abs', float('nan')):.2f}° | "
+                            f"geo_t_abs={train_tdiag.get('t_geo_local_A_abs', float('nan')):.2f}° | "
                             f"time={t_train_eval:.2f}s"
                         )
                         print("[Eval-Train] " + train_tdir_msg.replace("[TDIR-CHK] ", ""))
@@ -1660,6 +1750,12 @@ def main():
                             f"ent={tdiag.get('matching_entropy', float('nan')):.4f} | "
                             f"pmax={tdiag.get('max_matching_prob', float('nan')):.4f} | "
                             f"cyc={tdiag.get('cycle_error', float('nan')):.4f} | "
+                            f"tcos={tdiag.get('tdir_cos', float('nan')):.3f} | "
+                            f"flip_rate={tdiag.get('tdir_flip_rate', float('nan')):.3f} | "
+                            f"stable_abs={tdiag.get('stable_tdir_abs', float('nan')):.2f}° | "
+                            f"stable_local={tdiag.get('stable_tdir_local_A_abs', float('nan')):.2f}° | "
+                            f"raw_t_abs={tdiag.get('t_raw_local_A_abs', float('nan')):.2f}° | "
+                            f"geo_t_abs={tdiag.get('t_geo_local_A_abs', float('nan')):.2f}° | "
                             f"joint_abs={joint_score:.4f} | joint_ok={int(joint_eligible)} | time={t_eval:.2f}s"
                         )
                         print(tdir_msg)
@@ -1667,25 +1763,32 @@ def main():
                         for _bucket_msg in bucket_msgs:
                             print(_bucket_msg)
 
-                        _save_ckpt(os.path.join(ckpt_root, "last_eval.pt"), model, optimizer, scaler, scheduler, cfg, step, upd, metrics)
+                        if bool(getattr(cfg, "save_last_eval_checkpoint", False)):
+                            _save_ckpt(os.path.join(ckpt_root, "last_eval.pt"), model, optimizer, scaler, scheduler, cfg, step, upd, metrics)
                         if rot < best_rot:
                             best_rot = rot
-                            _save_ckpt(os.path.join(ckpt_root, "best_rot.pt"), model, optimizer, scaler, scheduler, cfg, step, upd, metrics)
+                            if bool(getattr(cfg, "save_metric_checkpoints", False)):
+                                _save_model_ckpt(os.path.join(ckpt_root, "best_rot.pt"), model, cfg, step, upd, metrics)
                         if tdir < best_tdir_raw:
                             best_tdir_raw = tdir
-                            _save_ckpt(os.path.join(ckpt_root, "best_tdir_raw.pt"), model, optimizer, scaler, scheduler, cfg, step, upd, metrics)
+                            if bool(getattr(cfg, "save_metric_checkpoints", False)):
+                                _save_model_ckpt(os.path.join(ckpt_root, "best_tdir_raw.pt"), model, cfg, step, upd, metrics)
                         if tdir_abs < best_tdir_abs:
                             best_tdir_abs = tdir_abs
-                            _save_ckpt(os.path.join(ckpt_root, "best_tdir_abs.pt"), model, optimizer, scaler, scheduler, cfg, step, upd, metrics)
+                            if bool(getattr(cfg, "save_metric_checkpoints", False)):
+                                _save_model_ckpt(os.path.join(ckpt_root, "best_tdir_abs.pt"), model, cfg, step, upd, metrics)
                         if tdir_local_A < best_tdir_local_A:
                             best_tdir_local_A = tdir_local_A
-                            _save_ckpt(os.path.join(ckpt_root, "best_tdir_local_A.pt"), model, optimizer, scaler, scheduler, cfg, step, upd, metrics)
+                            if bool(getattr(cfg, "save_metric_checkpoints", False)):
+                                _save_model_ckpt(os.path.join(ckpt_root, "best_tdir_local_A.pt"), model, cfg, step, upd, metrics)
                         if tdir_local_A_abs < best_tdir_local_A_abs:
                             best_tdir_local_A_abs = tdir_local_A_abs
-                            _save_ckpt(os.path.join(ckpt_root, "best_tdir_local_A_abs.pt"), model, optimizer, scaler, scheduler, cfg, step, upd, metrics)
+                            if bool(getattr(cfg, "save_metric_checkpoints", False)):
+                                _save_model_ckpt(os.path.join(ckpt_root, "best_tdir_local_A_abs.pt"), model, cfg, step, upd, metrics)
                         if joint_eligible and joint_score < best_joint:
                             best_joint = joint_score
-                            _save_ckpt(os.path.join(ckpt_root, "best_joint.pt"), model, optimizer, scaler, scheduler, cfg, step, upd, metrics)
+                            if bool(getattr(cfg, "save_best_joint_checkpoint", True)):
+                                _save_model_ckpt(os.path.join(ckpt_root, "best_joint.pt"), model, cfg, step, upd, metrics)
 
                         eval_rec = {
                             "step": int(step),
@@ -1722,7 +1825,7 @@ def main():
                         eval_history.append(eval_rec)
                         if bool(cfg.save_eval_history):
                             _save_json(os.path.join(ckpt_root, "eval_history.json"), {"history": eval_history})
-                        if bool(getattr(cfg, 'save_eval_bucket_history', True)):
+                        if bool(getattr(cfg, 'save_eval_bucket_history', False)) or bool(getattr(cfg, 'save_eval_buckets_latest', True)):
                             bucket_payload = {
                                 'step': int(step),
                                 'upd': int(upd),
@@ -1733,15 +1836,19 @@ def main():
                                 'train_bucket_dt': train_bucket_dt,
                                 'train_bucket_k_dt': train_bucket_k_dt,
                             }
-                            _save_json(os.path.join(ckpt_root, f"eval_buckets_upd{upd:05d}.json"), bucket_payload)
-                            _save_json(os.path.join(ckpt_root, 'eval_buckets_latest.json'), bucket_payload)
+                            if bool(getattr(cfg, 'save_eval_bucket_history', False)):
+                                _save_json(os.path.join(ckpt_root, f"eval_buckets_upd{upd:05d}.json"), bucket_payload)
+                            if bool(getattr(cfg, 'save_eval_buckets_latest', True)):
+                                _save_json(os.path.join(ckpt_root, 'eval_buckets_latest.json'), bucket_payload)
 
                         if want_vis and vis_payload is not None:
                             tag = f"upd{upd:05d}"
-                            _save_vis_payload_npz(os.path.join(vis_root, f"vis_example_{tag}.npz"), vis_payload)
-                            _save_vis_payload_npz(os.path.join(vis_root, "vis_example_latest.npz"), vis_payload)
-                            _save_json(os.path.join(vis_root, f"vis_diag_{tag}.json"), vis_payload.get("diag", {}))
-                            _save_json(os.path.join(vis_root, "vis_diag_latest.json"), vis_payload.get("diag", {}))
+                            if bool(getattr(cfg, "save_vis_payload_npz", False)):
+                                _save_vis_payload_npz(os.path.join(vis_root, f"vis_example_{tag}.npz"), vis_payload)
+                                _save_vis_payload_npz(os.path.join(vis_root, "vis_example_latest.npz"), vis_payload)
+                            if bool(getattr(cfg, "save_vis_diag_json", True)):
+                                _save_json(os.path.join(vis_root, f"vis_diag_{tag}.json"), vis_payload.get("diag", {}))
+                                _save_json(os.path.join(vis_root, "vis_diag_latest.json"), vis_payload.get("diag", {}))
                             _plot_softcorr_overview(vis_payload, os.path.join(vis_root, f"vis_softcorr_{tag}.png"))
                             _plot_softcorr_overview(vis_payload, os.path.join(vis_root, "vis_softcorr_latest.png"))
                             _plot_depth_overview(vis_payload, os.path.join(vis_root, f"vis_depth_{tag}.png"))
@@ -1792,17 +1899,18 @@ def main():
         "best_tdir_local_A_abs": best_tdir_local_A_abs,
         "best_joint": best_joint,
     }
-    _save_ckpt(
-        os.path.join(ckpt_root, "last_train_state.pt"),
-        model,
-        optimizer,
-        scaler,
-        scheduler,
-        cfg,
-        step,
-        upd,
-        final_metrics,
-    )
+    if bool(getattr(cfg, "save_last_train_state", True)):
+        _save_ckpt(
+            os.path.join(ckpt_root, "last_train_state.pt"),
+            model,
+            optimizer,
+            scaler,
+            scheduler,
+            cfg,
+            step,
+            upd,
+            final_metrics,
+        )
 
     nan_like_events = int(bad_forward + skip_updates)
     final_summary = {

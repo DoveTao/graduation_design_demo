@@ -105,6 +105,8 @@ class PanoramaRelPoseModel(nn.Module):
             use_depth_fusion=bool(cfg.use_depth_branch and cfg.depth_fuse_to_translation_only),
             depth_fuse_strength=float(getattr(cfg, "depth_fuse_strength", 1.0)),
             depth_fuse_detach_feature=bool(getattr(cfg, "depth_fuse_detach_feature", False)),
+            use_geometric_t_fusion=bool(getattr(cfg, "use_geometric_t_fusion", False)),
+            geometric_t_fuse_strength=float(getattr(cfg, "geometric_t_fuse_strength", 0.0)),
         )
 
         self.depth = None

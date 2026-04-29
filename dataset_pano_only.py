@@ -11,6 +11,21 @@ import torch
 from torch.utils.data import Dataset, get_worker_info
 
 
+def _interleave_sorted_groups(items: List[Dict[str, Any]], key: str) -> List[Dict[str, Any]]:
+    groups: Dict[Any, List[Dict[str, Any]]] = {}
+    for item in items:
+        groups.setdefault(item.get(key), []).append(item)
+    out: List[Dict[str, Any]] = []
+    keys = sorted(groups.keys(), key=str)
+    max_len = max((len(v) for v in groups.values()), default=0)
+    for i in range(max_len):
+        for k in keys:
+            group = groups[k]
+            if i < len(group):
+                out.append(group[i])
+    return out
+
+
 @dataclass
 class FrameRec:
     scene: str
@@ -249,7 +264,8 @@ class RflyPanoPanoramaPairsMixedK(Dataset):
                  k_probs: Optional[List[float]] = None, pair_step: int = 1, scenes: Optional[List[str]] = None,
                  seqs: Optional[List[str]] = None, min_dt: float = 0.0, max_tries: int = 10, seed: int = 1234,
                  split: str | None = None, H: int | None = None, W: int | None = None, strict_dt: bool | None = None,
-                 split_by: str = "scene_seq", train_ratio: float = 0.8, split_seed: int = 3407):
+                 split_by: str = "scene_seq", train_ratio: float = 0.8, split_seed: int = 3407,
+                 color_aug: bool = False, color_aug_strength: float = 1.0):
         self.data_root = data_root
         if (H is not None) and (W is not None):
             hw = (int(H), int(W))
@@ -260,6 +276,8 @@ class RflyPanoPanoramaPairsMixedK(Dataset):
         self.split_by = _normalize_split_mode(split_by)
         self.train_ratio = float(train_ratio)
         self.split_seed = int(split_seed)
+        self.color_aug = bool(color_aug)
+        self.color_aug_strength = float(color_aug_strength)
         self.k_choices = [int(k) for k in k_choices]
         assert len(self.k_choices) > 0
         self.max_k = max(self.k_choices)
@@ -312,6 +330,24 @@ class RflyPanoPanoramaPairsMixedK(Dataset):
         if len(self.index_map) == 0:
             raise RuntimeError(f"No valid base indices for split={split!r}.")
         self._rng = np.random.default_rng(self.seed)
+
+    def _apply_color_aug(self, img: torch.Tensor, rng: np.random.Generator) -> torch.Tensor:
+        if (not self.color_aug) or self.color_aug_strength <= 0.0:
+            return img
+        s = float(self.color_aug_strength)
+        brightness = float(rng.uniform(1.0 - 0.12 * s, 1.0 + 0.12 * s))
+        contrast = float(rng.uniform(1.0 - 0.12 * s, 1.0 + 0.12 * s))
+        gamma = float(rng.uniform(1.0 - 0.08 * s, 1.0 + 0.08 * s))
+        noise_std = 0.008 * s
+        out = img.float()
+        mean = out.mean(dim=(1, 2), keepdim=True)
+        out = (out - mean) * contrast + mean
+        out = out * brightness
+        out = out.clamp(0.0, 1.0).pow(gamma)
+        if noise_std > 0.0:
+            noise = torch.from_numpy(rng.normal(0.0, noise_std, size=tuple(out.shape)).astype(np.float32))
+            out = out + noise
+        return out.clamp(0.0, 1.0)
 
     def __len__(self) -> int:
         return len(self.index_map)
@@ -373,6 +409,8 @@ class RflyPanoPanoramaPairsMixedK(Dataset):
         sd = self.seqs_data[seq_idx]
         IA = _read_pano_rgb(sd["pano"][i], self.hw)
         IB = _read_pano_rgb(sd["pano"][j], self.hw)
+        IA = self._apply_color_aug(IA, rng)
+        IB = self._apply_color_aug(IB, rng)
         R_wA = sd["R_w"][i]
         t_wA = sd["t_w"][i]
         R_wB = sd["R_w"][j]
@@ -457,6 +495,10 @@ class RflyPanoPanoramaPairsEvalFixedKList(Dataset):
                         "tsA": ts_list[i], "tsB": ts_list[j], "dt_world": dt_world,
                     })
         self.pairs_meta.sort(key=lambda m: (m["scene"], m["seq"], m["k"], m["i"], m["j"]))
+        # Interleave k groups so capped evaluation prefixes remain representative.
+        # Full evaluation is unchanged as a set, but train_eval with max batches no
+        # longer reports only the first k bucket.
+        self.pairs_meta = _interleave_sorted_groups(self.pairs_meta, "k")
         self.split_summary["num_pairs"] = len(self.pairs_meta)
         self.split_summary["k_list"] = list(self.k_list)
         if len(self.pairs_meta) == 0:
