@@ -1270,6 +1270,14 @@ def main():
     test_gen = torch.Generator()
     test_gen.manual_seed(int(cfg.data_seed) + 1)
 
+    def _loader_worker_kwargs(num_workers: int) -> Dict[str, Any]:
+        if int(num_workers) <= 0:
+            return {}
+        return {
+            "persistent_workers": bool(getattr(cfg, "persistent_workers", True)),
+            "prefetch_factor": int(getattr(cfg, "prefetch_factor", 2)),
+        }
+
     train_loader = DataLoader(
         train_ds,
         batch_size=cfg.batch_size,
@@ -1279,16 +1287,19 @@ def main():
         drop_last=True,
         worker_init_fn=worker_init,
         generator=train_gen,
+        **_loader_worker_kwargs(cfg.num_workers),
     )
+    test_num_workers = 0 if bool(cfg.eval_use_fixed_pairs) else cfg.num_workers
     test_loader = DataLoader(
         test_ds,
         batch_size=cfg.batch_size,
         shuffle=False,
-        num_workers=0 if bool(cfg.eval_use_fixed_pairs) else cfg.num_workers,
+        num_workers=test_num_workers,
         pin_memory=cfg.pin_memory,
         drop_last=False,
         worker_init_fn=worker_init if not bool(cfg.eval_use_fixed_pairs) else None,
         generator=test_gen,
+        **_loader_worker_kwargs(test_num_workers),
     )
 
     train_eval_loader = DataLoader(
@@ -1300,6 +1311,7 @@ def main():
         drop_last=False,
         worker_init_fn=None,
         generator=test_gen,
+        **_loader_worker_kwargs(0),
     )
 
     model = PanoramaRelPoseModel(cfg, dev).to(dev)

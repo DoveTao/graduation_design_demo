@@ -90,8 +90,8 @@ class Config:
     depth_fuse_detach_feature: bool = True
 
     # ---------------- Optimization ----------------
-    batch_size: int = 1
-    grad_accum: int = 4
+    batch_size: int = 2
+    grad_accum: int = 2
     lr: float = 1.0e-4
     wd: float = 0.01
     max_grad_norm: float = 1.0
@@ -125,9 +125,9 @@ class Config:
     # ---------------- Schedule / logging ----------------
     max_steps: int = 5000
     log_every: int = 50
-    eval_every: int = 100       # in update steps
-    max_eval_batches: int = 0
-    max_train_eval_batches: int = 256
+    eval_every: int = 300       # in update steps
+    max_eval_batches: int = 128
+    max_train_eval_batches: int = 64
     ckpt_dir: str = "checkpoints"
     exp_name: str = "C10_color_aug_stablemetric"
 
@@ -135,7 +135,7 @@ class Config:
     save_eval_history: bool = True
     save_eval_buckets_latest: bool = True
     save_final_summary: bool = True
-    save_vis_examples: bool = True
+    save_vis_examples: bool = False
     save_vis_payload_npz: bool = False
     save_vis_diag_json: bool = True
     save_last_eval_checkpoint: bool = False
@@ -144,7 +144,7 @@ class Config:
     save_best_joint_checkpoint: bool = True
     vis_eval_index: int = 0
     vis_dump_every_eval: bool = False
-    plot_curves_after_train: bool = True
+    plot_curves_after_train: bool = False
     vis_plot_max_side: int = 64
 
     # Joint checkpoint selection:
@@ -154,13 +154,15 @@ class Config:
     joint_rot_weight: float = 2.0
 
     # ---------------- Dataloader ----------------
-    num_workers: int = 4
+    num_workers: int = 6
     pin_memory: bool = True
+    persistent_workers: bool = True
+    prefetch_factor: int = 2
 
     # ---------------- AMP / perf ----------------
-    amp: bool = False
-    amp_dtype: str = "auto"   # "auto" | "bf16" | "fp16"
+    amp: bool = True
+    amp_dtype: str = "bf16"   # "auto" | "bf16" | "fp16"
     tf32: bool = True
     matmul_precision: str = "high"
-    deterministic: bool = True
-    benchmark: bool = False
+    deterministic: bool = False
+    benchmark: bool = True

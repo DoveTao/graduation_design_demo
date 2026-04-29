@@ -347,10 +347,14 @@ class FineInteraction(nn.Module):
         w = w.clamp_min(1e-6)
         w = w / w.sum(dim=-1, keepdim=True).clamp_min(1e-6)
 
-        cov = torch.einsum("bn,bni,bnj->bij", w, plane_n, plane_n)
-        eye = torch.eye(3, device=cov.device, dtype=cov.dtype).unsqueeze(0)
+        cov = torch.einsum("bn,bni,bnj->bij", w, plane_n, plane_n).float()
+        eye = torch.eye(3, device=cov.device, dtype=torch.float32).unsqueeze(0)
         cov = cov + 1e-5 * eye
-        _, vec = torch.linalg.eigh(cov)
+        if cov.is_cuda:
+            with torch.amp.autocast("cuda", enabled=False):
+                _, vec = torch.linalg.eigh(cov)
+        else:
+            _, vec = torch.linalg.eigh(cov)
         t_out = F.normalize(vec[..., 0], dim=-1, eps=1e-6)
         t_local = F.normalize(torch.matmul(R.transpose(-1, -2), t_out.unsqueeze(-1)).squeeze(-1), dim=-1, eps=1e-6)
         return t_out, t_local
