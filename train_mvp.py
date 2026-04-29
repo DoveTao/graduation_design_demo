@@ -24,6 +24,7 @@ Notes:
 
 import argparse
 import ast
+import csv
 import json
 import math
 import os
@@ -153,6 +154,85 @@ def _save_json(path: str, payload: Dict[str, Any]) -> None:
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
         json.dump(payload, f, ensure_ascii=False, indent=2, default=_json_default)
+
+
+def _bucket_metric(rec: Dict[str, Any], *keys: str, default: float = float("nan")) -> float:
+    for key in keys:
+        if key in rec:
+            try:
+                return float(rec[key])
+            except Exception:
+                return default
+    return default
+
+
+def _write_eval_buckets_csv(path: str, payload: Dict[str, Any]) -> None:
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    columns = [
+        "split", "bucket_type", "bucket_label", "count", "rot", "tdir", "tdir_abs",
+        "local_A_abs", "tmag_rel_err", "epi_mass", "top1", "top5", "entropy", "cycle_error",
+    ]
+    bucket_specs = [
+        ("test", "k", payload.get("bucket_k", {})),
+        ("test", "dt", payload.get("bucket_dt", {})),
+        ("test", "kdt", payload.get("bucket_k_dt", {})),
+        ("train", "k", payload.get("train_bucket_k", {})),
+        ("train", "dt", payload.get("train_bucket_dt", {})),
+        ("train", "kdt", payload.get("train_bucket_k_dt", {})),
+    ]
+    with open(path, "w", encoding="utf-8", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=columns)
+        writer.writeheader()
+        for split, bucket_type, bucket in bucket_specs:
+            for label in sorted(bucket.keys(), key=_bucket_sort_key):
+                rec = bucket[label]
+                writer.writerow({
+                    "split": split,
+                    "bucket_type": bucket_type,
+                    "bucket_label": label,
+                    "count": int(rec.get("count", 0)),
+                    "rot": _bucket_metric(rec, "rot"),
+                    "tdir": _bucket_metric(rec, "tdir"),
+                    "tdir_abs": _bucket_metric(rec, "tdir_abs"),
+                    "local_A_abs": _bucket_metric(rec, "tdir_local_A_abs", "local_A_abs"),
+                    "tmag_rel_err": _bucket_metric(rec, "tmag_rel_err"),
+                    "epi_mass": _bucket_metric(rec, "epi_mass_in_gt_band", "epi_mass"),
+                    "top1": _bucket_metric(rec, "top1_in_gt_band", "top1"),
+                    "top5": _bucket_metric(rec, "top5_in_gt_band", "top5"),
+                    "entropy": _bucket_metric(rec, "matching_entropy", "entropy"),
+                    "cycle_error": _bucket_metric(rec, "cycle_error"),
+                })
+
+
+def _matching_diag_payload(step: int, upd: int, test_diag: Dict[str, Any], train_diag: Dict[str, Any]) -> Dict[str, Any]:
+    metric_keys = [
+        "epi_mass_in_gt_band", "top1_in_gt_band", "top5_in_gt_band",
+        "matching_entropy", "max_matching_prob", "cycle_error",
+        "coarse_epi_mass", "coarse_top1", "coarse_top5", "coarse_entropy",
+        "coarse_max_prob", "coarse_cycle_error",
+        "fine_epi_mass", "fine_top1", "fine_top5", "fine_entropy",
+        "fine_max_prob", "fine_cycle_error",
+        "routing_recall_in_gt_band", "allowed_mask_density", "no_candidate_row_ratio",
+        "fine_routing_recall_in_gt_band", "fine_allowed_mask_density", "fine_no_candidate_row_ratio",
+    ]
+
+    def _select(diag: Dict[str, Any]) -> Dict[str, float]:
+        out: Dict[str, float] = {}
+        for key in metric_keys:
+            if key not in diag:
+                continue
+            try:
+                out[key] = float(diag[key])
+            except Exception:
+                pass
+        return out
+
+    return {
+        "step": int(step),
+        "upd": int(upd),
+        "test": _select(test_diag),
+        "train": _select(train_diag),
+    }
 
 
 def _scheduler_lambda(warmup_updates: int, hold_updates: int, drop1_updates: int, drop1_scale: float, drop2_scale: float):
@@ -510,6 +590,7 @@ def _epipolar_matching_diagnostics(
     *,
     angle_thresh_deg: float,
     allowed_mask: Optional[torch.Tensor] = None,
+    routing_mask: Optional[torch.Tensor] = None,
     topk: int = 5,
     min_plane_norm: float = 1e-4,
 ) -> Dict[str, torch.Tensor]:
@@ -531,6 +612,7 @@ def _epipolar_matching_diagnostics(
 
     band = max(math.sin(math.radians(float(angle_thresh_deg))), 1e-6)
     gt_band = residual <= band
+    gt_band_unmasked = gt_band & valid_plane.unsqueeze(-1)
     if allowed_mask is not None:
         gt_band = gt_band & allowed_mask.to(dtype=torch.bool)
     gt_band = gt_band & valid_plane.unsqueeze(-1)
@@ -559,7 +641,7 @@ def _epipolar_matching_diagnostics(
     else:
         cycle_error = torch.full((W_ab.shape[0],), float("nan"), device=W_ab.device, dtype=W_ab.dtype)
 
-    return {
+    out = {
         "epi_mass_in_gt_band": epi_mass.detach(),
         "top1_in_gt_band": top1.detach(),
         "top5_in_gt_band": top5.detach(),
@@ -567,6 +649,18 @@ def _epipolar_matching_diagnostics(
         "max_matching_prob": max_prob.detach(),
         "cycle_error": cycle_error.detach(),
     }
+    if allowed_mask is not None:
+        allowed = allowed_mask.to(dtype=torch.bool)
+        out["allowed_mask_density"] = allowed.to(W_ab.dtype).mean(dim=(-2, -1)).detach()
+        out["no_candidate_row_ratio"] = (~allowed.any(dim=-1)).to(W_ab.dtype).mean(dim=-1).detach()
+    if routing_mask is not None:
+        routing = routing_mask.to(dtype=torch.bool)
+        row_has_gt = gt_band_unmasked.any(dim=-1).to(W_ab.dtype)
+        row_recalled = (routing & gt_band_unmasked).any(dim=-1).to(W_ab.dtype)
+        out["routing_recall_in_gt_band"] = (
+            (row_recalled * row_has_gt).sum(dim=-1) / row_has_gt.sum(dim=-1).clamp_min(1.0)
+        ).detach()
+    return out
 
 
 def _save_ckpt(path, model, optimizer, scaler, scheduler, cfg, step, upd, metrics):
@@ -1006,6 +1100,34 @@ def eval_model(model, loader, device, cfg: Config, *, collect_vis: bool = False,
         "max_matching_prob": 0.0,
         "cycle_error": 0.0,
     }
+    extra_diag_sums: Dict[str, float] = {}
+    extra_diag_counts: Dict[str, int] = {}
+
+    def _accum_extra_diag(name: str, value: torch.Tensor) -> None:
+        arr = value.detach().float().cpu().view(-1).numpy()
+        arr = arr[np.isfinite(arr)]
+        if arr.size == 0:
+            return
+        extra_diag_sums[name] = extra_diag_sums.get(name, 0.0) + float(arr.sum())
+        extra_diag_counts[name] = extra_diag_counts.get(name, 0) + int(arr.size)
+
+    def _accum_matching_diag(prefix: str, diag: Dict[str, torch.Tensor]) -> None:
+        mapping = {
+            "epi_mass_in_gt_band": f"{prefix}_epi_mass",
+            "top1_in_gt_band": f"{prefix}_top1",
+            "top5_in_gt_band": f"{prefix}_top5",
+            "matching_entropy": f"{prefix}_entropy",
+            "max_matching_prob": f"{prefix}_max_prob",
+            "cycle_error": f"{prefix}_cycle_error",
+        }
+        for src, dst in mapping.items():
+            if src in diag:
+                _accum_extra_diag(dst, diag[src])
+        if prefix == "fine":
+            for key in ["routing_recall_in_gt_band", "allowed_mask_density", "no_candidate_row_ratio"]:
+                if key in diag:
+                    _accum_extra_diag(key, diag[key])
+                    _accum_extra_diag(f"fine_{key}", diag[key])
     n = 0
     n_local = 0
     n_t_raw = 0
@@ -1075,6 +1197,32 @@ def eval_model(model, loader, device, cfg: Config, *, collect_vis: bool = False,
             allowed_mask=allowed_eval,
             topk=5,
         )
+        coarse_diag_batch = _epipolar_matching_diagnostics(
+            aux.get("Wc_ab", None),
+            aux.get("Wc_ba", None),
+            aux.get("bearingA_c", None),
+            aux.get("bearingB_c", None),
+            R_gt,
+            t_gt,
+            angle_thresh_deg=float(cfg.epi_angle_thresh_deg),
+            allowed_mask=None,
+            topk=5,
+        )
+        _accum_matching_diag("coarse", coarse_diag_batch)
+        if aux.get("Wf_ab", None) is not None:
+            fine_diag_batch = _epipolar_matching_diagnostics(
+                aux.get("Wf_ab", None),
+                aux.get("Wf_ba", None),
+                aux.get("bearingA_f", None),
+                aux.get("bearingB_f", None),
+                R_gt,
+                t_gt,
+                angle_thresh_deg=float(cfg.epi_angle_thresh_deg),
+                allowed_mask=aux.get("allowed_mask", None),
+                routing_mask=aux.get("routing_mask", None),
+                topk=5,
+            )
+            _accum_matching_diag("fine", fine_diag_batch)
 
         if collect_vis and vis_payload is None and bi == int(vis_index):
             depth_key = f"inv_depth_s{int(cfg.depth_loss_scale)}"
@@ -1253,6 +1401,8 @@ def eval_model(model, loader, device, cfg: Config, *, collect_vis: bool = False,
     diag_mean["stable_tdir"] = stable_tdir_sum / max(stable_n, 1)
     diag_mean["stable_tdir_abs"] = stable_tdir_abs_sum / max(stable_n, 1)
     diag_mean["stable_tdir_local_A_abs"] = stable_tdir_local_A_abs_sum / max(stable_n, 1)
+    for key, total in extra_diag_sums.items():
+        diag_mean[key] = total / max(int(extra_diag_counts.get(key, 0)), 1)
 
     if acc['cnt'] > 0:
         denom = float(acc['cnt'])
@@ -2385,6 +2535,11 @@ def main():
                                 _save_json(os.path.join(ckpt_root, f"eval_buckets_upd{upd:05d}.json"), bucket_payload)
                             if bool(getattr(cfg, 'save_eval_buckets_latest', True)):
                                 _save_json(os.path.join(ckpt_root, 'eval_buckets_latest.json'), bucket_payload)
+                                _write_eval_buckets_csv(os.path.join(ckpt_root, 'eval_buckets_latest.csv'), bucket_payload)
+                                _save_json(
+                                    os.path.join(ckpt_root, 'matching_diag_latest.json'),
+                                    _matching_diag_payload(step, upd, tdiag, train_tdiag),
+                                )
 
                         if want_vis and vis_payload is not None:
                             tag = f"upd{upd:05d}"
