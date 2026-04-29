@@ -164,6 +164,8 @@ class Config:
     w_tmag: float = 0.10
     w_t_mag: float = 0.0  # compatibility alias; training prefers w_tmag
     tmag_loss_type: str = "log_smooth_l1"
+    tmag_start_updates: int = 0
+    tmag_ramp_updates: int = 0
     tmag_min: float = 1.0e-3
     tmag_pred_source: str = "translation_branch"  # "translation_branch" | "pose_feat"
     log_tmag_clamp_min: float = -6.0

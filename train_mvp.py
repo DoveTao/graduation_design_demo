@@ -455,6 +455,20 @@ def _cfg_tmag_weight(cfg: Config) -> float:
     return float(getattr(cfg, "w_t_mag", 0.0))
 
 
+def _cfg_tmag_effective_weight(cfg: Config, upd: int) -> float:
+    base_w = _cfg_tmag_weight(cfg)
+    if base_w <= 0.0:
+        return 0.0
+    start = int(getattr(cfg, "tmag_start_updates", 0))
+    if upd < start:
+        return 0.0
+    ramp_updates = int(getattr(cfg, "tmag_ramp_updates", 0))
+    if ramp_updates <= 0:
+        return base_w
+    ramp = min(1.0, max(0.0, float(upd - start) / float(ramp_updates)))
+    return base_w * ramp
+
+
 def _bucket_init() -> Dict[str, Dict[str, float]]:
     return {}
 
@@ -1814,7 +1828,8 @@ def main():
         f"t_axis={getattr(cfg, 'pose_t_axis_weight', 0.0)} | "
         f"rot_k>={getattr(cfg, 'large_k_rot_thresh', 40)}x{getattr(cfg, 'large_k_rot_weight', 1.0)} | "
         f"w_epi={cfg.w_epi} | w_coarse_pose_aux={getattr(cfg, 'w_coarse_pose_aux', 0.0)} | "
-        f"w_tmag={_cfg_tmag_weight(cfg)} | tmag_loss={getattr(cfg, 'tmag_loss_type', 'log_smooth_l1')}"
+        f"w_tmag={_cfg_tmag_weight(cfg)} | tmag_loss={getattr(cfg, 'tmag_loss_type', 'log_smooth_l1')} | "
+        f"tmag_start={getattr(cfg, 'tmag_start_updates', 0)} | tmag_ramp={getattr(cfg, 'tmag_ramp_updates', 0)}"
     )
     print(
         f"[Cfg ] lr={cfg.lr} | wd={cfg.wd} | warmup_updates={cfg.warmup_updates} | "
@@ -2105,9 +2120,10 @@ def main():
             else:
                 L_pose_coarse = torch.zeros((), device=dev)
 
+            tmag_w_eff = _cfg_tmag_effective_weight(cfg, upd)
             if (
                 bool(getattr(cfg, "use_translation_magnitude_head", True))
-                and _cfg_tmag_weight(cfg) > 0.0
+                and tmag_w_eff > 0.0
                 and t_gt_mag is not None
                 and isinstance(aux, dict)
                 and aux.get("t_mag", None) is not None
@@ -2284,7 +2300,7 @@ def main():
                 + cfg.w_rel * L_rel
                 + epi_w * L_epi
                 + float(getattr(cfg, "w_coarse_epi_aux", 0.0)) * epi_ramp * L_epi_coarse
-                + _cfg_tmag_weight(cfg) * L_t_mag
+                + tmag_w_eff * L_t_mag
                 + photo_w * L_photo
                 + smooth_w * L_smooth
             )
@@ -2644,7 +2660,7 @@ def main():
                 f"[Train] step {step:05d} upd {upd:05d} ep{ep:03d} | "
                 f"L={float(L.detach().cpu()):.3f} | pose={float(L_pose.detach().cpu()):.3f} | "
                 f"pose_c={float(L_pose_coarse.detach().cpu()):.3f} | "
-                f"tmag={float(L_t_mag.detach().cpu()):.4f} | "
+                f"tmag={float(L_t_mag.detach().cpu()):.4f} | tmag_w={tmag_w_eff:.4g} | "
                 f"x={float(L_x.detach().cpu()):.4f} | cyc={float(L_cyc.detach().cpu()):.4f} | "
                 f"rel={float(L_rel.detach().cpu()):.4f} | epi={float(L_epi.detach().cpu()):.4f} | epi_c={float(L_epi_coarse.detach().cpu()):.4f} | "
                 f"photo={float(L_photo.detach().cpu()):.4f} | smooth={float(L_smooth.detach().cpu()):.4f} | depth_ramp={depth_ramp:.2f} | "
@@ -2721,6 +2737,9 @@ def main():
         "nan_like_event_rate_per_update": float(nan_like_events / max(upd, 1)),
         "selection_method": "best_joint",
         "eval_points": len(eval_history),
+        "tmag_base_weight": float(_cfg_tmag_weight(cfg)),
+        "tmag_start_updates": int(getattr(cfg, "tmag_start_updates", 0)),
+        "tmag_ramp_updates": int(getattr(cfg, "tmag_ramp_updates", 0)),
         "last_eval": latest_eval_metrics,
     }
     if bool(cfg.save_final_summary):
