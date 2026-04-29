@@ -16,7 +16,8 @@ Usage / Role:
 
 Notes:
     Supports the MVP coarse matching path, fine-stage routing, GT epipolar
-    matching diagnostics, and lightweight translation-specific feature fusion.
+    matching diagnostics, lightweight translation-specific feature fusion, and
+    odometry-oriented translation magnitude prediction.
 """
 
 from __future__ import annotations
@@ -184,6 +185,49 @@ class TranslationOnlyHead(nn.Module):
         return normalize_vec(self.t(z))
 
 
+class TranslationMagnitudeHead(nn.Module):
+    """Predict log relative translation scale from fused token features."""
+
+    def __init__(self, D: int):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.LayerNorm(3 * D),
+            nn.Linear(3 * D, D),
+            nn.GELU(),
+            nn.Linear(D, D // 2),
+            nn.GELU(),
+            nn.Linear(D // 2, 1),
+        )
+
+    def forward(self, feat: torch.Tensor, token_weight: Optional[torch.Tensor] = None) -> torch.Tensor:
+        feat = feat.float()
+        if token_weight is None:
+            z_mean = feat.mean(dim=1)
+            z_var = feat.var(dim=1, unbiased=False)
+        else:
+            w = token_weight.float().clamp_min(1e-6)
+            w = w / w.sum(dim=1, keepdim=True).clamp_min(1e-6)
+            z_mean = torch.sum(feat * w.unsqueeze(-1), dim=1)
+            diff2 = (feat - z_mean.unsqueeze(1)).pow(2)
+            z_var = torch.sum(diff2 * w.unsqueeze(-1), dim=1)
+        z_std = torch.sqrt(z_var.clamp_min(1e-8))
+        z_max = feat.max(dim=1).values
+        z = torch.cat([z_mean, z_max, z_std], dim=-1)
+        return self.net(z).squeeze(-1)
+
+
+def positive_translation_magnitude(
+    log_t_mag: torch.Tensor,
+    *,
+    clamp_min: float,
+    clamp_max: float,
+    mag_min: float,
+) -> Tuple[torch.Tensor, torch.Tensor]:
+    log_t_mag = log_t_mag.float().view(-1).clamp(min=float(clamp_min), max=float(clamp_max))
+    t_mag = torch.exp(log_t_mag).clamp_min(float(mag_min))
+    return t_mag, log_t_mag
+
+
 def cosine_logits(
     a: torch.Tensor,
     b: torch.Tensor,
@@ -303,6 +347,11 @@ class CoarseInteraction(nn.Module):
         use_bearing_fuse: bool = False,
         use_translation_feature_branch: bool = False,
         translation_branch_detach_match: bool = True,
+        use_translation_magnitude_head: bool = True,
+        tmag_pred_source: str = "translation_branch",
+        tmag_min: float = 1.0e-3,
+        log_tmag_clamp_min: float = -6.0,
+        log_tmag_clamp_max: float = 6.0,
     ):
         super().__init__()
         self.temperature = float(temperature)
@@ -310,11 +359,19 @@ class CoarseInteraction(nn.Module):
         self.use_bearing_fuse = bool(use_bearing_fuse)
         self.use_translation_feature_branch = bool(use_translation_feature_branch)
         self.translation_branch_detach_match = bool(translation_branch_detach_match)
+        self.use_translation_magnitude_head = bool(use_translation_magnitude_head)
+        self.tmag_pred_source = str(tmag_pred_source)
+        if self.tmag_pred_source not in ("translation_branch", "pose_feat"):
+            raise ValueError(f"Unsupported tmag_pred_source: {self.tmag_pred_source}")
+        self.tmag_min = float(tmag_min)
+        self.log_tmag_clamp_min = float(log_tmag_clamp_min)
+        self.log_tmag_clamp_max = float(log_tmag_clamp_max)
         self.fuse = FuseMLP(D)
         self.bearing_fuse = BearingFuse(D) if self.use_bearing_fuse else None
         self.pose_head = CoarsePoseHead(D, use_stats_pool=pose_use_stats_pool)
         self.t_fuse = FuseMLP(D) if self.use_translation_feature_branch else None
         self.t_head = TranslationOnlyHead(D) if self.use_translation_feature_branch else None
+        self.mag_head = TranslationMagnitudeHead(D) if self.use_translation_magnitude_head else None
         self.rel_head = TokenReliabilityHead(D)
 
     def forward(
@@ -348,6 +405,20 @@ class CoarseInteraction(nn.Module):
             Fc_t = self.t_fuse(tokens_a_t.feat.float(), feat_b_att_t)
             match_conf = W_t.max(dim=-1).values
             tc_dir = self.t_head(Fc_t, token_weight=match_conf)
+        else:
+            match_conf = Wc_ab.max(dim=-1).values
+        if self.mag_head is not None:
+            mag_feat = Fc if self.tmag_pred_source == "pose_feat" else (Fc_t if Fc_t is not None else Fc)
+            log_tc_mag = self.mag_head(mag_feat, token_weight=match_conf)
+            tc_mag, log_tc_mag = positive_translation_magnitude(
+                log_tc_mag,
+                clamp_min=self.log_tmag_clamp_min,
+                clamp_max=self.log_tmag_clamp_max,
+                mag_min=self.tmag_min,
+            )
+        else:
+            tc_mag = torch.ones((TokA.feat.shape[0],), device=TokA.feat.device, dtype=torch.float32)
+            log_tc_mag = torch.zeros_like(tc_mag)
 
         out = {
             "Wc_ab": Wc_ab,
@@ -355,6 +426,8 @@ class CoarseInteraction(nn.Module):
             "Fc": Fc,
             "Rc": Rc,
             "tc_dir": tc_dir,
+            "tc_mag": tc_mag,
+            "log_tc_mag": log_tc_mag,
             "tc_dir_pose": tc_dir_pose,
             "cA_c": self.rel_head(TokA.feat.float()),
             "cB_c": self.rel_head(TokB.feat.float()),
@@ -379,6 +452,10 @@ class FineInteraction(nn.Module):
         geometric_t_fuse_strength: float = 0.0,
         pose_use_stats_pool: bool = False,
         use_bearing_fuse: bool = False,
+        use_translation_magnitude_head: bool = True,
+        tmag_min: float = 1.0e-3,
+        log_tmag_clamp_min: float = -6.0,
+        log_tmag_clamp_max: float = 6.0,
     ):
         super().__init__()
         self.temperature = float(temperature)
@@ -393,6 +470,10 @@ class FineInteraction(nn.Module):
         self.depth_fuse_detach_feature = bool(depth_fuse_detach_feature)
         self.use_geometric_t_fusion = bool(use_geometric_t_fusion)
         self.geometric_t_fuse_strength = float(geometric_t_fuse_strength)
+        self.use_translation_magnitude_head = bool(use_translation_magnitude_head)
+        self.tmag_min = float(tmag_min)
+        self.log_tmag_clamp_min = float(log_tmag_clamp_min)
+        self.log_tmag_clamp_max = float(log_tmag_clamp_max)
         if self.use_depth_fusion:
             self.depth_fuse = nn.Sequential(
                 nn.LayerNorm(2 * D),
@@ -408,6 +489,7 @@ class FineInteraction(nn.Module):
                 nn.Sigmoid(),
             )
         self.t_head = TranslationOnlyHead(D)
+        self.mag_head = TranslationMagnitudeHead(D) if self.use_translation_magnitude_head else None
 
     @staticmethod
     def _geometric_translation_from_matches(
@@ -537,6 +619,17 @@ class FineInteraction(nn.Module):
         else:
             token_weight = match_conf
         t_dir_raw = self.t_head(Ff_t, token_weight=token_weight)
+        if self.mag_head is not None:
+            log_t_mag = self.mag_head(Ff_t, token_weight=token_weight)
+            t_mag, log_t_mag = positive_translation_magnitude(
+                log_t_mag,
+                clamp_min=self.log_tmag_clamp_min,
+                clamp_max=self.log_tmag_clamp_max,
+                mag_min=self.tmag_min,
+            )
+        else:
+            t_mag = torch.ones((TokA_f.feat.shape[0],), device=TokA_f.feat.device, dtype=torch.float32)
+            log_t_mag = torch.zeros_like(t_mag)
         t_geo_out, t_geo_local = self._geometric_translation_from_matches(
             Wf_ab,
             TokA_f.bearing,
@@ -562,6 +655,8 @@ class FineInteraction(nn.Module):
             "Ff_t": Ff_t,
             "R": R,
             "t_dir": t_dir,
+            "t_mag": t_mag,
+            "log_t_mag": log_t_mag,
             "t_dir_raw": t_dir_raw,
             "t_geo_out": t_geo_out,
             "t_geo_local": t_geo_local,

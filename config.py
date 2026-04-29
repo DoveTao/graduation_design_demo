@@ -17,7 +17,8 @@ Usage / Role:
 
 Notes:
     Defaults are set for the current coarse-only MVP with a lightweight
-    translation feature branch, frequent evaluation, and limited-GPU training.
+    translation feature branch, optional odometry-scale prediction, frequent
+    evaluation, and limited-GPU training.
 """
 
 from dataclasses import dataclass
@@ -153,6 +154,14 @@ class Config:
     w_coarse_pose_aux: float = 0.30
     w_coarse_epi_aux: float = 0.0
     w_pose_output_t: float = 0.0
+    use_translation_magnitude_head: bool = True
+    w_tmag: float = 0.10
+    w_t_mag: float = 0.0  # compatibility alias; training prefers w_tmag
+    tmag_loss_type: str = "log_smooth_l1"
+    tmag_min: float = 1.0e-3
+    tmag_pred_source: str = "translation_branch"  # "translation_branch" | "pose_feat"
+    log_tmag_clamp_min: float = -6.0
+    log_tmag_clamp_max: float = 6.0
     pose_t_alpha: float = 1.0
     pose_t_oriented_weight: float = 1.0
     pose_t_axis_weight: float = 0.0

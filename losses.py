@@ -3,10 +3,12 @@ File: losses.py
 Description:
     Loss functions and geometric supervision utilities for panoramic relative
     pose learning. This file combines pose losses, epipolar matching losses,
-    cycle/reliability losses, and optional depth-related losses.
+    translation magnitude losses, cycle/reliability losses, and optional
+    depth-related losses.
 
 Main Components:
     - Rotation and translation direction pose loss
+    - Log-space translation magnitude loss for relative transforms
     - GT epipolar band and soft matching supervision
     - Soft correspondence cycle and reliability losses
     - Photometric and smoothness losses for optional depth experiments
@@ -16,7 +18,8 @@ Usage / Role:
 
 Notes:
     Includes local-frame translation supervision and allowed-mask support for
-    fine-stage epipolar matching ablations.
+    fine-stage epipolar matching ablations and odometry-oriented scale
+    supervision.
 """
 
 import math
@@ -106,6 +109,33 @@ def translation_direction_loss(
     if sample_weight is not None:
         w = sample_weight.float().view(-1).to(loss.device).clamp_min(1e-6)
         return (loss.view(-1) * w).sum() / w.sum().clamp_min(1e-6)
+    return loss.mean()
+
+
+def translation_magnitude_loss(
+    t_mag_pred: torch.Tensor,
+    t_mag_gt: torch.Tensor,
+    *,
+    loss_type: str = "log_smooth_l1",
+    eps: float = 1.0e-3,
+    sample_weight: Optional[torch.Tensor] = None,
+) -> torch.Tensor:
+    """Translation scale loss; default is Smooth L1 in log-magnitude space."""
+    eps = float(eps)
+    pred = t_mag_pred.float().view(-1).clamp_min(eps)
+    gt = t_mag_gt.float().view(-1).clamp_min(0.0)
+    loss_key = str(loss_type).lower()
+    if loss_key in ("log_smooth_l1", "smooth_l1_log", "log"):
+        loss = F.smooth_l1_loss(torch.log(pred + eps), torch.log(gt + eps), reduction="none")
+    elif loss_key in ("smooth_l1", "linear_smooth_l1"):
+        loss = F.smooth_l1_loss(pred, gt, reduction="none")
+    elif loss_key in ("l1", "abs"):
+        loss = torch.abs(pred - gt)
+    else:
+        raise ValueError(f"Unsupported translation magnitude loss_type: {loss_type}")
+    if sample_weight is not None:
+        w = sample_weight.float().view(-1).to(loss.device).clamp_min(1e-6)
+        return (loss * w).sum() / w.sum().clamp_min(1e-6)
     return loss.mean()
 
 

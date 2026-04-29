@@ -3,7 +3,8 @@ File: model.py
 Description:
     Main model definition for panoramic relative pose estimation. This file
     builds sampled spherical tokens, applies token encoders, runs coarse and
-    optional fine interactions, and returns rotation and translation predictions.
+    optional fine interactions, and returns rotation, translation direction,
+    translation magnitude, and relative transform predictions.
 
 Main Components:
     - Module2Sampler for ERP patch sampling and token construction
@@ -17,8 +18,8 @@ Usage / Role:
 
 Notes:
     The current MVP emphasizes coarse matching and local-frame translation
-    supervision while keeping optional fine-stage, epipolar-bias, and depth
-    branches available for ablation.
+    supervision while keeping optional fine-stage, epipolar-bias, odometry-scale
+    translation, and depth branches available for ablation.
 """
 
 from __future__ import annotations
@@ -201,6 +202,40 @@ def _blend_direction(t_base: torch.Tensor, t_update: torch.Tensor, strength: flo
     return nn.functional.normalize((1.0 - a) * t_base.float() + a * t_update.float(), dim=-1, eps=1e-6)
 
 
+def _blend_magnitude(m_base: torch.Tensor, m_update: torch.Tensor, strength: float) -> torch.Tensor:
+    a = float(max(0.0, min(1.0, strength)))
+    m_base = m_base.float().view(-1)
+    m_update = m_update.float().view(-1)
+    if a <= 0.0:
+        return m_base.clamp_min(1e-6)
+    if a >= 1.0:
+        return m_update.clamp_min(1e-6)
+    return ((1.0 - a) * m_base + a * m_update).clamp_min(1e-6)
+
+
+def _set_transform_outputs(
+    aux: Dict[str, torch.Tensor],
+    R: torch.Tensor,
+    t_local: torch.Tensor,
+    t_mag: torch.Tensor,
+    log_t_mag: Optional[torch.Tensor] = None,
+) -> None:
+    t_out = _local_t_to_output_frame(R, t_local)
+    t_mag = t_mag.float().view(-1).clamp_min(1e-6)
+    if log_t_mag is None:
+        log_t_mag = torch.log(t_mag)
+    else:
+        log_t_mag = log_t_mag.float().view(-1)
+    aux["t_dir_local"] = nn.functional.normalize(t_local.float(), dim=-1, eps=1e-6)
+    aux["t_dir"] = aux["t_dir_local"]
+    aux["t_dir_out"] = t_out
+    aux["t_mag"] = t_mag
+    aux["log_t_mag"] = log_t_mag
+    aux["t_vec"] = t_out * t_mag.unsqueeze(-1)
+    aux["t_vec_out"] = aux["t_vec"]
+    aux["t_vec_local"] = aux["t_dir_local"] * t_mag.unsqueeze(-1)
+
+
 class PanoramaRelPoseModel(nn.Module):
     def __init__(self, cfg: Config, device: torch.device):
         super().__init__()
@@ -215,6 +250,11 @@ class PanoramaRelPoseModel(nn.Module):
             use_bearing_fuse=bool(getattr(cfg, "use_bearing_fuse", False)),
             use_translation_feature_branch=bool(getattr(cfg, "use_translation_feature_branch", False)),
             translation_branch_detach_match=bool(getattr(cfg, "translation_branch_detach_match", True)),
+            use_translation_magnitude_head=bool(getattr(cfg, "use_translation_magnitude_head", True)),
+            tmag_pred_source=str(getattr(cfg, "tmag_pred_source", "translation_branch")),
+            tmag_min=float(getattr(cfg, "tmag_min", 1.0e-3)),
+            log_tmag_clamp_min=float(getattr(cfg, "log_tmag_clamp_min", -6.0)),
+            log_tmag_clamp_max=float(getattr(cfg, "log_tmag_clamp_max", 6.0)),
         )
         self.fine = FineInteraction(
             cfg.D,
@@ -227,6 +267,10 @@ class PanoramaRelPoseModel(nn.Module):
             geometric_t_fuse_strength=float(getattr(cfg, "geometric_t_fuse_strength", 0.0)),
             pose_use_stats_pool=bool(getattr(cfg, "pose_use_stats_pool", False)),
             use_bearing_fuse=bool(getattr(cfg, "use_bearing_fuse", False)),
+            use_translation_magnitude_head=bool(getattr(cfg, "use_translation_magnitude_head", True)),
+            tmag_min=float(getattr(cfg, "tmag_min", 1.0e-3)),
+            log_tmag_clamp_min=float(getattr(cfg, "log_tmag_clamp_min", -6.0)),
+            log_tmag_clamp_max=float(getattr(cfg, "log_tmag_clamp_max", 6.0)),
         )
 
         self.depth = None
@@ -275,20 +319,21 @@ class PanoramaRelPoseModel(nn.Module):
 
         if not self.cfg.use_coarse_interaction:
             R, t_local = self.direct_head(TokA_c.feat, TokB_c.feat)
-            t_dir = _local_t_to_output_frame(R, t_local)
-            aux["t_dir_local"] = t_local
-            aux["t_dir_out"] = t_dir
+            t_mag = torch.ones((IA.shape[0],), device=IA.device, dtype=torch.float32)
+            _set_transform_outputs(aux, R, t_local, t_mag)
             aux["stage"] = "encoder_only"
-            return R, t_dir, aux
+            return R, aux["t_dir"], aux
 
         out_c = self.coarse(TokA_c, TokB_c, tokens_a_t=tokens.get("TokA_c_t"), tokens_b_t=tokens.get("TokB_c_t"))
         aux.update(out_c)
         aux["tc_dir_local"] = out_c["tc_dir"]
         aux["tc_dir_out"] = _local_t_to_output_frame(out_c["Rc"], out_c["tc_dir"])
         aux["tc_dir"] = out_c["tc_dir"]
-        aux["t_dir_local"] = out_c["tc_dir"]
-        aux["t_dir"] = aux["tc_dir"]
-        aux["t_dir_out"] = aux["tc_dir_out"]
+        aux["tc_mag"] = out_c["tc_mag"]
+        aux["log_tc_mag"] = out_c["log_tc_mag"]
+        aux["tc_vec_out"] = aux["tc_dir_out"] * aux["tc_mag"].unsqueeze(-1)
+        aux["tc_vec_local"] = aux["tc_dir_local"] * aux["tc_mag"].unsqueeze(-1)
+        _set_transform_outputs(aux, out_c["Rc"], out_c["tc_dir"], out_c["tc_mag"], out_c["log_tc_mag"])
         aux["stage"] = "coarse_only"
 
         if not self.cfg.use_fine_stage:
@@ -324,12 +369,14 @@ class PanoramaRelPoseModel(nn.Module):
         fine_strength = float(getattr(self.cfg, "fine_pose_fuse_strength", 1.0))
         R_final = _blend_rotation(out_c["Rc"], out_f["R"], fine_strength)
         t_local_final = _blend_direction(aux["tc_dir_local"], out_f["t_dir"], fine_strength)
+        t_mag_final = _blend_magnitude(aux["tc_mag"], out_f["t_mag"], fine_strength)
         aux["Rf_raw"] = out_f["R"]
         aux["t_dir_fine_raw"] = out_f["t_dir"]
+        aux["t_mag_fine_raw"] = out_f["t_mag"]
+        aux["log_t_mag_fine_raw"] = out_f["log_t_mag"]
+        aux["t_vec_fine_raw"] = _local_t_to_output_frame(out_f["R"], out_f["t_dir"]) * out_f["t_mag"].float().view(-1, 1)
         aux["fine_pose_fuse_strength"] = torch.tensor(fine_strength, device=R_final.device)
-        aux["t_dir_local"] = t_local_final
-        aux["t_dir"] = _local_t_to_output_frame(R_final, t_local_final)
-        aux["t_dir_out"] = aux["t_dir"]
+        _set_transform_outputs(aux, R_final, t_local_final, t_mag_final)
         aux["stage"] = "coarse_to_fine"
         aux["Wc_tilde"] = aggregate_fine_to_coarse(
             Wf_ab=out_f["Wf_ab"],

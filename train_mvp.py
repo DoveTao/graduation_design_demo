@@ -52,6 +52,7 @@ from losses import (
     erp_photometric_loss,
     pose_loss,
     translation_direction_loss,
+    translation_magnitude_loss,
 )
 from model import PanoramaRelPoseModel
 from erp_sampling import warp_erp_with_depth_pose
@@ -353,6 +354,26 @@ def _rotation_weight_from_k(meta: Any, bsz: int, *, large_k_thresh: int, large_k
     return w
 
 
+def _translation_magnitude_gt(batch: Dict[str, Any], meta: Any, bsz: int, device: torch.device) -> Optional[torch.Tensor]:
+    t_gt_mag = batch.get("t_gt_mag", None)
+    if t_gt_mag is not None:
+        return t_gt_mag.to(device, non_blocking=True).float().view(-1)
+    dt_list = _meta_batch_field(meta, "dt_world", bsz, default=None)
+    if any(v is None for v in dt_list):
+        return None
+    try:
+        vals = [float(v) for v in dt_list]
+    except Exception:
+        return None
+    return torch.tensor(vals, device=device, dtype=torch.float32).view(-1)
+
+
+def _cfg_tmag_weight(cfg: Config) -> float:
+    if hasattr(cfg, "w_tmag"):
+        return float(getattr(cfg, "w_tmag", 0.0))
+    return float(getattr(cfg, "w_t_mag", 0.0))
+
+
 def _bucket_init() -> Dict[str, Dict[str, float]]:
     return {}
 
@@ -371,6 +392,7 @@ def _bucket_update(
     matching_entropy: float,
     max_matching_prob: float,
     cycle_error: float,
+    tmag_rel_err: float = float("nan"),
 ):
     rec = store.setdefault(label, {
         'count': 0,
@@ -385,6 +407,8 @@ def _bucket_update(
         'matching_entropy_sum': 0.0,
         'max_matching_prob_sum': 0.0,
         'cycle_error_sum': 0.0,
+        'tmag_rel_err_sum': 0.0,
+        'tmag_rel_err_count': 0,
     })
     rec['count'] += 1
     rec['rot_sum'] += float(rot)
@@ -406,6 +430,9 @@ def _bucket_update(
         rec['max_matching_prob_sum'] += float(max_matching_prob)
     if np.isfinite(cycle_error):
         rec['cycle_error_sum'] += float(cycle_error)
+    if np.isfinite(tmag_rel_err):
+        rec['tmag_rel_err_sum'] += float(tmag_rel_err)
+        rec['tmag_rel_err_count'] += 1
 
 
 def _bucket_finalize(store: Dict[str, Dict[str, float]]) -> Dict[str, Dict[str, float]]:
@@ -425,6 +452,10 @@ def _bucket_finalize(store: Dict[str, Dict[str, float]]) -> Dict[str, Dict[str, 
             'matching_entropy': float(v['matching_entropy_sum'] / n),
             'max_matching_prob': float(v['max_matching_prob_sum'] / n),
             'cycle_error': float(v['cycle_error_sum'] / n),
+            'tmag_rel_err': (
+                float(v['tmag_rel_err_sum'] / max(int(v.get('tmag_rel_err_count', 0)), 1))
+                if int(v.get('tmag_rel_err_count', 0)) > 0 else float('nan')
+            ),
         }
     return out
 
@@ -463,7 +494,8 @@ def _format_bucket_summary(prefix: str, bucket: Dict[str, Dict[str, float]]) -> 
         parts.append(
             f"{label}:n={rec['count']} rot={rec['rot']:.2f} tdir={rec['tdir']:.2f} "
             f"tdir_abs={rec['tdir_abs']:.2f} local_abs={rec['tdir_local_A_abs']:.2f} "
-            f"epi_mass={rec['epi_mass_in_gt_band']:.3f} top1={rec['top1_in_gt_band']:.3f}"
+            f"epi_mass={rec['epi_mass_in_gt_band']:.3f} top1={rec['top1_in_gt_band']:.3f} "
+            f"tmag_rel={rec.get('tmag_rel_err', float('nan')):.3f}"
         )
     return f'[{prefix}] ' + ' | '.join(parts)
 
@@ -956,6 +988,11 @@ def eval_model(model, loader, device, cfg: Config, *, collect_vis: bool = False,
     tdir_flip_count = 0.0
     tdir_local_A_cos_sum = 0.0
     tdir_local_A_flip_count = 0.0
+    tmag_abs_sum = 0.0
+    tmag_rel_sum = 0.0
+    n_tmag = 0
+    trans_vec_l2_sum = 0.0
+    n_trans_vec = 0
     stable_rot_sum = 0.0
     stable_tdir_sum = 0.0
     stable_tdir_abs_sum = 0.0
@@ -1008,6 +1045,7 @@ def eval_model(model, loader, device, cfg: Config, *, collect_vis: bool = False,
         R_gt = batch['R_gt'].to(device, non_blocking=True)
         t_gt = batch['t_gt_dir'].to(device, non_blocking=True)
         meta = batch.get('meta', {})
+        t_gt_mag = _translation_magnitude_gt(batch, meta, IA.shape[0], device)
 
         R_pred, t_pred, aux = model(IA, IB, enable_depth_fusion=True)
         t_eval_pred = aux.get('t_dir_out', t_pred) if isinstance(aux, dict) else t_pred
@@ -1079,6 +1117,25 @@ def eval_model(model, loader, device, cfg: Config, *, collect_vis: bool = False,
         tdir_flip_count += float((cos < 0.0).to(torch.float32).sum().cpu())
         n += bsz
 
+        t_mag_pred = aux.get("t_mag", None) if isinstance(aux, dict) else None
+        tmag_rel_np = np.full((bsz,), np.nan, dtype=np.float32)
+        if t_mag_pred is not None and t_gt_mag is not None:
+            mag_pred = t_mag_pred.float().view(-1).clamp_min(1e-6)
+            mag_gt = t_gt_mag.float().view(-1).clamp_min(1e-6)
+            mag_abs = torch.abs(mag_pred - mag_gt)
+            mag_rel = mag_abs / mag_gt
+            tmag_abs_sum += float(mag_abs.sum().cpu())
+            tmag_rel_sum += float(mag_rel.sum().cpu())
+            n_tmag += int(mag_gt.numel())
+            tmag_rel_np = mag_rel.detach().cpu().view(-1).numpy()
+
+            t_vec_pred = aux.get("t_vec_out", aux.get("t_vec", None)) if isinstance(aux, dict) else None
+            if t_vec_pred is not None:
+                gt_vec = tg * mag_gt.view(-1, 1)
+                vec_l2 = torch.linalg.norm(t_vec_pred.float() - gt_vec.float(), dim=-1)
+                trans_vec_l2_sum += float(vec_l2.sum().cpu())
+                n_trans_vec += int(vec_l2.numel())
+
         rot_np = rot_deg.detach().cpu().view(-1).numpy()
         tdir_np = ang.detach().cpu().view(-1).numpy()
         tdir_abs_np = ang_abs.detach().cpu().view(-1).numpy()
@@ -1147,17 +1204,20 @@ def eval_model(model, loader, device, cfg: Config, *, collect_vis: bool = False,
             _bucket_update(
                 bucket_k, k_label, rot_np[i], tdir_np[i], tdir_abs_np[i], tdir_local_np[i], tdir_local_abs_np[i],
                 diag_np["epi_mass_in_gt_band"][i], diag_np["top1_in_gt_band"][i], diag_np["top5_in_gt_band"][i],
-                diag_np["matching_entropy"][i], diag_np["max_matching_prob"][i], diag_np["cycle_error"][i]
+                diag_np["matching_entropy"][i], diag_np["max_matching_prob"][i], diag_np["cycle_error"][i],
+                tmag_rel_np[i],
             )
             _bucket_update(
                 bucket_dt, dt_label, rot_np[i], tdir_np[i], tdir_abs_np[i], tdir_local_np[i], tdir_local_abs_np[i],
                 diag_np["epi_mass_in_gt_band"][i], diag_np["top1_in_gt_band"][i], diag_np["top5_in_gt_band"][i],
-                diag_np["matching_entropy"][i], diag_np["max_matching_prob"][i], diag_np["cycle_error"][i]
+                diag_np["matching_entropy"][i], diag_np["max_matching_prob"][i], diag_np["cycle_error"][i],
+                tmag_rel_np[i],
             )
             _bucket_update(
                 bucket_k_dt, f"{k_label}|{dt_label}", rot_np[i], tdir_np[i], tdir_abs_np[i], tdir_local_np[i], tdir_local_abs_np[i],
                 diag_np["epi_mass_in_gt_band"][i], diag_np["top1_in_gt_band"][i], diag_np["top5_in_gt_band"][i],
-                diag_np["matching_entropy"][i], diag_np["max_matching_prob"][i], diag_np["cycle_error"][i]
+                diag_np["matching_entropy"][i], diag_np["max_matching_prob"][i], diag_np["cycle_error"][i],
+                tmag_rel_np[i],
             )
 
         def ang_deg(a, b):
@@ -1184,6 +1244,9 @@ def eval_model(model, loader, device, cfg: Config, *, collect_vis: bool = False,
     diag_mean["tdir_flip_rate"] = tdir_flip_count / max(n, 1)
     diag_mean["tdir_local_A_cos"] = tdir_local_A_cos_sum / max(n_local, 1) if n_local > 0 else float("nan")
     diag_mean["tdir_local_A_flip_rate"] = tdir_local_A_flip_count / max(n_local, 1) if n_local > 0 else float("nan")
+    diag_mean["tmag_abs_err"] = tmag_abs_sum / max(n_tmag, 1) if n_tmag > 0 else float("nan")
+    diag_mean["tmag_rel_err"] = tmag_rel_sum / max(n_tmag, 1) if n_tmag > 0 else float("nan")
+    diag_mean["trans_vec_l2"] = trans_vec_l2_sum / max(n_trans_vec, 1) if n_trans_vec > 0 else float("nan")
     diag_mean["stable_n"] = float(stable_n)
     diag_mean["stable_min_dt"] = float(stable_min_dt)
     diag_mean["stable_rot"] = stable_rot_sum / max(stable_n, 1)
@@ -1284,7 +1347,8 @@ def main():
         f"t_oriented={getattr(cfg, 'pose_t_oriented_weight', 1.0)} | "
         f"t_axis={getattr(cfg, 'pose_t_axis_weight', 0.0)} | "
         f"rot_k>={getattr(cfg, 'large_k_rot_thresh', 40)}x{getattr(cfg, 'large_k_rot_weight', 1.0)} | "
-        f"w_epi={cfg.w_epi} | w_coarse_pose_aux={getattr(cfg, 'w_coarse_pose_aux', 0.0)}"
+        f"w_epi={cfg.w_epi} | w_coarse_pose_aux={getattr(cfg, 'w_coarse_pose_aux', 0.0)} | "
+        f"w_tmag={_cfg_tmag_weight(cfg)} | tmag_loss={getattr(cfg, 'tmag_loss_type', 'log_smooth_l1')}"
     )
     print(
         f"[Cfg ] lr={cfg.lr} | wd={cfg.wd} | warmup_updates={cfg.warmup_updates} | "
@@ -1499,6 +1563,7 @@ def main():
         R_gt = batch["R_gt"].to(dev, non_blocking=True)
         t_gt = batch["t_gt_dir"].to(dev, non_blocking=True)
         meta = batch.get("meta", None)
+        t_gt_mag = _translation_magnitude_gt(batch, meta, IA.shape[0], dev)
         dt_t_weight = torch.tensor(
             _translation_weight_from_dt(
                 meta,
@@ -1573,6 +1638,23 @@ def main():
                 )
             else:
                 L_pose_coarse = torch.zeros((), device=dev)
+
+            if (
+                bool(getattr(cfg, "use_translation_magnitude_head", True))
+                and _cfg_tmag_weight(cfg) > 0.0
+                and t_gt_mag is not None
+                and isinstance(aux, dict)
+                and aux.get("t_mag", None) is not None
+            ):
+                L_t_mag = translation_magnitude_loss(
+                    aux["t_mag"],
+                    t_gt_mag,
+                    loss_type=str(getattr(cfg, "tmag_loss_type", "log_smooth_l1")),
+                    eps=float(getattr(cfg, "tmag_min", 1.0e-3)),
+                    sample_weight=None,
+                )
+            else:
+                L_t_mag = torch.zeros((), device=dev)
 
             use_fine_epi = bool(cfg.use_fine_stage) and (aux.get("Wf_ab", None) is not None)
             if use_fine_epi:
@@ -1736,6 +1818,7 @@ def main():
                 + cfg.w_rel * L_rel
                 + epi_w * L_epi
                 + float(getattr(cfg, "w_coarse_epi_aux", 0.0)) * epi_ramp * L_epi_coarse
+                + _cfg_tmag_weight(cfg) * L_t_mag
                 + photo_w * L_photo
                 + smooth_w * L_smooth
             )
@@ -1745,7 +1828,7 @@ def main():
 
         forward_ok = all(
             bool(torch.isfinite(x).all())
-            for x in [R_pred, t_pred, L_pose, L_pose_coarse, L_x, L_cyc, L_rel, L_epi, L_epi_coarse, L_photo, L_smooth, L]
+            for x in [R_pred, t_pred, L_pose, L_pose_coarse, L_t_mag, L_x, L_cyc, L_rel, L_epi, L_epi_coarse, L_photo, L_smooth, L]
         )
         if not forward_ok:
             bad_forward += 1
@@ -1846,6 +1929,9 @@ def main():
                             f"ent={train_tdiag.get('matching_entropy', float('nan')):.4f} | "
                             f"pmax={train_tdiag.get('max_matching_prob', float('nan')):.4f} | "
                             f"cyc={train_tdiag.get('cycle_error', float('nan')):.4f} | "
+                            f"tmag_abs={train_tdiag.get('tmag_abs_err', float('nan')):.3f} | "
+                            f"tmag_rel={train_tdiag.get('tmag_rel_err', float('nan')):.3f} | "
+                            f"tvec_l2={train_tdiag.get('trans_vec_l2', float('nan')):.3f} | "
                             f"raw_t_abs={train_tdiag.get('t_raw_local_A_abs', float('nan')):.2f}° | "
                             f"geo_t_abs={train_tdiag.get('t_geo_local_A_abs', float('nan')):.2f}° | "
                             f"time={t_train_eval:.2f}s"
@@ -1931,6 +2017,9 @@ def main():
                             f"cyc={tdiag.get('cycle_error', float('nan')):.4f} | "
                             f"tcos={tdiag.get('tdir_cos', float('nan')):.3f} | "
                             f"flip_rate={tdiag.get('tdir_flip_rate', float('nan')):.3f} | "
+                            f"tmag_abs={tdiag.get('tmag_abs_err', float('nan')):.3f} | "
+                            f"tmag_rel={tdiag.get('tmag_rel_err', float('nan')):.3f} | "
+                            f"tvec_l2={tdiag.get('trans_vec_l2', float('nan')):.3f} | "
                             f"stable_abs={tdiag.get('stable_tdir_abs', float('nan')):.2f}° | "
                             f"stable_local={tdiag.get('stable_tdir_local_A_abs', float('nan')):.2f}° | "
                             f"raw_t_abs={tdiag.get('t_raw_local_A_abs', float('nan')):.2f}° | "
@@ -2054,6 +2143,7 @@ def main():
                 f"[Train] step {step:05d} upd {upd:05d} ep{ep:03d} | "
                 f"L={float(L.detach().cpu()):.3f} | pose={float(L_pose.detach().cpu()):.3f} | "
                 f"pose_c={float(L_pose_coarse.detach().cpu()):.3f} | "
+                f"tmag={float(L_t_mag.detach().cpu()):.4f} | "
                 f"x={float(L_x.detach().cpu()):.4f} | cyc={float(L_cyc.detach().cpu()):.4f} | "
                 f"rel={float(L_rel.detach().cpu()):.4f} | epi={float(L_epi.detach().cpu()):.4f} | epi_c={float(L_epi_coarse.detach().cpu()):.4f} | "
                 f"photo={float(L_photo.detach().cpu()):.4f} | smooth={float(L_smooth.detach().cpu()):.4f} | depth_ramp={depth_ramp:.2f} | "
@@ -2100,6 +2190,18 @@ def main():
         )
 
     nan_like_events = int(bad_forward + skip_updates)
+    latest_eval = eval_history[-1] if len(eval_history) > 0 else {}
+    latest_eval_keys = [
+        "rot", "tdir", "tdir_abs",
+        "raw", "flip", "R@t", "R@(-t)", "Rt@t", "Rt@(-t)",
+        "tdir_local_A", "tdir_local_A_abs",
+        "tmag_abs_err", "tmag_rel_err", "trans_vec_l2",
+    ]
+    latest_eval_metrics = {
+        k: float(latest_eval[k])
+        for k in latest_eval_keys
+        if k in latest_eval and isinstance(latest_eval[k], (int, float))
+    }
     final_summary = {
         **final_metrics,
         "bad_forward": int(bad_forward),
@@ -2110,6 +2212,7 @@ def main():
         "nan_like_event_rate_per_update": float(nan_like_events / max(upd, 1)),
         "selection_method": "best_joint",
         "eval_points": len(eval_history),
+        "last_eval": latest_eval_metrics,
     }
     if bool(cfg.save_final_summary):
         _save_json(os.path.join(ckpt_root, "final_summary.json"), final_summary)

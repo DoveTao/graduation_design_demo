@@ -16,7 +16,8 @@ Usage / Role:
 
 Notes:
     The dataset is used by the graduation design MVP to evaluate coarse
-    matching, translation direction supervision, k buckets, and dt-world buckets.
+    matching, translation direction/scale supervision, k buckets, and dt-world
+    buckets for odometry-oriented relative transforms.
 """
 
 import os
@@ -270,13 +271,19 @@ class RflyPanoPanoramaPairs(Dataset):
         R_wA, t_wA = _parse_label_13(A.label_path)
         R_wB, t_wB = _parse_label_13(B.label_path)
         R_BA, t_BA = _relative_pose_A_to_B_in_B(R_wA, t_wA, R_wB, t_wB)
-        t_dir = t_BA / (np.linalg.norm(t_BA) + 1e-8)
+        t_mag = float(np.linalg.norm(t_BA))
+        t_dir = t_BA / (t_mag + 1e-8)
         return {
             "IA": IA,
             "IB": IB,
             "R_gt": torch.from_numpy(R_BA),
+            "t_gt_vec": torch.from_numpy(t_BA),
             "t_gt_dir": torch.from_numpy(t_dir),
-            "meta": {"scene": A.scene, "seq": A.seq, "tsA": A.ts_str, "tsB": B.ts_str, "k": int(self.k_stride)},
+            "t_gt_mag": torch.tensor(t_mag, dtype=torch.float32),
+            "meta": {
+                "scene": A.scene, "seq": A.seq, "tsA": A.ts_str, "tsB": B.ts_str,
+                "k": int(self.k_stride), "dt_world": t_mag,
+            },
         }
 
 
@@ -438,11 +445,14 @@ class RflyPanoPanoramaPairsMixedK(Dataset):
         t_wB = sd["t_w"][j]
         R_BA = (R_wB.T @ R_wA).astype(np.float32)
         t_BA = (R_wB.T @ (t_wA - t_wB)).astype(np.float32)
-        t_dir = t_BA / (np.linalg.norm(t_BA) + 1e-8)
+        t_mag = float(np.linalg.norm(t_BA))
+        t_dir = t_BA / (t_mag + 1e-8)
         return {
             "IA": IA, "IB": IB,
             "R_gt": torch.from_numpy(R_BA),
+            "t_gt_vec": torch.from_numpy(t_BA),
             "t_gt_dir": torch.from_numpy(t_dir),
+            "t_gt_mag": torch.tensor(t_mag, dtype=torch.float32),
             "meta": {
                 "scene": sd["scene"], "seq": sd["seq"], "tsA": sd["ts"][i], "tsB": sd["ts"][j],
                 "k": int(k), "dt_world": float(dt_world),
@@ -544,12 +554,15 @@ class RflyPanoPanoramaPairsEvalFixedKList(Dataset):
         R_wB = sd["R_w"][j]
         t_wB = sd["t_w"][j]
         R_BA, t_BA = _relative_pose_A_to_B_in_B(R_wA, t_wA, R_wB, t_wB)
-        t_dir = t_BA / (np.linalg.norm(t_BA) + 1e-8)
+        t_mag = float(np.linalg.norm(t_BA))
+        t_dir = t_BA / (t_mag + 1e-8)
         return {
             "IA": IA,
             "IB": IB,
             "R_gt": torch.from_numpy(R_BA),
+            "t_gt_vec": torch.from_numpy(t_BA),
             "t_gt_dir": torch.from_numpy(t_dir),
+            "t_gt_mag": torch.tensor(t_mag, dtype=torch.float32),
             "meta": {
                 "scene": meta["scene"], "seq": meta["seq"], "tsA": meta["tsA"], "tsB": meta["tsB"],
                 "k": meta["k"], "dt_world": meta["dt_world"], "eval_fixed": True,
