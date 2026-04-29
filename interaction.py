@@ -349,6 +349,7 @@ class CoarseInteraction(nn.Module):
         translation_branch_detach_match: bool = True,
         use_translation_magnitude_head: bool = True,
         tmag_pred_source: str = "translation_branch",
+        tmag_detach_features: bool = False,
         tmag_min: float = 1.0e-3,
         log_tmag_clamp_min: float = -6.0,
         log_tmag_clamp_max: float = 6.0,
@@ -363,6 +364,7 @@ class CoarseInteraction(nn.Module):
         self.tmag_pred_source = str(tmag_pred_source)
         if self.tmag_pred_source not in ("translation_branch", "pose_feat"):
             raise ValueError(f"Unsupported tmag_pred_source: {self.tmag_pred_source}")
+        self.tmag_detach_features = bool(tmag_detach_features)
         self.tmag_min = float(tmag_min)
         self.log_tmag_clamp_min = float(log_tmag_clamp_min)
         self.log_tmag_clamp_max = float(log_tmag_clamp_max)
@@ -409,7 +411,11 @@ class CoarseInteraction(nn.Module):
             match_conf = Wc_ab.max(dim=-1).values
         if self.mag_head is not None:
             mag_feat = Fc if self.tmag_pred_source == "pose_feat" else (Fc_t if Fc_t is not None else Fc)
-            log_tc_mag = self.mag_head(mag_feat, token_weight=match_conf)
+            mag_weight = match_conf
+            if self.tmag_detach_features:
+                mag_feat = mag_feat.detach()
+                mag_weight = mag_weight.detach()
+            log_tc_mag = self.mag_head(mag_feat, token_weight=mag_weight)
             tc_mag, log_tc_mag = positive_translation_magnitude(
                 log_tc_mag,
                 clamp_min=self.log_tmag_clamp_min,
@@ -453,6 +459,7 @@ class FineInteraction(nn.Module):
         pose_use_stats_pool: bool = False,
         use_bearing_fuse: bool = False,
         use_translation_magnitude_head: bool = True,
+        tmag_detach_features: bool = False,
         tmag_min: float = 1.0e-3,
         log_tmag_clamp_min: float = -6.0,
         log_tmag_clamp_max: float = 6.0,
@@ -471,6 +478,7 @@ class FineInteraction(nn.Module):
         self.use_geometric_t_fusion = bool(use_geometric_t_fusion)
         self.geometric_t_fuse_strength = float(geometric_t_fuse_strength)
         self.use_translation_magnitude_head = bool(use_translation_magnitude_head)
+        self.tmag_detach_features = bool(tmag_detach_features)
         self.tmag_min = float(tmag_min)
         self.log_tmag_clamp_min = float(log_tmag_clamp_min)
         self.log_tmag_clamp_max = float(log_tmag_clamp_max)
@@ -620,7 +628,9 @@ class FineInteraction(nn.Module):
             token_weight = match_conf
         t_dir_raw = self.t_head(Ff_t, token_weight=token_weight)
         if self.mag_head is not None:
-            log_t_mag = self.mag_head(Ff_t, token_weight=token_weight)
+            mag_feat = Ff_t.detach() if self.tmag_detach_features else Ff_t
+            mag_weight = token_weight.detach() if self.tmag_detach_features else token_weight
+            log_t_mag = self.mag_head(mag_feat, token_weight=mag_weight)
             t_mag, log_t_mag = positive_translation_magnitude(
                 log_t_mag,
                 clamp_min=self.log_tmag_clamp_min,

@@ -1829,7 +1829,8 @@ def main():
         f"rot_k>={getattr(cfg, 'large_k_rot_thresh', 40)}x{getattr(cfg, 'large_k_rot_weight', 1.0)} | "
         f"w_epi={cfg.w_epi} | w_coarse_pose_aux={getattr(cfg, 'w_coarse_pose_aux', 0.0)} | "
         f"w_tmag={_cfg_tmag_weight(cfg)} | tmag_loss={getattr(cfg, 'tmag_loss_type', 'log_smooth_l1')} | "
-        f"tmag_start={getattr(cfg, 'tmag_start_updates', 0)} | tmag_ramp={getattr(cfg, 'tmag_ramp_updates', 0)}"
+        f"tmag_start={getattr(cfg, 'tmag_start_updates', 0)} | tmag_ramp={getattr(cfg, 'tmag_ramp_updates', 0)} | "
+        f"tmag_detach={bool(getattr(cfg, 'tmag_detach_features', False))}"
     )
     print(
         f"[Cfg ] lr={cfg.lr} | wd={cfg.wd} | warmup_updates={cfg.warmup_updates} | "
@@ -2740,6 +2741,7 @@ def main():
         "tmag_base_weight": float(_cfg_tmag_weight(cfg)),
         "tmag_start_updates": int(getattr(cfg, "tmag_start_updates", 0)),
         "tmag_ramp_updates": int(getattr(cfg, "tmag_ramp_updates", 0)),
+        "tmag_detach_features": bool(getattr(cfg, "tmag_detach_features", False)),
         "last_eval": latest_eval_metrics,
     }
     if bool(cfg.save_final_summary):

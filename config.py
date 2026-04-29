@@ -168,6 +168,7 @@ class Config:
     tmag_ramp_updates: int = 0
     tmag_min: float = 1.0e-3
     tmag_pred_source: str = "translation_branch"  # "translation_branch" | "pose_feat"
+    tmag_detach_features: bool = False
     log_tmag_clamp_min: float = -6.0
     log_tmag_clamp_max: float = 6.0
     pose_t_alpha: float = 1.0
