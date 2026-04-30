@@ -7,8 +7,9 @@ This report uses `eval_only=True` to evaluate fixed checkpoints under the same p
 ## Summary
 
 - Keep `C31_coarse_gtmatch_tmag_detach_workers6_800` as the wide/stable baseline.
-- Keep `O27_c31_smallk_anchor2_all_800` as the current small-k finetune candidate.
-- Do not promote O27 to global default yet: it improves small-k rotation and drift, but its small-k `tdir_abs` is close to the 25 deg guardrail and its scale metrics are worse than C31.
+- Promote `O28_c31_smallk_anchor2_all_1200` to the current small-k finetune candidate.
+- Keep `O27_c31_smallk_anchor2_all_800` as the small-k fallback: it is close to O28, but O28 is better under the unified eval protocol.
+- Do not promote O27/O28 to global default yet: small-k rotation and drift improve, but wide/stable direction and scale are still safer with C31.
 
 ## Pair, Matching, and Odometry Metrics
 
@@ -18,6 +19,7 @@ This report uses `eval_only=True` to evaluate fixed checkpoints under the same p
 | E_O27_smallk_eval | 2.423 | 24.651 | 24.874 | 0.881 | 1.556 | 0.174 | 0.899 | 0.993 | 5.256 | 0.005 | 0.960 | 10.286 | 1.610 | 1.283 |
 | E_C31_wide_eval | 6.919 | 18.470 | 18.801 | 0.709 | 1.526 | 0.174 | 0.698 | 0.966 | 5.256 | 0.005 | 5.845 | 9.233 | 7.511 | 1.036 |
 | E_O27_wide_eval | 7.830 | 19.491 | 19.821 | 0.881 | 1.681 | 0.175 | 0.687 | 0.961 | 5.256 | 0.005 | 1.388 | 8.677 | 7.309 | 1.008 |
+| O28 final small-k | 2.204 | 23.307 | 23.406 | 0.802 | 0.919 | 0.174 | 0.919 | 0.995 | 5.256 | 0.005 | 0.672 | 8.949 | 1.420 | 1.131 |
 
 ## Small-k Buckets
 
@@ -40,11 +42,20 @@ This report uses `eval_only=True` to evaluate fixed checkpoints under the same p
 
 - C31 remains the safer baseline for direction and scale, especially outside the small-k rotation-focused setting.
 - O27 is better for small-k rotation and improves small-k drift from `1.842` to `1.610`, but it trades off `tdir_abs` and `tmag_rel`.
-- O28 is worth one controlled run only if its purpose is narrow: keep O27's rotation/drift benefit while pulling `tdir_abs` back below 25 deg and not worsening `tmag_rel` by more than 10%.
+- O28 improves the unified small-k candidate further: final `tdir_abs=23.31`, `tmag_rel=0.802`, and drift `1.420`.
+- O28 does not replace C31 globally. It is the preferred small-k odometry candidate, while C31 remains the wide/stable baseline and teacher.
 
-## Next Experiment Gate
+## O28 Gate Result
 
-Run `O28_c31_smallk_anchor2_all_1200` only with these adoption rules:
+Adoption rules and outcome:
 
-- Adopt if final `tdir_abs <= 25.0`, drift improves over `1.610`, and `tmag_rel <= 0.969`.
-- Reject if final `tdir_abs > 25.0`, or drift does not improve, or `k=1/2/3` buckets regress visibly versus O27.
+- `tdir_abs <= 25.0`: pass, final `23.31`.
+- Drift improves over unified O27 `1.610`: pass, final `1.420`.
+- `tmag_rel <= 0.969`: pass, final `0.802`.
+- Small-k caveat: `k=1/2` tdir remains high, so the remaining bottleneck is still small-baseline translation direction, not rotation.
+
+Use:
+
+- Small-k candidate: `checkpoints/O28_c31_smallk_anchor2_all_1200/best_joint_local_A_abs.pt`
+- Small-k fallback: `checkpoints/O27_c31_smallk_anchor2_all_800/best_joint_local_A_abs.pt`
+- Wide/stable baseline: `checkpoints/C31_coarse_gtmatch_tmag_detach_workers6_800/best_joint_local_A_abs.pt`
