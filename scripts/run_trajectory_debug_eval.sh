@@ -39,6 +39,8 @@ common_eval=(
   --set odom_trajectory_debug_topk_steps=10
   --set odom_eval_smooth_tmag_window=5
   --set odom_eval_scale_fit=True
+  --set odom_eval_dtcalib=True
+  --set odom_eval_dtcalib_min_count=1
 )
 
 run_eval() {

@@ -219,6 +219,8 @@ class Config:
     odom_eval_max_pairs: int = 0
     odom_eval_smooth_tmag_window: int = 0
     odom_eval_scale_fit: bool = False
+    odom_eval_dtcalib: bool = False
+    odom_eval_dtcalib_min_count: int = 1
     save_odom_trajectory_debug: bool = False
     odom_trajectory_debug_max_chains: int = 1
     odom_trajectory_debug_segment_count: int = 4

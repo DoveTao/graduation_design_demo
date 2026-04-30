@@ -599,3 +599,19 @@ Decision:
 - Keep O37 as the balanced small-k odometry default when the priority is the lowest combined drift/ATE among non-aggressive candidates.
 - Use O39 when small-k direction quality matters more than the tiny `+0.001` drift difference versus O37.
 - Keep O38 only as a drift-first probe; do not continue raising `w_tmag` from this branch because local-frame direction already regressed.
+
+## DT-Bin Scale Calibration Diagnostic
+
+An eval-only GT-oracle dt-bin scale calibration was added to test whether small-k drift is mainly caused by scale shape error across displacement buckets.
+
+| eval | raw drift | smooth drift | scale-fit drift | dt-bin calib drift | raw ATE | dt-bin calib ATE |
+|---|---:|---:|---:|---:|---:|---:|
+| E_O37_trajectory_debug | 1.315 | 1.314 | 1.281 | 1.284 | 8.322 | 10.708 |
+| E_O39_trajectory_debug | 1.316 | 1.315 | 1.290 | 1.285 | 8.326 | 10.684 |
+
+Interpretation:
+
+- Dt-bin scale calibration reduces endpoint drift by about `0.03`, so dt-conditioned scale bias is real.
+- The endpoint gain is modest and ATE gets worse, so the remaining bottleneck is not pure metric scale; dt-bin calibration changes the trajectory endpoint more than the whole trajectory shape.
+- Do not keep increasing `w_tmag`; the next useful model-side scale change should be conditional/calibrated rather than stronger global supervision.
+- O39 remains the direction-balanced candidate, while O37 remains the balanced odometry default.
