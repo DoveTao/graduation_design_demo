@@ -233,3 +233,17 @@ Proceed with Stage 10: generate a compact effect-ablation script, but keep it fo
 - epipolar schedule: wide-to-narrow band and `w_epi` ramp
 - odom-small-k probe: one short t_mag-enabled run to establish scale/drift baselines
 
+## Current Model Candidates
+
+Decision recorded after the C31/O27 small-k anchor experiments:
+
+| role | experiment | checkpoint | rot | tdir_abs | tdir_local_A_abs | best_joint | last_tmag_rel_err | last_odom_drift | note |
+|---|---|---|---:|---:|---:|---:|---:|---:|---|
+| wide/stable baseline | C31_coarse_gtmatch_tmag_detach_workers6_800 | `checkpoints/C31_coarse_gtmatch_tmag_detach_workers6_800/best_joint_local_A_abs.pt` | 7.116 | 16.318 | 16.039 | 30.549 | - | - | Keep as the original wide/stable baseline and teacher/init checkpoint. |
+| small-k finetune candidate | O27_c31_smallk_anchor2_all_800 | `checkpoints/O27_c31_smallk_anchor2_all_800/best_joint_local_A_abs.pt` | 2.313 | 22.216 | 22.501 | 27.320 | 0.800 | 1.414 | Preferred small-k candidate; final `tdir_abs` stayed below the 25 deg guardrail. |
+
+Recommended comparison policy:
+
+- Use C31 as the reference model for wide/stable pair-level quality and as the teacher for anchor-distillation finetunes.
+- Use O27 as the current small-k odometry candidate when evaluating `k=1/2/3/5`, drift, and sequence-level behavior.
+- Do not replace C31 with O27 globally yet: O27 was optimized for small-k behavior and should be compared separately on wide-baseline buckets before becoming the default model.
