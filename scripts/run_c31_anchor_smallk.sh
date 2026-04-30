@@ -9,7 +9,6 @@ common_args=(
   --set "init_checkpoint=${C31_CKPT}"
   --set use_tdir_anchor_loss=True
   --set "tdir_anchor_checkpoint=${C31_CKPT}"
-  --set w_tdir_anchor=1.0
   --set tdir_anchor_min_dt=0.0
   --set strict_load_checkpoint=False
   --set 'k_choices=(1,2,3,5,10)'
@@ -40,6 +39,16 @@ run_800() {
   python train_mvp.py \
     --set exp_name=O25_c31_smallk_anchor_all_800 \
     "${common_args[@]}" \
+    --set w_tdir_anchor=1.0 \
+    --set max_steps=800
+}
+
+run_800_safe() {
+  test -f "$C31_CKPT" || { echo "Missing C31_CKPT=$C31_CKPT"; exit 1; }
+  python train_mvp.py \
+    --set exp_name=O27_c31_smallk_anchor2_all_800 \
+    "${common_args[@]}" \
+    --set w_tdir_anchor=2.0 \
     --set max_steps=800
 }
 
@@ -48,15 +57,18 @@ run_1200_probe() {
   python train_mvp.py \
     --set exp_name=O26_c31_smallk_anchor_all_1200 \
     "${common_args[@]}" \
+    --set w_tdir_anchor=1.0 \
     --set max_steps=1200
 }
 
 case "${1:-help}" in
   800) run_800 ;;
+  800_safe) run_800_safe ;;
   1200) run_1200_probe ;;
   *)
-    echo "Usage: $0 {800|1200}"
-    echo "O25/800 is the conservative run tested first; prefer its best_joint.pt if final tdir_abs crosses 25 deg."
+    echo "Usage: $0 {800|800_safe|1200}"
+    echo "O27/800_safe uses stronger tdir anchor and is the current preferred small-k finetune."
+    echo "O25/800 is the original conservative run; prefer its best_joint.pt if final tdir_abs crosses 25 deg."
     echo "Override C31_CKPT to test another teacher/init checkpoint."
     ;;
 esac
