@@ -285,3 +285,39 @@ Adoption rule:
 
 - Prefer O33 if it beats O30 on drift or improves `k=1/2/3` `tdir_abs` while keeping eval-only global `tdir_abs <= 25°`.
 - Reject O33 if it behaves like O32, especially if global `tdir_abs > 25°` or drift remains materially worse than O30.
+
+## O33 Result
+
+O33 tested the continuous tiny-dt ramp. It improved over O31/O32 in some training-time diagnostics, but did not beat the current O30 small-k candidate.
+
+Training-time selected checkpoint:
+
+| checkpoint | upd | drift | global tdir_abs | k=1/2/3 tdir_abs | k=1/2/3 tmag_rel |
+|---|---:|---:|---:|---:|---:|
+| `O33/best_smallk_odom.pt` | 500 | 1.423 | 24.145 | 26.618 | 0.743 |
+
+Unified eval-only comparison:
+
+| eval | rot | tdir_abs | local_A_abs | tmag_rel | tvec_l2 | RPE_rot | ATE | drift |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| E_O30_best_smallk_odom_eval | 2.382 | 24.776 | 24.794 | 0.918 | 1.592 | 1.039 | 8.922 | 1.408 |
+| E_O32_best_smallk_odom_eval | 2.350 | 25.260 | 25.301 | 0.915 | 1.589 | 1.031 | 9.105 | 1.433 |
+| E_O33_best_smallk_odom_eval | 2.396 | 25.200 | 25.218 | 0.916 | 1.591 | 1.082 | 9.030 | 1.423 |
+
+Small-k buckets for `E_O33_best_smallk_odom_eval`:
+
+| k | rot | tdir_abs | tmag_rel |
+|---:|---:|---:|---:|
+| 1 | 1.23 | 29.93 | 0.826 |
+| 2 | 1.08 | 26.97 | 0.870 |
+| 3 | 0.97 | 25.47 | 0.928 |
+| 5 | 0.97 | 22.53 | 0.960 |
+| 10 | 2.10 | 21.03 | 0.977 |
+| 20 | 8.11 | 25.25 | 0.938 |
+
+Decision:
+
+- Do not adopt O33.
+- O33 slightly improves over O32 on drift and `tdir_abs`, but still misses O30: drift is `1.423` vs `1.408`, and eval-only `tdir_abs=25.200°` still crosses the `25°` guard.
+- Keep O30 as the drift-first small-k candidate.
+- The tiny-dt tdir weighting family has now been tested in three forms: hard ignore, fixed weak weight, and continuous ramp. None beats O30, so the next improvement should move away from tiny-dt tdir weighting.

@@ -264,5 +264,5 @@ Recommended comparison policy:
 - Use C31 as the reference model for wide/stable pair-level quality and as the teacher for anchor-distillation finetunes.
 - Use O30 as the current small-k odometry candidate when evaluating `k=1/2/3/5`, drift, and sequence-level behavior.
 - Keep O28 as a conservative fallback because its final pair-level `tdir_abs`/`tmag_rel` were cleaner than O30's eval-only selected checkpoint.
-- Do not adopt O31 or O32: hard tiny-dt ignore and fixed 0.05 tiny-dt weighting both failed to beat O30 under unified eval.
+- Do not adopt O31, O32, or O33: hard tiny-dt ignore, fixed 0.05 tiny-dt weighting, and continuous tiny-dt ramp all failed to beat O30 under unified eval.
 - Do not replace C31 with O28/O30 globally yet: the small-k candidates were optimized for odometry behavior and should remain separate from the wide/stable baseline.
