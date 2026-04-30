@@ -137,6 +137,7 @@ Later candidate experiments added meaningful t_mag and odometry evidence:
 - `O28` is the conservative small-k finetune candidate: it improves drift while keeping pair-level scale cleaner.
 - `O29` validates odometry-aware checkpoint selection: its `best_odom_drift.pt` lowers unified small-k drift to `1.410`, with `tdir_abs=24.865`, but its separate eval-only `tmag_rel=0.918` is slightly above the planned `0.9` gate.
 - `O30` extends the same idea with a small-k bucket gate and is now the drift-first small-k candidate: eval-only drift `1.408`, `tdir_abs=24.776`, and slightly better `k=1/2/3` buckets than O29. It still has the same eval-only scale caveat, `tmag_rel=0.918`.
+- `O31` tested hard ignoring `dt<0.05` samples for tdir loss. It is not adopted: eval-only drift worsened to `1.470` and `tdir_abs` crossed `25°`.
 
 Updated bottleneck reading:
 

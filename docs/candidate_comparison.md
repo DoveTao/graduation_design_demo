@@ -187,3 +187,27 @@ Adoption rule:
 
 - Prefer O31 if it improves `k=1/2/3` `tdir_abs` without losing O30-level drift.
 - Reject O31 if drift rises materially above O30 or global `tdir_abs` crosses `25°`.
+
+## O31 Result
+
+O31 tested whether fully ignoring `dt<0.05` samples for tdir supervision helps small-k odometry. It did not improve the current candidate.
+
+Training-time selected checkpoint:
+
+| checkpoint | upd | drift | global tdir_abs | k=1/2/3 tdir_abs | k=1/2/3 tmag_rel |
+|---|---:|---:|---:|---:|---:|
+| `O31/best_smallk_odom.pt` | 600 | 1.470 | 23.480 | 26.112 | 0.750 |
+
+Unified eval-only comparison:
+
+| eval | rot | tdir_abs | local_A_abs | tmag_rel | tvec_l2 | RPE_rot | ATE | drift |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| E_O30_best_smallk_odom_eval | 2.382 | 24.776 | 24.794 | 0.918 | 1.592 | 1.039 | 8.922 | 1.408 |
+| E_O31_best_smallk_odom_eval | 2.294 | 25.310 | 25.552 | 0.913 | 1.588 | 0.748 | 9.307 | 1.470 |
+
+Decision:
+
+- Do not adopt O31.
+- O31 improves rotation slightly and keeps tmag similar, but it worsens both `tdir_abs` and drift relative to O30.
+- Keep O30 as the drift-first small-k candidate.
+- The tiny-dt issue remains real, but hard zeroing `dt<0.05` tdir loss is too blunt. A softer alternative would be `tdir_loss_ignore_weight=0.05` or a tdir loss ramp by dt, not a hard ignore.
