@@ -140,12 +140,13 @@ Later candidate experiments added meaningful t_mag and odometry evidence:
 - `O31` tested hard ignoring `dt<0.05` samples for tdir loss. It is not adopted: eval-only drift worsened to `1.470` and `tdir_abs` crossed `25°`.
 - `O36` adds an optional learned global `log_tmag_bias` and is now the drift-first small-k candidate: eval-only drift improves slightly from O30's `1.408` to `1.403`, ATE improves from `8.922` to `8.897`, and `tdir_abs=24.772` remains under the `25°` guard. The learned bias is tiny, so this is a checkpoint/model-selection gain rather than a full scale solution.
 - `O37` keeps O36 but sets `tmag_detach_features=False`. It is now the drift-first small-k candidate: eval-only drift drops to `1.315`, ATE to `8.321`, and global `tdir_abs=24.604` remains under the `25°` guard. Pair-level `tmag_rel=0.927` is still high, so this is an odometry gain, not a solved scale head.
+- `O38` keeps O37 and raises `w_tmag=0.2`. It lowers eval-only drift further to `1.308`, but degrades rotation and local-frame direction (`rot=2.728`, `local_A_abs=25.175`). Treat it as an aggressive drift-first checkpoint, not the balanced default.
 
 Updated bottleneck reading:
 
 - The main remaining performance bottleneck is still small-baseline translation direction, especially `k=1/2/3`.
 - Checkpoint selection can reduce odometry drift without changing the model, so odom-aware selection should stay enabled.
-- Further gains should target small-k `tdir_abs` and trajectory shape while preserving O37-level drift and avoiding scale regression.
+- Further gains should target small-k `tdir_abs` and trajectory shape while preserving O37/O38-level drift and avoiding scale regression.
 
 ## Recommended Next 3 Changes
 

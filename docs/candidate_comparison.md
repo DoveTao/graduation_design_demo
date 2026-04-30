@@ -493,3 +493,60 @@ Decision:
 - Keep C31 as the wide/stable baseline and teacher.
 - Keep O28 as the conservative pair-level small-k candidate.
 - Next checks should compare O37 on the wide protocol and inspect whether no-detach harms wide/stable behavior before making it a general default.
+
+## O37 Wide Check
+
+O37 should not replace C31 globally.
+
+| eval | rot | tdir_abs | local_A_abs | tmag_rel | drift |
+|---|---:|---:|---:|---:|---:|
+| E_C31_wide_eval | 6.919 | 18.470 | 18.801 | 0.709 | 7.511 |
+| E_O37_wide_eval | 7.629 | 20.684 | 20.363 | 0.936 | 7.180 |
+
+Decision:
+
+- O37 improves wide drift slightly, but C31 is still cleaner for wide/stable pair-level direction and scale.
+- Keep the two-model interpretation: C31 is the wide/stable baseline and teacher; O37 is a small-k odometry candidate.
+
+## O38 Plan
+
+O38 tests whether stronger t_mag supervision can keep O37's drift gain while improving scale:
+
+- Keep the O37 recipe.
+- Set `w_tmag=0.2` instead of `0.1`.
+- Keep `tmag_detach_features=False` and `use_tmag_global_bias=True`.
+- Relax the odom selector's global tmag gate to `0.95`, matching the existing small-k gate.
+
+## O38 Result
+
+O38 is a slightly more aggressive drift-first candidate than O37, with tradeoffs.
+
+Training-time selected checkpoint:
+
+| checkpoint | upd | drift | global tdir_abs | k=1/2/3 tdir_abs | k=1/2/3 tmag_rel |
+|---|---:|---:|---:|---:|---:|
+| `O38/best_smallk_odom.pt` | 200 | 1.308 | 22.758 | 25.455 | 0.731 |
+
+Unified eval-only comparison:
+
+| eval | rot | tdir_abs | local_A_abs | tmag_rel | tvec_l2 | RPE_rot | ATE | drift | smooth drift |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| E_O37_best_smallk_odom_eval | 2.392 | 24.604 | 24.627 | 0.927 | 1.601 | 1.076 | 8.321 | 1.315 | 1.314 |
+| E_O38_best_smallk_odom_eval | 2.728 | 24.772 | 25.175 | 0.921 | 1.595 | 1.710 | 8.326 | 1.308 | 1.307 |
+
+Small-k buckets for `E_O38_best_smallk_odom_eval`:
+
+| k | rot | tdir_abs | tmag_rel |
+|---:|---:|---:|---:|
+| 1 | 1.93 | 29.68 | 0.829 |
+| 2 | 1.77 | 26.90 | 0.879 |
+| 3 | 1.62 | 25.47 | 0.933 |
+| 5 | 1.43 | 22.74 | 0.963 |
+| 10 | 2.03 | 21.05 | 0.978 |
+| 20 | 7.66 | 22.75 | 0.942 |
+
+Decision:
+
+- O38 has the best raw small-k endpoint drift so far: `1.308`.
+- It is not a clean replacement for O37 because rotation and local-frame direction degrade: `rot=2.728` and `local_A_abs=25.175`.
+- Use O38 only when endpoint drift is the primary metric. Keep O37 as the more balanced small-k odometry candidate.
