@@ -442,3 +442,54 @@ Decision:
 - Keep C31 as the wide/stable baseline and teacher.
 - Keep O28 as the conservative small-k candidate when pair-level scale cleanliness is more important than endpoint drift.
 - Next improvement should not keep pushing global scale bias. The remaining bottleneck is still small-baseline direction and trajectory shape; consider trajectory-composition sanity/debug or a better scale-feature input rather than another global calibration knob.
+
+## O37 Plan
+
+O37 tests whether the scale head needs feature adaptation rather than only a scalar calibration:
+
+- Keep the O36 recipe and odom/small-k checkpoint selection.
+- Set `tmag_detach_features=False`.
+- Keep `use_tmag_global_bias=True`, initialized at `0.0`.
+- Do not change the pose losses, matching losses, anchor loss, eval protocol, or fine stage.
+
+Why:
+
+- O36 improved drift only slightly, and trajectory debug showed `tmag_pred` was still strongly compressed on the k=1 chain.
+- Allowing t_mag gradients into the shared features is a minimal way to test whether scale prediction is bottlenecked by detached features.
+
+## O37 Result
+
+O37 is a clear improvement over the previous drift-first candidate.
+
+Training-time selected checkpoint:
+
+| checkpoint | upd | drift | global tdir_abs | k=1/2/3 tdir_abs | k=1/2/3 tmag_rel |
+|---|---:|---:|---:|---:|---:|
+| `O37/best_smallk_odom.pt` | 500 | 1.315 | 23.591 | 26.069 | 0.728 |
+
+Unified eval-only comparison:
+
+| eval | rot | tdir_abs | local_A_abs | tmag_rel | tvec_l2 | RPE_rot | ATE | drift | norm_drift | smooth drift | scale-fit drift |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| E_O36_best_smallk_odom_eval | 2.340 | 24.772 | 24.816 | 0.918 | 1.592 | 0.968 | 8.897 | 1.403 | 1.119 | 1.402 | 1.269 |
+| E_O37_best_smallk_odom_eval | 2.392 | 24.604 | 24.627 | 0.927 | 1.601 | 1.076 | 8.321 | 1.315 | 1.049 | 1.314 | 1.281 |
+
+Small-k buckets for `E_O37_best_smallk_odom_eval`:
+
+| k | rot | tdir_abs | tmag_rel |
+|---:|---:|---:|---:|
+| 1 | 1.21 | 29.40 | 0.838 |
+| 2 | 1.06 | 26.46 | 0.892 |
+| 3 | 0.95 | 24.95 | 0.940 |
+| 5 | 0.96 | 21.97 | 0.967 |
+| 10 | 2.11 | 20.37 | 0.981 |
+| 20 | 8.13 | 24.44 | 0.948 |
+
+Decision:
+
+- Adopt O37 as the current drift-first small-k candidate.
+- O37 reduces eval-only drift from `1.403` to `1.315` and ATE from `8.897` to `8.321`, while keeping global `tdir_abs=24.604°`.
+- It does not fix pair-level scale: `tmag_rel=0.927` is slightly worse than O36. The odometry gain likely comes from better accumulated trajectory behavior rather than a simple global t_mag error reduction.
+- Keep C31 as the wide/stable baseline and teacher.
+- Keep O28 as the conservative pair-level small-k candidate.
+- Next checks should compare O37 on the wide protocol and inspect whether no-detach harms wide/stable behavior before making it a general default.
