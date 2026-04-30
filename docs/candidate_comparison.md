@@ -225,3 +225,40 @@ Adoption rule:
 
 - Prefer O32 if it improves `k=1/2/3` `tdir_abs` or global `tdir_abs` while keeping drift near O30.
 - Reject O32 if it repeats O31's pattern: `tdir_abs > 25°` or drift materially worse than O30.
+
+## O32 Result
+
+O32 tested the softer tiny-dt variant requested after O31: keep `dt<0.05` samples in the tdir loss with weight `0.05` instead of hard zeroing them.
+
+Training-time selected checkpoint:
+
+| checkpoint | upd | drift | global tdir_abs | k=1/2/3 tdir_abs | k=1/2/3 tmag_rel |
+|---|---:|---:|---:|---:|---:|
+| `O32/best_smallk_odom.pt` | 500 | 1.433 | 24.202 | 26.670 | 0.745 |
+
+Unified eval-only comparison:
+
+| eval | rot | tdir_abs | local_A_abs | tmag_rel | tvec_l2 | RPE_rot | ATE | drift |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| E_O30_best_smallk_odom_eval | 2.382 | 24.776 | 24.794 | 0.918 | 1.592 | 1.039 | 8.922 | 1.408 |
+| E_O31_best_smallk_odom_eval | 2.294 | 25.310 | 25.552 | 0.913 | 1.588 | 0.748 | 9.307 | 1.470 |
+| E_O32_best_smallk_odom_eval | 2.350 | 25.260 | 25.301 | 0.915 | 1.589 | 1.031 | 9.105 | 1.433 |
+
+Small-k buckets for `E_O32_best_smallk_odom_eval`:
+
+| k | rot | tdir_abs | tmag_rel |
+|---:|---:|---:|---:|
+| 1 | 1.16 | 29.97 | 0.824 |
+| 2 | 1.01 | 27.01 | 0.867 |
+| 3 | 0.90 | 25.52 | 0.927 |
+| 5 | 0.91 | 22.60 | 0.959 |
+| 10 | 2.08 | 21.13 | 0.977 |
+| 20 | 8.12 | 25.30 | 0.937 |
+
+Decision:
+
+- Do not adopt O32.
+- O32 is clearly better than hard-ignore O31 on drift, but it still misses O30: drift is `1.433` vs `1.408`, and eval-only `tdir_abs=25.260°` crosses the `25°` guard.
+- Keep O30 as the drift-first small-k candidate.
+- Keep C31 as the wide/stable baseline and teacher.
+- The next tiny-dt experiment should be a continuous dt ramp, not another fixed threshold. A reasonable candidate is to ramp tdir weight from `0.05` at `dt=0.02` to the normal small-dt weight by `dt=0.10`, while keeping odom eval unchanged.
