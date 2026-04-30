@@ -216,6 +216,7 @@ class Config:
     odom_eval_fallback_to_min_k: bool = True
     odom_eval_max_pairs: int = 0
     odom_eval_smooth_tmag_window: int = 0
+    odom_eval_scale_fit: bool = False
     save_odom_trajectory_debug: bool = False
     odom_trajectory_debug_max_chains: int = 1
     save_odom_metrics_latest: bool = True

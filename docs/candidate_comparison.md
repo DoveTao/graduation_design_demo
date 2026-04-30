@@ -358,3 +358,37 @@ Decision:
 - The improvement is real but tiny (`drift -0.0010`), so O30's drift is not mainly caused by high-frequency scale jitter.
 - Keep the smoothing/debug path as an evaluation and visualization tool.
 - If O34 is run later, treat it as checkpoint-selection/inference analysis, not as a replacement for O30 unless raw unified eval also improves.
+
+## O35 Plan
+
+O35 is a scale-bias diagnostic, not a deployable model change:
+
+- Add optional `odom_eval_scale_fit=True`.
+- During odometry eval, compute a per-chain least-squares scale factor using GT translation magnitudes and predicted metric magnitudes.
+- Report `odom_metric_scale_fit_*` metrics separately from raw `odom_metric_*`.
+- Save the scale-fit trajectory in `odom_trajectory_debug_latest.npz` when debug export is enabled.
+
+Why:
+
+- O30's t_mag smoothing barely changed drift, so scale jitter is likely not the main issue.
+- Scale-fit oracle tells us whether a simple global scale bias is still a meaningful contributor.
+
+Decision rule:
+
+- If scale-fit drift drops substantially below O30 raw drift, pursue learned/calibrated scale correction.
+- If scale-fit drift barely changes, prioritize translation direction, rotation accumulation, or trajectory composition diagnostics instead.
+
+## O35 Probe Result
+
+O30 was evaluated with `odom_eval_scale_fit=True`, `odom_eval_smooth_tmag_window=5`, and trajectory debug enabled.
+
+| eval | raw drift | smooth tmag drift | scale-fit drift | raw ATE | scale-fit ATE | scale-fit factor mean |
+|---|---:|---:|---:|---:|---:|---:|
+| E_O30_scale_fit_oracle_eval | 1.4078 | 1.4068 | 1.2801 | 8.9215 | 10.0403 | 0.5436 |
+
+Decision:
+
+- Do not treat scale-fit as deployable performance; it uses GT translation magnitudes and is explicitly an oracle diagnostic.
+- The result is still useful: simple t_mag smoothing does almost nothing, but oracle scale fitting reduces endpoint drift by about `9%`.
+- ATE gets worse under scale-fit (`8.92 -> 10.04`), so this is not a clean win; scale bias helps endpoint drift but does not solve trajectory shape.
+- Next reasonable model-side change should target calibrated scale prediction, not temporal smoothing. A low-risk candidate is adding an optional learned global `log_tmag_bias` initialized at zero, trained by the existing t_mag loss and evaluated under the same O30 protocol.
