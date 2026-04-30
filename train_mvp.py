@@ -1698,9 +1698,11 @@ def _rot_geodesic_deg_np(R_pred: np.ndarray, R_gt: np.ndarray) -> float:
 def _vec_angle_deg_np(a: np.ndarray, b: np.ndarray) -> float:
     a = np.asarray(a, dtype=np.float64).reshape(3)
     b = np.asarray(b, dtype=np.float64).reshape(3)
+    if not (np.all(np.isfinite(a)) and np.all(np.isfinite(b))):
+        return float("nan")
     na = float(np.linalg.norm(a))
     nb = float(np.linalg.norm(b))
-    if na < 1e-12 or nb < 1e-12:
+    if not (math.isfinite(na) and math.isfinite(nb)) or na < 1e-12 or nb < 1e-12:
         return float("nan")
     cos = float(np.dot(a, b) / (na * nb))
     cos = max(-1.0, min(1.0, cos))
@@ -1792,12 +1794,143 @@ def _finite_max_from_rows(rows: List[Dict[str, Any]], key: str) -> float:
     return float(max(vals)) if vals else float("nan")
 
 
+def _finite_mean_nested(rows: List[Dict[str, Any]], outer_key: str, inner_key: str) -> float:
+    vals = []
+    for r in rows:
+        inner = r.get(outer_key, {})
+        if isinstance(inner, dict):
+            v = _finite_float(inner.get(inner_key, float("nan")))
+            if math.isfinite(v):
+                vals.append(v)
+    return float(sum(vals) / max(len(vals), 1)) if vals else float("nan")
+
+
+def _finite_weighted_mean_nested(rows: List[Dict[str, Any]], outer_key: str, inner_key: str, weight_key: str = "gt_path_length") -> float:
+    num = 0.0
+    den = 0.0
+    for r in rows:
+        inner = r.get(outer_key, {})
+        if not isinstance(inner, dict):
+            continue
+        v = _finite_float(inner.get(inner_key, float("nan")))
+        w = max(_finite_float(inner.get(weight_key, 0.0), 0.0), 0.0)
+        if math.isfinite(v) and w > 0:
+            num += v * w
+            den += w
+    return float(num / den) if den > 0 else float("nan")
+
+
 def _dtcalib_factor_for_dt(dt: float, edges: Tuple[float, ...], factors: Dict[str, float]) -> Tuple[float, str]:
     label = _dt_bucket_label(float(dt), edges)
     factor = _finite_float(factors.get(label, float("nan")))
     if not math.isfinite(factor):
         factor = _finite_float(factors.get("dt=all", 1.0), 1.0)
     return float(factor), label
+
+
+def _row_pos(row: Dict[str, Any], prefix: str) -> np.ndarray:
+    return np.asarray([
+        _finite_float(row.get(f"{prefix}_x", float("nan"))),
+        _finite_float(row.get(f"{prefix}_y", float("nan"))),
+        _finite_float(row.get(f"{prefix}_z", float("nan"))),
+    ], dtype=np.float64)
+
+
+def _trajectory_shape_summary(rows: List[Dict[str, Any]], variant: str) -> Dict[str, Any]:
+    if not rows:
+        return {}
+    gt_pos = [np.zeros(3, dtype=np.float64)] + [_row_pos(r, "gt") for r in rows]
+    pred_pos = [np.zeros(3, dtype=np.float64)] + [_row_pos(r, variant) for r in rows]
+    gt_steps = []
+    pred_steps = []
+    step_dir_errs = []
+    for i in range(len(rows)):
+        gt_step = gt_pos[i + 1] - gt_pos[i]
+        pred_step = pred_pos[i + 1] - pred_pos[i]
+        gt_steps.append(gt_step)
+        pred_steps.append(pred_step)
+        step_dir_errs.append(_vec_angle_deg_np(pred_step, gt_step))
+
+    gt_lens = [float(np.linalg.norm(v)) for v in gt_steps]
+    pred_lens = [float(np.linalg.norm(v)) for v in pred_steps if np.all(np.isfinite(v))]
+    gt_path_len = float(sum(gt_lens))
+    pred_path_len = float(sum(pred_lens)) if len(pred_lens) == len(pred_steps) else float("nan")
+    gt_endpoint = float(np.linalg.norm(gt_pos[-1] - gt_pos[0])) if np.all(np.isfinite(gt_pos[-1])) else float("nan")
+    pred_endpoint = float(np.linalg.norm(pred_pos[-1] - pred_pos[0])) if np.all(np.isfinite(pred_pos[-1])) else float("nan")
+
+    gt_turns = []
+    pred_turns = []
+    turn_abs_errs = []
+    for i in range(1, len(rows)):
+        gt_turn = _vec_angle_deg_np(gt_steps[i], gt_steps[i - 1])
+        pred_turn = _vec_angle_deg_np(pred_steps[i], pred_steps[i - 1])
+        gt_turns.append(gt_turn)
+        pred_turns.append(pred_turn)
+        if math.isfinite(gt_turn) and math.isfinite(pred_turn):
+            turn_abs_errs.append(abs(pred_turn - gt_turn))
+        else:
+            turn_abs_errs.append(float("nan"))
+
+    gt_turn_sum = float(np.nansum(np.asarray(gt_turns, dtype=np.float64))) if gt_turns else 0.0
+    pred_turn_sum = float(np.nansum(np.asarray(pred_turns, dtype=np.float64))) if pred_turns else 0.0
+    gt_straightness = float(gt_endpoint / max(gt_path_len, 1e-12)) if math.isfinite(gt_endpoint) and gt_path_len > 0 else float("nan")
+    pred_straightness = float(pred_endpoint / max(pred_path_len, 1e-12)) if math.isfinite(pred_endpoint) and math.isfinite(pred_path_len) and pred_path_len > 0 else float("nan")
+
+    return {
+        "variant": variant,
+        "num_steps": int(len(rows)),
+        "gt_path_length": gt_path_len,
+        "pred_path_length": pred_path_len,
+        "path_length_ratio": float(pred_path_len / max(gt_path_len, 1e-12)) if math.isfinite(pred_path_len) else float("nan"),
+        "gt_endpoint_distance": gt_endpoint,
+        "pred_endpoint_distance": pred_endpoint,
+        "gt_straightness": gt_straightness,
+        "pred_straightness": pred_straightness,
+        "straightness_abs_err": abs(pred_straightness - gt_straightness) if math.isfinite(pred_straightness) and math.isfinite(gt_straightness) else float("nan"),
+        "mean_step_dir_err_deg": _nanmean_np(step_dir_errs),
+        "max_step_dir_err_deg": _nanmax_np(step_dir_errs),
+        "gt_turn_sum_deg": gt_turn_sum,
+        "pred_turn_sum_deg": pred_turn_sum,
+        "turn_sum_abs_err_deg": abs(pred_turn_sum - gt_turn_sum),
+        "mean_turn_abs_err_deg": _nanmean_np(turn_abs_errs),
+        "max_turn_abs_err_deg": _nanmax_np(turn_abs_errs),
+        "gt_curvature_deg_per_meter": float(gt_turn_sum / max(gt_path_len, 1e-12)) if gt_path_len > 0 else float("nan"),
+        "pred_curvature_deg_per_meter": float(pred_turn_sum / max(pred_path_len, 1e-12)) if math.isfinite(pred_path_len) and pred_path_len > 0 else float("nan"),
+    }
+
+
+def _nanmean_np(vals: List[float]) -> float:
+    arr = np.asarray(vals, dtype=np.float64)
+    arr = arr[np.isfinite(arr)]
+    return float(arr.mean()) if arr.size > 0 else float("nan")
+
+
+def _nanmax_np(vals: List[float]) -> float:
+    arr = np.asarray(vals, dtype=np.float64)
+    arr = arr[np.isfinite(arr)]
+    return float(arr.max()) if arr.size > 0 else float("nan")
+
+
+def _annotate_trajectory_shape_rows(rows: List[Dict[str, Any]], variants: Tuple[str, ...]) -> None:
+    if not rows:
+        return
+    gt_pos = [np.zeros(3, dtype=np.float64)] + [_row_pos(r, "gt") for r in rows]
+    gt_steps = [gt_pos[i + 1] - gt_pos[i] for i in range(len(rows))]
+    for variant in variants:
+        pred_pos = [np.zeros(3, dtype=np.float64)] + [_row_pos(r, variant) for r in rows]
+        pred_steps = [pred_pos[i + 1] - pred_pos[i] for i in range(len(rows))]
+        for i, row in enumerate(rows):
+            row[f"{variant}_step_dir_err_deg"] = _vec_angle_deg_np(pred_steps[i], gt_steps[i])
+            if i == 0:
+                row[f"{variant}_turn_deg"] = float("nan")
+                row[f"{variant}_gt_turn_deg"] = float("nan")
+                row[f"{variant}_turn_abs_err_deg"] = float("nan")
+            else:
+                pred_turn = _vec_angle_deg_np(pred_steps[i], pred_steps[i - 1])
+                gt_turn = _vec_angle_deg_np(gt_steps[i], gt_steps[i - 1])
+                row[f"{variant}_turn_deg"] = pred_turn
+                row[f"{variant}_gt_turn_deg"] = gt_turn
+                row[f"{variant}_turn_abs_err_deg"] = abs(pred_turn - gt_turn) if math.isfinite(pred_turn) and math.isfinite(gt_turn) else float("nan")
 
 
 def _segment_trajectory_debug(rows: List[Dict[str, Any]], variant: str, segment_count: int) -> List[Dict[str, Any]]:
@@ -1895,6 +2028,11 @@ def _odom_debug_chain_summary(
         "segments_smooth_tmag": _segment_trajectory_debug(rows, "smooth_tmag", segment_count),
         "segments_scale_fit": _segment_trajectory_debug(rows, "scale_fit", segment_count),
         "segments_dtcalib": _segment_trajectory_debug(rows, "dtcalib", segment_count),
+        "shape_metric": _trajectory_shape_summary(rows, "metric"),
+        "shape_direction_only": _trajectory_shape_summary(rows, "direction_only"),
+        "shape_smooth_tmag": _trajectory_shape_summary(rows, "smooth_tmag"),
+        "shape_scale_fit": _trajectory_shape_summary(rows, "scale_fit"),
+        "shape_dtcalib": _trajectory_shape_summary(rows, "dtcalib"),
         "top_metric_pos_err_steps": top_rows,
     }
 
@@ -2279,6 +2417,10 @@ def eval_odometry_sequence(model, ds, device, cfg: Config, output_dir: Optional[
             total_traj_len += float(chain_len)
 
         if debug_enabled and len(debug_payloads) < debug_max_chains and dbg_gt:
+            _annotate_trajectory_shape_rows(
+                dbg_rows,
+                ("metric", "direction_only", "smooth_tmag", "scale_fit", "dtcalib"),
+            )
             debug_payloads.append({
                 "scene_seq": str(chain.get("scene_seq", "unknown")),
                 "gt": np.asarray(dbg_gt, dtype=np.float32),
@@ -2407,6 +2549,15 @@ def eval_odometry_sequence(model, ds, device, cfg: Config, output_dir: Optional[
         debug_mean_tmag_rel_err = _finite_mean_from_rows(debug_step_rows, "tmag_rel_err")
         debug_mean_metric_step_pos_err = _finite_mean_from_rows(debug_step_rows, "metric_pos_err")
         debug_mean_dtcalib_step_pos_err = _finite_mean_from_rows(debug_step_rows, "dtcalib_pos_err")
+        debug_metric_turn_err = _finite_mean_nested(debug_chain_summaries, "shape_metric", "mean_turn_abs_err_deg")
+        debug_metric_step_dir_err = _finite_mean_nested(debug_chain_summaries, "shape_metric", "mean_step_dir_err_deg")
+        debug_metric_straightness_err = _finite_mean_nested(debug_chain_summaries, "shape_metric", "straightness_abs_err")
+        debug_metric_path_ratio = _finite_mean_nested(debug_chain_summaries, "shape_metric", "path_length_ratio")
+        debug_dironly_turn_err = _finite_mean_nested(debug_chain_summaries, "shape_direction_only", "mean_turn_abs_err_deg")
+        debug_metric_turn_err_w = _finite_weighted_mean_nested(debug_chain_summaries, "shape_metric", "mean_turn_abs_err_deg")
+        debug_metric_step_dir_err_w = _finite_weighted_mean_nested(debug_chain_summaries, "shape_metric", "mean_step_dir_err_deg")
+        debug_metric_straightness_err_w = _finite_weighted_mean_nested(debug_chain_summaries, "shape_metric", "straightness_abs_err")
+        debug_metric_path_ratio_w = _finite_weighted_mean_nested(debug_chain_summaries, "shape_metric", "path_length_ratio")
         _save_json(debug_json_path, {
             "step": int(step),
             "upd": int(upd),
@@ -2421,6 +2572,15 @@ def eval_odometry_sequence(model, ds, device, cfg: Config, output_dir: Optional[
                 "mean_tmag_rel_err": debug_mean_tmag_rel_err,
                 "mean_metric_step_pos_err": debug_mean_metric_step_pos_err,
                 "mean_dtcalib_step_pos_err": debug_mean_dtcalib_step_pos_err,
+                "metric_mean_step_dir_err_deg": debug_metric_step_dir_err,
+                "metric_mean_turn_abs_err_deg": debug_metric_turn_err,
+                "metric_mean_straightness_abs_err": debug_metric_straightness_err,
+                "metric_mean_path_length_ratio": debug_metric_path_ratio,
+                "direction_only_mean_turn_abs_err_deg": debug_dironly_turn_err,
+                "metric_path_weighted_step_dir_err_deg": debug_metric_step_dir_err_w,
+                "metric_path_weighted_turn_abs_err_deg": debug_metric_turn_err_w,
+                "metric_path_weighted_straightness_abs_err": debug_metric_straightness_err_w,
+                "metric_path_weighted_path_length_ratio": debug_metric_path_ratio_w,
             },
             "chains": debug_chain_summaries,
         })
@@ -2440,6 +2600,15 @@ def eval_odometry_sequence(model, ds, device, cfg: Config, output_dir: Optional[
         payload["odom_debug_mean_tmag_rel_err"] = debug_mean_tmag_rel_err
         payload["odom_debug_mean_metric_step_pos_err"] = debug_mean_metric_step_pos_err
         payload["odom_debug_mean_dtcalib_step_pos_err"] = debug_mean_dtcalib_step_pos_err
+        payload["odom_shape_metric_mean_step_dir_err_deg"] = debug_metric_step_dir_err
+        payload["odom_shape_metric_mean_turn_abs_err_deg"] = debug_metric_turn_err
+        payload["odom_shape_metric_mean_straightness_abs_err"] = debug_metric_straightness_err
+        payload["odom_shape_metric_mean_path_length_ratio"] = debug_metric_path_ratio
+        payload["odom_shape_direction_only_mean_turn_abs_err_deg"] = debug_dironly_turn_err
+        payload["odom_shape_metric_path_weighted_step_dir_err_deg"] = debug_metric_step_dir_err_w
+        payload["odom_shape_metric_path_weighted_turn_abs_err_deg"] = debug_metric_turn_err_w
+        payload["odom_shape_metric_path_weighted_straightness_abs_err"] = debug_metric_straightness_err_w
+        payload["odom_shape_metric_path_weighted_path_length_ratio"] = debug_metric_path_ratio_w
     model.train()
     return payload
 

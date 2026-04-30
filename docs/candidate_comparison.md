@@ -615,3 +615,28 @@ Interpretation:
 - The endpoint gain is modest and ATE gets worse, so the remaining bottleneck is not pure metric scale; dt-bin calibration changes the trajectory endpoint more than the whole trajectory shape.
 - Do not keep increasing `w_tmag`; the next useful model-side scale change should be conditional/calibrated rather than stronger global supervision.
 - O39 remains the direction-balanced candidate, while O37 remains the balanced odometry default.
+
+## Trajectory Shape Diagnostic
+
+An eval-only trajectory shape diagnostic was added for continuous k=1 chains. It reports local step direction error, consecutive-step turn error, straightness, curvature, and predicted/GT path length ratio.
+
+Path-length weighted shape metrics from the latest O37/O39 debug runs:
+
+| eval | raw drift | scale-fit drift | dt-bin calib drift | path length ratio | step dir err | turn err | straightness err |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| E_O37_trajectory_debug | 1.315 | 1.281 | 1.284 | 0.254 | 20.02 | 7.22 | 0.034 |
+| E_O39_trajectory_debug | 1.316 | 1.290 | 1.285 | 0.260 | 19.85 | 7.24 | 0.035 |
+
+The long debug chain is the important one:
+
+| eval | GT path length | pred/GT path ratio | pred turn sum | GT turn sum | mean step dir err | mean turn err |
+|---|---:|---:|---:|---:|---:|---:|
+| O37 chain0 | 10.201 | 0.244 | 61.0 | 322.7 | 20.00 | 7.26 |
+| O39 chain0 | 10.201 | 0.249 | 55.7 | 322.7 | 19.82 | 7.27 |
+
+Interpretation:
+
+- O39 improves pair-level direction slightly, but it does not improve trajectory shape.
+- The predicted metric trajectory is much too short on the long k=1 chain, even though direction-only path length is exactly GT by construction.
+- Predicted turn sum is far below GT turn sum, so the trajectory is too straight/under-curved after metric scale accumulation.
+- A future sequence loss should be tested as a small candidate only after this diagnostic: likely a light local turn/curvature consistency term plus a conditional scale calibration term, not a stronger global t_mag weight.
