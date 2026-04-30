@@ -59,3 +59,11 @@ Use:
 - Small-k candidate: `checkpoints/O28_c31_smallk_anchor2_all_1200/best_joint_local_A_abs.pt`
 - Small-k fallback: `checkpoints/O27_c31_smallk_anchor2_all_800/best_joint_local_A_abs.pt`
 - Wide/stable baseline: `checkpoints/C31_coarse_gtmatch_tmag_detach_workers6_800/best_joint_local_A_abs.pt`
+
+## O29 Plan
+
+O29 is a checkpoint-selection experiment, not a model or loss change.
+
+- Recipe: same as O28.
+- New behavior: save `best_odom_drift.pt` when `odom_metric_drift` improves while `tdir_abs <= 25.0` and `tmag_rel_err <= 0.9`.
+- Adoption rule: if O29 `best_odom_drift < 1.420` without violating the gates, use `checkpoints/O29_c31_smallk_anchor2_odomselect_1200/best_odom_drift.pt` as the small-k odometry candidate.

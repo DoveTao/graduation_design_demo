@@ -70,15 +70,29 @@ run_1200_safe() {
     --set max_steps=1200
 }
 
+run_1200_odomselect() {
+  test -f "$C31_CKPT" || { echo "Missing C31_CKPT=$C31_CKPT"; exit 1; }
+  python train_mvp.py \
+    --set exp_name=O29_c31_smallk_anchor2_odomselect_1200 \
+    "${common_args[@]}" \
+    --set w_tdir_anchor=2.0 \
+    --set save_best_odom_checkpoint=True \
+    --set odom_select_max_tdir_abs=25.0 \
+    --set odom_select_max_tmag_rel=0.9 \
+    --set max_steps=1200
+}
+
 case "${1:-help}" in
   800) run_800 ;;
   800_safe) run_800_safe ;;
   1200) run_1200_probe ;;
   1200_safe) run_1200_safe ;;
+  1200_odomselect) run_1200_odomselect ;;
   *)
-    echo "Usage: $0 {800|800_safe|1200|1200_safe}"
+    echo "Usage: $0 {800|800_safe|1200|1200_safe|1200_odomselect}"
     echo "O27/800_safe uses stronger tdir anchor and is the current preferred small-k finetune."
     echo "O28/1200_safe extends that recipe to 1200 steps; adopt only if drift improves and tdir_abs stays <=25 deg."
+    echo "O29/1200_odomselect keeps the O28 recipe and also saves best_odom_drift.pt under odom gates."
     echo "O25/800 is the original conservative run; prefer its best_joint.pt if final tdir_abs crosses 25 deg."
     echo "Override C31_CKPT to test another teacher/init checkpoint."
     ;;

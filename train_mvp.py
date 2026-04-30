@@ -2313,6 +2313,12 @@ def main():
     best_tdir_local_A_abs = float("inf")
     best_joint = float("inf")
     best_joint_local_A_abs = float("inf")
+    best_odom_metric = float("inf")
+    best_odom_drift = float("inf")
+    best_odom_upd = -1
+    best_odom_tdir_abs = float("inf")
+    best_odom_tmag_rel_err = float("inf")
+    best_odom_checkpoint = ""
     eval_history: List[Dict[str, Any]] = []
     vis_dumped = False
 
@@ -2871,6 +2877,44 @@ def main():
                                 )
                             metrics.update(odom_metrics)
 
+                        odom_metric_key = str(getattr(cfg, "odom_select_metric", "odom_metric_drift"))
+                        odom_status_ok = (not bool(getattr(cfg, "odom_select_require_status_ok", True))) or (
+                            odom_metrics.get("odom_status") == "ok"
+                        )
+                        odom_metric_val = float(odom_metrics.get(odom_metric_key, float("inf")))
+                        odom_tmag_rel = float(tdiag.get("tmag_rel_err", float("inf")))
+                        odom_tdir_ok = float(tdir_abs) <= float(getattr(cfg, "odom_select_max_tdir_abs", 25.0))
+                        odom_tmag_ok = odom_tmag_rel <= float(getattr(cfg, "odom_select_max_tmag_rel", 0.9))
+                        odom_metric_ok = math.isfinite(odom_metric_val)
+                        odom_select_ok = odom_status_ok and odom_tdir_ok and odom_tmag_ok and odom_metric_ok
+                        metrics.update({
+                            "odom_select_metric": odom_metric_key,
+                            "odom_select_value": odom_metric_val,
+                            "odom_select_ok": int(odom_select_ok),
+                            "odom_select_tdir_ok": int(odom_tdir_ok),
+                            "odom_select_tmag_ok": int(odom_tmag_ok),
+                            "odom_select_status_ok": int(odom_status_ok),
+                            "odom_select_tmag_rel_err": odom_tmag_rel,
+                        })
+                        if (
+                            bool(getattr(cfg, "save_best_odom_checkpoint", True))
+                            and odom_select_ok
+                            and odom_metric_val < best_odom_metric
+                        ):
+                            best_odom_metric = odom_metric_val
+                            best_odom_drift = float(odom_metrics.get("odom_metric_drift", float("nan")))
+                            best_odom_upd = int(upd)
+                            best_odom_tdir_abs = float(tdir_abs)
+                            best_odom_tmag_rel_err = float(odom_tmag_rel)
+                            best_odom_checkpoint = "best_odom_drift.pt"
+                            _save_model_ckpt(os.path.join(ckpt_root, best_odom_checkpoint), model, cfg, step, upd, metrics)
+                            print(
+                                f"[OdomSelect] saved {best_odom_checkpoint} | "
+                                f"{odom_metric_key}={best_odom_metric:.4f} | "
+                                f"tdir_abs={best_odom_tdir_abs:.4f}° | "
+                                f"tmag_rel={best_odom_tmag_rel_err:.4f} | upd={best_odom_upd:05d}"
+                            )
+
                         if bool(getattr(cfg, "save_last_eval_checkpoint", False)):
                             _save_ckpt(os.path.join(ckpt_root, "last_eval.pt"), model, optimizer, scaler, scheduler, cfg, step, upd, metrics)
                         if rot < best_rot:
@@ -3021,6 +3065,12 @@ def main():
         "best_tdir_local_A_abs": best_tdir_local_A_abs,
         "best_joint": best_joint,
         "best_joint_local_A_abs": best_joint_local_A_abs,
+        "best_odom_metric": best_odom_metric,
+        "best_odom_drift": best_odom_drift,
+        "best_odom_upd": best_odom_upd,
+        "best_odom_tdir_abs": best_odom_tdir_abs,
+        "best_odom_tmag_rel_err": best_odom_tmag_rel_err,
+        "best_odom_checkpoint": best_odom_checkpoint,
     }
     if bool(getattr(cfg, "save_last_train_state", True)):
         _save_ckpt(
@@ -3061,6 +3111,11 @@ def main():
         "tdir_anchor_min_k": int(getattr(cfg, "tdir_anchor_min_k", 0)),
         "tdir_anchor_start_updates": int(getattr(cfg, "tdir_anchor_start_updates", 0)),
         "tdir_anchor_ramp_updates": int(getattr(cfg, "tdir_anchor_ramp_updates", 0)),
+        "save_best_odom_checkpoint": bool(getattr(cfg, "save_best_odom_checkpoint", True)),
+        "odom_select_metric": str(getattr(cfg, "odom_select_metric", "odom_metric_drift")),
+        "odom_select_max_tdir_abs": float(getattr(cfg, "odom_select_max_tdir_abs", 25.0)),
+        "odom_select_max_tmag_rel": float(getattr(cfg, "odom_select_max_tmag_rel", 0.9)),
+        "odom_select_require_status_ok": bool(getattr(cfg, "odom_select_require_status_ok", True)),
         "last_eval": latest_eval_metrics,
     }
     if bool(cfg.save_final_summary):
