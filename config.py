@@ -221,6 +221,8 @@ class Config:
     odom_eval_scale_fit: bool = False
     save_odom_trajectory_debug: bool = False
     odom_trajectory_debug_max_chains: int = 1
+    odom_trajectory_debug_segment_count: int = 4
+    odom_trajectory_debug_topk_steps: int = 10
     save_odom_metrics_latest: bool = True
     save_vis_examples: bool = False
     save_vis_payload_npz: bool = False

@@ -1772,6 +1772,124 @@ def _build_odometry_chains(manifest: List[Dict[str, Any]], selected_k: int, max_
     return chains
 
 
+def _finite_float(x: Any, default: float = float("nan")) -> float:
+    try:
+        v = float(x)
+    except Exception:
+        return default
+    return v if math.isfinite(v) else default
+
+
+def _finite_mean_from_rows(rows: List[Dict[str, Any]], key: str) -> float:
+    vals = [_finite_float(r.get(key, float("nan"))) for r in rows]
+    vals = [v for v in vals if math.isfinite(v)]
+    return float(sum(vals) / max(len(vals), 1)) if vals else float("nan")
+
+
+def _finite_max_from_rows(rows: List[Dict[str, Any]], key: str) -> float:
+    vals = [_finite_float(r.get(key, float("nan"))) for r in rows]
+    vals = [v for v in vals if math.isfinite(v)]
+    return float(max(vals)) if vals else float("nan")
+
+
+def _segment_trajectory_debug(rows: List[Dict[str, Any]], variant: str, segment_count: int) -> List[Dict[str, Any]]:
+    n = len(rows)
+    segment_count = max(int(segment_count), 1)
+    if n <= 0:
+        return []
+    segment_count = min(segment_count, n)
+
+    gt_pos = [np.zeros(3, dtype=np.float64)]
+    pred_pos = [np.zeros(3, dtype=np.float64)]
+    step_lens = []
+    for r in rows:
+        gt_pos.append(np.asarray([r.get("gt_x", 0.0), r.get("gt_y", 0.0), r.get("gt_z", 0.0)], dtype=np.float64))
+        pred_pos.append(np.asarray([
+            r.get(f"{variant}_x", float("nan")),
+            r.get(f"{variant}_y", float("nan")),
+            r.get(f"{variant}_z", float("nan")),
+        ], dtype=np.float64))
+        step_lens.append(max(_finite_float(r.get("dt_gt", 0.0), 0.0), 0.0))
+
+    out = []
+    for si in range(segment_count):
+        start = int(math.floor(si * n / segment_count))
+        end = int(math.floor((si + 1) * n / segment_count))
+        end = max(end, start + 1)
+        end = min(end, n)
+        if start >= end:
+            continue
+        if not (np.all(np.isfinite(pred_pos[start])) and np.all(np.isfinite(pred_pos[end]))):
+            drift = float("nan")
+            norm_drift = float("nan")
+        else:
+            gt_delta = gt_pos[end] - gt_pos[start]
+            pred_delta = pred_pos[end] - pred_pos[start]
+            drift = float(np.linalg.norm(pred_delta - gt_delta))
+            seg_len = float(sum(step_lens[start:end]))
+            norm_drift = float(drift / max(seg_len, 1e-12)) if math.isfinite(drift) else float("nan")
+        seg_len = float(sum(step_lens[start:end]))
+        out.append({
+            "segment": int(si),
+            "start_step": int(start),
+            "end_step": int(end - 1),
+            "num_steps": int(end - start),
+            "trajectory_length": seg_len,
+            f"{variant}_drift": drift,
+            f"{variant}_length_normalized_drift": norm_drift,
+        })
+    return out
+
+
+def _odom_debug_chain_summary(
+    rows: List[Dict[str, Any]],
+    scene_seq: str,
+    *,
+    segment_count: int,
+    topk_steps: int,
+) -> Dict[str, Any]:
+    topk_steps = max(int(topk_steps), 0)
+    sorted_by_pos = sorted(
+        rows,
+        key=lambda r: _finite_float(r.get("metric_pos_err", float("-inf")), float("-inf")),
+        reverse=True,
+    )
+    top_rows = []
+    for r in sorted_by_pos[:topk_steps]:
+        top_rows.append({
+            "step_idx": int(r.get("step_idx", -1)),
+            "i": int(r.get("i", -1)),
+            "j": int(r.get("j", -1)),
+            "dt_gt": _finite_float(r.get("dt_gt")),
+            "metric_pos_err": _finite_float(r.get("metric_pos_err")),
+            "direction_only_pos_err": _finite_float(r.get("direction_only_pos_err")),
+            "rot_err_deg": _finite_float(r.get("rot_err_deg")),
+            "tdir_err_deg": _finite_float(r.get("tdir_err_deg")),
+            "tmag_rel_err": _finite_float(r.get("tmag_rel_err")),
+            "tmag_ratio": _finite_float(r.get("tmag_ratio")),
+        })
+
+    return {
+        "scene_seq": scene_seq,
+        "num_steps": int(len(rows)),
+        "trajectory_length": float(sum(max(_finite_float(r.get("dt_gt", 0.0), 0.0), 0.0) for r in rows)),
+        "mean_metric_pos_err": _finite_mean_from_rows(rows, "metric_pos_err"),
+        "max_metric_pos_err": _finite_max_from_rows(rows, "metric_pos_err"),
+        "final_metric_pos_err": _finite_float(rows[-1].get("metric_pos_err")) if rows else float("nan"),
+        "mean_direction_only_pos_err": _finite_mean_from_rows(rows, "direction_only_pos_err"),
+        "final_direction_only_pos_err": _finite_float(rows[-1].get("direction_only_pos_err")) if rows else float("nan"),
+        "mean_tdir_err_deg": _finite_mean_from_rows(rows, "tdir_err_deg"),
+        "max_tdir_err_deg": _finite_max_from_rows(rows, "tdir_err_deg"),
+        "mean_tmag_rel_err": _finite_mean_from_rows(rows, "tmag_rel_err"),
+        "mean_tmag_ratio": _finite_mean_from_rows(rows, "tmag_ratio"),
+        "segments_metric": _segment_trajectory_debug(rows, "metric", segment_count),
+        "segments_direction_only": _segment_trajectory_debug(rows, "direction_only", segment_count),
+        "segments_smooth_tmag": _segment_trajectory_debug(rows, "smooth_tmag", segment_count),
+        "segments_scale_fit": _segment_trajectory_debug(rows, "scale_fit", segment_count),
+        "top_metric_pos_err_steps": top_rows,
+    }
+
+
 @torch.no_grad()
 def eval_odometry_sequence(model, ds, device, cfg: Config, output_dir: Optional[str] = None, step: int = 0, upd: int = 0) -> Dict[str, Any]:
     if not hasattr(ds, "manifest"):
@@ -1822,7 +1940,11 @@ def eval_odometry_sequence(model, ds, device, cfg: Config, output_dir: Optional[
     scale_fit_enabled = bool(getattr(cfg, "odom_eval_scale_fit", False))
     debug_enabled = bool(getattr(cfg, "save_odom_trajectory_debug", False)) and output_dir is not None
     debug_max_chains = max(int(getattr(cfg, "odom_trajectory_debug_max_chains", 1)), 0)
+    debug_segment_count = max(int(getattr(cfg, "odom_trajectory_debug_segment_count", 4)), 1)
+    debug_topk_steps = max(int(getattr(cfg, "odom_trajectory_debug_topk_steps", 10)), 0)
     debug_payloads = []
+    debug_step_rows: List[Dict[str, Any]] = []
+    debug_chain_summaries: List[Dict[str, Any]] = []
 
     metric_pos_err_sq = []
     dir_pos_err_sq = []
@@ -1884,6 +2006,7 @@ def eval_odometry_sequence(model, ds, device, cfg: Config, output_dir: Optional[
                     t_vec_metric = t_dir_pred * t_mag_pred
 
             records.append({
+                "meta": item,
                 "R_gt": R_gt,
                 "t_gt": t_gt,
                 "t_gt_mag": t_gt_mag,
@@ -1934,8 +2057,10 @@ def eval_odometry_sequence(model, ds, device, cfg: Config, output_dir: Optional[
         dbg_tmag_pred = []
         dbg_tmag_smooth = []
         dbg_tmag_scale_fit = []
+        dbg_rows: List[Dict[str, Any]] = []
 
         for ri, rec in enumerate(records):
+            meta = rec.get("meta", {})
             R_gt = rec["R_gt"]
             t_gt = rec["t_gt"]
             t_gt_mag = float(rec["t_gt_mag"])
@@ -1949,12 +2074,21 @@ def eval_odometry_sequence(model, ds, device, cfg: Config, output_dir: Optional[
             if can_scale_fit and t_vec_metric is not None:
                 t_vec_scale_fit = t_vec_metric * float(scale_fit_factor)
 
-            metric_rpe_rot.append(_rot_geodesic_deg_np(R_pred_np, R_gt))
+            rot_err_deg = _rot_geodesic_deg_np(R_pred_np, R_gt)
+            metric_tdir_err_deg = _vec_angle_deg_np(t_vec_metric, t_gt) if t_vec_metric is not None else float("nan")
+            dir_tdir_err_deg = _vec_angle_deg_np(t_dir_pred, t_gt)
+            metric_rpe_rot.append(rot_err_deg)
             dir_rpe_rot.append(metric_rpe_rot[-1])
-            metric_rpe_trans_dir.append(_vec_angle_deg_np(t_vec_metric, t_gt) if t_vec_metric is not None else float("nan"))
-            dir_rpe_trans_dir.append(_vec_angle_deg_np(t_dir_pred, t_gt))
+            metric_rpe_trans_dir.append(metric_tdir_err_deg)
+            dir_rpe_trans_dir.append(dir_tdir_err_deg)
+            tmag_pred_val = float("nan")
+            tmag_rel_err_val = float("nan")
+            tmag_ratio_val = float("nan")
             if t_vec_metric is not None:
-                metric_rpe_trans_mag.append(abs(float(np.linalg.norm(t_vec_metric)) - t_gt_mag))
+                tmag_pred_val = float(np.linalg.norm(t_vec_metric))
+                metric_rpe_trans_mag.append(abs(tmag_pred_val - t_gt_mag))
+                tmag_rel_err_val = abs(tmag_pred_val - t_gt_mag) / max(t_gt_mag, 1e-12)
+                tmag_ratio_val = tmag_pred_val / max(t_gt_mag, 1e-12)
                 metric_pairs += 1
             else:
                 chain_metric_ok = False
@@ -1982,28 +2116,64 @@ def eval_odometry_sequence(model, ds, device, cfg: Config, output_dir: Optional[
             R_dir_c0, t_dir_c0 = _compose_rel_pose_np(R_pred_np, t_dir_only, R_dir_c0, t_dir_c0)
 
             p_gt = _camera_center_from_T_c0_np(R_gt_c0, t_gt_c0)
+            p_metric = np.full(3, np.nan, dtype=np.float64)
+            p_smooth = np.full(3, np.nan, dtype=np.float64)
+            p_scale_fit = np.full(3, np.nan, dtype=np.float64)
+            metric_pos_err = float("nan")
+            smooth_pos_err = float("nan")
+            scale_fit_pos_err = float("nan")
             if t_vec_metric is not None:
                 p_metric = _camera_center_from_T_c0_np(R_metric_c0, t_metric_c0)
-                metric_pos_err_sq.append(float(np.sum((p_metric - p_gt) ** 2)))
+                metric_pos_err = float(np.linalg.norm(p_metric - p_gt))
+                metric_pos_err_sq.append(float(metric_pos_err ** 2))
             if t_vec_smooth is not None:
                 p_smooth = _camera_center_from_T_c0_np(R_smooth_c0, t_smooth_c0)
-                smooth_pos_err_sq.append(float(np.sum((p_smooth - p_gt) ** 2)))
+                smooth_pos_err = float(np.linalg.norm(p_smooth - p_gt))
+                smooth_pos_err_sq.append(float(smooth_pos_err ** 2))
             if t_vec_scale_fit is not None:
                 p_scale_fit = _camera_center_from_T_c0_np(R_scale_fit_c0, t_scale_fit_c0)
-                scale_fit_pos_err_sq.append(float(np.sum((p_scale_fit - p_gt) ** 2)))
+                scale_fit_pos_err = float(np.linalg.norm(p_scale_fit - p_gt))
+                scale_fit_pos_err_sq.append(float(scale_fit_pos_err ** 2))
             p_dir = _camera_center_from_T_c0_np(R_dir_c0, t_dir_c0)
-            dir_pos_err_sq.append(float(np.sum((p_dir - p_gt) ** 2)))
+            dir_pos_err = float(np.linalg.norm(p_dir - p_gt))
+            dir_pos_err_sq.append(float(dir_pos_err ** 2))
 
             if debug_enabled and len(debug_payloads) < debug_max_chains:
                 dbg_gt.append(p_gt.copy())
-                dbg_metric.append(_camera_center_from_T_c0_np(R_metric_c0, t_metric_c0).copy() if t_vec_metric is not None else np.full(3, np.nan))
-                dbg_smooth.append(_camera_center_from_T_c0_np(R_smooth_c0, t_smooth_c0).copy() if t_vec_smooth is not None else np.full(3, np.nan))
-                dbg_scale_fit.append(_camera_center_from_T_c0_np(R_scale_fit_c0, t_scale_fit_c0).copy() if t_vec_scale_fit is not None else np.full(3, np.nan))
+                dbg_metric.append(p_metric.copy())
+                dbg_smooth.append(p_smooth.copy())
+                dbg_scale_fit.append(p_scale_fit.copy())
                 dbg_dir.append(p_dir.copy())
                 dbg_tmag_gt.append(float(t_gt_mag))
-                dbg_tmag_pred.append(float(np.linalg.norm(t_vec_metric)) if t_vec_metric is not None else float("nan"))
+                dbg_tmag_pred.append(tmag_pred_val)
                 dbg_tmag_smooth.append(float(np.linalg.norm(t_vec_smooth)) if t_vec_smooth is not None else float("nan"))
                 dbg_tmag_scale_fit.append(float(np.linalg.norm(t_vec_scale_fit)) if t_vec_scale_fit is not None else float("nan"))
+                dbg_rows.append({
+                    "chain_id": int(len(debug_payloads)),
+                    "scene_seq": str(chain.get("scene_seq", "unknown")),
+                    "step_idx": int(ri),
+                    "ds_idx": int(meta.get("_ds_idx", -1)),
+                    "i": int(meta.get("i", -1)),
+                    "j": int(meta.get("j", -1)),
+                    "k": int(meta.get("k", selected_k)),
+                    "dt_gt": float(t_gt_mag),
+                    "rot_err_deg": float(rot_err_deg),
+                    "tdir_err_deg": float(metric_tdir_err_deg),
+                    "direction_only_tdir_err_deg": float(dir_tdir_err_deg),
+                    "tmag_gt": float(t_gt_mag),
+                    "tmag_pred": float(tmag_pred_val),
+                    "tmag_rel_err": float(tmag_rel_err_val),
+                    "tmag_ratio": float(tmag_ratio_val),
+                    "gt_x": float(p_gt[0]), "gt_y": float(p_gt[1]), "gt_z": float(p_gt[2]),
+                    "metric_x": float(p_metric[0]), "metric_y": float(p_metric[1]), "metric_z": float(p_metric[2]),
+                    "smooth_tmag_x": float(p_smooth[0]), "smooth_tmag_y": float(p_smooth[1]), "smooth_tmag_z": float(p_smooth[2]),
+                    "scale_fit_x": float(p_scale_fit[0]), "scale_fit_y": float(p_scale_fit[1]), "scale_fit_z": float(p_scale_fit[2]),
+                    "direction_only_x": float(p_dir[0]), "direction_only_y": float(p_dir[1]), "direction_only_z": float(p_dir[2]),
+                    "metric_pos_err": float(metric_pos_err),
+                    "smooth_tmag_pos_err": float(smooth_pos_err),
+                    "scale_fit_pos_err": float(scale_fit_pos_err),
+                    "direction_only_pos_err": float(dir_pos_err),
+                })
 
             chain_len += t_gt_mag
             num_pairs += 1
@@ -2041,6 +2211,13 @@ def eval_odometry_sequence(model, ds, device, cfg: Config, output_dir: Optional[
                 "tmag_scale_fit": np.asarray(dbg_tmag_scale_fit, dtype=np.float32),
                 "scale_fit_factor": float(scale_fit_factor),
             })
+            debug_step_rows.extend(dbg_rows)
+            debug_chain_summaries.append(_odom_debug_chain_summary(
+                dbg_rows,
+                str(chain.get("scene_seq", "unknown")),
+                segment_count=debug_segment_count,
+                topk_steps=debug_topk_steps,
+            ))
 
     def _nanmean(vals):
         arr = np.asarray(vals, dtype=np.float64)
@@ -2101,6 +2278,8 @@ def eval_odometry_sequence(model, ds, device, cfg: Config, output_dir: Optional[
     if debug_enabled and debug_payloads:
         os.makedirs(str(output_dir), exist_ok=True)
         dbg = debug_payloads[0]
+        debug_json_path = os.path.join(str(output_dir), "odom_trajectory_debug_latest.json")
+        debug_csv_path = os.path.join(str(output_dir), "odom_trajectory_steps_latest.csv")
         np.savez(
             os.path.join(str(output_dir), "odom_trajectory_debug_latest.npz"),
             scene_seq=np.asarray([dbg["scene_seq"]]),
@@ -2117,7 +2296,42 @@ def eval_odometry_sequence(model, ds, device, cfg: Config, output_dir: Optional[
             tmag_scale_fit=dbg["tmag_scale_fit"],
             scale_fit_factor=np.asarray([float(dbg["scale_fit_factor"])], dtype=np.float32),
         )
+        debug_top_metric_err = _finite_max_from_rows(debug_step_rows, "metric_pos_err")
+        debug_top_tdir_err = _finite_max_from_rows(debug_step_rows, "tdir_err_deg")
+        debug_mean_tmag_ratio = _finite_mean_from_rows(debug_step_rows, "tmag_ratio")
+        debug_mean_tmag_rel_err = _finite_mean_from_rows(debug_step_rows, "tmag_rel_err")
+        debug_mean_metric_step_pos_err = _finite_mean_from_rows(debug_step_rows, "metric_pos_err")
+        _save_json(debug_json_path, {
+            "step": int(step),
+            "upd": int(upd),
+            "selected_k": int(selected_k),
+            "num_debug_chains": int(len(debug_chain_summaries)),
+            "segment_count": int(debug_segment_count),
+            "topk_steps": int(debug_topk_steps),
+            "summary": {
+                "max_metric_pos_err": debug_top_metric_err,
+                "max_tdir_err_deg": debug_top_tdir_err,
+                "mean_tmag_ratio": debug_mean_tmag_ratio,
+                "mean_tmag_rel_err": debug_mean_tmag_rel_err,
+                "mean_metric_step_pos_err": debug_mean_metric_step_pos_err,
+            },
+            "chains": debug_chain_summaries,
+        })
+        if debug_step_rows:
+            fieldnames = list(debug_step_rows[0].keys())
+            with open(debug_csv_path, "w", encoding="utf-8", newline="") as f:
+                writer = csv.DictWriter(f, fieldnames=fieldnames)
+                writer.writeheader()
+                writer.writerows(debug_step_rows)
         payload["odom_trajectory_debug_path"] = "odom_trajectory_debug_latest.npz"
+        payload["odom_trajectory_debug_json_path"] = "odom_trajectory_debug_latest.json"
+        payload["odom_trajectory_steps_csv_path"] = "odom_trajectory_steps_latest.csv"
+        payload["odom_debug_num_chains"] = int(len(debug_chain_summaries))
+        payload["odom_debug_max_metric_pos_err"] = debug_top_metric_err
+        payload["odom_debug_max_tdir_err_deg"] = debug_top_tdir_err
+        payload["odom_debug_mean_tmag_ratio"] = debug_mean_tmag_ratio
+        payload["odom_debug_mean_tmag_rel_err"] = debug_mean_tmag_rel_err
+        payload["odom_debug_mean_metric_step_pos_err"] = debug_mean_metric_step_pos_err
     model.train()
     return payload
 
