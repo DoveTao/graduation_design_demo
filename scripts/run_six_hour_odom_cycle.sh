@@ -106,8 +106,14 @@ maybe_commit() {
   fi
 
   log "Gated improvement found; committing scripts and lightweight summary."
-  git add scripts/run_six_hour_odom_cycle.sh scripts/summarize_odom_cycle.py
-  git add -f "$RESULTS_MD" "$STATE_JSON"
+  if ! git add scripts/run_six_hour_odom_cycle.sh scripts/summarize_odom_cycle.py; then
+    log "git add failed; continuing so the experiment cycle does not stop."
+    return 0
+  fi
+  if ! git add -f "$RESULTS_MD" "$STATE_JSON"; then
+    log "git add -f for result summary failed; continuing so the experiment cycle does not stop."
+    return 0
+  fi
   if git diff --cached --quiet; then
     log "Nothing staged for commit."
     return 0
