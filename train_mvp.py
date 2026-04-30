@@ -441,13 +441,33 @@ def _translation_weight_from_dt(
     small_dt_t_weight: float,
     ignore_dt_below: float = 0.0,
     ignore_weight: float = 0.0,
+    ramp_enable: bool = False,
+    ramp_start: float = 0.02,
+    ramp_end: float = 0.10,
+    ramp_start_weight: float = 0.05,
+    ramp_end_weight: float = -1.0,
 ):
     dt_list = _meta_batch_field(meta, 'dt_world', bsz, default=None)
     w = []
+    ramp_start = float(ramp_start)
+    ramp_end = float(ramp_end)
+    ramp_start_weight = float(ramp_start_weight)
+    ramp_end_weight = float(small_dt_t_weight) if float(ramp_end_weight) < 0.0 else float(ramp_end_weight)
+    ramp_den = max(ramp_end - ramp_start, 1e-6)
     for x in dt_list:
         try:
             dt = float(x) if x is not None else None
-            if dt is not None and float(ignore_dt_below) > 0.0 and dt < float(ignore_dt_below):
+            if dt is not None and bool(ramp_enable):
+                if dt <= ramp_start:
+                    w.append(ramp_start_weight)
+                elif dt < ramp_end:
+                    alpha = (dt - ramp_start) / ramp_den
+                    w.append(ramp_start_weight + alpha * (ramp_end_weight - ramp_start_weight))
+                elif dt < float(small_dt_thresh):
+                    w.append(float(small_dt_t_weight))
+                else:
+                    w.append(1.0)
+            elif dt is not None and float(ignore_dt_below) > 0.0 and dt < float(ignore_dt_below):
                 w.append(float(ignore_weight))
             elif dt is not None and dt < float(small_dt_thresh):
                 w.append(float(small_dt_t_weight))
@@ -1966,6 +1986,11 @@ def main():
         f"t_axis={getattr(cfg, 'pose_t_axis_weight', 0.0)} | "
         f"rot_k>={getattr(cfg, 'large_k_rot_thresh', 40)}x{getattr(cfg, 'large_k_rot_weight', 1.0)} | "
         f"tdir_dt<{getattr(cfg, 'tdir_loss_ignore_dt_below', 0.0)}x{getattr(cfg, 'tdir_loss_ignore_weight', 0.0)} | "
+        f"tdir_ramp={bool(getattr(cfg, 'tdir_loss_dt_ramp_enable', False))}:"
+        f"{getattr(cfg, 'tdir_loss_dt_ramp_start', 0.02)}-"
+        f"{getattr(cfg, 'tdir_loss_dt_ramp_end', 0.10)}@"
+        f"{getattr(cfg, 'tdir_loss_dt_ramp_start_weight', 0.05)}->"
+        f"{getattr(cfg, 'tdir_loss_dt_ramp_end_weight', -1.0)} | "
         f"w_epi={cfg.w_epi} | w_coarse_pose_aux={getattr(cfg, 'w_coarse_pose_aux', 0.0)} | "
         f"w_tmag={_cfg_tmag_weight(cfg)} | tmag_loss={getattr(cfg, 'tmag_loss_type', 'log_smooth_l1')} | "
         f"tmag_start={getattr(cfg, 'tmag_start_updates', 0)} | tmag_ramp={getattr(cfg, 'tmag_ramp_updates', 0)} | "
@@ -2285,6 +2310,11 @@ def main():
             "tdir_anchor_ramp_updates": int(getattr(cfg, "tdir_anchor_ramp_updates", 0)),
             "tdir_loss_ignore_dt_below": float(getattr(cfg, "tdir_loss_ignore_dt_below", 0.0)),
             "tdir_loss_ignore_weight": float(getattr(cfg, "tdir_loss_ignore_weight", 0.0)),
+            "tdir_loss_dt_ramp_enable": bool(getattr(cfg, "tdir_loss_dt_ramp_enable", False)),
+            "tdir_loss_dt_ramp_start": float(getattr(cfg, "tdir_loss_dt_ramp_start", 0.02)),
+            "tdir_loss_dt_ramp_end": float(getattr(cfg, "tdir_loss_dt_ramp_end", 0.10)),
+            "tdir_loss_dt_ramp_start_weight": float(getattr(cfg, "tdir_loss_dt_ramp_start_weight", 0.05)),
+            "tdir_loss_dt_ramp_end_weight": float(getattr(cfg, "tdir_loss_dt_ramp_end_weight", -1.0)),
             "last_eval": _latest_eval_metrics(metrics),
         }
         if bool(cfg.save_final_summary):
@@ -2384,6 +2414,11 @@ def main():
                 small_dt_t_weight=float(getattr(cfg, "small_dt_t_weight", 0.35)),
                 ignore_dt_below=float(getattr(cfg, "tdir_loss_ignore_dt_below", 0.0)),
                 ignore_weight=float(getattr(cfg, "tdir_loss_ignore_weight", 0.0)),
+                ramp_enable=bool(getattr(cfg, "tdir_loss_dt_ramp_enable", False)),
+                ramp_start=float(getattr(cfg, "tdir_loss_dt_ramp_start", 0.02)),
+                ramp_end=float(getattr(cfg, "tdir_loss_dt_ramp_end", 0.10)),
+                ramp_start_weight=float(getattr(cfg, "tdir_loss_dt_ramp_start_weight", 0.05)),
+                ramp_end_weight=float(getattr(cfg, "tdir_loss_dt_ramp_end_weight", -1.0)),
             ),
             device=dev,
             dtype=torch.float32,
@@ -3224,6 +3259,11 @@ def main():
         "tdir_anchor_ramp_updates": int(getattr(cfg, "tdir_anchor_ramp_updates", 0)),
         "tdir_loss_ignore_dt_below": float(getattr(cfg, "tdir_loss_ignore_dt_below", 0.0)),
         "tdir_loss_ignore_weight": float(getattr(cfg, "tdir_loss_ignore_weight", 0.0)),
+        "tdir_loss_dt_ramp_enable": bool(getattr(cfg, "tdir_loss_dt_ramp_enable", False)),
+        "tdir_loss_dt_ramp_start": float(getattr(cfg, "tdir_loss_dt_ramp_start", 0.02)),
+        "tdir_loss_dt_ramp_end": float(getattr(cfg, "tdir_loss_dt_ramp_end", 0.10)),
+        "tdir_loss_dt_ramp_start_weight": float(getattr(cfg, "tdir_loss_dt_ramp_start_weight", 0.05)),
+        "tdir_loss_dt_ramp_end_weight": float(getattr(cfg, "tdir_loss_dt_ramp_end_weight", -1.0)),
         "save_best_odom_checkpoint": bool(getattr(cfg, "save_best_odom_checkpoint", True)),
         "odom_select_metric": str(getattr(cfg, "odom_select_metric", "odom_metric_drift")),
         "odom_select_max_tdir_abs": float(getattr(cfg, "odom_select_max_tdir_abs", 25.0)),

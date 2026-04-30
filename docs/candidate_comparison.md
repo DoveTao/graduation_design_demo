@@ -262,3 +262,26 @@ Decision:
 - Keep O30 as the drift-first small-k candidate.
 - Keep C31 as the wide/stable baseline and teacher.
 - The next tiny-dt experiment should be a continuous dt ramp, not another fixed threshold. A reasonable candidate is to ramp tdir weight from `0.05` at `dt=0.02` to the normal small-dt weight by `dt=0.10`, while keeping odom eval unchanged.
+
+## O33 Plan
+
+O33 implements the continuous tiny-dt tdir weighting ramp:
+
+- Keep the O30 training recipe and odom/small-k checkpoint selectors.
+- Enable `tdir_loss_dt_ramp_enable=True`.
+- Use `tdir_loss_dt_ramp_start=0.02`.
+- Use `tdir_loss_dt_ramp_end=0.10`.
+- Use `tdir_loss_dt_ramp_start_weight=0.05`.
+- Use `tdir_loss_dt_ramp_end_weight=-1.0`, meaning the ramp endpoint is the configured `small_dt_t_weight` (`0.15` in the O33 script).
+
+Expected behavior:
+
+- `dt<=0.02`: tdir loss weight `0.05`.
+- `0.02<dt<0.10`: linearly ramps from `0.05` to `0.15`.
+- `0.10<=dt<0.30`: keeps the normal small-dt weight `0.15`.
+- `dt>=0.30`: full tdir weight.
+
+Adoption rule:
+
+- Prefer O33 if it beats O30 on drift or improves `k=1/2/3` `tdir_abs` while keeping eval-only global `tdir_abs <= 25°`.
+- Reject O33 if it behaves like O32, especially if global `tdir_abs > 25°` or drift remains materially worse than O30.

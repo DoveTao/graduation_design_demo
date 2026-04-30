@@ -187,6 +187,11 @@ class Config:
     small_dt_t_weight: float = 0.20
     tdir_loss_ignore_dt_below: float = 0.0
     tdir_loss_ignore_weight: float = 0.0
+    tdir_loss_dt_ramp_enable: bool = False
+    tdir_loss_dt_ramp_start: float = 0.02
+    tdir_loss_dt_ramp_end: float = 0.10
+    tdir_loss_dt_ramp_start_weight: float = 0.05
+    tdir_loss_dt_ramp_end_weight: float = -1.0  # <0 means use small_dt_t_weight
     w_photo: float = 0.0
     w_smooth: float = 0.0
 
