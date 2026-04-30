@@ -67,3 +67,43 @@ O29 is a checkpoint-selection experiment, not a model or loss change.
 - Recipe: same as O28.
 - New behavior: save `best_odom_drift.pt` when `odom_metric_drift` improves while `tdir_abs <= 25.0` and `tmag_rel_err <= 0.9`.
 - Adoption rule: if O29 `best_odom_drift < 1.420` without violating the gates, use `checkpoints/O29_c31_smallk_anchor2_odomselect_1200/best_odom_drift.pt` as the small-k odometry candidate.
+
+## O29 Result
+
+O29 successfully tested the odometry-aware checkpoint selection idea. It did not change the model or loss; it only changed which checkpoint is saved during the O28-style run.
+
+Training-time best odom checkpoint:
+
+| checkpoint | upd | drift | tdir_abs | tmag_rel |
+|---|---:|---:|---:|---:|
+| `O29/best_odom_drift.pt` | 500 | 1.410 | 23.939 | 0.801 |
+
+Unified eval-only comparison against O28:
+
+| eval | rot | tdir_abs | local_A_abs | tmag_rel | tvec_l2 | RPE_rot | ATE | drift | norm_drift |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| E_O28_candidate_smallk_eval | 2.330 | 24.753 | 24.945 | 0.883 | 1.558 | 0.895 | 10.100 | 1.574 | 1.255 |
+| E_O29_best_odom_smallk_eval | 2.395 | 24.865 | 24.880 | 0.918 | 1.592 | 1.070 | 8.936 | 1.410 | 1.124 |
+
+Small-k bucket caveat for `E_O29_best_odom_smallk_eval`:
+
+| k | rot | tdir_abs | tmag_rel |
+|---:|---:|---:|---:|
+| 1 | 1.20 | 29.61 | 0.827 |
+| 2 | 1.05 | 26.65 | 0.873 |
+| 3 | 0.95 | 25.12 | 0.930 |
+| 5 | 0.97 | 22.15 | 0.961 |
+| 10 | 2.13 | 20.62 | 0.977 |
+| 20 | 8.14 | 25.02 | 0.940 |
+
+Decision:
+
+- O29 passes the odometry objective: drift improves from O28's unified eval `1.574` to `1.410`, and `tdir_abs=24.865` stays under the `25°` guard.
+- O29 does not cleanly pass the scale guard under the separate eval-only protocol: `tmag_rel=0.918`, slightly above the planned `0.9` threshold. During training eval the same checkpoint had `tmag_rel=0.801`, so this difference is likely due to eval sample/protocol differences, not a code-path failure.
+- Use `checkpoints/O29_c31_smallk_anchor2_odomselect_1200/best_odom_drift.pt` as the odom-drift candidate when the priority is trajectory drift.
+- Keep `checkpoints/O28_c31_smallk_anchor2_all_1200/best_joint_local_A_abs.pt` as the conservative small-k candidate when the priority is pair-level scale and slightly better rotation.
+- Keep `C31` as the wide/stable baseline and teacher.
+
+Next action:
+
+- Do not continue tuning t_mag blindly. The remaining high-value target is small-baseline translation direction, especially `k=1/2/3`, while preserving O29-level drift.

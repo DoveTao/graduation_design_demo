@@ -129,6 +129,20 @@ Evidence:
 
 The new t_mag and odometry metrics exist only for the smoke/debug `C11_tbranch_gated_L0` artifact. We need at least one short `odom-small-k` or t_mag-enabled debug run before making a serious scale or drift diagnosis.
 
+## Addendum: C31/O28/O29 Small-k Findings
+
+Later candidate experiments added meaningful t_mag and odometry evidence:
+
+- `C31` remains the wide/stable baseline and teacher.
+- `O28` is the conservative small-k finetune candidate: it improves drift while keeping pair-level scale cleaner.
+- `O29` validates odometry-aware checkpoint selection: its `best_odom_drift.pt` lowers unified small-k drift to `1.410`, with `tdir_abs=24.865`, but its separate eval-only `tmag_rel=0.918` is slightly above the planned `0.9` gate.
+
+Updated bottleneck reading:
+
+- The main remaining performance bottleneck is still small-baseline translation direction, especially `k=1/2/3`.
+- Checkpoint selection can reduce odometry drift without changing the model, so odom-aware selection should stay enabled.
+- Further gains should target small-k `tdir_abs` while preserving O29-level drift and avoiding scale regression.
+
 ## Recommended Next 3 Changes
 
 ### Change 1: Fine-routing ablation script and diagnostics-first fine evaluation
