@@ -1,45 +1,67 @@
-# ---- data & assets ----
+# ---- Python cache / build artifacts ----
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+build/
+dist/
+*.egg-info/
+
+# ---- Virtual environments ----
+.venv/
+venv/
+env/
+
+# ---- Data & large local assets ----
 data/
 PanoramaView/
 FisheyeView/
 *.zip
 *.tar
 *.tar.gz
+*.7z
+*.rar
 
-# ---- model checkpoints ----
-*.pth
-*.pt
-*.ckpt
-
-# ---- logs ----
+# ---- Model checkpoints / experiment outputs ----
+checkpoints/
+checkpoints_smoke/
+outputs/
+experiments/
 runs/
 wandb/
 logs/
-*.log
+*.pth
+*.pt
+*.ckpt
+*.npz
+*.npy
+*.pkl
+*.pickle
 
-# ---- temporary patches / local notes ----
+# ---- Logs ----
+*.log
+*.out
+*.err
+
+# ---- Temporary patches / local notes ----
 *.patch
 *.diff
+config.md
+codex_changes.patch
 
-# ---- python cache ----
-__pycache__/
-*.pyc
-*.pyo
-.ipynb_checkpoints/
-
-# ---- system ----
-.DS_Store
-Thumbs.db
-
-# ---- IDE ----
-.vscode/
-.idea/
-.codex
-
+# ---- Local one-off diagnostics ----
 check_k_dist.py
 check_labels_pose.py
 
-config.md
+# ---- System files ----
+.DS_Store
+Thumbs.db
 
-checkpoints/
-checkpoints_smoke/
+# ---- IDE / editor metadata ----
+.vscode/
+.idea/
+.codex
+.codex/
