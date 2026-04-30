@@ -211,3 +211,17 @@ Decision:
 - O31 improves rotation slightly and keeps tmag similar, but it worsens both `tdir_abs` and drift relative to O30.
 - Keep O30 as the drift-first small-k candidate.
 - The tiny-dt issue remains real, but hard zeroing `dt<0.05` tdir loss is too blunt. A softer alternative would be `tdir_loss_ignore_weight=0.05` or a tdir loss ramp by dt, not a hard ignore.
+
+## O32 Plan
+
+O32 is the softer tiny-dt variant:
+
+- Keep the O30/O31 training recipe and checkpoint selection.
+- Use `tdir_loss_ignore_dt_below=0.05`.
+- Use `tdir_loss_ignore_weight=0.05` instead of `0.0`.
+- This keeps weak tdir supervision for tiny-motion samples instead of fully removing it.
+
+Adoption rule:
+
+- Prefer O32 if it improves `k=1/2/3` `tdir_abs` or global `tdir_abs` while keeping drift near O30.
+- Reject O32 if it repeats O31's pattern: `tdir_abs > 25°` or drift materially worse than O30.
