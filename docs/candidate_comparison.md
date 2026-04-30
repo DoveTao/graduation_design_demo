@@ -107,3 +107,23 @@ Decision:
 Next action:
 
 - Do not continue tuning t_mag blindly. The remaining high-value target is small-baseline translation direction, especially `k=1/2/3`, while preserving O29-level drift.
+
+## O30 Plan
+
+O30 keeps the O29 training recipe but adds a stricter small-k checkpoint selector:
+
+- Saves `best_smallk_odom.pt`.
+- Selection metric: `odom_metric_drift`.
+- Guard buckets: `k=1/2/3`.
+- Gate: weighted `k=1/2/3` `tdir_abs <= 28°`.
+- Gate: weighted `k=1/2/3` `tmag_rel <= 0.95`.
+
+Purpose:
+
+- O29 is good for global trajectory drift, but its `k=1/2/3` translation direction remains the visible bottleneck.
+- O30 does not change learning behavior; it only makes checkpoint selection more aligned with small-baseline odometry.
+
+Adoption rule:
+
+- Prefer O30 only if `best_smallk_odom.pt` matches or improves O29 drift while reducing the weighted `k=1/2/3` `tdir_abs`.
+- If O30 improves small-k direction but worsens drift materially, keep O29 as the drift candidate and O28 as the conservative small-k candidate.

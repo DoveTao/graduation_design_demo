@@ -222,6 +222,12 @@ class Config:
     odom_select_max_tdir_abs: float = 25.0
     odom_select_max_tmag_rel: float = 0.90
     odom_select_require_status_ok: bool = True
+    save_best_smallk_odom_checkpoint: bool = True
+    smallk_select_metric: str = "odom_metric_drift"
+    smallk_select_k_list: Tuple[int, ...] = (1, 2, 3)
+    smallk_select_max_tdir_abs: float = 28.0
+    smallk_select_max_tmag_rel: float = 0.95
+    smallk_select_require_status_ok: bool = True
     vis_eval_index: int = 0
     vis_dump_every_eval: bool = False
     plot_curves_after_train: bool = False
