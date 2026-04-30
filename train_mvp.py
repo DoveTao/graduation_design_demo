@@ -2185,6 +2185,7 @@ def main():
         f"w_tmag={_cfg_tmag_weight(cfg)} | tmag_loss={getattr(cfg, 'tmag_loss_type', 'log_smooth_l1')} | "
         f"tmag_start={getattr(cfg, 'tmag_start_updates', 0)} | tmag_ramp={getattr(cfg, 'tmag_ramp_updates', 0)} | "
         f"tmag_detach={bool(getattr(cfg, 'tmag_detach_features', False))} | "
+        f"tmag_bias={bool(getattr(cfg, 'use_tmag_global_bias', False))}:init={getattr(cfg, 'tmag_global_bias_init', 0.0)} | "
         f"tdir_anchor={bool(getattr(cfg, 'use_tdir_anchor_loss', False))}:w={getattr(cfg, 'w_tdir_anchor', 0.0)}"
         f":dt>={getattr(cfg, 'tdir_anchor_min_dt', 0.2)}:k>={getattr(cfg, 'tdir_anchor_min_k', 0)}"
     )
@@ -2497,6 +2498,8 @@ def main():
             "tmag_start_updates": int(getattr(cfg, "tmag_start_updates", 0)),
             "tmag_ramp_updates": int(getattr(cfg, "tmag_ramp_updates", 0)),
             "tmag_detach_features": bool(getattr(cfg, "tmag_detach_features", False)),
+            "use_tmag_global_bias": bool(getattr(cfg, "use_tmag_global_bias", False)),
+            "tmag_global_bias_init": float(getattr(cfg, "tmag_global_bias_init", 0.0)),
             "init_checkpoint": str(getattr(cfg, "init_checkpoint", "")),
             "strict_load_checkpoint": bool(getattr(cfg, "strict_load_checkpoint", False)),
             "use_tdir_anchor_loss": bool(getattr(cfg, "use_tdir_anchor_loss", False)),
@@ -3366,6 +3369,10 @@ def main():
         if step % cfg.log_every == 0:
             with torch.no_grad():
                 p0_mean = float(next(model.parameters()).mean().detach().cpu())
+                log_tmag_bias_val = (
+                    float(getattr(model, "log_tmag_bias").detach().float().cpu())
+                    if getattr(model, "log_tmag_bias", None) is not None else 0.0
+                )
             scaler_scale = float(scaler.get_scale()) if use_scaler else 1.0
             lr_now = optimizer.param_groups[0]["lr"]
             dt = time.perf_counter() - t0
@@ -3374,7 +3381,7 @@ def main():
                 f"[Train] step {step:05d} upd {upd:05d} ep{ep:03d} | "
                 f"L={float(L.detach().cpu()):.3f} | pose={float(L_pose.detach().cpu()):.3f} | "
                 f"pose_c={float(L_pose_coarse.detach().cpu()):.3f} | "
-                f"tmag={float(L_t_mag.detach().cpu()):.4f} | tmag_w={tmag_w_eff:.4g} | "
+                f"tmag={float(L_t_mag.detach().cpu()):.4f} | tmag_w={tmag_w_eff:.4g} | tmag_bias={log_tmag_bias_val:.4f} | "
                 f"tdir_anchor={float(L_tdir_anchor.detach().cpu()):.4f} | anchor_w={tdir_anchor_w_eff:.4g} | anchor_n={tdir_anchor_n:.0f} | "
                 f"x={float(L_x.detach().cpu()):.4f} | cyc={float(L_cyc.detach().cpu()):.4f} | "
                 f"rel={float(L_rel.detach().cpu()):.4f} | epi={float(L_epi.detach().cpu()):.4f} | epi_c={float(L_epi_coarse.detach().cpu()):.4f} | "
@@ -3451,6 +3458,12 @@ def main():
         "tmag_start_updates": int(getattr(cfg, "tmag_start_updates", 0)),
         "tmag_ramp_updates": int(getattr(cfg, "tmag_ramp_updates", 0)),
         "tmag_detach_features": bool(getattr(cfg, "tmag_detach_features", False)),
+        "use_tmag_global_bias": bool(getattr(cfg, "use_tmag_global_bias", False)),
+        "tmag_global_bias_init": float(getattr(cfg, "tmag_global_bias_init", 0.0)),
+        "learned_log_tmag_bias": (
+            float(getattr(model, "log_tmag_bias").detach().float().cpu())
+            if getattr(model, "log_tmag_bias", None) is not None else 0.0
+        ),
         "init_checkpoint": str(getattr(cfg, "init_checkpoint", "")),
         "strict_load_checkpoint": bool(getattr(cfg, "strict_load_checkpoint", False)),
         "use_tdir_anchor_loss": bool(getattr(cfg, "use_tdir_anchor_loss", False)),

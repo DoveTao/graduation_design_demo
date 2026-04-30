@@ -138,12 +138,13 @@ Later candidate experiments added meaningful t_mag and odometry evidence:
 - `O29` validates odometry-aware checkpoint selection: its `best_odom_drift.pt` lowers unified small-k drift to `1.410`, with `tdir_abs=24.865`, but its separate eval-only `tmag_rel=0.918` is slightly above the planned `0.9` gate.
 - `O30` extends the same idea with a small-k bucket gate and is now the drift-first small-k candidate: eval-only drift `1.408`, `tdir_abs=24.776`, and slightly better `k=1/2/3` buckets than O29. It still has the same eval-only scale caveat, `tmag_rel=0.918`.
 - `O31` tested hard ignoring `dt<0.05` samples for tdir loss. It is not adopted: eval-only drift worsened to `1.470` and `tdir_abs` crossed `25°`.
+- `O36` adds an optional learned global `log_tmag_bias` and is now the drift-first small-k candidate: eval-only drift improves slightly from O30's `1.408` to `1.403`, ATE improves from `8.922` to `8.897`, and `tdir_abs=24.772` remains under the `25°` guard. The learned bias is tiny, so this is a checkpoint/model-selection gain rather than a full scale solution.
 
 Updated bottleneck reading:
 
 - The main remaining performance bottleneck is still small-baseline translation direction, especially `k=1/2/3`.
 - Checkpoint selection can reduce odometry drift without changing the model, so odom-aware selection should stay enabled.
-- Further gains should target small-k `tdir_abs` while preserving O29-level drift and avoiding scale regression.
+- Further gains should target small-k `tdir_abs` and trajectory shape while preserving O36-level drift and avoiding scale regression.
 
 ## Recommended Next 3 Changes
 

@@ -213,6 +213,24 @@ def _blend_magnitude(m_base: torch.Tensor, m_update: torch.Tensor, strength: flo
     return ((1.0 - a) * m_base + a * m_update).clamp_min(1e-6)
 
 
+def _apply_log_tmag_bias(
+    t_mag: torch.Tensor,
+    log_t_mag: torch.Tensor,
+    log_bias: Optional[torch.Tensor],
+    *,
+    min_mag: float,
+    clamp_min: float,
+    clamp_max: float,
+) -> Tuple[torch.Tensor, torch.Tensor]:
+    if log_bias is None:
+        return t_mag.float().view(-1), log_t_mag.float().view(-1)
+    log_t_mag = (log_t_mag.float().view(-1) + log_bias.float().view(())).clamp(
+        min=float(clamp_min),
+        max=float(clamp_max),
+    )
+    return torch.exp(log_t_mag).clamp_min(float(min_mag)), log_t_mag
+
+
 def _set_transform_outputs(
     aux: Dict[str, torch.Tensor],
     R: torch.Tensor,
@@ -285,6 +303,21 @@ class PanoramaRelPoseModel(nn.Module):
                 inv_depth_max=cfg.depth_inv_max,
             )
             self.depth_token_proj = nn.Linear(cfg.depth_feat_dim, cfg.D)
+        self.use_tmag_global_bias = bool(getattr(cfg, "use_tmag_global_bias", False))
+        if self.use_tmag_global_bias:
+            self.log_tmag_bias = nn.Parameter(torch.tensor(float(getattr(cfg, "tmag_global_bias_init", 0.0)), dtype=torch.float32))
+        else:
+            self.register_parameter("log_tmag_bias", None)
+
+    def _bias_magnitude(self, t_mag: torch.Tensor, log_t_mag: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+        return _apply_log_tmag_bias(
+            t_mag,
+            log_t_mag,
+            self.log_tmag_bias,
+            min_mag=float(getattr(self.cfg, "tmag_min", 1.0e-3)),
+            clamp_min=float(getattr(self.cfg, "log_tmag_clamp_min", -6.0)),
+            clamp_max=float(getattr(self.cfg, "log_tmag_clamp_max", 6.0)),
+        )
 
     def forward(
         self,
@@ -335,7 +368,11 @@ class PanoramaRelPoseModel(nn.Module):
         aux["log_tc_mag"] = out_c["log_tc_mag"]
         aux["tc_vec_out"] = aux["tc_dir_out"] * aux["tc_mag"].unsqueeze(-1)
         aux["tc_vec_local"] = aux["tc_dir_local"] * aux["tc_mag"].unsqueeze(-1)
-        _set_transform_outputs(aux, out_c["Rc"], out_c["tc_dir"], out_c["tc_mag"], out_c["log_tc_mag"])
+        t_mag_final, log_t_mag_final = self._bias_magnitude(out_c["tc_mag"], out_c["log_tc_mag"])
+        aux["t_mag_unbiased"] = out_c["tc_mag"]
+        aux["log_t_mag_unbiased"] = out_c["log_tc_mag"]
+        aux["log_tmag_bias"] = self.log_tmag_bias.detach().view(()) if self.log_tmag_bias is not None else torch.zeros((), device=IA.device)
+        _set_transform_outputs(aux, out_c["Rc"], out_c["tc_dir"], t_mag_final, log_t_mag_final)
         aux["stage"] = "coarse_only"
 
         if not self.cfg.use_fine_stage:
@@ -372,13 +409,19 @@ class PanoramaRelPoseModel(nn.Module):
         R_final = _blend_rotation(out_c["Rc"], out_f["R"], fine_strength)
         t_local_final = _blend_direction(aux["tc_dir_local"], out_f["t_dir"], fine_strength)
         t_mag_final = _blend_magnitude(aux["tc_mag"], out_f["t_mag"], fine_strength)
+        log_t_mag_final = torch.log(t_mag_final.clamp_min(float(getattr(self.cfg, "tmag_min", 1.0e-3))))
+        t_mag_final_unbiased = t_mag_final
+        t_mag_final, log_t_mag_final = self._bias_magnitude(t_mag_final, log_t_mag_final)
         aux["Rf_raw"] = out_f["R"]
         aux["t_dir_fine_raw"] = out_f["t_dir"]
         aux["t_mag_fine_raw"] = out_f["t_mag"]
         aux["log_t_mag_fine_raw"] = out_f["log_t_mag"]
         aux["t_vec_fine_raw"] = _local_t_to_output_frame(out_f["R"], out_f["t_dir"]) * out_f["t_mag"].float().view(-1, 1)
+        aux["t_mag_unbiased"] = t_mag_final_unbiased
+        aux["log_t_mag_unbiased"] = torch.log(t_mag_final_unbiased.clamp_min(float(getattr(self.cfg, "tmag_min", 1.0e-3))))
+        aux["log_tmag_bias"] = self.log_tmag_bias.detach().view(()) if self.log_tmag_bias is not None else torch.zeros((), device=IA.device)
         aux["fine_pose_fuse_strength"] = torch.tensor(fine_strength, device=R_final.device)
-        _set_transform_outputs(aux, R_final, t_local_final, t_mag_final)
+        _set_transform_outputs(aux, R_final, t_local_final, t_mag_final, log_t_mag_final)
         aux["stage"] = "coarse_to_fine"
         aux["Wc_tilde"] = aggregate_fine_to_coarse(
             Wf_ab=out_f["Wf_ab"],

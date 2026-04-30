@@ -392,3 +392,53 @@ Decision:
 - The result is still useful: simple t_mag smoothing does almost nothing, but oracle scale fitting reduces endpoint drift by about `9%`.
 - ATE gets worse under scale-fit (`8.92 -> 10.04`), so this is not a clean win; scale bias helps endpoint drift but does not solve trajectory shape.
 - Next reasonable model-side change should target calibrated scale prediction, not temporal smoothing. A low-risk candidate is adding an optional learned global `log_tmag_bias` initialized at zero, trained by the existing t_mag loss and evaluated under the same O30 protocol.
+
+## O36 Plan
+
+O36 tests that low-risk scale-calibration idea:
+
+- Keep the O30 training recipe and small-k checkpoint selection.
+- Add an optional learned global `log_tmag_bias`, initialized at `0.0`.
+- Apply the bias to predicted `log_t_mag` before constructing `t_vec`.
+- Do not change rotation, translation-direction supervision, matching losses, or odometry eval.
+
+Purpose:
+
+- O35 showed that a scale-fit oracle can reduce endpoint drift, so O36 checks whether a learned deployable global scale correction can capture some of that gain.
+- Because the bias is optional and zero-initialized, default behavior remains unchanged when `use_tmag_global_bias=False`.
+
+## O36 Result
+
+O36 produced a small but consistent odometry improvement over O30 under the same eval-only protocol.
+
+Training-time selected checkpoint:
+
+| checkpoint | upd | drift | global tdir_abs | k=1/2/3 tdir_abs | k=1/2/3 tmag_rel | learned log bias |
+|---|---:|---:|---:|---:|---:|---:|
+| `O36/best_smallk_odom.pt` | 500 | 1.403 | 23.812 | 26.265 | 0.739 | -0.0009 |
+
+Unified eval-only comparison:
+
+| eval | rot | tdir_abs | local_A_abs | tmag_rel | tvec_l2 | RPE_rot | ATE | drift | norm_drift | scale-fit drift |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| E_O30_best_smallk_odom_eval | 2.382 | 24.776 | 24.794 | 0.918 | 1.592 | 1.039 | 8.922 | 1.408 | 1.122 | 1.280 |
+| E_O36_best_smallk_odom_eval | 2.340 | 24.772 | 24.816 | 0.918 | 1.592 | 0.968 | 8.897 | 1.403 | 1.119 | 1.269 |
+
+Small-k buckets for `E_O36_best_smallk_odom_eval`:
+
+| k | rot | tdir_abs | tmag_rel |
+|---:|---:|---:|---:|
+| 1 | 1.06 | 29.53 | 0.828 |
+| 2 | 0.92 | 26.57 | 0.874 |
+| 3 | 0.83 | 25.05 | 0.930 |
+| 5 | 0.90 | 22.08 | 0.961 |
+| 10 | 2.16 | 20.53 | 0.978 |
+| 20 | 8.23 | 24.84 | 0.940 |
+
+Decision:
+
+- Adopt O36 as the current drift-first small-k candidate because it improves eval-only drift from `1.408` to `1.403`, improves ATE from `8.922` to `8.897`, and keeps `tdir_abs=24.772°` under the `25°` guard.
+- The gain is small. The learned bias stayed near zero, so this does not solve the deeper scale problem by itself.
+- Keep C31 as the wide/stable baseline and teacher.
+- Keep O28 as the conservative small-k candidate when pair-level scale cleanliness is more important than endpoint drift.
+- Next improvement should not keep pushing global scale bias. The remaining bottleneck is still small-baseline direction and trajectory shape; consider trajectory-composition sanity/debug or a better scale-feature input rather than another global calibration knob.

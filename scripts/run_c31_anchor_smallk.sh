@@ -179,6 +179,27 @@ run_1200_smoothselect() {
     --set max_steps=1200
 }
 
+run_1200_tmag_bias() {
+  test -f "$C31_CKPT" || { echo "Missing C31_CKPT=$C31_CKPT"; exit 1; }
+  python train_mvp.py \
+    --set exp_name=O36_c31_smallk_anchor2_tmag_bias_1200 \
+    "${common_args[@]}" \
+    --set w_tdir_anchor=2.0 \
+    --set use_tmag_global_bias=True \
+    --set tmag_global_bias_init=0.0 \
+    --set save_best_odom_checkpoint=True \
+    --set odom_select_metric=odom_metric_drift \
+    --set odom_select_max_tdir_abs=25.0 \
+    --set odom_select_max_tmag_rel=0.9 \
+    --set save_best_smallk_odom_checkpoint=True \
+    --set smallk_select_metric=odom_metric_drift \
+    --set 'smallk_select_k_list=(1,2,3)' \
+    --set smallk_select_max_tdir_abs=28.0 \
+    --set smallk_select_max_tmag_rel=0.95 \
+    --set odom_eval_scale_fit=True \
+    --set max_steps=1200
+}
+
 case "${1:-help}" in
   800) run_800 ;;
   800_safe) run_800_safe ;;
@@ -190,8 +211,9 @@ case "${1:-help}" in
   1200_soft_tiny_dt) run_1200_soft_tiny_dt ;;
   1200_dt_ramp) run_1200_dt_ramp ;;
   1200_smoothselect) run_1200_smoothselect ;;
+  1200_tmag_bias) run_1200_tmag_bias ;;
   *)
-    echo "Usage: $0 {800|800_safe|1200|1200_safe|1200_odomselect|1200_smallkselect|1200_ignore_tiny_dt|1200_soft_tiny_dt|1200_dt_ramp|1200_smoothselect}"
+    echo "Usage: $0 {800|800_safe|1200|1200_safe|1200_odomselect|1200_smallkselect|1200_ignore_tiny_dt|1200_soft_tiny_dt|1200_dt_ramp|1200_smoothselect|1200_tmag_bias}"
     echo "O27/800_safe uses stronger tdir anchor and is the current preferred small-k finetune."
     echo "O28/1200_safe extends that recipe to 1200 steps; adopt only if drift improves and tdir_abs stays <=25 deg."
     echo "O29/1200_odomselect keeps the O28 recipe and also saves best_odom_drift.pt under odom gates."
@@ -200,6 +222,7 @@ case "${1:-help}" in
     echo "O32/1200_soft_tiny_dt keeps weak tdir supervision for dt<0.05 with weight 0.05."
     echo "O33/1200_dt_ramp ramps tdir weight from 0.05 at dt=0.02 to small_dt_t_weight by dt=0.10."
     echo "O34/1200_smoothselect keeps O30 training but selects checkpoints by smoothed t_mag odom drift."
+    echo "O36/1200_tmag_bias keeps O30 training and learns a global log_tmag_bias for scale calibration."
     echo "O25/800 is the original conservative run; prefer its best_joint.pt if final tdir_abs crosses 25 deg."
     echo "Override C31_CKPT to test another teacher/init checkpoint."
     ;;

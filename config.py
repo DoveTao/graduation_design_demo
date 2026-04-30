@@ -169,6 +169,8 @@ class Config:
     tmag_min: float = 1.0e-3
     tmag_pred_source: str = "translation_branch"  # "translation_branch" | "pose_feat"
     tmag_detach_features: bool = False
+    use_tmag_global_bias: bool = False
+    tmag_global_bias_init: float = 0.0
     log_tmag_clamp_min: float = -6.0
     log_tmag_clamp_max: float = 6.0
     use_tdir_anchor_loss: bool = False
