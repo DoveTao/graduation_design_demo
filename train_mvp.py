@@ -1717,6 +1717,21 @@ def _camera_center_from_T_c0_np(R_c0: np.ndarray, t_c0: np.ndarray) -> np.ndarra
     return -(R_c0.astype(np.float64).T @ t_c0.astype(np.float64))
 
 
+def _causal_moving_average_np(vals: List[float], window: int) -> List[float]:
+    window = max(int(window), 1)
+    out = []
+    running = 0.0
+    q = []
+    for v in vals:
+        vf = float(v)
+        q.append(vf)
+        running += vf
+        if len(q) > window:
+            running -= q.pop(0)
+        out.append(float(running / max(len(q), 1)))
+    return out
+
+
 def _build_odometry_chains(manifest: List[Dict[str, Any]], selected_k: int, max_pairs: int = 0):
     groups: Dict[Any, Dict[int, Dict[str, Any]]] = {}
     for ds_idx, meta in enumerate(manifest):
@@ -1758,7 +1773,7 @@ def _build_odometry_chains(manifest: List[Dict[str, Any]], selected_k: int, max_
 
 
 @torch.no_grad()
-def eval_odometry_sequence(model, ds, device, cfg: Config) -> Dict[str, Any]:
+def eval_odometry_sequence(model, ds, device, cfg: Config, output_dir: Optional[str] = None, step: int = 0, upd: int = 0) -> Dict[str, Any]:
     if not hasattr(ds, "manifest"):
         return {"odom_status": "skipped", "odom_reason": "dataset_has_no_manifest"}
 
@@ -1802,31 +1817,35 @@ def eval_odometry_sequence(model, ds, device, cfg: Config) -> Dict[str, Any]:
 
     model.eval()
 
+    smooth_window = int(getattr(cfg, "odom_eval_smooth_tmag_window", 0))
+    smooth_enabled = smooth_window > 1
+    debug_enabled = bool(getattr(cfg, "save_odom_trajectory_debug", False)) and output_dir is not None
+    debug_max_chains = max(int(getattr(cfg, "odom_trajectory_debug_max_chains", 1)), 0)
+    debug_payloads = []
+
     metric_pos_err_sq = []
     dir_pos_err_sq = []
+    smooth_pos_err_sq = []
     metric_rpe_rot = []
     metric_rpe_trans_dir = []
     metric_rpe_trans_mag = []
+    smooth_rpe_trans_dir = []
+    smooth_rpe_trans_mag = []
     dir_rpe_rot = []
     dir_rpe_trans_dir = []
     metric_endpoint_err_sum = 0.0
+    smooth_endpoint_err_sum = 0.0
     dir_endpoint_err_sum = 0.0
     total_traj_len = 0.0
     metric_segments = 0
+    smooth_segments = 0
     dir_segments = 0
     num_pairs = 0
     metric_pairs = 0
+    smooth_pairs = 0
 
     for chain in chains:
-        R_gt_c0 = np.eye(3, dtype=np.float64)
-        t_gt_c0 = np.zeros(3, dtype=np.float64)
-        R_metric_c0 = np.eye(3, dtype=np.float64)
-        t_metric_c0 = np.zeros(3, dtype=np.float64)
-        R_dir_c0 = np.eye(3, dtype=np.float64)
-        t_dir_c0 = np.zeros(3, dtype=np.float64)
-        chain_len = 0.0
-        chain_metric_ok = True
-
+        records = []
         for item in chain["pairs"]:
             sample = ds[int(item["_ds_idx"])]
             IA = sample["IA"].unsqueeze(0).to(device, non_blocking=True)
@@ -1856,6 +1875,55 @@ def eval_odometry_sequence(model, ds, device, cfg: Config) -> Dict[str, Any]:
                     t_mag_pred = float(aux["t_mag"].detach().float().view(-1).cpu().numpy()[0])
                     t_vec_metric = t_dir_pred * t_mag_pred
 
+            records.append({
+                "R_gt": R_gt,
+                "t_gt": t_gt,
+                "t_gt_mag": t_gt_mag,
+                "R_pred": R_pred_np,
+                "t_dir_pred": t_dir_pred,
+                "t_vec_metric": t_vec_metric,
+            })
+
+        if not records:
+            continue
+
+        metric_mags = [
+            float(np.linalg.norm(r["t_vec_metric"])) if r["t_vec_metric"] is not None else float("nan")
+            for r in records
+        ]
+        can_smooth = smooth_enabled and all(math.isfinite(x) for x in metric_mags)
+        smooth_mags = _causal_moving_average_np(metric_mags, smooth_window) if can_smooth else []
+
+        R_gt_c0 = np.eye(3, dtype=np.float64)
+        t_gt_c0 = np.zeros(3, dtype=np.float64)
+        R_metric_c0 = np.eye(3, dtype=np.float64)
+        t_metric_c0 = np.zeros(3, dtype=np.float64)
+        R_smooth_c0 = np.eye(3, dtype=np.float64)
+        t_smooth_c0 = np.zeros(3, dtype=np.float64)
+        R_dir_c0 = np.eye(3, dtype=np.float64)
+        t_dir_c0 = np.zeros(3, dtype=np.float64)
+        chain_len = 0.0
+        chain_metric_ok = True
+        chain_smooth_ok = bool(can_smooth)
+        dbg_gt = []
+        dbg_metric = []
+        dbg_smooth = []
+        dbg_dir = []
+        dbg_tmag_gt = []
+        dbg_tmag_pred = []
+        dbg_tmag_smooth = []
+
+        for ri, rec in enumerate(records):
+            R_gt = rec["R_gt"]
+            t_gt = rec["t_gt"]
+            t_gt_mag = float(rec["t_gt_mag"])
+            R_pred_np = rec["R_pred"]
+            t_dir_pred = rec["t_dir_pred"]
+            t_vec_metric = rec["t_vec_metric"]
+            t_vec_smooth = None
+            if can_smooth and t_vec_metric is not None:
+                t_vec_smooth = t_dir_pred * float(smooth_mags[ri])
+
             metric_rpe_rot.append(_rot_geodesic_deg_np(R_pred_np, R_gt))
             dir_rpe_rot.append(metric_rpe_rot[-1])
             metric_rpe_trans_dir.append(_vec_angle_deg_np(t_vec_metric, t_gt) if t_vec_metric is not None else float("nan"))
@@ -1865,19 +1933,39 @@ def eval_odometry_sequence(model, ds, device, cfg: Config) -> Dict[str, Any]:
                 metric_pairs += 1
             else:
                 chain_metric_ok = False
+            if t_vec_smooth is not None:
+                smooth_rpe_trans_dir.append(_vec_angle_deg_np(t_vec_smooth, t_gt))
+                smooth_rpe_trans_mag.append(abs(float(np.linalg.norm(t_vec_smooth)) - t_gt_mag))
+                smooth_pairs += 1
+            else:
+                chain_smooth_ok = False
 
             t_dir_only = t_dir_pred * t_gt_mag
             R_gt_c0, t_gt_c0 = _compose_rel_pose_np(R_gt, t_gt, R_gt_c0, t_gt_c0)
             if t_vec_metric is not None:
                 R_metric_c0, t_metric_c0 = _compose_rel_pose_np(R_pred_np, t_vec_metric, R_metric_c0, t_metric_c0)
+            if t_vec_smooth is not None:
+                R_smooth_c0, t_smooth_c0 = _compose_rel_pose_np(R_pred_np, t_vec_smooth, R_smooth_c0, t_smooth_c0)
             R_dir_c0, t_dir_c0 = _compose_rel_pose_np(R_pred_np, t_dir_only, R_dir_c0, t_dir_c0)
 
             p_gt = _camera_center_from_T_c0_np(R_gt_c0, t_gt_c0)
             if t_vec_metric is not None:
                 p_metric = _camera_center_from_T_c0_np(R_metric_c0, t_metric_c0)
                 metric_pos_err_sq.append(float(np.sum((p_metric - p_gt) ** 2)))
+            if t_vec_smooth is not None:
+                p_smooth = _camera_center_from_T_c0_np(R_smooth_c0, t_smooth_c0)
+                smooth_pos_err_sq.append(float(np.sum((p_smooth - p_gt) ** 2)))
             p_dir = _camera_center_from_T_c0_np(R_dir_c0, t_dir_c0)
             dir_pos_err_sq.append(float(np.sum((p_dir - p_gt) ** 2)))
+
+            if debug_enabled and len(debug_payloads) < debug_max_chains:
+                dbg_gt.append(p_gt.copy())
+                dbg_metric.append(_camera_center_from_T_c0_np(R_metric_c0, t_metric_c0).copy() if t_vec_metric is not None else np.full(3, np.nan))
+                dbg_smooth.append(_camera_center_from_T_c0_np(R_smooth_c0, t_smooth_c0).copy() if t_vec_smooth is not None else np.full(3, np.nan))
+                dbg_dir.append(p_dir.copy())
+                dbg_tmag_gt.append(float(t_gt_mag))
+                dbg_tmag_pred.append(float(np.linalg.norm(t_vec_metric)) if t_vec_metric is not None else float("nan"))
+                dbg_tmag_smooth.append(float(np.linalg.norm(t_vec_smooth)) if t_vec_smooth is not None else float("nan"))
 
             chain_len += t_gt_mag
             num_pairs += 1
@@ -1888,10 +1976,26 @@ def eval_odometry_sequence(model, ds, device, cfg: Config) -> Dict[str, Any]:
                 p_metric_end = _camera_center_from_T_c0_np(R_metric_c0, t_metric_c0)
                 metric_endpoint_err_sum += float(np.linalg.norm(p_metric_end - p_gt_end))
                 metric_segments += 1
+            if chain_smooth_ok and smooth_pairs > 0:
+                p_smooth_end = _camera_center_from_T_c0_np(R_smooth_c0, t_smooth_c0)
+                smooth_endpoint_err_sum += float(np.linalg.norm(p_smooth_end - p_gt_end))
+                smooth_segments += 1
             p_dir_end = _camera_center_from_T_c0_np(R_dir_c0, t_dir_c0)
             dir_endpoint_err_sum += float(np.linalg.norm(p_dir_end - p_gt_end))
             dir_segments += 1
             total_traj_len += float(chain_len)
+
+        if debug_enabled and len(debug_payloads) < debug_max_chains and dbg_gt:
+            debug_payloads.append({
+                "scene_seq": str(chain.get("scene_seq", "unknown")),
+                "gt": np.asarray(dbg_gt, dtype=np.float32),
+                "metric": np.asarray(dbg_metric, dtype=np.float32),
+                "smooth_tmag": np.asarray(dbg_smooth, dtype=np.float32),
+                "direction_only": np.asarray(dbg_dir, dtype=np.float32),
+                "tmag_gt": np.asarray(dbg_tmag_gt, dtype=np.float32),
+                "tmag_pred": np.asarray(dbg_tmag_pred, dtype=np.float32),
+                "tmag_smooth": np.asarray(dbg_tmag_smooth, dtype=np.float32),
+            })
 
     def _nanmean(vals):
         arr = np.asarray(vals, dtype=np.float64)
@@ -1921,6 +2025,14 @@ def eval_odometry_sequence(model, ds, device, cfg: Config) -> Dict[str, Any]:
         "odom_metric_drift": float(metric_endpoint_err_sum / max(metric_segments, 1)) if metric_segments > 0 else float("nan"),
         "odom_metric_trajectory_length": float(total_traj_len),
         "odom_metric_length_normalized_drift": float(metric_endpoint_err_sum / max(total_traj_len, 1e-12)) if metric_segments > 0 else float("nan"),
+        "odom_metric_smooth_tmag_window": int(smooth_window),
+        "odom_metric_smooth_tmag_num_pairs": int(smooth_pairs),
+        "odom_metric_smooth_tmag_RPE_rot": _nanmean(metric_rpe_rot),
+        "odom_metric_smooth_tmag_RPE_trans_dir": _nanmean(smooth_rpe_trans_dir),
+        "odom_metric_smooth_tmag_RPE_trans_mag": _nanmean(smooth_rpe_trans_mag),
+        "odom_metric_smooth_tmag_ATE": _rmse(smooth_pos_err_sq),
+        "odom_metric_smooth_tmag_drift": float(smooth_endpoint_err_sum / max(smooth_segments, 1)) if smooth_segments > 0 else float("nan"),
+        "odom_metric_smooth_tmag_length_normalized_drift": float(smooth_endpoint_err_sum / max(total_traj_len, 1e-12)) if smooth_segments > 0 else float("nan"),
         "odom_direction_only_RPE_rot": _nanmean(dir_rpe_rot),
         "odom_direction_only_RPE_trans_dir": _nanmean(dir_rpe_trans_dir),
         "odom_direction_only_ATE": _rmse(dir_pos_err_sq),
@@ -1928,6 +2040,23 @@ def eval_odometry_sequence(model, ds, device, cfg: Config) -> Dict[str, Any]:
         "odom_direction_only_trajectory_length": float(total_traj_len),
         "odom_direction_only_length_normalized_drift": float(dir_endpoint_err_sum / max(total_traj_len, 1e-12)) if dir_segments > 0 else float("nan"),
     }
+    if debug_enabled and debug_payloads:
+        os.makedirs(str(output_dir), exist_ok=True)
+        dbg = debug_payloads[0]
+        np.savez(
+            os.path.join(str(output_dir), "odom_trajectory_debug_latest.npz"),
+            scene_seq=np.asarray([dbg["scene_seq"]]),
+            step=np.asarray([int(step)], dtype=np.int64),
+            upd=np.asarray([int(upd)], dtype=np.int64),
+            gt=dbg["gt"],
+            metric=dbg["metric"],
+            smooth_tmag=dbg["smooth_tmag"],
+            direction_only=dbg["direction_only"],
+            tmag_gt=dbg["tmag_gt"],
+            tmag_pred=dbg["tmag_pred"],
+            tmag_smooth=dbg["tmag_smooth"],
+        )
+        payload["odom_trajectory_debug_path"] = "odom_trajectory_debug_latest.npz"
     model.train()
     return payload
 
@@ -2091,6 +2220,11 @@ def main():
         f"test_max_eval_batches={cfg.max_eval_batches} | "
         f"train_max_eval_batches={getattr(cfg, 'max_train_eval_batches', 128)}"
     )
+    print(
+        f"[OdomCfg] enabled={bool(getattr(cfg, 'use_odometry_eval', True))} | "
+        f"smooth_tmag_window={int(getattr(cfg, 'odom_eval_smooth_tmag_window', 0))} | "
+        f"traj_debug={bool(getattr(cfg, 'save_odom_trajectory_debug', False))}"
+    )
     _print_dataset_sanity("train", train_ds)
     _print_dataset_sanity("train_eval", train_eval_ds)
     _print_dataset_sanity("test", test_ds)
@@ -2232,7 +2366,7 @@ def main():
         odom_metrics: Dict[str, Any] = {}
         if bool(getattr(cfg, "use_odometry_eval", True)):
             t_odom0 = time.perf_counter()
-            odom_metrics = eval_odometry_sequence(model, test_ds, dev, cfg)
+            odom_metrics = eval_odometry_sequence(model, test_ds, dev, cfg, output_dir=ckpt_root, step=0, upd=0)
             t_odom = time.perf_counter() - t_odom0
             if odom_metrics.get("odom_status") == "ok":
                 print(
@@ -2242,6 +2376,7 @@ def main():
                     f"RPE_rot={odom_metrics.get('odom_metric_RPE_rot', float('nan')):.4f}° | "
                     f"ATE={odom_metrics.get('odom_metric_ATE', float('nan')):.4f} | "
                     f"drift={odom_metrics.get('odom_metric_drift', float('nan')):.4f} | "
+                    f"smooth_drift={odom_metrics.get('odom_metric_smooth_tmag_drift', float('nan')):.4f} | "
                     f"dir_ATE={odom_metrics.get('odom_direction_only_ATE', float('nan')):.4f} | "
                     f"time={t_odom:.2f}s"
                 )
@@ -2315,6 +2450,8 @@ def main():
             "tdir_loss_dt_ramp_end": float(getattr(cfg, "tdir_loss_dt_ramp_end", 0.10)),
             "tdir_loss_dt_ramp_start_weight": float(getattr(cfg, "tdir_loss_dt_ramp_start_weight", 0.05)),
             "tdir_loss_dt_ramp_end_weight": float(getattr(cfg, "tdir_loss_dt_ramp_end_weight", -1.0)),
+            "odom_eval_smooth_tmag_window": int(getattr(cfg, "odom_eval_smooth_tmag_window", 0)),
+            "save_odom_trajectory_debug": bool(getattr(cfg, "save_odom_trajectory_debug", False)),
             "last_eval": _latest_eval_metrics(metrics),
         }
         if bool(cfg.save_final_summary):
@@ -2928,7 +3065,7 @@ def main():
                         odom_metrics: Dict[str, Any] = {}
                         if bool(getattr(cfg, "use_odometry_eval", True)):
                             t_odom0 = time.perf_counter()
-                            odom_metrics = eval_odometry_sequence(model, test_ds, dev, cfg)
+                            odom_metrics = eval_odometry_sequence(model, test_ds, dev, cfg, output_dir=ckpt_root, step=int(step), upd=int(upd))
                             t_odom = time.perf_counter() - t_odom0
                             if odom_metrics.get("odom_status") == "ok":
                                 print(
@@ -2938,6 +3075,7 @@ def main():
                                     f"RPE_rot={odom_metrics.get('odom_metric_RPE_rot', float('nan')):.4f}° | "
                                     f"ATE={odom_metrics.get('odom_metric_ATE', float('nan')):.4f} | "
                                     f"drift={odom_metrics.get('odom_metric_drift', float('nan')):.4f} | "
+                                    f"smooth_drift={odom_metrics.get('odom_metric_smooth_tmag_drift', float('nan')):.4f} | "
                                     f"dir_ATE={odom_metrics.get('odom_direction_only_ATE', float('nan')):.4f} | "
                                     f"time={t_odom:.2f}s"
                                 )
@@ -3264,6 +3402,8 @@ def main():
         "tdir_loss_dt_ramp_end": float(getattr(cfg, "tdir_loss_dt_ramp_end", 0.10)),
         "tdir_loss_dt_ramp_start_weight": float(getattr(cfg, "tdir_loss_dt_ramp_start_weight", 0.05)),
         "tdir_loss_dt_ramp_end_weight": float(getattr(cfg, "tdir_loss_dt_ramp_end_weight", -1.0)),
+        "odom_eval_smooth_tmag_window": int(getattr(cfg, "odom_eval_smooth_tmag_window", 0)),
+        "save_odom_trajectory_debug": bool(getattr(cfg, "save_odom_trajectory_debug", False)),
         "save_best_odom_checkpoint": bool(getattr(cfg, "save_best_odom_checkpoint", True)),
         "odom_select_metric": str(getattr(cfg, "odom_select_metric", "odom_metric_drift")),
         "odom_select_max_tdir_abs": float(getattr(cfg, "odom_select_max_tdir_abs", 25.0)),

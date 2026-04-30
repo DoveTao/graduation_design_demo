@@ -321,3 +321,40 @@ Decision:
 - O33 slightly improves over O32 on drift and `tdir_abs`, but still misses O30: drift is `1.423` vs `1.408`, and eval-only `tdir_abs=25.200°` still crosses the `25°` guard.
 - Keep O30 as the drift-first small-k candidate.
 - The tiny-dt tdir weighting family has now been tested in three forms: hard ignore, fixed weak weight, and continuous ramp. None beats O30, so the next improvement should move away from tiny-dt tdir weighting.
+
+## O34 Plan
+
+O34 moves away from tiny-dt tdir weighting and targets odometry/scale selection:
+
+- Keep the O30 training recipe.
+- Do not change model structure or training losses.
+- Enable eval-only `t_mag` trajectory smoothing with `odom_eval_smooth_tmag_window=5`.
+- Save `odom_trajectory_debug_latest.npz` for raw metric, smoothed metric, direction-only, and GT trajectories.
+- Select odometry checkpoints with `odom_select_metric=odom_metric_smooth_tmag_drift`.
+- Select small-k checkpoints with `smallk_select_metric=odom_metric_smooth_tmag_drift`.
+
+Expected behavior:
+
+- Raw `odom_metric_*` remains unchanged and is still reported.
+- New `odom_metric_smooth_tmag_*` metrics show whether scale jitter is the main contributor to drift.
+- If smoothed drift improves while raw pair-level metrics stay stable, O34 can identify a checkpoint better suited for odometry front-end use without adding learning risk.
+
+Adoption rule:
+
+- Prefer O34 only if smoothed selection also improves raw unified eval drift or provides a clearly useful inference-time smoothed trajectory.
+- Reject O34 as a model candidate if it only improves smoothed drift but raw `odom_metric_drift` and pair-level metrics do not improve; in that case keep it as a diagnostic/inference option, not a new training baseline.
+
+## O34 Probe Result
+
+Before running a full O34 training pass, O30 was evaluated with `odom_eval_smooth_tmag_window=5` and trajectory debug enabled.
+
+| eval | raw drift | smooth tmag drift | raw ATE | smooth tmag ATE | debug artifact |
+|---|---:|---:|---:|---:|---|
+| E_O30_smooth_tmag_w5_eval | 1.4078 | 1.4068 | 8.9215 | 8.9120 | `odom_trajectory_debug_latest.npz` |
+
+Decision:
+
+- Do not promote t_mag smoothing to a new model candidate yet.
+- The improvement is real but tiny (`drift -0.0010`), so O30's drift is not mainly caused by high-frequency scale jitter.
+- Keep the smoothing/debug path as an evaluation and visualization tool.
+- If O34 is run later, treat it as checkpoint-selection/inference analysis, not as a replacement for O30 unless raw unified eval also improves.

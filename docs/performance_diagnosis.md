@@ -265,4 +265,5 @@ Recommended comparison policy:
 - Use O30 as the current small-k odometry candidate when evaluating `k=1/2/3/5`, drift, and sequence-level behavior.
 - Keep O28 as a conservative fallback because its final pair-level `tdir_abs`/`tmag_rel` were cleaner than O30's eval-only selected checkpoint.
 - Do not adopt O31, O32, or O33: hard tiny-dt ignore, fixed 0.05 tiny-dt weighting, and continuous tiny-dt ramp all failed to beat O30 under unified eval.
+- O30 with eval-time `t_mag` smoothing gives only a very small drift change (`1.4078 -> 1.4068`), so the dominant residual drift is not simple high-frequency scale jitter.
 - Do not replace C31 with O28/O30 globally yet: the small-k candidates were optimized for odometry behavior and should remain separate from the wide/stable baseline.
