@@ -185,6 +185,8 @@ class Config:
     large_k_rot_weight: float = 1.0
     small_dt_thresh: float = 0.3
     small_dt_t_weight: float = 0.20
+    tdir_loss_ignore_dt_below: float = 0.0
+    tdir_loss_ignore_weight: float = 0.0
     w_photo: float = 0.0
     w_smooth: float = 0.0
 

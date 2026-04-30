@@ -165,3 +165,25 @@ Decision:
   - Wide/stable baseline: `C31`.
   - Conservative small-k candidate: `O28/best_joint_local_A_abs.pt`.
   - Drift-first small-k candidate: `O30/best_smallk_odom.pt`.
+
+## O31 Plan
+
+O31 targets the remaining `k=1` tiny-motion outliers.
+
+Change:
+
+- Keep the O30 training recipe and checkpoint selection.
+- Add `tdir_loss_ignore_dt_below=0.05`.
+- Add `tdir_loss_ignore_weight=0.0`.
+- This affects only translation-direction supervision weights.
+- Rotation loss, t_mag loss, bucket metrics, and odometry eval still use the original samples.
+
+Why:
+
+- The `dt<0.05` bucket is weakly observable for translation direction and can produce very large `tdir_abs` outliers.
+- Letting those samples dominate tdir supervision can hurt the learnable small-k regime where translation is still observable enough to be useful.
+
+Adoption rule:
+
+- Prefer O31 if it improves `k=1/2/3` `tdir_abs` without losing O30-level drift.
+- Reject O31 if drift rises materially above O30 or global `tdir_abs` crosses `25°`.

@@ -433,12 +433,23 @@ def _dt_bucket_label(dt_world: Optional[float], edges) -> str:
 
 
 
-def _translation_weight_from_dt(meta: Any, bsz: int, *, small_dt_thresh: float, small_dt_t_weight: float):
+def _translation_weight_from_dt(
+    meta: Any,
+    bsz: int,
+    *,
+    small_dt_thresh: float,
+    small_dt_t_weight: float,
+    ignore_dt_below: float = 0.0,
+    ignore_weight: float = 0.0,
+):
     dt_list = _meta_batch_field(meta, 'dt_world', bsz, default=None)
     w = []
     for x in dt_list:
         try:
-            if x is not None and float(x) < float(small_dt_thresh):
+            dt = float(x) if x is not None else None
+            if dt is not None and float(ignore_dt_below) > 0.0 and dt < float(ignore_dt_below):
+                w.append(float(ignore_weight))
+            elif dt is not None and dt < float(small_dt_thresh):
                 w.append(float(small_dt_t_weight))
             else:
                 w.append(1.0)
@@ -1954,6 +1965,7 @@ def main():
         f"t_oriented={getattr(cfg, 'pose_t_oriented_weight', 1.0)} | "
         f"t_axis={getattr(cfg, 'pose_t_axis_weight', 0.0)} | "
         f"rot_k>={getattr(cfg, 'large_k_rot_thresh', 40)}x{getattr(cfg, 'large_k_rot_weight', 1.0)} | "
+        f"tdir_dt<{getattr(cfg, 'tdir_loss_ignore_dt_below', 0.0)}x{getattr(cfg, 'tdir_loss_ignore_weight', 0.0)} | "
         f"w_epi={cfg.w_epi} | w_coarse_pose_aux={getattr(cfg, 'w_coarse_pose_aux', 0.0)} | "
         f"w_tmag={_cfg_tmag_weight(cfg)} | tmag_loss={getattr(cfg, 'tmag_loss_type', 'log_smooth_l1')} | "
         f"tmag_start={getattr(cfg, 'tmag_start_updates', 0)} | tmag_ramp={getattr(cfg, 'tmag_ramp_updates', 0)} | "
@@ -2271,6 +2283,8 @@ def main():
             "tdir_anchor_min_k": int(getattr(cfg, "tdir_anchor_min_k", 0)),
             "tdir_anchor_start_updates": int(getattr(cfg, "tdir_anchor_start_updates", 0)),
             "tdir_anchor_ramp_updates": int(getattr(cfg, "tdir_anchor_ramp_updates", 0)),
+            "tdir_loss_ignore_dt_below": float(getattr(cfg, "tdir_loss_ignore_dt_below", 0.0)),
+            "tdir_loss_ignore_weight": float(getattr(cfg, "tdir_loss_ignore_weight", 0.0)),
             "last_eval": _latest_eval_metrics(metrics),
         }
         if bool(cfg.save_final_summary):
@@ -2368,6 +2382,8 @@ def main():
                 IA.shape[0],
                 small_dt_thresh=float(getattr(cfg, "small_dt_thresh", 0.2)),
                 small_dt_t_weight=float(getattr(cfg, "small_dt_t_weight", 0.35)),
+                ignore_dt_below=float(getattr(cfg, "tdir_loss_ignore_dt_below", 0.0)),
+                ignore_weight=float(getattr(cfg, "tdir_loss_ignore_weight", 0.0)),
             ),
             device=dev,
             dtype=torch.float32,
@@ -3206,6 +3222,8 @@ def main():
         "tdir_anchor_min_k": int(getattr(cfg, "tdir_anchor_min_k", 0)),
         "tdir_anchor_start_updates": int(getattr(cfg, "tdir_anchor_start_updates", 0)),
         "tdir_anchor_ramp_updates": int(getattr(cfg, "tdir_anchor_ramp_updates", 0)),
+        "tdir_loss_ignore_dt_below": float(getattr(cfg, "tdir_loss_ignore_dt_below", 0.0)),
+        "tdir_loss_ignore_weight": float(getattr(cfg, "tdir_loss_ignore_weight", 0.0)),
         "save_best_odom_checkpoint": bool(getattr(cfg, "save_best_odom_checkpoint", True)),
         "odom_select_metric": str(getattr(cfg, "odom_select_metric", "odom_metric_drift")),
         "odom_select_max_tdir_abs": float(getattr(cfg, "odom_select_max_tdir_abs", 25.0)),

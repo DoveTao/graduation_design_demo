@@ -85,8 +85,12 @@ def pose_loss(
     t_loss = float(pose_t_oriented_weight) * oriented_loss + float(pose_t_axis_weight) * axis_loss
     if t_sample_weight is not None:
         w = t_sample_weight.float().view(-1).to(t_loss.device)
-        w = w.clamp_min(1e-6)
-        t_term = (t_loss.view(-1) * w).sum() / w.sum().clamp_min(1e-6)
+        w = w.clamp_min(0.0)
+        denom = w.sum()
+        if float(denom.detach().cpu()) <= 1e-8:
+            t_term = t_loss.sum() * 0.0
+        else:
+            t_term = (t_loss.view(-1) * w).sum() / denom.clamp_min(1e-6)
     else:
         t_term = t_loss.mean()
     return rot_term + float(pose_t_alpha) * t_term
@@ -107,8 +111,11 @@ def translation_direction_loss(
     cos_t = torch.sum(t_pred * t_gt_use, dim=-1).clamp(-1.0, 1.0)
     loss = float(oriented_weight) * (1.0 - cos_t) + float(axis_weight) * (1.0 - cos_t.abs())
     if sample_weight is not None:
-        w = sample_weight.float().view(-1).to(loss.device).clamp_min(1e-6)
-        return (loss.view(-1) * w).sum() / w.sum().clamp_min(1e-6)
+        w = sample_weight.float().view(-1).to(loss.device).clamp_min(0.0)
+        denom = w.sum()
+        if float(denom.detach().cpu()) <= 1e-8:
+            return loss.sum() * 0.0
+        return (loss.view(-1) * w).sum() / denom.clamp_min(1e-6)
     return loss.mean()
 
 
