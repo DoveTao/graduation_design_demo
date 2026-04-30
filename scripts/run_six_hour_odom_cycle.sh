@@ -12,6 +12,7 @@ STATE_JSON="${STATE_JSON:-checkpoints/O45_six_hour_cycle_state.json}"
 SELECTION_TXT="${SELECTION_TXT:-checkpoints/O45_six_hour_cycle_selection.txt}"
 AUTO_COMMIT="${AUTO_COMMIT:-true}"
 COMMIT_MESSAGE="${COMMIT_MESSAGE:-exp: record improved O45 odom probe}"
+ALLOW_CONCURRENT_TRAIN="${ALLOW_CONCURRENT_TRAIN:-false}"
 
 log() {
   printf '[O45-cycle] %s\n' "$*"
@@ -20,6 +21,21 @@ log() {
 require_file() {
   local path="$1"
   test -f "$path" || { echo "Missing required file: $path" >&2; exit 1; }
+}
+
+ensure_no_other_train() {
+  if [[ "$ALLOW_CONCURRENT_TRAIN" == "true" ]]; then
+    return 0
+  fi
+  local matches
+  matches="$(pgrep -af "python.*train_mvp.py" || true)"
+  matches="$(printf '%s\n' "$matches" | grep -v 'O45' | grep -v 'pgrep' || true)"
+  if [[ -n "$matches" ]]; then
+    echo "Found an existing non-O45 train_mvp.py process; refusing to start another training cycle." >&2
+    echo "$matches" >&2
+    echo "Set ALLOW_CONCURRENT_TRAIN=true only if you intentionally want concurrent training." >&2
+    exit 3
+  fi
 }
 
 best_ckpt_for() {
@@ -252,6 +268,7 @@ run_stage3() {
 main() {
   require_file "$O39_CKPT"
   require_file "$TDIR_ANCHOR_CKPT"
+  ensure_no_other_train
   run_compile_check
 
   log "Rebuilding O39 trajectory-debug baseline."
