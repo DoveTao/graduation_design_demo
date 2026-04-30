@@ -196,6 +196,7 @@ class Config:
     max_train_eval_batches: int = 64
     ckpt_dir: str = "checkpoints"
     exp_name: str = "C11_tbranch_gated_L0"
+    eval_only: bool = False
     init_checkpoint: str = ""
     strict_load_checkpoint: bool = False
 

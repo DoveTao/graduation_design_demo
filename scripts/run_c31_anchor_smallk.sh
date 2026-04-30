@@ -61,13 +61,24 @@ run_1200_probe() {
     --set max_steps=1200
 }
 
+run_1200_safe() {
+  test -f "$C31_CKPT" || { echo "Missing C31_CKPT=$C31_CKPT"; exit 1; }
+  python train_mvp.py \
+    --set exp_name=O28_c31_smallk_anchor2_all_1200 \
+    "${common_args[@]}" \
+    --set w_tdir_anchor=2.0 \
+    --set max_steps=1200
+}
+
 case "${1:-help}" in
   800) run_800 ;;
   800_safe) run_800_safe ;;
   1200) run_1200_probe ;;
+  1200_safe) run_1200_safe ;;
   *)
-    echo "Usage: $0 {800|800_safe|1200}"
+    echo "Usage: $0 {800|800_safe|1200|1200_safe}"
     echo "O27/800_safe uses stronger tdir anchor and is the current preferred small-k finetune."
+    echo "O28/1200_safe extends that recipe to 1200 steps; adopt only if drift improves and tdir_abs stays <=25 deg."
     echo "O25/800 is the original conservative run; prefer its best_joint.pt if final tdir_abs crosses 25 deg."
     echo "Override C31_CKPT to test another teacher/init checkpoint."
     ;;

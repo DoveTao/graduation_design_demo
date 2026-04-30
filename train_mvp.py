@@ -237,6 +237,34 @@ def _matching_diag_payload(step: int, upd: int, test_diag: Dict[str, Any], train
     }
 
 
+def _latest_eval_metrics(eval_rec: Dict[str, Any]) -> Dict[str, Any]:
+    latest_eval_keys = [
+        "rot", "tdir", "tdir_abs",
+        "raw", "flip", "R@t", "R@(-t)", "Rt@t", "Rt@(-t)",
+        "tdir_local_A", "tdir_local_A_abs",
+        "tmag_abs_err", "tmag_rel_err", "trans_vec_l2",
+        "geom_refine_success_rate", "geom_rot", "geom_tdir", "geom_tdir_abs",
+        "fused_rot", "fused_tdir_abs",
+        "epi_mass_in_gt_band", "top1_in_gt_band", "top5_in_gt_band",
+        "matching_entropy", "max_matching_prob", "cycle_error",
+        "coarse_epi_mass", "coarse_top1", "coarse_top5", "coarse_entropy",
+        "fine_epi_mass", "fine_top1", "fine_top5", "fine_entropy",
+        "routing_recall_in_gt_band", "allowed_mask_density", "no_candidate_row_ratio",
+    ]
+    out: Dict[str, Any] = {}
+    for key in latest_eval_keys:
+        if key in eval_rec and isinstance(eval_rec[key], (int, float)):
+            out[key] = float(eval_rec[key])
+    for key, value in eval_rec.items():
+        if not key.startswith("odom_"):
+            continue
+        if isinstance(value, (int, float)):
+            out[key] = float(value)
+        elif isinstance(value, (str, bool, list)):
+            out[key] = value
+    return out
+
+
 def _scheduler_lambda(warmup_updates: int, hold_updates: int, drop1_updates: int, drop1_scale: float, drop2_scale: float):
     warmup_updates = max(int(warmup_updates), 0)
     hold_updates = max(int(hold_updates), warmup_updates)
@@ -2081,6 +2109,164 @@ def main():
         dev,
         strict=bool(getattr(cfg, "strict_load_checkpoint", False)),
     )
+    if bool(getattr(cfg, "eval_only", False)):
+        t_eval0 = time.perf_counter()
+        (
+            rot,
+            tdir,
+            tdir_abs,
+            tdir_local_A,
+            tdir_local_A_abs,
+            tdiag,
+            tdir_msg,
+            tdir_local_msg,
+            vis_payload,
+            bucket_k,
+            bucket_dt,
+            bucket_k_dt,
+            bucket_msgs,
+        ) = eval_model(
+            model,
+            test_loader,
+            dev,
+            cfg,
+            collect_vis=bool(getattr(cfg, "save_vis_examples", False)),
+            vis_index=int(getattr(cfg, "vis_eval_index", 0)),
+        )
+        t_eval = time.perf_counter() - t_eval0
+        joint_score = tdir_abs + float(cfg.joint_rot_weight) * rot
+        joint_local_A_abs_score = tdir_local_A_abs + float(cfg.joint_rot_weight) * rot
+        joint_eligible = (rot < float(cfg.joint_rot_thresh_deg)) and (tdir_abs < float(cfg.joint_tdir_thresh_deg))
+        joint_local_A_abs_eligible = (
+            (rot < float(cfg.joint_rot_thresh_deg))
+            and (tdir_local_A_abs < float(cfg.joint_tdir_thresh_deg))
+        )
+
+        metrics: Dict[str, Any] = {
+            "step": 0,
+            "upd": 0,
+            "rot": float(rot),
+            "tdir": float(tdir),
+            "tdir_abs": float(tdir_abs),
+            "tdir_local_A": float(tdir_local_A),
+            "tdir_local_A_abs": float(tdir_local_A_abs),
+            "joint_score": float(joint_score),
+            "joint_local_A_abs_score": float(joint_local_A_abs_score),
+            "joint_eligible": int(joint_eligible),
+            "joint_local_A_abs_eligible": int(joint_local_A_abs_eligible),
+            "bucket_k": bucket_k,
+            "bucket_dt": bucket_dt,
+            "bucket_k_dt": bucket_k_dt,
+            **{k: float(v) for k, v in tdiag.items()},
+        }
+
+        print(
+            f"[EvalOnly] rot={rot:.4f}° | tdir={tdir:.4f}° | tdir_abs={tdir_abs:.4f}° | "
+            f"tdir_local_A={tdir_local_A:.4f}° | tdir_local_A_abs={tdir_local_A_abs:.4f}° | "
+            f"epi_mass={tdiag.get('epi_mass_in_gt_band', float('nan')):.4f} | "
+            f"top1={tdiag.get('top1_in_gt_band', float('nan')):.4f} | "
+            f"top5={tdiag.get('top5_in_gt_band', float('nan')):.4f} | "
+            f"ent={tdiag.get('matching_entropy', float('nan')):.4f} | "
+            f"cyc={tdiag.get('cycle_error', float('nan')):.4f} | "
+            f"tmag_rel={tdiag.get('tmag_rel_err', float('nan')):.3f} | "
+            f"tvec_l2={tdiag.get('trans_vec_l2', float('nan')):.3f} | "
+            f"joint_abs={joint_score:.4f} | joint_local={joint_local_A_abs_score:.4f} | time={t_eval:.2f}s"
+        )
+        print(tdir_msg)
+        print(tdir_local_msg)
+        for _bucket_msg in bucket_msgs:
+            print(_bucket_msg)
+
+        odom_metrics: Dict[str, Any] = {}
+        if bool(getattr(cfg, "use_odometry_eval", True)):
+            t_odom0 = time.perf_counter()
+            odom_metrics = eval_odometry_sequence(model, test_ds, dev, cfg)
+            t_odom = time.perf_counter() - t_odom0
+            if odom_metrics.get("odom_status") == "ok":
+                print(
+                    f"[OdomEval] k={odom_metrics.get('odom_selected_k')} "
+                    f"fallback={int(bool(odom_metrics.get('odom_used_fallback', False)))} | "
+                    f"pairs={odom_metrics.get('odom_num_pairs', 0)} | "
+                    f"RPE_rot={odom_metrics.get('odom_metric_RPE_rot', float('nan')):.4f}° | "
+                    f"ATE={odom_metrics.get('odom_metric_ATE', float('nan')):.4f} | "
+                    f"drift={odom_metrics.get('odom_metric_drift', float('nan')):.4f} | "
+                    f"dir_ATE={odom_metrics.get('odom_direction_only_ATE', float('nan')):.4f} | "
+                    f"time={t_odom:.2f}s"
+                )
+            else:
+                print(f"[OdomEval] skipped: {odom_metrics.get('odom_reason', 'unknown')} | time={t_odom:.2f}s")
+            if bool(getattr(cfg, "save_odom_metrics_latest", True)):
+                _save_json(os.path.join(ckpt_root, "odom_metrics_latest.json"), {"step": 0, "upd": 0, **odom_metrics})
+            metrics.update(odom_metrics)
+
+        eval_history = [metrics]
+        if bool(cfg.save_eval_history):
+            _save_json(os.path.join(ckpt_root, "eval_history.json"), {"history": eval_history})
+        if bool(getattr(cfg, 'save_eval_buckets_latest', True)):
+            bucket_payload = {
+                'step': 0,
+                'upd': 0,
+                'bucket_k': bucket_k,
+                'bucket_dt': bucket_dt,
+                'bucket_k_dt': bucket_k_dt,
+                'train_bucket_k': {},
+                'train_bucket_dt': {},
+                'train_bucket_k_dt': {},
+            }
+            _save_json(os.path.join(ckpt_root, 'eval_buckets_latest.json'), bucket_payload)
+            _write_eval_buckets_csv(os.path.join(ckpt_root, 'eval_buckets_latest.csv'), bucket_payload)
+            _save_json(
+                os.path.join(ckpt_root, 'matching_diag_latest.json'),
+                _matching_diag_payload(0, 0, tdiag, {}),
+            )
+        if bool(getattr(cfg, "save_vis_examples", False)) and vis_payload is not None:
+            if bool(getattr(cfg, "save_vis_payload_npz", False)):
+                _save_vis_payload_npz(os.path.join(vis_root, "vis_example_latest.npz"), vis_payload)
+            if bool(getattr(cfg, "save_vis_diag_json", True)):
+                _save_json(os.path.join(vis_root, "vis_diag_latest.json"), vis_payload.get("diag", {}))
+            _plot_softcorr_overview(vis_payload, os.path.join(vis_root, "vis_softcorr_latest.png"))
+            _plot_depth_overview(vis_payload, os.path.join(vis_root, "vis_depth_latest.png"))
+
+        final_summary = {
+            "best_rot": float(rot),
+            "best_tdir_raw": float(tdir),
+            "best_tdir_abs": float(tdir_abs),
+            "best_tdir_local_A": float(tdir_local_A),
+            "best_tdir_local_A_abs": float(tdir_local_A_abs),
+            "best_joint": float(joint_score),
+            "best_joint_local_A_abs": float(joint_local_A_abs_score),
+            "bad_forward": 0,
+            "skip_updates": 0,
+            "total_steps": 0,
+            "total_updates": 0,
+            "nan_like_event_rate_per_step": 0.0,
+            "nan_like_event_rate_per_update": 0.0,
+            "selection_method": "eval_only",
+            "eval_points": 1,
+            "tmag_base_weight": float(_cfg_tmag_weight(cfg)),
+            "tmag_start_updates": int(getattr(cfg, "tmag_start_updates", 0)),
+            "tmag_ramp_updates": int(getattr(cfg, "tmag_ramp_updates", 0)),
+            "tmag_detach_features": bool(getattr(cfg, "tmag_detach_features", False)),
+            "init_checkpoint": str(getattr(cfg, "init_checkpoint", "")),
+            "strict_load_checkpoint": bool(getattr(cfg, "strict_load_checkpoint", False)),
+            "use_tdir_anchor_loss": bool(getattr(cfg, "use_tdir_anchor_loss", False)),
+            "tdir_anchor_checkpoint": str(getattr(cfg, "tdir_anchor_checkpoint", "")),
+            "w_tdir_anchor": float(getattr(cfg, "w_tdir_anchor", 0.0)),
+            "tdir_anchor_min_dt": float(getattr(cfg, "tdir_anchor_min_dt", 0.2)),
+            "tdir_anchor_min_k": int(getattr(cfg, "tdir_anchor_min_k", 0)),
+            "tdir_anchor_start_updates": int(getattr(cfg, "tdir_anchor_start_updates", 0)),
+            "tdir_anchor_ramp_updates": int(getattr(cfg, "tdir_anchor_ramp_updates", 0)),
+            "last_eval": _latest_eval_metrics(metrics),
+        }
+        if bool(cfg.save_final_summary):
+            _save_json(os.path.join(ckpt_root, "final_summary.json"), final_summary)
+        print(
+            f"[Done ] eval_only finished | rot={rot:.4f}° | tdir_abs={tdir_abs:.4f}° | "
+            f"tdir_local_A_abs={tdir_local_A_abs:.4f}° | joint={joint_score:.4f} | "
+            f"joint_local={joint_local_A_abs_score:.4f} | ckpt_dir={ckpt_root}"
+        )
+        return
+
     tdir_anchor_model = None
     if bool(getattr(cfg, "use_tdir_anchor_loss", False)) and float(getattr(cfg, "w_tdir_anchor", 0.0)) > 0.0:
         anchor_ckpt = str(getattr(cfg, "tdir_anchor_checkpoint", ""))
@@ -2851,25 +3037,7 @@ def main():
 
     nan_like_events = int(bad_forward + skip_updates)
     latest_eval = eval_history[-1] if len(eval_history) > 0 else {}
-    latest_eval_keys = [
-        "rot", "tdir", "tdir_abs",
-        "raw", "flip", "R@t", "R@(-t)", "Rt@t", "Rt@(-t)",
-        "tdir_local_A", "tdir_local_A_abs",
-        "tmag_abs_err", "tmag_rel_err", "trans_vec_l2",
-        "geom_refine_success_rate", "geom_rot", "geom_tdir", "geom_tdir_abs",
-        "fused_rot", "fused_tdir_abs",
-    ]
-    latest_eval_metrics = {
-        k: float(latest_eval[k])
-        for k in latest_eval_keys
-        if k in latest_eval and isinstance(latest_eval[k], (int, float))
-    }
-    for k, v in latest_eval.items():
-        if k.startswith("odom_"):
-            if isinstance(v, (int, float)):
-                latest_eval_metrics[k] = float(v)
-            elif isinstance(v, (str, bool, list)):
-                latest_eval_metrics[k] = v
+    latest_eval_metrics = _latest_eval_metrics(latest_eval)
     final_summary = {
         **final_metrics,
         "bad_forward": int(bad_forward),
