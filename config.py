@@ -171,6 +171,13 @@ class Config:
     tmag_detach_features: bool = False
     log_tmag_clamp_min: float = -6.0
     log_tmag_clamp_max: float = 6.0
+    use_tdir_anchor_loss: bool = False
+    tdir_anchor_checkpoint: str = ""
+    w_tdir_anchor: float = 0.0
+    tdir_anchor_min_dt: float = 0.2
+    tdir_anchor_min_k: int = 0
+    tdir_anchor_start_updates: int = 0
+    tdir_anchor_ramp_updates: int = 0
     pose_t_alpha: float = 1.0
     pose_t_oriented_weight: float = 1.0
     pose_t_axis_weight: float = 0.0

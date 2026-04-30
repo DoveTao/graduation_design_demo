@@ -470,6 +470,61 @@ def _cfg_tmag_effective_weight(cfg: Config, upd: int) -> float:
     return base_w * ramp
 
 
+def _cfg_tdir_anchor_effective_weight(cfg: Config, upd: int) -> float:
+    base_w = float(getattr(cfg, "w_tdir_anchor", 0.0))
+    if (not bool(getattr(cfg, "use_tdir_anchor_loss", False))) or base_w <= 0.0:
+        return 0.0
+    start = int(getattr(cfg, "tdir_anchor_start_updates", 0))
+    if upd < start:
+        return 0.0
+    ramp_updates = int(getattr(cfg, "tdir_anchor_ramp_updates", 0))
+    if ramp_updates <= 0:
+        return base_w
+    ramp = min(1.0, max(0.0, float(upd - start) / float(ramp_updates)))
+    return base_w * ramp
+
+
+def _tdir_anchor_weight_from_meta(
+    meta: Any,
+    bsz: int,
+    *,
+    min_dt: float = 0.2,
+    min_k: int = 0,
+    device: torch.device,
+) -> torch.Tensor:
+    dt_list = _meta_batch_field(meta, "dt_world", bsz, default=None)
+    k_list = _meta_batch_field(meta, "k", bsz, default=None)
+    weights = []
+    for dt_val, k_val in zip(dt_list, k_list):
+        keep = True
+        if float(min_dt) > 0.0:
+            try:
+                keep = keep and (dt_val is not None) and (float(dt_val) >= float(min_dt))
+            except Exception:
+                keep = False
+        if int(min_k) > 0:
+            try:
+                keep = keep and (k_val is not None) and (int(k_val) >= int(min_k))
+            except Exception:
+                keep = False
+        weights.append(1.0 if keep else 0.0)
+    return torch.tensor(weights, device=device, dtype=torch.float32).view(-1)
+
+
+def _translation_direction_anchor_loss(
+    t_student: torch.Tensor,
+    t_teacher: torch.Tensor,
+    sample_weight: torch.Tensor,
+) -> torch.Tensor:
+    student = F.normalize(t_student.float(), dim=-1, eps=1e-6)
+    teacher = F.normalize(t_teacher.detach().float(), dim=-1, eps=1e-6)
+    loss = 1.0 - torch.sum(student * teacher, dim=-1).clamp(-1.0, 1.0)
+    w = sample_weight.float().view(-1).to(loss.device)
+    if float(w.sum().detach().cpu()) <= 0.0:
+        return torch.zeros((), device=loss.device)
+    return (loss.view(-1) * w).sum() / w.sum().clamp_min(1e-6)
+
+
 def _bucket_init() -> Dict[str, Dict[str, float]]:
     return {}
 
@@ -710,25 +765,32 @@ def _save_model_ckpt(path, model, cfg, step, upd, metrics):
     )
 
 
-def _load_model_init_checkpoint(model: nn.Module, path: str, device: torch.device, *, strict: bool = False) -> None:
+def _load_model_init_checkpoint(
+    model: nn.Module,
+    path: str,
+    device: torch.device,
+    *,
+    strict: bool = False,
+    label: str = "InitCkpt",
+) -> None:
     ckpt_path = os.path.expanduser(str(path))
     if not ckpt_path:
         return
     if not os.path.isfile(ckpt_path):
-        raise FileNotFoundError(f"init_checkpoint not found: {ckpt_path}")
+        raise FileNotFoundError(f"{label} not found: {ckpt_path}")
     payload = torch.load(ckpt_path, map_location=device)
     state = payload.get("model", payload) if isinstance(payload, dict) else payload
     if not isinstance(state, dict):
-        raise TypeError(f"init_checkpoint has no model state_dict: {ckpt_path}")
+        raise TypeError(f"{label} has no model state_dict: {ckpt_path}")
     missing, unexpected = model.load_state_dict(state, strict=bool(strict))
     print(
-        f"[InitCkpt] loaded {ckpt_path} | strict={bool(strict)} | "
+        f"[{label}] loaded {ckpt_path} | strict={bool(strict)} | "
         f"missing={len(missing)} | unexpected={len(unexpected)}"
     )
     if missing:
-        print(f"[InitCkpt] missing preview={list(missing)[:8]}")
+        print(f"[{label}] missing preview={list(missing)[:8]}")
     if unexpected:
-        print(f"[InitCkpt] unexpected preview={list(unexpected)[:8]}")
+        print(f"[{label}] unexpected preview={list(unexpected)[:8]}")
 
 
 def _first_item(v: Any) -> Any:
@@ -1852,7 +1914,9 @@ def main():
         f"w_epi={cfg.w_epi} | w_coarse_pose_aux={getattr(cfg, 'w_coarse_pose_aux', 0.0)} | "
         f"w_tmag={_cfg_tmag_weight(cfg)} | tmag_loss={getattr(cfg, 'tmag_loss_type', 'log_smooth_l1')} | "
         f"tmag_start={getattr(cfg, 'tmag_start_updates', 0)} | tmag_ramp={getattr(cfg, 'tmag_ramp_updates', 0)} | "
-        f"tmag_detach={bool(getattr(cfg, 'tmag_detach_features', False))}"
+        f"tmag_detach={bool(getattr(cfg, 'tmag_detach_features', False))} | "
+        f"tdir_anchor={bool(getattr(cfg, 'use_tdir_anchor_loss', False))}:w={getattr(cfg, 'w_tdir_anchor', 0.0)}"
+        f":dt>={getattr(cfg, 'tdir_anchor_min_dt', 0.2)}:k>={getattr(cfg, 'tdir_anchor_min_k', 0)}"
     )
     print(
         f"[Cfg ] lr={cfg.lr} | wd={cfg.wd} | warmup_updates={cfg.warmup_updates} | "
@@ -2017,6 +2081,16 @@ def main():
         dev,
         strict=bool(getattr(cfg, "strict_load_checkpoint", False)),
     )
+    tdir_anchor_model = None
+    if bool(getattr(cfg, "use_tdir_anchor_loss", False)) and float(getattr(cfg, "w_tdir_anchor", 0.0)) > 0.0:
+        anchor_ckpt = str(getattr(cfg, "tdir_anchor_checkpoint", ""))
+        if not anchor_ckpt:
+            raise ValueError("use_tdir_anchor_loss=True requires tdir_anchor_checkpoint.")
+        tdir_anchor_model = PanoramaRelPoseModel(cfg, dev).to(dev)
+        _load_model_init_checkpoint(tdir_anchor_model, anchor_ckpt, dev, strict=False, label="TdirAnchor")
+        tdir_anchor_model.eval()
+        for p in tdir_anchor_model.parameters():
+            p.requires_grad_(False)
     optimizer = AdamW(model.parameters(), lr=cfg.lr, weight_decay=cfg.wd)
 
     scheduler = LambdaLR(
@@ -2166,6 +2240,41 @@ def main():
                 )
             else:
                 L_t_mag = torch.zeros((), device=dev)
+
+            tdir_anchor_w_eff = _cfg_tdir_anchor_effective_weight(cfg, upd)
+            L_tdir_anchor = torch.zeros((), device=dev)
+            tdir_anchor_n = 0.0
+            if tdir_anchor_model is not None and tdir_anchor_w_eff > 0.0:
+                anchor_weight = _tdir_anchor_weight_from_meta(
+                    meta,
+                    IA.shape[0],
+                    min_dt=float(getattr(cfg, "tdir_anchor_min_dt", 0.2)),
+                    min_k=int(getattr(cfg, "tdir_anchor_min_k", 0)),
+                    device=dev,
+                )
+                tdir_anchor_n = float((anchor_weight > 0.0).sum().detach().cpu())
+                if tdir_anchor_n > 0.0:
+                    with torch.no_grad():
+                        _, t_teacher_pred, aux_teacher = tdir_anchor_model(
+                            IA,
+                            IB,
+                            enable_depth_fusion=depth_fusion_active,
+                        )
+                    t_student_dir = aux.get("t_dir_out", t_pred) if isinstance(aux, dict) else t_pred
+                    t_teacher_dir = (
+                        aux_teacher.get("t_dir_out", t_teacher_pred)
+                        if isinstance(aux_teacher, dict)
+                        else t_teacher_pred
+                    )
+                    assert t_student_dir.shape == t_teacher_dir.shape, (
+                        f"tdir anchor shape mismatch: student={tuple(t_student_dir.shape)}, "
+                        f"teacher={tuple(t_teacher_dir.shape)}"
+                    )
+                    L_tdir_anchor = _translation_direction_anchor_loss(
+                        t_student_dir,
+                        t_teacher_dir,
+                        anchor_weight,
+                    )
 
             use_fine_epi = bool(cfg.use_fine_stage) and (aux.get("Wf_ab", None) is not None)
             if use_fine_epi:
@@ -2330,6 +2439,7 @@ def main():
                 + epi_w * L_epi
                 + float(getattr(cfg, "w_coarse_epi_aux", 0.0)) * epi_ramp * L_epi_coarse
                 + tmag_w_eff * L_t_mag
+                + tdir_anchor_w_eff * L_tdir_anchor
                 + photo_w * L_photo
                 + smooth_w * L_smooth
             )
@@ -2339,7 +2449,10 @@ def main():
 
         forward_ok = all(
             bool(torch.isfinite(x).all())
-            for x in [R_pred, t_pred, L_pose, L_pose_coarse, L_t_mag, L_x, L_cyc, L_rel, L_epi, L_epi_coarse, L_photo, L_smooth, L]
+            for x in [
+                R_pred, t_pred, L_pose, L_pose_coarse, L_t_mag, L_tdir_anchor,
+                L_x, L_cyc, L_rel, L_epi, L_epi_coarse, L_photo, L_smooth, L,
+            ]
         )
         if not forward_ok:
             bad_forward += 1
@@ -2690,6 +2803,7 @@ def main():
                 f"L={float(L.detach().cpu()):.3f} | pose={float(L_pose.detach().cpu()):.3f} | "
                 f"pose_c={float(L_pose_coarse.detach().cpu()):.3f} | "
                 f"tmag={float(L_t_mag.detach().cpu()):.4f} | tmag_w={tmag_w_eff:.4g} | "
+                f"tdir_anchor={float(L_tdir_anchor.detach().cpu()):.4f} | anchor_w={tdir_anchor_w_eff:.4g} | anchor_n={tdir_anchor_n:.0f} | "
                 f"x={float(L_x.detach().cpu()):.4f} | cyc={float(L_cyc.detach().cpu()):.4f} | "
                 f"rel={float(L_rel.detach().cpu()):.4f} | epi={float(L_epi.detach().cpu()):.4f} | epi_c={float(L_epi_coarse.detach().cpu()):.4f} | "
                 f"photo={float(L_photo.detach().cpu()):.4f} | smooth={float(L_smooth.detach().cpu()):.4f} | depth_ramp={depth_ramp:.2f} | "
@@ -2772,6 +2886,13 @@ def main():
         "tmag_detach_features": bool(getattr(cfg, "tmag_detach_features", False)),
         "init_checkpoint": str(getattr(cfg, "init_checkpoint", "")),
         "strict_load_checkpoint": bool(getattr(cfg, "strict_load_checkpoint", False)),
+        "use_tdir_anchor_loss": bool(getattr(cfg, "use_tdir_anchor_loss", False)),
+        "tdir_anchor_checkpoint": str(getattr(cfg, "tdir_anchor_checkpoint", "")),
+        "w_tdir_anchor": float(getattr(cfg, "w_tdir_anchor", 0.0)),
+        "tdir_anchor_min_dt": float(getattr(cfg, "tdir_anchor_min_dt", 0.2)),
+        "tdir_anchor_min_k": int(getattr(cfg, "tdir_anchor_min_k", 0)),
+        "tdir_anchor_start_updates": int(getattr(cfg, "tdir_anchor_start_updates", 0)),
+        "tdir_anchor_ramp_updates": int(getattr(cfg, "tdir_anchor_ramp_updates", 0)),
         "last_eval": latest_eval_metrics,
     }
     if bool(cfg.save_final_summary):
