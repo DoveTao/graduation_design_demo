@@ -127,3 +127,41 @@ Adoption rule:
 
 - Prefer O30 only if `best_smallk_odom.pt` matches or improves O29 drift while reducing the weighted `k=1/2/3` `tdir_abs`.
 - If O30 improves small-k direction but worsens drift materially, keep O29 as the drift candidate and O28 as the conservative small-k candidate.
+
+## O30 Result
+
+O30 successfully saved both `best_odom_drift.pt` and `best_smallk_odom.pt`. In this run they point to the same eval point, `upd=500`.
+
+Training-time selected checkpoint:
+
+| checkpoint | upd | drift | global tdir_abs | k=1/2/3 tdir_abs | k=1/2/3 tmag_rel |
+|---|---:|---:|---:|---:|---:|
+| `O30/best_smallk_odom.pt` | 500 | 1.408 | 23.811 | 26.264 | 0.740 |
+
+Unified eval-only comparison:
+
+| eval | rot | tdir_abs | local_A_abs | tmag_rel | tvec_l2 | RPE_rot | ATE | drift | norm_drift |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| E_O28_candidate_smallk_eval | 2.330 | 24.753 | 24.945 | 0.883 | 1.558 | 0.895 | 10.100 | 1.574 | 1.255 |
+| E_O29_best_odom_smallk_eval | 2.395 | 24.865 | 24.880 | 0.918 | 1.592 | 1.070 | 8.936 | 1.410 | 1.124 |
+| E_O30_best_smallk_odom_eval | 2.382 | 24.776 | 24.794 | 0.918 | 1.592 | 1.039 | 8.922 | 1.408 | 1.122 |
+
+Small-k buckets for `E_O30_best_smallk_odom_eval`:
+
+| k | rot | tdir_abs | tmag_rel |
+|---:|---:|---:|---:|
+| 1 | 1.16 | 29.54 | 0.828 |
+| 2 | 1.02 | 26.58 | 0.873 |
+| 3 | 0.92 | 25.06 | 0.930 |
+| 5 | 0.95 | 22.08 | 0.961 |
+| 10 | 2.14 | 20.53 | 0.978 |
+| 20 | 8.18 | 24.84 | 0.940 |
+
+Decision:
+
+- O30 is the current best odom-drift candidate: it improves O29 slightly on drift, global `tdir_abs`, local `tdir_abs`, and the `k=1/2/3` buckets.
+- O30 still does not fix the eval-only scale caveat: global `tmag_rel=0.918`, so it should not replace O28 when pair-level scale is the main priority.
+- Updated candidates:
+  - Wide/stable baseline: `C31`.
+  - Conservative small-k candidate: `O28/best_joint_local_A_abs.pt`.
+  - Drift-first small-k candidate: `O30/best_smallk_odom.pt`.
