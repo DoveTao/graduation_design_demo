@@ -550,3 +550,52 @@ Decision:
 - O38 has the best raw small-k endpoint drift so far: `1.308`.
 - It is not a clean replacement for O37 because rotation and local-frame direction degrade: `rot=2.728` and `local_A_abs=25.175`.
 - Use O38 only when endpoint drift is the primary metric. Keep O37 as the more balanced small-k odometry candidate.
+
+## O39 Plan
+
+O39 stops increasing `w_tmag` and instead tests whether stronger C31 direction anchoring can improve small-k direction without losing O37's trajectory behavior:
+
+- Keep the O37 scale recipe: `w_tmag=0.1`, `tmag_detach_features=False`, and `use_tmag_global_bias=True`.
+- Increase `w_tdir_anchor` from `2.0` to `3.0`.
+- Keep the same C31 teacher/init checkpoint, small-k sampling, odom selection, and k=1/2/3 small-k selection gates.
+
+Why:
+
+- O38 showed that stronger scale supervision can reduce drift a little, but rotation and local-frame direction start to regress.
+- O37's eval history shows a tradeoff: later checkpoints improve drift while k=1/2/3 direction worsens.
+- O39 is a minimal direction/trajectory-shape probe around O37, not a new scale-head push.
+
+## O39 Result
+
+O39 is a direction-balanced small-k candidate. It does not beat O37's endpoint drift, but it improves global/local direction and all k=1/2/3 direction buckets while preserving nearly the same drift.
+
+Training-time selected checkpoint:
+
+| checkpoint | upd | drift | global tdir_abs | k=1/2/3 tdir_abs | k=1/2/3 tmag_rel |
+|---|---:|---:|---:|---:|---:|
+| `O39/best_smallk_odom.pt` | 500 | 1.316 | 22.860 | 25.376 | 0.728 |
+
+Unified eval-only comparison:
+
+| eval | rot | tdir_abs | local_A_abs | tmag_rel | tvec_l2 | RPE_rot | ATE | drift | smooth drift | scale-fit drift |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| E_O37_best_smallk_odom_eval | 2.392 | 24.604 | 24.627 | 0.927 | 1.601 | 1.076 | 8.321 | 1.315 | 1.314 | 1.281 |
+| E_O39_best_smallk_odom_eval | 2.411 | 23.874 | 23.908 | 0.926 | 1.599 | 1.063 | 8.326 | 1.316 | 1.315 | 1.290 |
+
+Small-k buckets for `E_O39_best_smallk_odom_eval`:
+
+| k | rot | tdir_abs | tmag_rel |
+|---:|---:|---:|---:|
+| 1 | 1.29 | 28.79 | 0.837 |
+| 2 | 1.16 | 25.83 | 0.889 |
+| 3 | 1.05 | 24.30 | 0.939 |
+| 5 | 0.97 | 21.27 | 0.966 |
+| 10 | 2.15 | 19.61 | 0.980 |
+| 20 | 8.22 | 23.41 | 0.949 |
+
+Decision:
+
+- Keep C31 as the wide/stable baseline.
+- Keep O37 as the balanced small-k odometry default when the priority is the lowest combined drift/ATE among non-aggressive candidates.
+- Use O39 when small-k direction quality matters more than the tiny `+0.001` drift difference versus O37.
+- Keep O38 only as a drift-first probe; do not continue raising `w_tmag` from this branch because local-frame direction already regressed.
