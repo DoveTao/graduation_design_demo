@@ -13,6 +13,7 @@ SELECTION_TXT="${SELECTION_TXT:-checkpoints/O45_six_hour_cycle_selection.txt}"
 AUTO_COMMIT="${AUTO_COMMIT:-true}"
 COMMIT_MESSAGE="${COMMIT_MESSAGE:-exp: record improved O45 odom probe}"
 ALLOW_CONCURRENT_TRAIN="${ALLOW_CONCURRENT_TRAIN:-false}"
+SKIP_COMPLETED="${SKIP_COMPLETED:-true}"
 
 log() {
   printf '[O45-cycle] %s\n' "$*"
@@ -51,6 +52,12 @@ best_ckpt_for() {
     fi
   done
   return 1
+}
+
+experiment_complete() {
+  local exp_name="$1"
+  [[ -f "checkpoints/${exp_name}/final_summary.json" ]] \
+    && [[ -f "checkpoints/E_${exp_name}_trajectory_debug/final_summary.json" ]]
 }
 
 run_compile_check() {
@@ -162,6 +169,13 @@ run_arm() {
   local steps="$3"
   local arm="$4"
   shift 4
+
+  if [[ "$SKIP_COMPLETED" == "true" ]] && experiment_complete "$exp_name"; then
+    log "Skipping completed experiment ${exp_name}."
+    summarize
+    maybe_commit
+    return 0
+  fi
 
   require_file "$init_ckpt"
   log "Training ${exp_name} (${arm}) for ${steps} steps from ${init_ckpt}."
