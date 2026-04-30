@@ -189,6 +189,8 @@ class Config:
     max_train_eval_batches: int = 64
     ckpt_dir: str = "checkpoints"
     exp_name: str = "C11_tbranch_gated_L0"
+    init_checkpoint: str = ""
+    strict_load_checkpoint: bool = False
 
     # Export helpers for PPT figures / tables
     save_eval_history: bool = True

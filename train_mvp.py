@@ -38,6 +38,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
+import torch.nn as nn
 import torch.nn.functional as F
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import LambdaLR
@@ -707,6 +708,27 @@ def _save_model_ckpt(path, model, cfg, step, upd, metrics):
         },
         path,
     )
+
+
+def _load_model_init_checkpoint(model: nn.Module, path: str, device: torch.device, *, strict: bool = False) -> None:
+    ckpt_path = os.path.expanduser(str(path))
+    if not ckpt_path:
+        return
+    if not os.path.isfile(ckpt_path):
+        raise FileNotFoundError(f"init_checkpoint not found: {ckpt_path}")
+    payload = torch.load(ckpt_path, map_location=device)
+    state = payload.get("model", payload) if isinstance(payload, dict) else payload
+    if not isinstance(state, dict):
+        raise TypeError(f"init_checkpoint has no model state_dict: {ckpt_path}")
+    missing, unexpected = model.load_state_dict(state, strict=bool(strict))
+    print(
+        f"[InitCkpt] loaded {ckpt_path} | strict={bool(strict)} | "
+        f"missing={len(missing)} | unexpected={len(unexpected)}"
+    )
+    if missing:
+        print(f"[InitCkpt] missing preview={list(missing)[:8]}")
+    if unexpected:
+        print(f"[InitCkpt] unexpected preview={list(unexpected)[:8]}")
 
 
 def _first_item(v: Any) -> Any:
@@ -1989,6 +2011,12 @@ def main():
     )
 
     model = PanoramaRelPoseModel(cfg, dev).to(dev)
+    _load_model_init_checkpoint(
+        model,
+        str(getattr(cfg, "init_checkpoint", "")),
+        dev,
+        strict=bool(getattr(cfg, "strict_load_checkpoint", False)),
+    )
     optimizer = AdamW(model.parameters(), lr=cfg.lr, weight_decay=cfg.wd)
 
     scheduler = LambdaLR(
@@ -2742,6 +2770,8 @@ def main():
         "tmag_start_updates": int(getattr(cfg, "tmag_start_updates", 0)),
         "tmag_ramp_updates": int(getattr(cfg, "tmag_ramp_updates", 0)),
         "tmag_detach_features": bool(getattr(cfg, "tmag_detach_features", False)),
+        "init_checkpoint": str(getattr(cfg, "init_checkpoint", "")),
+        "strict_load_checkpoint": bool(getattr(cfg, "strict_load_checkpoint", False)),
         "last_eval": latest_eval_metrics,
     }
     if bool(cfg.save_final_summary):
