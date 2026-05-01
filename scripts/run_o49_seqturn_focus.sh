@@ -286,6 +286,40 @@ run_pair_whigh_acosclip_robust3() {
     --set "smallk_select_min_points=3"
 }
 
+run_pair_whigh_acosclip_stable3point() {
+  run_case "O49ms_o39_seqturn_pair_w007_acosclip_stable3point_260" \
+    --set "use_seq_turn_loss=True" \
+    --set "seq_turn_loss_w=0.007" \
+    --set "seq_turn_only_k=1" \
+    --set "seq_turn_min_dt=0.05" \
+    --set "seq_turn_max_dt=0.25" \
+    --set "seq_turn_start_updates=100" \
+    --set "seq_turn_ramp_updates=200" \
+    --set "seq_turn_acos_eps=0.0001" \
+    --set "odom_select_window=3" \
+    --set "odom_select_min_points=3" \
+    --set "smallk_select_window=3" \
+    --set "smallk_select_min_points=3"
+}
+
+run_pair_whigh_acosclip_seed3() {
+  local seed
+  local seeds=(2024 3024 4024)
+  for seed in "${seeds[@]}"; do
+    run_case "O49m_seed${seed}_o39_seqturn_pair_w007_acosclip_260" \
+      --set "use_seq_turn_loss=True" \
+      --set "seq_turn_loss_w=0.007" \
+      --set "seq_turn_only_k=1" \
+      --set "seq_turn_min_dt=0.05" \
+      --set "seq_turn_max_dt=0.25" \
+      --set "seq_turn_start_updates=100" \
+      --set "seq_turn_ramp_updates=200" \
+      --set "seq_turn_acos_eps=0.0001" \
+      --set "data_seed=${seed}" \
+      --set "split_seed=3407"
+  done
+}
+
 run_pair_whigh_acosclip_avgpool() {
   run_case "O49t_o39_seqturn_pair_w007_acosclip_avgpool_260" \
     --set "use_seq_turn_loss=True" \
@@ -364,7 +398,7 @@ run_pair_soft_hitrate_late() {
 
 usage() {
   cat <<'EOF'
-Usage: scripts/run_o49_seqturn_focus.sh {compile|control|pair_light|pair_midband|pair_late|pair_hitrate|pair_soft_hitrate|pair_soft_hitrate_wlow|pair_soft_hitrate_whigh|pair_soft_hitrate_whigh_rerun|pair_soft_hitrate_whigh_slowramp|pair_soft_hitrate_wmid|pair_whigh_acosclip|pair_whigh_acosclip_rerun2|pair_whigh_acosclip_rerun3|pair_whigh_acosclip_eps5e5|pair_whigh_acosclip_eps2e4|pair_whigh_acosclip_deterministic|pair_whigh_acosclip_robust3|pair_whigh_acosclip_avgpool|pair_whigh_acosclip_nomemattn|pair_whigh_acosclip_avgpool_nomemattn|pair_wmid_acosclip|pair_whigh_acosclip_lossclamp|pair_soft_hitrate_late|o49_next|o49_skipfix|o49_acos_sweep|o49_variance_control|o49_stability_sources|all}
+Usage: scripts/run_o49_seqturn_focus.sh {compile|control|pair_light|pair_midband|pair_late|pair_hitrate|pair_soft_hitrate|pair_soft_hitrate_wlow|pair_soft_hitrate_whigh|pair_soft_hitrate_whigh_rerun|pair_soft_hitrate_whigh_slowramp|pair_soft_hitrate_wmid|pair_whigh_acosclip|pair_whigh_acosclip_rerun2|pair_whigh_acosclip_rerun3|pair_whigh_acosclip_eps5e5|pair_whigh_acosclip_eps2e4|pair_whigh_acosclip_deterministic|pair_whigh_acosclip_robust3|pair_whigh_acosclip_stable3point|pair_whigh_acosclip_seed3|pair_whigh_acosclip_avgpool|pair_whigh_acosclip_nomemattn|pair_whigh_acosclip_avgpool_nomemattn|pair_wmid_acosclip|pair_whigh_acosclip_lossclamp|pair_soft_hitrate_late|o49_next|o49_skipfix|o49_stable_seed3|o49_acos_sweep|o49_variance_control|o49_stability_sources|all}
 
   compile       Run the py_compile gate only.
   control       O49a, k1-heavy curriculum only; no seq-turn.
@@ -398,8 +432,12 @@ Usage: scripts/run_o49_seqturn_focus.sh {compile|control|pair_light|pair_midband
                 O49r, O49m with deterministic CUDA settings.
   pair_whigh_acosclip_robust3
                 O49s, O49m with 3-point robust odom checkpoint selection.
+  pair_whigh_acosclip_stable3point
+                O49ms, O49m + robust3, explicit "stable baseline" run.
   pair_whigh_acosclip_avgpool
                 O49t, O49m with avg-only translation patch pooling.
+  pair_whigh_acosclip_seed3
+                O49m seeded rerun (3 seeds) for variance check.
   pair_whigh_acosclip_nomemattn
                 O49u, O49m with memory-efficient CUDA SDP disabled.
   pair_whigh_acosclip_avgpool_nomemattn
@@ -416,6 +454,8 @@ Usage: scripts/run_o49_seqturn_focus.sh {compile|control|pair_light|pair_midband
                 Run O49m2, O49m3, O49p, and O49q.
   o49_variance_control
                 Run O49r and O49s.
+  o49_stable_seed3
+                Run O49ms and O49m three-seed reruns.
   o49_stability_sources
                 Run O49t, O49u, and O49v.
   all           Run control and all eight seq-turn variants.
@@ -496,6 +536,14 @@ main() {
       run_compile_check
       run_pair_whigh_acosclip_deterministic
       ;;
+    pair_whigh_acosclip_stable3point)
+      run_compile_check
+      run_pair_whigh_acosclip_stable3point
+      ;;
+    pair_whigh_acosclip_seed3)
+      run_compile_check
+      run_pair_whigh_acosclip_seed3
+      ;;
     pair_whigh_acosclip_robust3)
       run_compile_check
       run_pair_whigh_acosclip_robust3
@@ -548,6 +596,11 @@ main() {
       run_pair_whigh_acosclip_deterministic
       run_pair_whigh_acosclip_robust3
       ;;
+    o49_stable_seed3)
+      run_compile_check
+      run_pair_whigh_acosclip_stable3point
+      run_pair_whigh_acosclip_seed3
+      ;;
     o49_stability_sources)
       run_compile_check
       run_pair_whigh_acosclip_avgpool
@@ -573,7 +626,9 @@ main() {
       run_pair_whigh_acosclip_eps5e5
       run_pair_whigh_acosclip_eps2e4
       run_pair_whigh_acosclip_deterministic
+      run_pair_whigh_acosclip_stable3point
       run_pair_whigh_acosclip_robust3
+      run_pair_whigh_acosclip_seed3
       run_pair_whigh_acosclip_avgpool
       run_pair_whigh_acosclip_nomemattn
       run_pair_whigh_acosclip_avgpool_nomemattn

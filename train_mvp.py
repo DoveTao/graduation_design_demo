@@ -3293,6 +3293,9 @@ def main():
             "odom_select_min_points": int(getattr(cfg, "odom_select_min_points", 1)),
             "smallk_select_window": int(getattr(cfg, "smallk_select_window", 1)),
             "smallk_select_min_points": int(getattr(cfg, "smallk_select_min_points", 1)),
+            "run_device": str(dev.type),
+            "run_device_name": str(torch.cuda.get_device_name(dev)) if dev.type == "cuda" else "cpu",
+            "has_cuda": bool(torch.cuda.is_available()),
             "last_eval": _latest_eval_metrics(metrics),
         }
         if bool(cfg.save_final_summary):
@@ -4471,6 +4474,9 @@ def main():
             "smallk_select_require_status_ok": bool(getattr(cfg, "smallk_select_require_status_ok", True)),
             "smallk_select_window": int(getattr(cfg, "smallk_select_window", 1)),
             "smallk_select_min_points": int(getattr(cfg, "smallk_select_min_points", 1)),
+            "run_device": str(dev.type),
+            "run_device_name": str(torch.cuda.get_device_name(dev)) if dev.type == "cuda" else "cpu",
+            "has_cuda": bool(torch.cuda.is_available()),
             "last_eval": latest_eval_metrics,
         }
     if bool(cfg.save_final_summary):
