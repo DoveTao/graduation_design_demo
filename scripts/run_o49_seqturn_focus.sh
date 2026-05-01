@@ -194,6 +194,43 @@ run_pair_soft_hitrate_wmid() {
     --set "seq_turn_ramp_updates=200"
 }
 
+run_pair_whigh_acosclip() {
+  run_case "O49m_o39_seqturn_pair_w007_acosclip_260" \
+    --set "use_seq_turn_loss=True" \
+    --set "seq_turn_loss_w=0.007" \
+    --set "seq_turn_only_k=1" \
+    --set "seq_turn_min_dt=0.05" \
+    --set "seq_turn_max_dt=0.25" \
+    --set "seq_turn_start_updates=100" \
+    --set "seq_turn_ramp_updates=200" \
+    --set "seq_turn_acos_eps=0.0001"
+}
+
+run_pair_wmid_acosclip() {
+  run_case "O49n_o39_seqturn_pair_w0065_acosclip_260" \
+    --set "use_seq_turn_loss=True" \
+    --set "seq_turn_loss_w=0.0065" \
+    --set "seq_turn_only_k=1" \
+    --set "seq_turn_min_dt=0.05" \
+    --set "seq_turn_max_dt=0.25" \
+    --set "seq_turn_start_updates=100" \
+    --set "seq_turn_ramp_updates=200" \
+    --set "seq_turn_acos_eps=0.0001"
+}
+
+run_pair_whigh_acosclip_lossclamp() {
+  run_case "O49o_o39_seqturn_pair_w007_acosclip_clamp2deg_260" \
+    --set "use_seq_turn_loss=True" \
+    --set "seq_turn_loss_w=0.007" \
+    --set "seq_turn_only_k=1" \
+    --set "seq_turn_min_dt=0.05" \
+    --set "seq_turn_max_dt=0.25" \
+    --set "seq_turn_start_updates=100" \
+    --set "seq_turn_ramp_updates=200" \
+    --set "seq_turn_acos_eps=0.0001" \
+    --set "seq_turn_loss_clamp_deg=2.0"
+}
+
 run_pair_soft_hitrate_late() {
   run_case "O49i_o39_seqturn_pair_soft_hitrate_start120_260" \
     --set "use_seq_turn_loss=True" \
@@ -207,7 +244,7 @@ run_pair_soft_hitrate_late() {
 
 usage() {
   cat <<'EOF'
-Usage: scripts/run_o49_seqturn_focus.sh {compile|control|pair_light|pair_midband|pair_late|pair_hitrate|pair_soft_hitrate|pair_soft_hitrate_wlow|pair_soft_hitrate_whigh|pair_soft_hitrate_whigh_rerun|pair_soft_hitrate_whigh_slowramp|pair_soft_hitrate_wmid|pair_soft_hitrate_late|o49_next|all}
+Usage: scripts/run_o49_seqturn_focus.sh {compile|control|pair_light|pair_midband|pair_late|pair_hitrate|pair_soft_hitrate|pair_soft_hitrate_wlow|pair_soft_hitrate_whigh|pair_soft_hitrate_whigh_rerun|pair_soft_hitrate_whigh_slowramp|pair_soft_hitrate_wmid|pair_whigh_acosclip|pair_wmid_acosclip|pair_whigh_acosclip_lossclamp|pair_soft_hitrate_late|o49_next|o49_skipfix|all}
 
   compile       Run the py_compile gate only.
   control       O49a, k1-heavy curriculum only; no seq-turn.
@@ -227,9 +264,16 @@ Usage: scripts/run_o49_seqturn_focus.sh {compile|control|pair_light|pair_midband
                 O49j, O49h with a slower seq-turn ramp of 300 updates.
   pair_soft_hitrate_wmid
                 O49l, O49f with seq_turn_loss_w=0.0065.
+  pair_whigh_acosclip
+                O49m, O49h with safer seq-turn acos clipping.
+  pair_wmid_acosclip
+                O49n, O49l with safer seq-turn acos clipping.
+  pair_whigh_acosclip_lossclamp
+                O49o, O49m plus seq-turn loss clamp at 2 degrees.
   pair_soft_hitrate_late
                 O49i, O49f with seq_turn_start_updates=120.
   o49_next      Run O49h2, O49j, and O49l.
+  o49_skipfix   Run O49m, O49n, and O49o.
   all           Run control and all eight seq-turn variants.
 EOF
 }
@@ -284,6 +328,18 @@ main() {
       run_compile_check
       run_pair_soft_hitrate_wmid
       ;;
+    pair_whigh_acosclip)
+      run_compile_check
+      run_pair_whigh_acosclip
+      ;;
+    pair_wmid_acosclip)
+      run_compile_check
+      run_pair_wmid_acosclip
+      ;;
+    pair_whigh_acosclip_lossclamp)
+      run_compile_check
+      run_pair_whigh_acosclip_lossclamp
+      ;;
     pair_soft_hitrate_late)
       run_compile_check
       run_pair_soft_hitrate_late
@@ -293,6 +349,12 @@ main() {
       run_pair_soft_hitrate_whigh_rerun
       run_pair_soft_hitrate_whigh_slowramp
       run_pair_soft_hitrate_wmid
+      ;;
+    o49_skipfix)
+      run_compile_check
+      run_pair_whigh_acosclip
+      run_pair_wmid_acosclip
+      run_pair_whigh_acosclip_lossclamp
       ;;
     all)
       run_compile_check
@@ -307,6 +369,9 @@ main() {
       run_pair_soft_hitrate_whigh_rerun
       run_pair_soft_hitrate_whigh_slowramp
       run_pair_soft_hitrate_wmid
+      run_pair_whigh_acosclip
+      run_pair_wmid_acosclip
+      run_pair_whigh_acosclip_lossclamp
       run_pair_soft_hitrate_late
       ;;
     *)

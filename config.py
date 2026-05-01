@@ -171,6 +171,9 @@ class Config:
     tmag_detach_features: bool = False
     use_tmag_global_bias: bool = False
     tmag_global_bias_init: float = 0.0
+    use_tmag_affine_calib: bool = False
+    tmag_affine_init_scale: float = 1.0
+    tmag_affine_init_bias: float = 0.0
     log_tmag_clamp_min: float = -6.0
     log_tmag_clamp_max: float = 6.0
     use_tdir_anchor_loss: bool = False
@@ -194,6 +197,20 @@ class Config:
     tdir_loss_dt_ramp_end: float = 0.10
     tdir_loss_dt_ramp_start_weight: float = 0.05
     tdir_loss_dt_ramp_end_weight: float = -1.0  # <0 means use small_dt_t_weight
+    use_seq_turn_loss: bool = False
+    seq_turn_loss_w: float = 0.006
+    seq_turn_only_k: int = 1
+    seq_turn_min_dt: float = 0.05
+    seq_turn_max_dt: float = 0.20
+    seq_turn_start_updates: int = 100
+    seq_turn_ramp_updates: int = 200
+    seq_turn_acos_eps: float = 1.0e-6
+    seq_turn_loss_clamp_deg: float = 0.0
+    use_seq_turn_chain_loss: bool = False
+    seq_turn_chain_loss_w: float = 0.003
+    seq_turn_chain_min_pairs: int = 1
+    seq_turn_chain_start_updates: int = 150
+    seq_turn_chain_ramp_updates: int = 250
     w_photo: float = 0.0
     w_smooth: float = 0.0
 

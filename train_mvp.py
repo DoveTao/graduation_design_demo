@@ -543,6 +543,68 @@ def _cfg_tdir_anchor_effective_weight(cfg: Config, upd: int) -> float:
     return base_w * ramp
 
 
+def _cfg_seq_turn_effective_weight(cfg: Config, upd: int) -> float:
+    base_w = float(getattr(cfg, "seq_turn_loss_w", 0.0))
+    if (not bool(getattr(cfg, "use_seq_turn_loss", False))) or base_w <= 0.0:
+        return 0.0
+    start = int(getattr(cfg, "seq_turn_start_updates", 0))
+    if upd < start:
+        return 0.0
+    ramp_updates = int(getattr(cfg, "seq_turn_ramp_updates", 0))
+    if ramp_updates <= 0:
+        return base_w
+    ramp = min(1.0, max(0.0, float(upd - start) / float(ramp_updates)))
+    return base_w * ramp
+
+
+def _cfg_seq_turn_chain_effective_weight(cfg: Config, upd: int) -> float:
+    base_w = float(getattr(cfg, "seq_turn_chain_loss_w", 0.0))
+    if (not bool(getattr(cfg, "use_seq_turn_chain_loss", False))) or base_w <= 0.0:
+        return 0.0
+    start = int(getattr(cfg, "seq_turn_chain_start_updates", 0))
+    if upd < start:
+        return 0.0
+    ramp_updates = int(getattr(cfg, "seq_turn_chain_ramp_updates", 0))
+    if ramp_updates <= 0:
+        return base_w
+    ramp = min(1.0, max(0.0, float(upd - start) / float(ramp_updates)))
+    return base_w * ramp
+
+
+def _build_seq_turn_mask(
+    meta: Any,
+    bsz: int,
+    *,
+    only_k: int = 1,
+    min_dt: float = 0.05,
+    max_dt: float = 0.20,
+    device: Optional[torch.device] = None,
+) -> torch.Tensor:
+    has_triplet = _meta_batch_field(meta, "has_seq_turn_triplet", bsz, default=False)
+    k_list = _meta_batch_field(meta, "k", bsz, default=None)
+    dt_list = _meta_batch_field(meta, "dt_world", bsz, default=None)
+    keep = []
+    for has_ok, k_val, dt_val in zip(has_triplet, k_list, dt_list):
+        ok = bool(has_ok)
+        try:
+            ok = ok and (int(k_val) == int(only_k))
+        except Exception:
+            ok = False
+        try:
+            dt = float(dt_val) if dt_val is not None else None
+            if dt is None:
+                ok = False
+            else:
+                if dt < float(min_dt):
+                    ok = False
+                if float(max_dt) > 0.0 and dt > float(max_dt):
+                    ok = False
+        except Exception:
+            ok = False
+        keep.append(ok)
+    return torch.tensor(keep, device=device, dtype=torch.bool)
+
+
 def _tdir_anchor_weight_from_meta(
     meta: Any,
     bsz: int,
@@ -582,6 +644,62 @@ def _translation_direction_anchor_loss(
     if float(w.sum().detach().cpu()) <= 0.0:
         return torch.zeros((), device=loss.device)
     return (loss.view(-1) * w).sum() / w.sum().clamp_min(1e-6)
+
+
+def _sequence_turn_pair_angles(
+    tdir1_local_A: torch.Tensor,
+    tdir2_local_B: torch.Tensor,
+    R_AB: torch.Tensor,
+    R_BC: torch.Tensor,
+    tdir1_gt_B: torch.Tensor,
+    tdir2_gt_C: torch.Tensor,
+    *,
+    eps: float = 1.0e-6,
+) -> Tuple[torch.Tensor, torch.Tensor]:
+    """Turn-angle consistency for adjacent relative steps.
+
+    Args:
+        tdir1_local_A: predicted direction for AB, expressed in A frame.
+        tdir2_local_B: predicted direction for BC, expressed in B frame.
+        R_AB: predicted rotation AB for the first step.
+        R_BC: predicted rotation BC for the second step.
+        tdir1_gt_B: GT direction for AB, expressed in B frame.
+        tdir2_gt_C: GT direction for BC, expressed in C frame.
+    """
+    pred_t1_B = torch.matmul(R_AB.float(), tdir1_local_A.float().unsqueeze(-1)).squeeze(-1)
+    pred_t1_B = F.normalize(pred_t1_B, dim=-1, eps=eps)
+    pred_t2_B = F.normalize(tdir2_local_B.float(), dim=-1, eps=eps)
+    acos_eps = max(float(eps), 0.0)
+    pred_turn = torch.acos((pred_t1_B * pred_t2_B).sum(dim=-1).clamp(-1.0 + acos_eps, 1.0 - acos_eps))
+
+    gt_t1_B = F.normalize(tdir1_gt_B.float(), dim=-1, eps=eps)
+    gt_t2_B = torch.matmul(R_BC.float().transpose(-1, -2), tdir2_gt_C.float().unsqueeze(-1)).squeeze(-1)
+    gt_t2_B = F.normalize(gt_t2_B, dim=-1, eps=eps)
+    gt_turn = torch.acos((gt_t1_B * gt_t2_B).sum(dim=-1).clamp(-1.0 + acos_eps, 1.0 - acos_eps))
+    return pred_turn, gt_turn
+
+
+
+def _sequence_turn_angle_loss(
+    tdir1_local_A: torch.Tensor,
+    tdir2_local_B: torch.Tensor,
+    R_AB: torch.Tensor,
+    R_BC: torch.Tensor,
+    tdir1_gt_B: torch.Tensor,
+    tdir2_gt_C: torch.Tensor,
+    *,
+    eps: float = 1.0e-6,
+) -> torch.Tensor:
+    pred_turn, gt_turn = _sequence_turn_pair_angles(
+        tdir1_local_A=tdir1_local_A,
+        tdir2_local_B=tdir2_local_B,
+        R_AB=R_AB,
+        R_BC=R_BC,
+        tdir1_gt_B=tdir1_gt_B,
+        tdir2_gt_C=tdir2_gt_C,
+        eps=eps,
+    )
+    return torch.abs(pred_turn - gt_turn)
 
 
 def _bucket_init() -> Dict[str, Dict[str, float]]:
@@ -1774,6 +1892,75 @@ def _build_odometry_chains(manifest: List[Dict[str, Any]], selected_k: int, max_
     return chains
 
 
+def _build_seq_turn_chains_from_batch(
+    meta: Any,
+    bsz: int,
+    *,
+    only_k: int = 1,
+    min_dt: float = 0.0,
+    max_dt: float = -1.0,
+) -> List[List[int]]:
+    scene_field = _meta_batch_field(meta, "scene", bsz, default=None)
+    seq_field = _meta_batch_field(meta, "seq", bsz, default=None)
+    i_field = _meta_batch_field(meta, "i", bsz, default=None)
+    j_field = _meta_batch_field(meta, "j", bsz, default=None)
+    k_field = _meta_batch_field(meta, "k", bsz, default=None)
+    dt_field = _meta_batch_field(meta, "dt_world", bsz, default=None)
+    has_triplet_field = _meta_batch_field(meta, "has_seq_turn_triplet", bsz, default=False)
+
+    groups: Dict[Any, Dict[int, int]] = {}
+    for idx in range(int(bsz)):
+        if not bool(has_triplet_field[idx]):
+            continue
+        try:
+            k_val = int(k_field[idx])
+        except Exception:
+            continue
+        if k_val != int(only_k):
+            continue
+        try:
+            dt_val = float(dt_field[idx]) if dt_field[idx] is not None else None
+            if dt_val is None:
+                continue
+            if dt_val < float(min_dt):
+                continue
+            if float(max_dt) > 0.0 and dt_val > float(max_dt):
+                continue
+        except Exception:
+            continue
+        try:
+            i_val = int(i_field[idx])
+            j_val = int(j_field[idx])
+        except Exception:
+            continue
+        if j_val <= i_val:
+            continue
+        scene_val = str(scene_field[idx])
+        seq_val = str(seq_field[idx])
+        groups.setdefault((scene_val, seq_val), {})[i_val] = int(idx)
+
+    chains: List[List[int]] = []
+    for group in groups.values():
+        remaining = dict(group)
+        while remaining:
+            cur_i = min(remaining.keys())
+            chain: List[int] = []
+            while cur_i in remaining:
+                idx = remaining.pop(cur_i)
+                chain.append(idx)
+                try:
+                    j_val = int(j_field[idx])
+                except Exception:
+                    break
+                nxt_i = j_val
+                if nxt_i not in remaining:
+                    break
+                cur_i = nxt_i
+            if chain:
+                chains.append(chain)
+    return chains
+
+
 def _finite_float(x: Any, default: float = float("nan")) -> float:
     try:
         v = float(x)
@@ -2677,8 +2864,23 @@ def main():
         f"tmag_start={getattr(cfg, 'tmag_start_updates', 0)} | tmag_ramp={getattr(cfg, 'tmag_ramp_updates', 0)} | "
         f"tmag_detach={bool(getattr(cfg, 'tmag_detach_features', False))} | "
         f"tmag_bias={bool(getattr(cfg, 'use_tmag_global_bias', False))}:init={getattr(cfg, 'tmag_global_bias_init', 0.0)} | "
+        f"tmag_affine={bool(getattr(cfg, 'use_tmag_affine_calib', False))}:"
+        f"scale={getattr(cfg, 'tmag_affine_init_scale', 1.0)}:"
+        f"bias={getattr(cfg, 'tmag_affine_init_bias', 0.0)} | "
         f"tdir_anchor={bool(getattr(cfg, 'use_tdir_anchor_loss', False))}:w={getattr(cfg, 'w_tdir_anchor', 0.0)}"
         f":dt>={getattr(cfg, 'tdir_anchor_min_dt', 0.2)}:k>={getattr(cfg, 'tdir_anchor_min_k', 0)}"
+        f" | seq_turn={bool(getattr(cfg, 'use_seq_turn_loss', False))}:w={getattr(cfg, 'seq_turn_loss_w', 0.0)}"
+        f":k=={getattr(cfg, 'seq_turn_only_k', 1)}:dt>={getattr(cfg, 'seq_turn_min_dt', 0.0)}"
+        f":dt<={getattr(cfg, 'seq_turn_max_dt', -1.0)}"
+        f":start={getattr(cfg, 'seq_turn_start_updates', 0)}"
+        f":ramp={getattr(cfg, 'seq_turn_ramp_updates', 0)}"
+        f":acos_eps={getattr(cfg, 'seq_turn_acos_eps', 1.0e-6)}"
+        f":clamp_deg={getattr(cfg, 'seq_turn_loss_clamp_deg', 0.0)}"
+        f" | seq_turn_chain={bool(getattr(cfg, 'use_seq_turn_chain_loss', False))}:w={getattr(cfg, 'seq_turn_chain_loss_w', 0.0)}"
+        f":k=={getattr(cfg, 'seq_turn_only_k', 1)}:dt>={getattr(cfg, 'seq_turn_min_dt', 0.0)}"
+        f":dt<={getattr(cfg, 'seq_turn_max_dt', -1.0)}"
+        f":start={getattr(cfg, 'seq_turn_chain_start_updates', 0)}"
+        f":ramp={getattr(cfg, 'seq_turn_chain_ramp_updates', 0)}"
     )
     print(
         f"[Cfg ] lr={cfg.lr} | wd={cfg.wd} | warmup_updates={cfg.warmup_updates} | "
@@ -2704,6 +2906,11 @@ def main():
         k_choices=cfg.k_choices,
         k_probs=cfg.k_probs,
         strict_dt=True,
+        return_seq_turn_triplet=bool(
+            getattr(cfg, "use_seq_turn_loss", False)
+            or getattr(cfg, "use_seq_turn_chain_loss", False),
+        ),
+        seq_turn_only_k=int(getattr(cfg, "seq_turn_only_k", 1)),
         color_aug=bool(getattr(cfg, "train_color_aug", False)),
         color_aug_strength=float(getattr(cfg, "train_color_aug_strength", 1.0)),
     )
@@ -2993,6 +3200,21 @@ def main():
             "tmag_detach_features": bool(getattr(cfg, "tmag_detach_features", False)),
             "use_tmag_global_bias": bool(getattr(cfg, "use_tmag_global_bias", False)),
             "tmag_global_bias_init": float(getattr(cfg, "tmag_global_bias_init", 0.0)),
+            "learned_log_tmag_bias": (
+                float(getattr(model, "log_tmag_bias").detach().float().cpu())
+                if getattr(model, "log_tmag_bias", None) is not None else 0.0
+            ),
+            "use_tmag_affine_calib": bool(getattr(cfg, "use_tmag_affine_calib", False)),
+            "tmag_affine_init_scale": float(getattr(cfg, "tmag_affine_init_scale", 1.0)),
+            "tmag_affine_init_bias": float(getattr(cfg, "tmag_affine_init_bias", 0.0)),
+            "learned_tmag_affine_scale": (
+                float(getattr(model, "tmag_affine_scale").detach().float().cpu())
+                if getattr(model, "tmag_affine_scale", None) is not None else 1.0
+            ),
+            "learned_tmag_affine_bias": (
+                float(getattr(model, "tmag_affine_bias").detach().float().cpu())
+                if getattr(model, "tmag_affine_bias", None) is not None else 0.0
+            ),
             "init_checkpoint": str(getattr(cfg, "init_checkpoint", "")),
             "strict_load_checkpoint": bool(getattr(cfg, "strict_load_checkpoint", False)),
             "use_tdir_anchor_loss": bool(getattr(cfg, "use_tdir_anchor_loss", False)),
@@ -3009,6 +3231,20 @@ def main():
             "tdir_loss_dt_ramp_end": float(getattr(cfg, "tdir_loss_dt_ramp_end", 0.10)),
             "tdir_loss_dt_ramp_start_weight": float(getattr(cfg, "tdir_loss_dt_ramp_start_weight", 0.05)),
             "tdir_loss_dt_ramp_end_weight": float(getattr(cfg, "tdir_loss_dt_ramp_end_weight", -1.0)),
+            "use_seq_turn_loss": bool(getattr(cfg, "use_seq_turn_loss", False)),
+            "seq_turn_loss_w": float(getattr(cfg, "seq_turn_loss_w", 0.05)),
+            "seq_turn_only_k": int(getattr(cfg, "seq_turn_only_k", 1)),
+            "seq_turn_min_dt": float(getattr(cfg, "seq_turn_min_dt", 0.0)),
+            "seq_turn_max_dt": float(getattr(cfg, "seq_turn_max_dt", -1.0)),
+            "seq_turn_start_updates": int(getattr(cfg, "seq_turn_start_updates", 0)),
+            "seq_turn_ramp_updates": int(getattr(cfg, "seq_turn_ramp_updates", 0)),
+            "seq_turn_acos_eps": float(getattr(cfg, "seq_turn_acos_eps", 1.0e-6)),
+            "seq_turn_loss_clamp_deg": float(getattr(cfg, "seq_turn_loss_clamp_deg", 0.0)),
+            "use_seq_turn_chain_loss": bool(getattr(cfg, "use_seq_turn_chain_loss", False)),
+            "seq_turn_chain_loss_w": float(getattr(cfg, "seq_turn_chain_loss_w", 0.0)),
+            "seq_turn_chain_min_pairs": int(getattr(cfg, "seq_turn_chain_min_pairs", 1)),
+            "seq_turn_chain_start_updates": int(getattr(cfg, "seq_turn_chain_start_updates", 0)),
+            "seq_turn_chain_ramp_updates": int(getattr(cfg, "seq_turn_chain_ramp_updates", 0)),
             "odom_eval_smooth_tmag_window": int(getattr(cfg, "odom_eval_smooth_tmag_window", 0)),
             "odom_eval_scale_fit": bool(getattr(cfg, "odom_eval_scale_fit", False)),
             "save_odom_trajectory_debug": bool(getattr(cfg, "save_odom_trajectory_debug", False)),
@@ -3238,6 +3474,106 @@ def main():
                         anchor_weight,
                     )
 
+            use_seq_turn = bool(getattr(cfg, "use_seq_turn_loss", False))
+            use_seq_turn_chain = bool(getattr(cfg, "use_seq_turn_chain_loss", False))
+            L_seq_turn = torch.zeros((), device=dev)
+            seq_turn_w_eff = 0.0
+            seq_turn_n = 0.0
+            L_seq_turn_chain = torch.zeros((), device=dev)
+            seq_turn_chain_w_eff = 0.0
+            seq_turn_chain_n = 0.0
+            seq_turn_chain_n_pairs = 0.0
+            if use_seq_turn or use_seq_turn_chain:
+                if use_seq_turn:
+                    seq_turn_w_eff = _cfg_seq_turn_effective_weight(cfg, upd)
+                if use_seq_turn_chain:
+                    seq_turn_chain_w_eff = _cfg_seq_turn_chain_effective_weight(cfg, upd)
+                seq_turn_compute = ((seq_turn_w_eff > 0.0) or (seq_turn_chain_w_eff > 0.0))
+                if seq_turn_compute:
+                    IC = batch.get("IC", None)
+                    R_gt_bc = batch.get("R_gt_bc", None)
+                    t_gt_bc_dir = batch.get("t_gt_bc_dir", None)
+                    if IC is not None and R_gt_bc is not None and t_gt_bc_dir is not None:
+                        seq_turn_only_k = int(getattr(cfg, "seq_turn_only_k", 1))
+                        min_dt = float(getattr(cfg, "seq_turn_min_dt", 0.0))
+                        max_dt = float(getattr(cfg, "seq_turn_max_dt", -1.0))
+                        seq_turn_mask = _build_seq_turn_mask(
+                            meta,
+                            IA.shape[0],
+                            only_k=seq_turn_only_k,
+                            min_dt=min_dt,
+                            max_dt=max_dt,
+                            device=dev,
+                        )
+                        if bool(seq_turn_mask.any()):
+                            idx = torch.nonzero(seq_turn_mask, as_tuple=False).view(-1)
+                            IA_1 = IA[idx]
+                            IC_1 = IC.to(dev, non_blocking=True)[idx]
+                            t_pred_1 = aux["t_dir_local"][idx] if isinstance(aux, dict) and aux.get("t_dir_local", None) is not None else t_pred[idx]
+                            R_pred_1 = R_pred[idx]
+                            t_gt_1_B = t_gt[idx]
+                            R_pred_2, t_pred_2, aux_2 = model(
+                                IA_1,
+                                IC_1,
+                                enable_depth_fusion=depth_fusion_active,
+                            )
+                            t_pred_2 = (
+                                aux_2.get("t_dir_local", t_pred_2)
+                                if isinstance(aux_2, dict)
+                                else t_pred_2
+                            )
+                            if not isinstance(R_pred_2, torch.Tensor):
+                                raise RuntimeError("seq_turn: second-step relative rotation unavailable")
+                            tdir_gt_2_C = t_gt_bc_dir.to(dev, non_blocking=True)[idx]
+                            turn_pred_rad, turn_gt_rad = _sequence_turn_pair_angles(
+                                tdir1_local_A=t_pred_1,
+                                tdir2_local_B=t_pred_2,
+                                R_AB=R_pred_1,
+                                R_BC=R_pred_2,
+                                tdir1_gt_B=t_gt_1_B,
+                                tdir2_gt_C=tdir_gt_2_C,
+                                eps=float(getattr(cfg, "seq_turn_acos_eps", 1.0e-6)),
+                            )
+
+                            if use_seq_turn:
+                                turn_err = (turn_pred_rad - turn_gt_rad).abs()
+                                loss_clamp_deg = float(getattr(cfg, "seq_turn_loss_clamp_deg", 0.0))
+                                if loss_clamp_deg > 0.0:
+                                    turn_err = turn_err.clamp_max(math.radians(loss_clamp_deg))
+                                L_seq_turn = torch.mean(turn_err)
+                                # Scale in angle degrees for easier weight tuning.
+                                L_seq_turn = torch.rad2deg(L_seq_turn)
+                                seq_turn_n = float(idx.numel())
+
+                            if use_seq_turn_chain:
+                                min_pairs = int(getattr(cfg, "seq_turn_chain_min_pairs", 1))
+                                batch_chain_indices = _build_seq_turn_chains_from_batch(
+                                    meta,
+                                    IA.shape[0],
+                                    only_k=seq_turn_only_k,
+                                    min_dt=min_dt,
+                                    max_dt=max_dt,
+                                )
+                                chain_losses = []
+                                turn_pred_vec = torch.zeros((IA.shape[0],), device=dev, dtype=turn_pred_rad.dtype)
+                                turn_gt_vec = torch.zeros((IA.shape[0],), device=dev, dtype=turn_gt_rad.dtype)
+                                turn_pred_vec[idx] = turn_pred_rad
+                                turn_gt_vec[idx] = turn_gt_rad
+                                idx_set = set(idx.detach().cpu().tolist())
+                                for chain in batch_chain_indices:
+                                    chain = [ci for ci in chain if ci in idx_set]
+                                    if len(chain) < max(1, min_pairs):
+                                        continue
+                                    c_idx = torch.tensor(chain, device=dev, dtype=torch.long)
+                                    pred_sum = torch.sum(turn_pred_vec[c_idx])
+                                    gt_sum = torch.sum(turn_gt_vec[c_idx])
+                                    chain_losses.append((pred_sum - gt_sum).abs())
+                                    seq_turn_chain_n += 1.0
+                                    seq_turn_chain_n_pairs += float(c_idx.numel())
+                                if chain_losses:
+                                    L_seq_turn_chain = torch.mean(torch.stack(chain_losses))
+                                    L_seq_turn_chain = torch.rad2deg(L_seq_turn_chain)
+
             use_fine_epi = bool(cfg.use_fine_stage) and (aux.get("Wf_ab", None) is not None)
             if use_fine_epi:
                 W_ab = aux.get("Wf_ab", None)
@@ -3402,6 +3738,8 @@ def main():
                 + float(getattr(cfg, "w_coarse_epi_aux", 0.0)) * epi_ramp * L_epi_coarse
                 + tmag_w_eff * L_t_mag
                 + tdir_anchor_w_eff * L_tdir_anchor
+                + seq_turn_w_eff * L_seq_turn
+                + seq_turn_chain_w_eff * L_seq_turn_chain
                 + photo_w * L_photo
                 + smooth_w * L_smooth
             )
@@ -3412,7 +3750,7 @@ def main():
         forward_ok = all(
             bool(torch.isfinite(x).all())
             for x in [
-                R_pred, t_pred, L_pose, L_pose_coarse, L_t_mag, L_tdir_anchor,
+                R_pred, t_pred, L_pose, L_pose_coarse, L_t_mag, L_tdir_anchor, L_seq_turn, L_seq_turn_chain,
                 L_x, L_cyc, L_rel, L_epi, L_epi_coarse, L_photo, L_smooth, L,
             ]
         )
@@ -3867,6 +4205,14 @@ def main():
                     float(getattr(model, "log_tmag_bias").detach().float().cpu())
                     if getattr(model, "log_tmag_bias", None) is not None else 0.0
                 )
+                tmag_affine_scale_val = (
+                    float(getattr(model, "tmag_affine_scale").detach().float().cpu())
+                    if getattr(model, "tmag_affine_scale", None) is not None else 1.0
+                )
+                tmag_affine_bias_val = (
+                    float(getattr(model, "tmag_affine_bias").detach().float().cpu())
+                    if getattr(model, "tmag_affine_bias", None) is not None else 0.0
+                )
             scaler_scale = float(scaler.get_scale()) if use_scaler else 1.0
             lr_now = optimizer.param_groups[0]["lr"]
             dt = time.perf_counter() - t0
@@ -3875,8 +4221,14 @@ def main():
                 f"[Train] step {step:05d} upd {upd:05d} ep{ep:03d} | "
                 f"L={float(L.detach().cpu()):.3f} | pose={float(L_pose.detach().cpu()):.3f} | "
                 f"pose_c={float(L_pose_coarse.detach().cpu()):.3f} | "
-                f"tmag={float(L_t_mag.detach().cpu()):.4f} | tmag_w={tmag_w_eff:.4g} | tmag_bias={log_tmag_bias_val:.4f} | "
+                f"tmag={float(L_t_mag.detach().cpu()):.4f} | tmag_w={tmag_w_eff:.4g} | "
+                f"tmag_bias={log_tmag_bias_val:.4f} | tmag_affine_scale={tmag_affine_scale_val:.6f} | "
+                f"tmag_affine_bias={tmag_affine_bias_val:.6f} | "
                 f"tdir_anchor={float(L_tdir_anchor.detach().cpu()):.4f} | anchor_w={tdir_anchor_w_eff:.4g} | anchor_n={tdir_anchor_n:.0f} | "
+                f"seq_turn={float(L_seq_turn.detach().cpu()):.4f} | seq_turn_w={seq_turn_w_eff:.4g} | seq_turn_n={seq_turn_n:.0f} | "
+                f"seq_turn_chain={float(L_seq_turn_chain.detach().cpu()):.4f} | "
+                f"seq_turn_chain_w={seq_turn_chain_w_eff:.4g} | seq_turn_chain_n={seq_turn_chain_n:.0f} | "
+                f"seq_turn_chain_pairs={seq_turn_chain_n_pairs:.0f} | "
                 f"x={float(L_x.detach().cpu()):.4f} | cyc={float(L_cyc.detach().cpu()):.4f} | "
                 f"rel={float(L_rel.detach().cpu()):.4f} | epi={float(L_epi.detach().cpu()):.4f} | epi_c={float(L_epi_coarse.detach().cpu()):.4f} | "
                 f"photo={float(L_photo.detach().cpu()):.4f} | smooth={float(L_smooth.detach().cpu()):.4f} | depth_ramp={depth_ramp:.2f} | "
@@ -3939,57 +4291,82 @@ def main():
     latest_eval = eval_history[-1] if len(eval_history) > 0 else {}
     latest_eval_metrics = _latest_eval_metrics(latest_eval)
     final_summary = {
-        **final_metrics,
-        "bad_forward": int(bad_forward),
-        "skip_updates": int(skip_updates),
-        "total_steps": int(step),
-        "total_updates": int(upd),
-        "nan_like_event_rate_per_step": float(nan_like_events / max(step, 1)),
-        "nan_like_event_rate_per_update": float(nan_like_events / max(upd, 1)),
-        "selection_method": "best_joint",
-        "eval_points": len(eval_history),
-        "tmag_base_weight": float(_cfg_tmag_weight(cfg)),
-        "tmag_start_updates": int(getattr(cfg, "tmag_start_updates", 0)),
-        "tmag_ramp_updates": int(getattr(cfg, "tmag_ramp_updates", 0)),
-        "tmag_detach_features": bool(getattr(cfg, "tmag_detach_features", False)),
-        "use_tmag_global_bias": bool(getattr(cfg, "use_tmag_global_bias", False)),
-        "tmag_global_bias_init": float(getattr(cfg, "tmag_global_bias_init", 0.0)),
-        "learned_log_tmag_bias": (
-            float(getattr(model, "log_tmag_bias").detach().float().cpu())
-            if getattr(model, "log_tmag_bias", None) is not None else 0.0
-        ),
-        "init_checkpoint": str(getattr(cfg, "init_checkpoint", "")),
-        "strict_load_checkpoint": bool(getattr(cfg, "strict_load_checkpoint", False)),
-        "use_tdir_anchor_loss": bool(getattr(cfg, "use_tdir_anchor_loss", False)),
-        "tdir_anchor_checkpoint": str(getattr(cfg, "tdir_anchor_checkpoint", "")),
-        "w_tdir_anchor": float(getattr(cfg, "w_tdir_anchor", 0.0)),
-        "tdir_anchor_min_dt": float(getattr(cfg, "tdir_anchor_min_dt", 0.2)),
-        "tdir_anchor_min_k": int(getattr(cfg, "tdir_anchor_min_k", 0)),
-        "tdir_anchor_start_updates": int(getattr(cfg, "tdir_anchor_start_updates", 0)),
-        "tdir_anchor_ramp_updates": int(getattr(cfg, "tdir_anchor_ramp_updates", 0)),
-        "tdir_loss_ignore_dt_below": float(getattr(cfg, "tdir_loss_ignore_dt_below", 0.0)),
-        "tdir_loss_ignore_weight": float(getattr(cfg, "tdir_loss_ignore_weight", 0.0)),
-        "tdir_loss_dt_ramp_enable": bool(getattr(cfg, "tdir_loss_dt_ramp_enable", False)),
-        "tdir_loss_dt_ramp_start": float(getattr(cfg, "tdir_loss_dt_ramp_start", 0.02)),
-        "tdir_loss_dt_ramp_end": float(getattr(cfg, "tdir_loss_dt_ramp_end", 0.10)),
-        "tdir_loss_dt_ramp_start_weight": float(getattr(cfg, "tdir_loss_dt_ramp_start_weight", 0.05)),
-        "tdir_loss_dt_ramp_end_weight": float(getattr(cfg, "tdir_loss_dt_ramp_end_weight", -1.0)),
-        "odom_eval_smooth_tmag_window": int(getattr(cfg, "odom_eval_smooth_tmag_window", 0)),
-        "odom_eval_scale_fit": bool(getattr(cfg, "odom_eval_scale_fit", False)),
-        "save_odom_trajectory_debug": bool(getattr(cfg, "save_odom_trajectory_debug", False)),
-        "save_best_odom_checkpoint": bool(getattr(cfg, "save_best_odom_checkpoint", True)),
-        "odom_select_metric": str(getattr(cfg, "odom_select_metric", "odom_metric_drift")),
-        "odom_select_max_tdir_abs": float(getattr(cfg, "odom_select_max_tdir_abs", 25.0)),
-        "odom_select_max_tmag_rel": float(getattr(cfg, "odom_select_max_tmag_rel", 0.9)),
-        "odom_select_require_status_ok": bool(getattr(cfg, "odom_select_require_status_ok", True)),
-        "save_best_smallk_odom_checkpoint": bool(getattr(cfg, "save_best_smallk_odom_checkpoint", True)),
-        "smallk_select_metric": str(getattr(cfg, "smallk_select_metric", "odom_metric_drift")),
-        "smallk_select_k_list": list(tuple(getattr(cfg, "smallk_select_k_list", (1, 2, 3)))),
-        "smallk_select_max_tdir_abs": float(getattr(cfg, "smallk_select_max_tdir_abs", 28.0)),
-        "smallk_select_max_tmag_rel": float(getattr(cfg, "smallk_select_max_tmag_rel", 0.95)),
-        "smallk_select_require_status_ok": bool(getattr(cfg, "smallk_select_require_status_ok", True)),
-        "last_eval": latest_eval_metrics,
-    }
+            **final_metrics,
+            "bad_forward": int(bad_forward),
+            "skip_updates": int(skip_updates),
+            "total_steps": int(step),
+            "total_updates": int(upd),
+            "nan_like_event_rate_per_step": float(nan_like_events / max(step, 1)),
+            "nan_like_event_rate_per_update": float(nan_like_events / max(upd, 1)),
+            "selection_method": "best_joint",
+            "eval_points": len(eval_history),
+            "tmag_base_weight": float(_cfg_tmag_weight(cfg)),
+            "tmag_start_updates": int(getattr(cfg, "tmag_start_updates", 0)),
+            "tmag_ramp_updates": int(getattr(cfg, "tmag_ramp_updates", 0)),
+            "tmag_detach_features": bool(getattr(cfg, "tmag_detach_features", False)),
+            "use_tmag_global_bias": bool(getattr(cfg, "use_tmag_global_bias", False)),
+            "tmag_global_bias_init": float(getattr(cfg, "tmag_global_bias_init", 0.0)),
+            "learned_log_tmag_bias": (
+                float(getattr(model, "log_tmag_bias").detach().float().cpu())
+                if getattr(model, "log_tmag_bias", None) is not None else 0.0
+            ),
+            "use_tmag_affine_calib": bool(getattr(cfg, "use_tmag_affine_calib", False)),
+            "tmag_affine_init_scale": float(getattr(cfg, "tmag_affine_init_scale", 1.0)),
+            "tmag_affine_init_bias": float(getattr(cfg, "tmag_affine_init_bias", 0.0)),
+            "learned_tmag_affine_scale": (
+                float(getattr(model, "tmag_affine_scale").detach().float().cpu())
+                if getattr(model, "tmag_affine_scale", None) is not None else 1.0
+            ),
+            "learned_tmag_affine_bias": (
+                float(getattr(model, "tmag_affine_bias").detach().float().cpu())
+                if getattr(model, "tmag_affine_bias", None) is not None else 0.0
+            ),
+            "init_checkpoint": str(getattr(cfg, "init_checkpoint", "")),
+            "strict_load_checkpoint": bool(getattr(cfg, "strict_load_checkpoint", False)),
+            "use_tdir_anchor_loss": bool(getattr(cfg, "use_tdir_anchor_loss", False)),
+            "tdir_anchor_checkpoint": str(getattr(cfg, "tdir_anchor_checkpoint", "")),
+            "w_tdir_anchor": float(getattr(cfg, "w_tdir_anchor", 0.0)),
+            "tdir_anchor_min_dt": float(getattr(cfg, "tdir_anchor_min_dt", 0.2)),
+            "tdir_anchor_min_k": int(getattr(cfg, "tdir_anchor_min_k", 0)),
+            "tdir_anchor_start_updates": int(getattr(cfg, "tdir_anchor_start_updates", 0)),
+            "tdir_anchor_ramp_updates": int(getattr(cfg, "tdir_anchor_ramp_updates", 0)),
+            "tdir_loss_ignore_dt_below": float(getattr(cfg, "tdir_loss_ignore_dt_below", 0.0)),
+            "tdir_loss_ignore_weight": float(getattr(cfg, "tdir_loss_ignore_weight", 0.0)),
+            "tdir_loss_dt_ramp_enable": bool(getattr(cfg, "tdir_loss_dt_ramp_enable", False)),
+            "tdir_loss_dt_ramp_start": float(getattr(cfg, "tdir_loss_dt_ramp_start", 0.02)),
+            "tdir_loss_dt_ramp_end": float(getattr(cfg, "tdir_loss_dt_ramp_end", 0.10)),
+            "tdir_loss_dt_ramp_start_weight": float(getattr(cfg, "tdir_loss_dt_ramp_start_weight", 0.05)),
+            "tdir_loss_dt_ramp_end_weight": float(getattr(cfg, "tdir_loss_dt_ramp_end_weight", -1.0)),
+            "use_seq_turn_loss": bool(getattr(cfg, "use_seq_turn_loss", False)),
+            "seq_turn_loss_w": float(getattr(cfg, "seq_turn_loss_w", 0.05)),
+            "seq_turn_only_k": int(getattr(cfg, "seq_turn_only_k", 1)),
+            "seq_turn_min_dt": float(getattr(cfg, "seq_turn_min_dt", 0.0)),
+            "seq_turn_max_dt": float(getattr(cfg, "seq_turn_max_dt", -1.0)),
+            "seq_turn_start_updates": int(getattr(cfg, "seq_turn_start_updates", 0)),
+            "seq_turn_ramp_updates": int(getattr(cfg, "seq_turn_ramp_updates", 0)),
+            "seq_turn_acos_eps": float(getattr(cfg, "seq_turn_acos_eps", 1.0e-6)),
+            "seq_turn_loss_clamp_deg": float(getattr(cfg, "seq_turn_loss_clamp_deg", 0.0)),
+            "use_seq_turn_chain_loss": bool(getattr(cfg, "use_seq_turn_chain_loss", False)),
+            "seq_turn_chain_loss_w": float(getattr(cfg, "seq_turn_chain_loss_w", 0.0)),
+            "seq_turn_chain_min_pairs": int(getattr(cfg, "seq_turn_chain_min_pairs", 1)),
+            "seq_turn_chain_start_updates": int(getattr(cfg, "seq_turn_chain_start_updates", 0)),
+            "seq_turn_chain_ramp_updates": int(getattr(cfg, "seq_turn_chain_ramp_updates", 0)),
+            "odom_eval_smooth_tmag_window": int(getattr(cfg, "odom_eval_smooth_tmag_window", 0)),
+            "odom_eval_scale_fit": bool(getattr(cfg, "odom_eval_scale_fit", False)),
+            "save_odom_trajectory_debug": bool(getattr(cfg, "save_odom_trajectory_debug", False)),
+            "save_best_odom_checkpoint": bool(getattr(cfg, "save_best_odom_checkpoint", True)),
+            "odom_select_metric": str(getattr(cfg, "odom_select_metric", "odom_metric_drift")),
+            "odom_select_max_tdir_abs": float(getattr(cfg, "odom_select_max_tdir_abs", 25.0)),
+            "odom_select_max_tmag_rel": float(getattr(cfg, "odom_select_max_tmag_rel", 0.9)),
+            "odom_select_require_status_ok": bool(getattr(cfg, "odom_select_require_status_ok", True)),
+            "save_best_smallk_odom_checkpoint": bool(getattr(cfg, "save_best_smallk_odom_checkpoint", True)),
+            "smallk_select_metric": str(getattr(cfg, "smallk_select_metric", "odom_metric_drift")),
+            "smallk_select_k_list": list(tuple(getattr(cfg, "smallk_select_k_list", (1, 2, 3)))),
+            "smallk_select_max_tdir_abs": float(getattr(cfg, "smallk_select_max_tdir_abs", 28.0)),
+            "smallk_select_max_tmag_rel": float(getattr(cfg, "smallk_select_max_tmag_rel", 0.95)),
+            "smallk_select_require_status_ok": bool(getattr(cfg, "smallk_select_require_status_ok", True)),
+            "last_eval": latest_eval_metrics,
+        }
     if bool(cfg.save_final_summary):
         _save_json(os.path.join(ckpt_root, "final_summary.json"), final_summary)
     if bool(cfg.save_eval_history):
