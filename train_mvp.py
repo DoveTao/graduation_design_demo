@@ -1969,6 +1969,30 @@ def _finite_float(x: Any, default: float = float("nan")) -> float:
     return v if math.isfinite(v) else default
 
 
+def _rolling_metric_score(
+    history: List[Dict[str, Any]],
+    current_value: float,
+    current_ok: bool,
+    *,
+    window: int = 1,
+    min_points: int = 1,
+) -> Tuple[float, int, bool]:
+    window = max(1, int(window))
+    min_points = max(1, int(min_points))
+    recent = list(history[-max(0, window - 1):])
+    recent.append({"value": float(current_value), "ok": bool(current_ok)})
+
+    values: List[float] = []
+    for rec in recent[-window:]:
+        value = float(rec.get("value", float("nan")))
+        if bool(rec.get("ok", False)) and math.isfinite(value):
+            values.append(value)
+    ok = bool(current_ok) and len(values) >= min_points
+    if not ok:
+        return float("inf"), len(values), False
+    return float(sum(values) / max(len(values), 1)), len(values), True
+
+
 def _finite_mean_from_rows(rows: List[Dict[str, Any]], key: str) -> float:
     vals = [_finite_float(r.get(key, float("nan"))) for r in rows]
     vals = [v for v in vals if math.isfinite(v)]
@@ -3248,6 +3272,10 @@ def main():
             "odom_eval_smooth_tmag_window": int(getattr(cfg, "odom_eval_smooth_tmag_window", 0)),
             "odom_eval_scale_fit": bool(getattr(cfg, "odom_eval_scale_fit", False)),
             "save_odom_trajectory_debug": bool(getattr(cfg, "save_odom_trajectory_debug", False)),
+            "odom_select_window": int(getattr(cfg, "odom_select_window", 1)),
+            "odom_select_min_points": int(getattr(cfg, "odom_select_min_points", 1)),
+            "smallk_select_window": int(getattr(cfg, "smallk_select_window", 1)),
+            "smallk_select_min_points": int(getattr(cfg, "smallk_select_min_points", 1)),
             "last_eval": _latest_eval_metrics(metrics),
         }
         if bool(cfg.save_final_summary):
@@ -3311,6 +3339,8 @@ def main():
     best_odom_tdir_abs = float("inf")
     best_odom_tmag_rel_err = float("inf")
     best_odom_checkpoint = ""
+    best_odom_select_score = float("inf")
+    best_odom_select_points = 0
     best_smallk_odom_metric = float("inf")
     best_smallk_odom_drift = float("inf")
     best_smallk_odom_upd = -1
@@ -3318,6 +3348,10 @@ def main():
     best_smallk_odom_tmag_rel_err = float("inf")
     best_smallk_odom_count = 0
     best_smallk_odom_checkpoint = ""
+    best_smallk_odom_select_score = float("inf")
+    best_smallk_odom_select_points = 0
+    odom_select_history: List[Dict[str, Any]] = []
+    smallk_select_history: List[Dict[str, Any]] = []
     eval_history: List[Dict[str, Any]] = []
     vis_dumped = False
 
@@ -3998,10 +4032,21 @@ def main():
                         odom_tmag_ok = odom_tmag_rel <= float(getattr(cfg, "odom_select_max_tmag_rel", 0.9))
                         odom_metric_ok = math.isfinite(odom_metric_val)
                         odom_select_ok = odom_status_ok and odom_tdir_ok and odom_tmag_ok and odom_metric_ok
+                        odom_select_score, odom_select_points, odom_robust_select_ok = _rolling_metric_score(
+                            odom_select_history,
+                            odom_metric_val,
+                            odom_select_ok,
+                            window=int(getattr(cfg, "odom_select_window", 1)),
+                            min_points=int(getattr(cfg, "odom_select_min_points", 1)),
+                        )
                         metrics.update({
                             "odom_select_metric": odom_metric_key,
                             "odom_select_value": odom_metric_val,
+                            "odom_select_score": odom_select_score,
+                            "odom_select_points": int(odom_select_points),
+                            "odom_select_window": int(getattr(cfg, "odom_select_window", 1)),
                             "odom_select_ok": int(odom_select_ok),
+                            "odom_robust_select_ok": int(odom_robust_select_ok),
                             "odom_select_tdir_ok": int(odom_tdir_ok),
                             "odom_select_tmag_ok": int(odom_tmag_ok),
                             "odom_select_status_ok": int(odom_status_ok),
@@ -4009,22 +4054,32 @@ def main():
                         })
                         if (
                             bool(getattr(cfg, "save_best_odom_checkpoint", True))
-                            and odom_select_ok
-                            and odom_metric_val < best_odom_metric
+                            and odom_robust_select_ok
+                            and odom_select_score < best_odom_select_score
                         ):
-                            best_odom_metric = odom_metric_val
+                            best_odom_metric = odom_select_score
                             best_odom_drift = float(odom_metrics.get("odom_metric_drift", float("nan")))
                             best_odom_upd = int(upd)
                             best_odom_tdir_abs = float(tdir_abs)
                             best_odom_tmag_rel_err = float(odom_tmag_rel)
                             best_odom_checkpoint = "best_odom_drift.pt"
+                            best_odom_select_score = float(odom_select_score)
+                            best_odom_select_points = int(odom_select_points)
                             _save_model_ckpt(os.path.join(ckpt_root, best_odom_checkpoint), model, cfg, step, upd, metrics)
                             print(
                                 f"[OdomSelect] saved {best_odom_checkpoint} | "
-                                f"{odom_metric_key}={best_odom_metric:.4f} | "
+                                f"{odom_metric_key}={odom_metric_val:.4f} | "
+                                f"score={best_odom_select_score:.4f}/{best_odom_select_points}pt | "
                                 f"tdir_abs={best_odom_tdir_abs:.4f}° | "
                                 f"tmag_rel={best_odom_tmag_rel_err:.4f} | upd={best_odom_upd:05d}"
                             )
+                        odom_select_history.append({
+                            "upd": int(upd),
+                            "value": float(odom_metric_val),
+                            "score": float(odom_select_score),
+                            "points": int(odom_select_points),
+                            "ok": bool(odom_select_ok),
+                        })
 
                         smallk_labels = [
                             f"k={int(k)}" for k in tuple(getattr(cfg, "smallk_select_k_list", (1, 2, 3)))
@@ -4058,10 +4113,21 @@ def main():
                             and smallk_tdir_ok
                             and smallk_tmag_ok
                         )
+                        smallk_select_score, smallk_select_points, smallk_robust_select_ok = _rolling_metric_score(
+                            smallk_select_history,
+                            smallk_metric_val,
+                            smallk_select_ok,
+                            window=int(getattr(cfg, "smallk_select_window", 1)),
+                            min_points=int(getattr(cfg, "smallk_select_min_points", 1)),
+                        )
                         metrics.update({
                             "smallk_select_metric": smallk_metric_key,
                             "smallk_select_value": smallk_metric_val,
+                            "smallk_select_score": smallk_select_score,
+                            "smallk_select_points": int(smallk_select_points),
+                            "smallk_select_window": int(getattr(cfg, "smallk_select_window", 1)),
                             "smallk_select_ok": int(smallk_select_ok),
+                            "smallk_robust_select_ok": int(smallk_robust_select_ok),
                             "smallk_select_status_ok": int(smallk_status_ok),
                             "smallk_select_count_ok": int(smallk_count_ok),
                             "smallk_select_tdir_ok": int(smallk_tdir_ok),
@@ -4072,25 +4138,35 @@ def main():
                         })
                         if (
                             bool(getattr(cfg, "save_best_smallk_odom_checkpoint", True))
-                            and smallk_select_ok
-                            and smallk_metric_val < best_smallk_odom_metric
+                            and smallk_robust_select_ok
+                            and smallk_select_score < best_smallk_odom_select_score
                         ):
-                            best_smallk_odom_metric = smallk_metric_val
+                            best_smallk_odom_metric = smallk_select_score
                             best_smallk_odom_drift = float(odom_metrics.get("odom_metric_drift", float("nan")))
                             best_smallk_odom_upd = int(upd)
                             best_smallk_odom_tdir_abs = float(smallk_tdir_abs)
                             best_smallk_odom_tmag_rel_err = float(smallk_tmag_rel)
                             best_smallk_odom_count = int(smallk_count)
                             best_smallk_odom_checkpoint = "best_smallk_odom.pt"
+                            best_smallk_odom_select_score = float(smallk_select_score)
+                            best_smallk_odom_select_points = int(smallk_select_points)
                             _save_model_ckpt(os.path.join(ckpt_root, best_smallk_odom_checkpoint), model, cfg, step, upd, metrics)
                             print(
                                 f"[SmallKOdomSelect] saved {best_smallk_odom_checkpoint} | "
-                                f"{smallk_metric_key}={best_smallk_odom_metric:.4f} | "
+                                f"{smallk_metric_key}={smallk_metric_val:.4f} | "
+                                f"score={best_smallk_odom_select_score:.4f}/{best_smallk_odom_select_points}pt | "
                                 f"k={tuple(getattr(cfg, 'smallk_select_k_list', (1, 2, 3)))} "
                                 f"tdir_abs={best_smallk_odom_tdir_abs:.4f}° | "
                                 f"tmag_rel={best_smallk_odom_tmag_rel_err:.4f} | "
                                 f"count={best_smallk_odom_count} | upd={best_smallk_odom_upd:05d}"
                             )
+                        smallk_select_history.append({
+                            "upd": int(upd),
+                            "value": float(smallk_metric_val),
+                            "score": float(smallk_select_score),
+                            "points": int(smallk_select_points),
+                            "ok": bool(smallk_select_ok),
+                        })
 
                         if bool(getattr(cfg, "save_last_eval_checkpoint", False)):
                             _save_ckpt(os.path.join(ckpt_root, "last_eval.pt"), model, optimizer, scaler, scheduler, cfg, step, upd, metrics)
@@ -4266,6 +4342,8 @@ def main():
         "best_odom_tdir_abs": best_odom_tdir_abs,
         "best_odom_tmag_rel_err": best_odom_tmag_rel_err,
         "best_odom_checkpoint": best_odom_checkpoint,
+        "best_odom_select_score": best_odom_select_score,
+        "best_odom_select_points": best_odom_select_points,
         "best_smallk_odom_metric": best_smallk_odom_metric,
         "best_smallk_odom_drift": best_smallk_odom_drift,
         "best_smallk_odom_upd": best_smallk_odom_upd,
@@ -4273,6 +4351,8 @@ def main():
         "best_smallk_odom_tmag_rel_err": best_smallk_odom_tmag_rel_err,
         "best_smallk_odom_count": best_smallk_odom_count,
         "best_smallk_odom_checkpoint": best_smallk_odom_checkpoint,
+        "best_smallk_odom_select_score": best_smallk_odom_select_score,
+        "best_smallk_odom_select_points": best_smallk_odom_select_points,
     }
     if bool(getattr(cfg, "save_last_train_state", True)):
         _save_ckpt(
@@ -4359,12 +4439,16 @@ def main():
             "odom_select_max_tdir_abs": float(getattr(cfg, "odom_select_max_tdir_abs", 25.0)),
             "odom_select_max_tmag_rel": float(getattr(cfg, "odom_select_max_tmag_rel", 0.9)),
             "odom_select_require_status_ok": bool(getattr(cfg, "odom_select_require_status_ok", True)),
+            "odom_select_window": int(getattr(cfg, "odom_select_window", 1)),
+            "odom_select_min_points": int(getattr(cfg, "odom_select_min_points", 1)),
             "save_best_smallk_odom_checkpoint": bool(getattr(cfg, "save_best_smallk_odom_checkpoint", True)),
             "smallk_select_metric": str(getattr(cfg, "smallk_select_metric", "odom_metric_drift")),
             "smallk_select_k_list": list(tuple(getattr(cfg, "smallk_select_k_list", (1, 2, 3)))),
             "smallk_select_max_tdir_abs": float(getattr(cfg, "smallk_select_max_tdir_abs", 28.0)),
             "smallk_select_max_tmag_rel": float(getattr(cfg, "smallk_select_max_tmag_rel", 0.95)),
             "smallk_select_require_status_ok": bool(getattr(cfg, "smallk_select_require_status_ok", True)),
+            "smallk_select_window": int(getattr(cfg, "smallk_select_window", 1)),
+            "smallk_select_min_points": int(getattr(cfg, "smallk_select_min_points", 1)),
             "last_eval": latest_eval_metrics,
         }
     if bool(cfg.save_final_summary):
