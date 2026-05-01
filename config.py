@@ -290,3 +290,6 @@ class Config:
     matmul_precision: str = "high"
     deterministic: bool = False
     benchmark: bool = True
+    cuda_flash_sdp: bool = True
+    cuda_mem_efficient_sdp: bool = True
+    cuda_math_sdp: bool = True

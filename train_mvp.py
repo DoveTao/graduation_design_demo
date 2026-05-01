@@ -2852,6 +2852,13 @@ def main():
     torch.backends.cudnn.allow_tf32 = bool(cfg.tf32)
     torch.backends.cudnn.deterministic = bool(cfg.deterministic)
     torch.backends.cudnn.benchmark = bool(cfg.benchmark)
+    if torch.cuda.is_available():
+        try:
+            torch.backends.cuda.enable_flash_sdp(bool(getattr(cfg, "cuda_flash_sdp", True)))
+            torch.backends.cuda.enable_mem_efficient_sdp(bool(getattr(cfg, "cuda_mem_efficient_sdp", True)))
+            torch.backends.cuda.enable_math_sdp(bool(getattr(cfg, "cuda_math_sdp", True)))
+        except Exception as exc:
+            print(f"[Warn ] failed to configure CUDA SDP backends: {exc}")
 
     print(f"[Cfg ] model_variant: coarse_interaction={cfg.use_coarse_interaction} | fine_stage={cfg.use_fine_stage} | epi_bias={cfg.use_epipolar_bias} | epi_loss={cfg.use_epipolar_loss} | depth={cfg.use_depth_branch}")
     print(f"[Cfg ] HxW={cfg.H}x{cfg.W} | D={cfg.D} | Nc={cfg.Nc} | Nf={cfg.Nf} | p={cfg.p}")
@@ -2871,6 +2878,11 @@ def main():
         f":L{getattr(cfg, 'translation_branch_encoder_layers', 0)}"
         f":detach={getattr(cfg, 'translation_branch_detach_match', True)} | "
         f"pose_stats_pool={getattr(cfg, 'pose_use_stats_pool', False)}"
+    )
+    print(
+        f"[Cfg ] cuda_sdp: flash={getattr(cfg, 'cuda_flash_sdp', True)} | "
+        f"mem_efficient={getattr(cfg, 'cuda_mem_efficient_sdp', True)} | "
+        f"math={getattr(cfg, 'cuda_math_sdp', True)}"
     )
     print(
         f"[Cfg ] loss: w_pose={cfg.w_pose} | w_pose_out_t={getattr(cfg, 'w_pose_output_t', 0.0)} | t_alpha={cfg.pose_t_alpha} | "
@@ -3239,6 +3251,11 @@ def main():
                 float(getattr(model, "tmag_affine_bias").detach().float().cpu())
                 if getattr(model, "tmag_affine_bias", None) is not None else 0.0
             ),
+            "patch_embed_pool_mode": str(getattr(cfg, "patch_embed_pool_mode", "avg")),
+            "translation_patch_pool_mode": str(getattr(cfg, "translation_patch_pool_mode", "gated_avgmax")),
+            "cuda_flash_sdp": bool(getattr(cfg, "cuda_flash_sdp", True)),
+            "cuda_mem_efficient_sdp": bool(getattr(cfg, "cuda_mem_efficient_sdp", True)),
+            "cuda_math_sdp": bool(getattr(cfg, "cuda_math_sdp", True)),
             "init_checkpoint": str(getattr(cfg, "init_checkpoint", "")),
             "strict_load_checkpoint": bool(getattr(cfg, "strict_load_checkpoint", False)),
             "use_tdir_anchor_loss": bool(getattr(cfg, "use_tdir_anchor_loss", False)),
@@ -4401,6 +4418,11 @@ def main():
                 float(getattr(model, "tmag_affine_bias").detach().float().cpu())
                 if getattr(model, "tmag_affine_bias", None) is not None else 0.0
             ),
+            "patch_embed_pool_mode": str(getattr(cfg, "patch_embed_pool_mode", "avg")),
+            "translation_patch_pool_mode": str(getattr(cfg, "translation_patch_pool_mode", "gated_avgmax")),
+            "cuda_flash_sdp": bool(getattr(cfg, "cuda_flash_sdp", True)),
+            "cuda_mem_efficient_sdp": bool(getattr(cfg, "cuda_mem_efficient_sdp", True)),
+            "cuda_math_sdp": bool(getattr(cfg, "cuda_math_sdp", True)),
             "init_checkpoint": str(getattr(cfg, "init_checkpoint", "")),
             "strict_load_checkpoint": bool(getattr(cfg, "strict_load_checkpoint", False)),
             "use_tdir_anchor_loss": bool(getattr(cfg, "use_tdir_anchor_loss", False)),
