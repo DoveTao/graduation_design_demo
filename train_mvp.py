@@ -969,6 +969,33 @@ def _save_model_ckpt(path, model, cfg, step, upd, metrics):
     )
 
 
+def _safe_remove(path: str) -> None:
+    if not path:
+        return
+    try:
+        os.remove(path)
+    except FileNotFoundError:
+        return
+    except OSError:
+        return
+
+
+def _finite_float_or_nan(v: Any, default: float = float("inf")) -> float:
+    try:
+        x = float(v)
+    except Exception:
+        return default
+    return x if math.isfinite(x) else default
+
+
+def _first_finite(*vals: Any, default: float = float("inf")) -> float:
+    for v in vals:
+        x = _finite_float_or_nan(v, default=default)
+        if math.isfinite(x):
+            return x
+    return default
+
+
 def _load_model_init_checkpoint(
     model: nn.Module,
     path: str,
@@ -3382,6 +3409,13 @@ def main():
     best_tdir_local_A_abs = float("inf")
     best_joint = float("inf")
     best_joint_local_A_abs = float("inf")
+    eval_ckpt_keep_last_n = int(getattr(cfg, "eval_ckpt_keep_last_n", 5))
+    eval_ckpt_keep_last_n = max(eval_ckpt_keep_last_n, 0)
+    saved_eval_ckpts: List[str] = []
+    last_eval_ckpt_path = ""
+    best_eval_joint_score = float("inf")
+    best_eval_joint_upd = -1
+    best_eval_joint_ckpt = ""
     best_odom_metric = float("inf")
     best_odom_drift = float("inf")
     best_odom_upd = -1
@@ -4219,6 +4253,61 @@ def main():
                             "ok": bool(smallk_select_ok),
                         })
 
+                        # Save latest and recent eval checkpoints so intermediate points are preserved
+                        # (independent of odometry-gated checkpoint selection).
+                        last_eval_ckpt_path = os.path.join(ckpt_root, "last.pt")
+                        _save_model_ckpt(last_eval_ckpt_path, model, cfg, step, upd, metrics)
+                        if eval_ckpt_keep_last_n > 0:
+                            eval_ckpt_path = os.path.join(ckpt_root, f"eval_upd_{int(upd):04d}.pt")
+                            _save_model_ckpt(eval_ckpt_path, model, cfg, step, upd, metrics)
+                            saved_eval_ckpts.append(os.path.basename(eval_ckpt_path))
+                            while len(saved_eval_ckpts) > eval_ckpt_keep_last_n:
+                                old = saved_eval_ckpts.pop(0)
+                                if old:
+                                    _safe_remove(os.path.join(ckpt_root, old))
+
+                        eval_drift = _first_finite(
+                            odom_metrics.get("odom_metric_drift", float("inf")),
+                            odom_metrics.get("drift", float("inf")),
+                        )
+                        eval_ate = _first_finite(
+                            odom_metrics.get("odom_metric_ATE", float("inf")),
+                            odom_metrics.get("ATE", float("inf")),
+                            metrics.get("odom_metric_ATE", float("inf")),
+                        )
+                        eval_tmag_rel = _first_finite(
+                            tdiag.get("tmag_rel_err", float("inf")),
+                            tdiag.get("tdir_diag_tmag_rel_err", float("inf")),
+                            tdiag.get("tdir_tmag_rel_err", float("inf")),
+                            metrics.get("tmag_rel_err", float("inf")),
+                            metrics.get("tdir_diag_tmag_rel_err", float("inf")),
+                            metrics.get("tdir_tmag_rel_err", float("inf")),
+                        )
+                        eval_path_ratio = _first_finite(
+                            odom_metrics.get("odom_shape_metric_mean_path_length_ratio", float("inf")),
+                            odom_metrics.get("path_length_ratio", float("inf")),
+                            default=1.0,
+                        )
+                        if all(v < float("inf") for v in (eval_drift, eval_ate, eval_tmag_rel)):
+                            eval_joint_score = (
+                                eval_drift
+                                + 0.1 * eval_ate
+                                + 0.5 * abs(eval_path_ratio - 1.0)
+                                + 0.2 * eval_tmag_rel
+                            )
+                            if eval_joint_score < best_eval_joint_score:
+                                best_eval_joint_score = float(eval_joint_score)
+                                best_eval_joint_upd = int(upd)
+                                best_eval_joint_ckpt = "best_eval_joint.pt"
+                                _save_model_ckpt(
+                                    os.path.join(ckpt_root, best_eval_joint_ckpt),
+                                    model,
+                                    cfg,
+                                    step,
+                                    upd,
+                                    metrics,
+                                )
+
                         if bool(getattr(cfg, "save_last_eval_checkpoint", False)):
                             _save_ckpt(os.path.join(ckpt_root, "last_eval.pt"), model, optimizer, scaler, scheduler, cfg, step, upd, metrics)
                         if rot < best_rot:
@@ -4404,6 +4493,10 @@ def main():
         "best_smallk_odom_checkpoint": best_smallk_odom_checkpoint,
         "best_smallk_odom_select_score": best_smallk_odom_select_score,
         "best_smallk_odom_select_points": best_smallk_odom_select_points,
+        "best_eval_joint_score": best_eval_joint_score,
+        "best_eval_joint_upd": int(best_eval_joint_upd),
+        "best_eval_joint_ckpt": str(best_eval_joint_ckpt),
+        "last_eval_ckpt_path": "",
     }
     if bool(getattr(cfg, "save_last_train_state", True)):
         _save_ckpt(
@@ -4418,6 +4511,11 @@ def main():
             final_metrics,
         )
 
+    final_pt = os.path.join(ckpt_root, "final.pt")
+    _save_ckpt(final_pt, model, optimizer, scaler, scheduler, cfg, step, upd, final_metrics)
+    last_ckpt_path = "final.pt"
+    final_metrics["last_eval_ckpt_path"] = last_ckpt_path
+
     nan_like_events = int(bad_forward + skip_updates)
     latest_eval = eval_history[-1] if len(eval_history) > 0 else {}
     latest_eval_metrics = _latest_eval_metrics(latest_eval)
@@ -4425,6 +4523,8 @@ def main():
             **final_metrics,
             "bad_forward": int(bad_forward),
             "skip_updates": int(skip_updates),
+            "saved_eval_ckpts": list(saved_eval_ckpts),
+            "last_ckpt_path": str(last_ckpt_path),
             "total_steps": int(step),
             "total_updates": int(upd),
             "nan_like_event_rate_per_step": float(nan_like_events / max(step, 1)),
