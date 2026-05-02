@@ -509,6 +509,18 @@ def _translation_magnitude_gt(batch: Dict[str, Any], meta: Any, bsz: int, device
     return torch.tensor(vals, device=device, dtype=torch.float32).view(-1)
 
 
+def _make_dt_world_tensor(meta: Any, bsz: int, device: torch.device, default: float = 0.01) -> Optional[torch.Tensor]:
+    """Extract dt_world from batch meta, return as [B] tensor or None."""
+    dt_list = _meta_batch_field(meta, "dt_world", bsz, default=None)
+    if dt_list is None or any(v is None for v in dt_list):
+        return torch.full((bsz,), float(default), device=device, dtype=torch.float32)
+    try:
+        vals = [float(v) if v is not None else float(default) for v in dt_list]
+    except Exception:
+        return torch.full((bsz,), float(default), device=device, dtype=torch.float32)
+    return torch.tensor(vals, device=device, dtype=torch.float32)
+
+
 def _cfg_tmag_weight(cfg: Config) -> float:
     if hasattr(cfg, "w_tmag"):
         return float(getattr(cfg, "w_tmag", 0.0))
@@ -974,7 +986,21 @@ def _load_model_init_checkpoint(
     state = payload.get("model", payload) if isinstance(payload, dict) else payload
     if not isinstance(state, dict):
         raise TypeError(f"{label} has no model state_dict: {ckpt_path}")
+    # When strict=False, filter out params with shape mismatches so new
+    # architecture additions (e.g. T51a dt-conditioned mag_head) can load.
+    skipped = []
+    if not bool(strict):
+        model_state = model.state_dict()
+        filtered = {}
+        for k, v in state.items():
+            if k in model_state and v.shape != model_state[k].shape:
+                skipped.append(k)
+                continue
+            filtered[k] = v
+        state = filtered
     missing, unexpected = model.load_state_dict(state, strict=bool(strict))
+    if skipped:
+        print(f"[{label}] skipped shape-mismatched params: {skipped}")
     print(
         f"[{label}] loaded {ckpt_path} | strict={bool(strict)} | "
         f"missing={len(missing)} | unexpected={len(unexpected)}"
@@ -1467,8 +1493,9 @@ def eval_model(model, loader, device, cfg: Config, *, collect_vis: bool = False,
         t_gt = batch['t_gt_dir'].to(device, non_blocking=True)
         meta = batch.get('meta', {})
         t_gt_mag = _translation_magnitude_gt(batch, meta, IA.shape[0], device)
+        dt_world = _make_dt_world_tensor(meta, IA.shape[0], device)
 
-        R_pred, t_pred, aux = model(IA, IB, enable_depth_fusion=True)
+        R_pred, t_pred, aux = model(IA, IB, enable_depth_fusion=True, dt_world=dt_world)
         t_eval_pred = aux.get('t_dir_out', t_pred) if isinstance(aux, dict) else t_pred
 
         use_fine_diag = bool(cfg.use_fine_stage) and (aux.get("Wf_ab", None) is not None)
@@ -2360,7 +2387,9 @@ def eval_odometry_sequence(model, ds, device, cfg: Config, output_dir: Optional[
             if t_gt_mag <= 1e-12:
                 continue
 
-            R_pred, t_pred, aux = model(IA, IB, enable_depth_fusion=True)
+            dt_val = float(sample.get("dt_world", sample.get("t_gt_mag", 0.01)))
+            dt_tensor = torch.tensor([dt_val], device=device, dtype=torch.float32)
+            R_pred, t_pred, aux = model(IA, IB, enable_depth_fusion=True, dt_world=dt_tensor)
             R_pred_np = R_pred.detach().float().cpu().numpy()[0]
             t_dir_pred_t = aux.get("t_dir_out", t_pred) if isinstance(aux, dict) else t_pred
             t_dir_pred = F.normalize(t_dir_pred_t.detach().float(), dim=-1, eps=1e-6).cpu().numpy()[0]
@@ -3424,7 +3453,8 @@ def main():
 
         with torch.autocast(device_type=dev.type, dtype=amp_dtype, enabled=use_amp):
             depth_fusion_active = bool(cfg.use_depth_branch) and (upd >= int(getattr(cfg, "depth_fuse_start_updates", 0)))
-            R_pred, t_pred, aux = model(IA, IB, enable_depth_fusion=depth_fusion_active)
+            dt_world = _make_dt_world_tensor(meta, IA.shape[0], dev)
+            R_pred, t_pred, aux = model(IA, IB, enable_depth_fusion=depth_fusion_active, dt_world=dt_world)
 
             t_pose_pred = aux.get("t_dir_local", t_pred)
             t_pose_frame = aux.get("t_local_frame", "B") if aux.get("t_dir_local", None) is not None else "B"
@@ -3570,6 +3600,7 @@ def main():
                                 IA_1,
                                 IC_1,
                                 enable_depth_fusion=depth_fusion_active,
+                                dt_world=dt_world[idx] if dt_world is not None else None,
                             )
                             t_pred_2 = (
                                 aux_2.get("t_dir_local", t_pred_2)

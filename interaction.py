@@ -186,20 +186,31 @@ class TranslationOnlyHead(nn.Module):
 
 
 class TranslationMagnitudeHead(nn.Module):
-    """Predict log relative translation scale from fused token features."""
+    """Predict log relative translation scale from fused token features.
 
-    def __init__(self, D: int):
+    If condition_dim > 0, expects a condition tensor (e.g. log(dt_world))
+    to be concatenated with the pooled features before the MLP.
+    """
+
+    def __init__(self, D: int, condition_dim: int = 0):
         super().__init__()
+        self.condition_dim = int(condition_dim)
+        in_dim = 3 * D + self.condition_dim
         self.net = nn.Sequential(
-            nn.LayerNorm(3 * D),
-            nn.Linear(3 * D, D),
+            nn.LayerNorm(in_dim),
+            nn.Linear(in_dim, D),
             nn.GELU(),
             nn.Linear(D, D // 2),
             nn.GELU(),
             nn.Linear(D // 2, 1),
         )
 
-    def forward(self, feat: torch.Tensor, token_weight: Optional[torch.Tensor] = None) -> torch.Tensor:
+    def forward(
+        self,
+        feat: torch.Tensor,
+        token_weight: Optional[torch.Tensor] = None,
+        condition: Optional[torch.Tensor] = None,
+    ) -> torch.Tensor:
         feat = feat.float()
         if token_weight is None:
             z_mean = feat.mean(dim=1)
@@ -213,6 +224,18 @@ class TranslationMagnitudeHead(nn.Module):
         z_std = torch.sqrt(z_var.clamp_min(1e-8))
         z_max = feat.max(dim=1).values
         z = torch.cat([z_mean, z_max, z_std], dim=-1)
+
+        if self.condition_dim > 0:
+            if condition is None:
+                condition = torch.zeros(
+                    (feat.shape[0], self.condition_dim),
+                    device=feat.device,
+                    dtype=z.dtype,
+                )
+            else:
+                condition = condition.float().view(feat.shape[0], self.condition_dim)
+            z = torch.cat([z, condition], dim=-1)
+
         return self.net(z).squeeze(-1)
 
 
@@ -353,6 +376,7 @@ class CoarseInteraction(nn.Module):
         tmag_min: float = 1.0e-3,
         log_tmag_clamp_min: float = -6.0,
         log_tmag_clamp_max: float = 6.0,
+        tmag_condition_on_dt: bool = False,
     ):
         super().__init__()
         self.temperature = float(temperature)
@@ -368,12 +392,14 @@ class CoarseInteraction(nn.Module):
         self.tmag_min = float(tmag_min)
         self.log_tmag_clamp_min = float(log_tmag_clamp_min)
         self.log_tmag_clamp_max = float(log_tmag_clamp_max)
+        self.tmag_condition_on_dt = bool(tmag_condition_on_dt)
         self.fuse = FuseMLP(D)
         self.bearing_fuse = BearingFuse(D) if self.use_bearing_fuse else None
         self.pose_head = CoarsePoseHead(D, use_stats_pool=pose_use_stats_pool)
         self.t_fuse = FuseMLP(D) if self.use_translation_feature_branch else None
         self.t_head = TranslationOnlyHead(D) if self.use_translation_feature_branch else None
-        self.mag_head = TranslationMagnitudeHead(D) if self.use_translation_magnitude_head else None
+        _mag_cond_dim = 1 if self.tmag_condition_on_dt else 0
+        self.mag_head = TranslationMagnitudeHead(D, condition_dim=_mag_cond_dim) if self.use_translation_magnitude_head else None
         self.rel_head = TokenReliabilityHead(D)
 
     def forward(
@@ -383,6 +409,8 @@ class CoarseInteraction(nn.Module):
         *,
         tokens_a_t: Optional[Tokens] = None,
         tokens_b_t: Optional[Tokens] = None,
+        dt_world: Optional[torch.Tensor] = None,
+        tmag_dt_clamp_min: float = 0.01,
     ) -> Dict[str, torch.Tensor]:
         sim = cosine_logits(
             TokA.feat,
@@ -415,7 +443,20 @@ class CoarseInteraction(nn.Module):
             if self.tmag_detach_features:
                 mag_feat = mag_feat.detach()
                 mag_weight = mag_weight.detach()
-            log_tc_mag = self.mag_head(mag_feat, token_weight=mag_weight)
+            # Build dt condition if enabled
+            mag_condition = None
+            if self.tmag_condition_on_dt:
+                if dt_world is not None:
+                    dt = dt_world.float().view(-1, 1).clamp_min(float(tmag_dt_clamp_min))
+                    mag_condition = torch.log(dt)
+                else:
+                    mag_condition = torch.full(
+                        (mag_feat.shape[0], 1),
+                        math.log(max(float(tmag_dt_clamp_min), 1e-6)),
+                        device=mag_feat.device,
+                        dtype=mag_feat.dtype,
+                    )
+            log_tc_mag = self.mag_head(mag_feat, token_weight=mag_weight, condition=mag_condition)
             tc_mag, log_tc_mag = positive_translation_magnitude(
                 log_tc_mag,
                 clamp_min=self.log_tmag_clamp_min,

@@ -217,17 +217,26 @@ def _apply_log_tmag_bias(
     t_mag: torch.Tensor,
     log_t_mag: torch.Tensor,
     log_bias: Optional[torch.Tensor],
+    affine_scale: Optional[torch.Tensor],
+    affine_bias: Optional[torch.Tensor],
     *,
     min_mag: float,
     clamp_min: float,
     clamp_max: float,
 ) -> Tuple[torch.Tensor, torch.Tensor]:
+    log_t_mag = log_t_mag.float().view(-1)
+    has_affine = affine_scale is not None and affine_bias is not None
+    if has_affine:
+        log_t_mag = log_t_mag * affine_scale.float().view(()) + affine_bias.float().view(())
     if log_bias is None:
-        return t_mag.float().view(-1), log_t_mag.float().view(-1)
-    log_t_mag = (log_t_mag.float().view(-1) + log_bias.float().view(())).clamp(
-        min=float(clamp_min),
-        max=float(clamp_max),
-    )
+        if not has_affine:
+            return t_mag.float().view(-1), log_t_mag
+        log_t_mag = log_t_mag.clamp(min=float(clamp_min), max=float(clamp_max))
+    else:
+        log_t_mag = (log_t_mag + log_bias.float().view(())).clamp(
+            min=float(clamp_min),
+            max=float(clamp_max),
+        )
     return torch.exp(log_t_mag).clamp_min(float(min_mag)), log_t_mag
 
 
@@ -274,6 +283,7 @@ class PanoramaRelPoseModel(nn.Module):
             tmag_min=float(getattr(cfg, "tmag_min", 1.0e-3)),
             log_tmag_clamp_min=float(getattr(cfg, "log_tmag_clamp_min", -6.0)),
             log_tmag_clamp_max=float(getattr(cfg, "log_tmag_clamp_max", 6.0)),
+            tmag_condition_on_dt=bool(getattr(cfg, "tmag_condition_on_dt", False)),
         )
         self.fine = FineInteraction(
             cfg.D,
@@ -304,16 +314,25 @@ class PanoramaRelPoseModel(nn.Module):
             )
             self.depth_token_proj = nn.Linear(cfg.depth_feat_dim, cfg.D)
         self.use_tmag_global_bias = bool(getattr(cfg, "use_tmag_global_bias", False))
+        self.use_tmag_affine_calib = bool(getattr(cfg, "use_tmag_affine_calib", False))
         if self.use_tmag_global_bias:
             self.log_tmag_bias = nn.Parameter(torch.tensor(float(getattr(cfg, "tmag_global_bias_init", 0.0)), dtype=torch.float32))
         else:
             self.register_parameter("log_tmag_bias", None)
+        if self.use_tmag_affine_calib:
+            self.tmag_affine_scale = nn.Parameter(torch.tensor(float(getattr(cfg, "tmag_affine_init_scale", 1.0)), dtype=torch.float32))
+            self.tmag_affine_bias = nn.Parameter(torch.tensor(float(getattr(cfg, "tmag_affine_init_bias", 0.0)), dtype=torch.float32))
+        else:
+            self.register_parameter("tmag_affine_scale", None)
+            self.register_parameter("tmag_affine_bias", None)
 
     def _bias_magnitude(self, t_mag: torch.Tensor, log_t_mag: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         return _apply_log_tmag_bias(
             t_mag,
             log_t_mag,
             self.log_tmag_bias,
+            self.tmag_affine_scale if self.use_tmag_affine_calib else None,
+            self.tmag_affine_bias if self.use_tmag_affine_calib else None,
             min_mag=float(getattr(self.cfg, "tmag_min", 1.0e-3)),
             clamp_min=float(getattr(self.cfg, "log_tmag_clamp_min", -6.0)),
             clamp_max=float(getattr(self.cfg, "log_tmag_clamp_max", 6.0)),
@@ -325,6 +344,7 @@ class PanoramaRelPoseModel(nn.Module):
         IB: torch.Tensor,
         *,
         enable_depth_fusion: Optional[bool] = None,
+        dt_world: Optional[torch.Tensor] = None,
     ) -> Tuple[torch.Tensor, torch.Tensor, Dict[str, torch.Tensor]]:
         tokens = self.module2(IA, IB)
         TokA_c = tokens["TokA_c"]
@@ -359,7 +379,13 @@ class PanoramaRelPoseModel(nn.Module):
             aux["stage"] = "encoder_only"
             return R, aux["t_dir"], aux
 
-        out_c = self.coarse(TokA_c, TokB_c, tokens_a_t=tokens.get("TokA_c_t"), tokens_b_t=tokens.get("TokB_c_t"))
+        out_c = self.coarse(
+            TokA_c, TokB_c,
+            tokens_a_t=tokens.get("TokA_c_t"),
+            tokens_b_t=tokens.get("TokB_c_t"),
+            dt_world=dt_world,
+            tmag_dt_clamp_min=float(getattr(self.cfg, "tmag_dt_clamp_min", 0.01)),
+        )
         aux.update(out_c)
         aux["tc_dir_local"] = out_c["tc_dir"]
         aux["tc_dir_out"] = _local_t_to_output_frame(out_c["Rc"], out_c["tc_dir"])

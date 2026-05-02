@@ -176,6 +176,9 @@ class Config:
     tmag_affine_init_bias: float = 0.0
     log_tmag_clamp_min: float = -6.0
     log_tmag_clamp_max: float = 6.0
+    # T51: dt-conditioned magnitude head
+    tmag_condition_on_dt: bool = False
+    tmag_dt_clamp_min: float = 0.01
     use_tdir_anchor_loss: bool = False
     tdir_anchor_checkpoint: str = ""
     w_tdir_anchor: float = 0.0
