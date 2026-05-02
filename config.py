@@ -176,6 +176,11 @@ class Config:
     tmag_affine_init_bias: float = 0.0
     log_tmag_clamp_min: float = -6.0
     log_tmag_clamp_max: float = 6.0
+    use_tmag_scale_reg: bool = False
+    w_tmag_scale: float = 0.0
+    tmag_scale_reg_min_gt: float = 1e-4
+    tmag_scale_reg_log: bool = True
+    tmag_scale_reg_min_dt: float = 0.0
     # T51: dt-conditioned magnitude head
     tmag_condition_on_dt: bool = False
     tmag_dt_clamp_min: float = 0.01
