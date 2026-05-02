@@ -45,6 +45,9 @@ print(f'CUDA OK: {torch.cuda.get_device_name(0)}')
 "
 }
 
+# ---- batch size: lower for fine stage (768 tokens × 2 = more VRAM) ----
+FINE_BS="${FINE_BS:-1}"
+
 # ---- common args ----
 common_args=(
   --set "init_checkpoint=${O49M3_CKPT}"
@@ -82,7 +85,7 @@ common_args=(
   --set "max_train_eval_batches=64"
   --set "num_workers=0"
   --set "persistent_workers=False"
-  --set "batch_size=4"
+  --set "batch_size=${FINE_BS}"
   --set "grad_accum=1"
   --set "save_best_odom_checkpoint=True"
   --set "odom_select_metric=odom_metric_drift"
@@ -145,7 +148,7 @@ dryrun_case() {
   echo "    init_checkpoint=${O49M3_CKPT}"
   echo "    use_fine_stage=True  fine_pose_fuse_strength=0.0"
   echo "    max_steps=300  eval_every=50  lr=1e-5"
-  echo "    batch_size=4  save_odom_trajectory_debug=True"
+  echo "    batch_size=${FINE_BS}  save_odom_trajectory_debug=True"
   echo ""
 }
 
