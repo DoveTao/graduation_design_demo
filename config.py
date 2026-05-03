@@ -224,6 +224,13 @@ class Config:
     seq_turn_chain_min_pairs: int = 1
     seq_turn_chain_start_updates: int = 150
     seq_turn_chain_ramp_updates: int = 250
+    use_odom_chain_len_loss: bool = False
+    odom_chain_len_loss_w: float = 0.0
+    odom_chain_len_target_ratio: float = 0.55
+    odom_chain_len_min_gt: float = 0.02
+    odom_chain_len_only_k: int = 1
+    odom_chain_len_start_updates: int = 50
+    odom_chain_len_ramp_updates: int = 150
     w_photo: float = 0.0
     w_smooth: float = 0.0
 
