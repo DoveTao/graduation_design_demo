@@ -231,6 +231,12 @@ class Config:
     odom_chain_len_only_k: int = 1
     odom_chain_len_start_updates: int = 50
     odom_chain_len_ramp_updates: int = 150
+    use_odom_chain_vec_loss: bool = False
+    odom_chain_vec_loss_w: float = 0.0
+    odom_chain_vec_only_k: int = 1
+    odom_chain_vec_min_gt: float = 0.02
+    odom_chain_vec_start_updates: int = 50
+    odom_chain_vec_ramp_updates: int = 150
     w_photo: float = 0.0
     w_smooth: float = 0.0
 

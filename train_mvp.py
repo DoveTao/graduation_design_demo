@@ -597,6 +597,20 @@ def _cfg_odom_chain_len_effective_weight(cfg: Config, upd: int) -> float:
     return base_w * ramp
 
 
+def _cfg_odom_chain_vec_effective_weight(cfg: Config, upd: int) -> float:
+    base_w = float(getattr(cfg, "odom_chain_vec_loss_w", 0.0))
+    if (not bool(getattr(cfg, "use_odom_chain_vec_loss", False)) or base_w <= 0.0):
+        return 0.0
+    start = int(getattr(cfg, "odom_chain_vec_start_updates", 0))
+    if upd < start:
+        return 0.0
+    ramp_updates = int(getattr(cfg, "odom_chain_vec_ramp_updates", 0))
+    if ramp_updates <= 0:
+        return base_w
+    ramp = min(1.0, max(0.0, float(upd - start) / float(ramp_updates)))
+    return base_w * ramp
+
+
 def _build_seq_turn_mask(
     meta: Any,
     bsz: int,
@@ -2998,6 +3012,11 @@ def main():
         f":target={getattr(cfg, 'odom_chain_len_target_ratio', 0.55)}"
         f":start={getattr(cfg, 'odom_chain_len_start_updates', 50)}"
         f":ramp={getattr(cfg, 'odom_chain_len_ramp_updates', 150)}"
+        f" | odom_chain_vec={bool(getattr(cfg, 'use_odom_chain_vec_loss', False))}:w={getattr(cfg, 'odom_chain_vec_loss_w', 0.0)}"
+        f":k=={getattr(cfg, 'odom_chain_vec_only_k', 1)}"
+        f":min_gt={getattr(cfg, 'odom_chain_vec_min_gt', 0.02)}"
+        f":start={getattr(cfg, 'odom_chain_vec_start_updates', 50)}"
+        f":ramp={getattr(cfg, 'odom_chain_vec_ramp_updates', 150)}"
     )
     print(
         f"[Cfg ] lr={cfg.lr} | wd={cfg.wd} | warmup_updates={cfg.warmup_updates} | "
@@ -3012,11 +3031,15 @@ def main():
 
     triplet_request_k = int(getattr(cfg, "seq_turn_only_k", 1))
     if (
-        bool(getattr(cfg, "use_odom_chain_len_loss", False))
+        (bool(getattr(cfg, "use_odom_chain_len_loss", False))
+         or bool(getattr(cfg, "use_odom_chain_vec_loss", False)))
         and not bool(getattr(cfg, "use_seq_turn_loss", False))
         and not bool(getattr(cfg, "use_seq_turn_chain_loss", False))
     ):
-        triplet_request_k = int(getattr(cfg, "odom_chain_len_only_k", triplet_request_k))
+        triplet_request_k = max(
+            int(getattr(cfg, "odom_chain_len_only_k", triplet_request_k)),
+            int(getattr(cfg, "odom_chain_vec_only_k", triplet_request_k)),
+        )
 
     train_ds = RflyPanoPanoramaPairsMixedK(
         data_root=cfg.data_root,
@@ -3034,7 +3057,8 @@ def main():
         return_seq_turn_triplet=bool(
             getattr(cfg, "use_seq_turn_loss", False)
             or getattr(cfg, "use_seq_turn_chain_loss", False)
-            or getattr(cfg, "use_odom_chain_len_loss", False),
+            or getattr(cfg, "use_odom_chain_len_loss", False)
+            or getattr(cfg, "use_odom_chain_vec_loss", False),
         ),
         seq_turn_only_k=triplet_request_k,
         color_aug=bool(getattr(cfg, "train_color_aug", False)),
@@ -3393,6 +3417,12 @@ def main():
             "odom_chain_len_only_k": int(getattr(cfg, "odom_chain_len_only_k", 1)),
             "odom_chain_len_start_updates": int(getattr(cfg, "odom_chain_len_start_updates", 50)),
             "odom_chain_len_ramp_updates": int(getattr(cfg, "odom_chain_len_ramp_updates", 150)),
+            "use_odom_chain_vec_loss": bool(getattr(cfg, "use_odom_chain_vec_loss", False)),
+            "odom_chain_vec_loss_w": float(getattr(cfg, "odom_chain_vec_loss_w", 0.0)),
+            "odom_chain_vec_only_k": int(getattr(cfg, "odom_chain_vec_only_k", 1)),
+            "odom_chain_vec_min_gt": float(getattr(cfg, "odom_chain_vec_min_gt", 0.02)),
+            "odom_chain_vec_start_updates": int(getattr(cfg, "odom_chain_vec_start_updates", 50)),
+            "odom_chain_vec_ramp_updates": int(getattr(cfg, "odom_chain_vec_ramp_updates", 150)),
             "odom_eval_smooth_tmag_window": int(getattr(cfg, "odom_eval_smooth_tmag_window", 0)),
             "odom_eval_scale_fit": bool(getattr(cfg, "odom_eval_scale_fit", False)),
             "save_odom_trajectory_debug": bool(getattr(cfg, "save_odom_trajectory_debug", False)),
@@ -3849,6 +3879,18 @@ def main():
             odom_chain_len_under_frac = 0.0
             L_odom_chain_len = torch.zeros((), device=dev)
 
+            # odom_chain_vec variables (direction consistency on composed T_CA)
+            use_odom_chain_vec = bool(getattr(cfg, "use_odom_chain_vec_loss", False))
+            odom_chain_vec_w_eff = _cfg_odom_chain_vec_effective_weight(cfg, upd)
+            odom_chain_vec_only_k = int(getattr(cfg, "odom_chain_vec_only_k", 1))
+            odom_chain_vec_min_gt = float(getattr(cfg, "odom_chain_vec_min_gt", 0.02))
+            odom_chain_vec_n = 0.0
+            odom_chain_vec_cos_mean = float("nan")
+            odom_chain_vec_cos_median = float("nan")
+            odom_chain_vec_angle_mean_deg = float("nan")
+            odom_chain_vec_angle_median_deg = float("nan")
+            L_odom_chain_vec = torch.zeros((), device=dev)
+
             if use_odom_chain_len and (odom_chain_len_w_eff > 0.0):
                 t_gt_bc_mag = batch.get("t_gt_bc_mag", None)
                 IC = batch.get("IC", None)
@@ -3954,6 +3996,118 @@ def main():
                 odom_chain_len_ratio_mean = float("nan")
                 odom_chain_len_ratio_median = float("nan")
                 odom_chain_len_under_frac = 0.0
+
+            # ---- odom_chain_vec loss (composed direction consistency T_CA = T_CB * T_BA) ----
+            if use_odom_chain_vec and (odom_chain_vec_w_eff > 0.0):
+                IC = batch.get("IC", None)
+                R_gt_bc_tensor = batch.get("R_gt_bc", None)
+                t_gt_bc_vec_tensor = batch.get("t_gt_bc_vec", None)
+                has_seq_turn_triplet = _meta_batch_field(meta, "has_seq_turn_triplet", IA.shape[0], default=False)
+                meta_k = _meta_batch_field(meta, "k", IA.shape[0], default=None)
+                if (
+                    IC is not None
+                    and isinstance(aux, dict)
+                    and aux.get("t_vec_out", None) is not None
+                    and R_gt_bc_tensor is not None
+                    and t_gt_bc_vec_tensor is not None
+                ):
+                    has_triplet_mask_vec = []
+                    for has_ok, k_val in zip(has_seq_turn_triplet, meta_k):
+                        ok = bool(has_ok)
+                        try:
+                            ok = ok and (int(k_val) == int(odom_chain_vec_only_k))
+                        except Exception:
+                            ok = False
+                        has_triplet_mask_vec.append(ok)
+                    odom_chain_vec_mask = torch.tensor(has_triplet_mask_vec, device=dev, dtype=torch.bool)
+                    if bool(odom_chain_vec_mask.any()):
+                        idx_vec = torch.nonzero(odom_chain_vec_mask, as_tuple=False).view(-1)
+                        IB_valid = IB[idx_vec]
+                        IC_valid = IC.to(dev, non_blocking=True)[idx_vec]
+                        R_pred_bc, t_pred_bc, aux_bc = model(
+                            IB_valid,
+                            IC_valid,
+                            enable_depth_fusion=depth_fusion_active,
+                            dt_world=dt_world[idx_vec] if dt_world is not None else None,
+                        )
+                        if (
+                            not isinstance(R_pred_bc, torch.Tensor)
+                            or not isinstance(t_pred_bc, torch.Tensor)
+                            or not isinstance(aux_bc, dict)
+                            or aux_bc.get("t_vec_out", None) is None
+                        ):
+                            L_odom_chain_vec = torch.tensor(float("nan"), device=dev)
+                        elif (
+                            not torch.isfinite(R_pred_bc).all()
+                            or not torch.isfinite(t_pred_bc).all()
+                        ):
+                            L_odom_chain_vec = torch.tensor(float("nan"), device=dev)
+                        else:
+                            pred_t_BA = aux["t_vec_out"].float().view(-1, 3)[idx_vec]
+                            pred_t_CB = aux_bc["t_vec_out"].float().view(-1, 3)
+                            R_pred_CB = R_pred_bc.float()
+                            if (
+                                not torch.isfinite(pred_t_BA).all()
+                                or not torch.isfinite(pred_t_CB).all()
+                                or not torch.isfinite(R_pred_CB).all()
+                            ):
+                                L_odom_chain_vec = torch.tensor(float("nan"), device=dev)
+                            elif pred_t_BA.shape != pred_t_CB.shape or pred_t_BA.shape[1] != 3:
+                                L_odom_chain_vec = torch.tensor(float("nan"), device=dev)
+                            else:
+                                pred_t_CA = torch.bmm(
+                                    R_pred_CB.view(-1, 3, 3), pred_t_BA.view(-1, 3, 1)
+                                ).view(-1, 3) + pred_t_CB
+                                R_gt_CB = R_gt_bc_tensor.to(dev, non_blocking=True).float().view(-1, 3, 3)[idx_vec]
+                                t_gt_BA = batch.get("t_gt_vec", None)
+                                if t_gt_BA is None:
+                                    L_odom_chain_vec = torch.tensor(float("nan"), device=dev)
+                                else:
+                                    t_gt_BA = t_gt_BA.to(dev, non_blocking=True).float().view(-1, 3)[idx_vec]
+                                    t_gt_CB = t_gt_bc_vec_tensor.to(dev, non_blocking=True).float().view(-1, 3)[idx_vec]
+                                    gt_t_CA = torch.bmm(
+                                        R_gt_CB, t_gt_BA.view(-1, 3, 1)
+                                    ).view(-1, 3) + t_gt_CB
+                                    if (
+                                        not torch.isfinite(pred_t_CA).all()
+                                        or not torch.isfinite(gt_t_CA).all()
+                                    ):
+                                        L_odom_chain_vec = torch.tensor(float("nan"), device=dev)
+                                    else:
+                                        gt_norm = gt_t_CA.norm(dim=1)
+                                        pred_norm = pred_t_CA.norm(dim=1)
+                                        eps = 1e-8
+                                        valid_mask_vec = (
+                                            torch.isfinite(pred_t_CA).all(dim=1)
+                                            & torch.isfinite(gt_t_CA).all(dim=1)
+                                            & (gt_norm > float(odom_chain_vec_min_gt))
+                                            & (pred_norm > eps)
+                                        )
+                                        odom_chain_vec_n = int(valid_mask_vec.sum().item())
+                                        if odom_chain_vec_n > 0:
+                                            pred_dir = pred_t_CA[valid_mask_vec] / pred_norm[valid_mask_vec].clamp_min(eps).unsqueeze(1)
+                                            gt_dir = gt_t_CA[valid_mask_vec] / gt_norm[valid_mask_vec].clamp_min(eps).unsqueeze(1)
+                                            cos_vals = (pred_dir * gt_dir).sum(dim=1).clamp(-1.0, 1.0)
+                                            odom_chain_vec_cos_mean = float(cos_vals.mean().detach().cpu())
+                                            odom_chain_vec_cos_median = float(cos_vals.median().detach().cpu())
+                                            angles_rad = torch.acos(cos_vals.clamp(-1.0 + 1e-7, 1.0 - 1e-7))
+                                            angles_deg = angles_rad * (180.0 / 3.141592653589793)
+                                            odom_chain_vec_angle_mean_deg = float(angles_deg.mean().detach().cpu())
+                                            odom_chain_vec_angle_median_deg = float(angles_deg.median().detach().cpu())
+                                            L_odom_chain_vec = (1.0 - cos_vals).mean()
+                                        else:
+                                            L_odom_chain_vec = torch.zeros((), device=dev)
+                    else:
+                        L_odom_chain_vec = torch.zeros((), device=dev)
+
+            if (not use_odom_chain_vec) or (odom_chain_vec_w_eff <= 0.0):
+                L_odom_chain_vec = torch.zeros((), device=dev)
+                odom_chain_vec_n = 0.0
+                odom_chain_vec_cos_mean = float("nan")
+                odom_chain_vec_cos_median = float("nan")
+                odom_chain_vec_angle_mean_deg = float("nan")
+                odom_chain_vec_angle_median_deg = float("nan")
+
             use_fine_epi = bool(cfg.use_fine_stage) and (aux.get("Wf_ab", None) is not None)
             if use_fine_epi:
                 W_ab = aux.get("Wf_ab", None)
@@ -4123,6 +4277,7 @@ def main():
                 + seq_turn_w_eff * L_seq_turn
                 + seq_turn_chain_w_eff * L_seq_turn_chain
                 + odom_chain_len_w_eff * L_odom_chain_len
+                + odom_chain_vec_w_eff * L_odom_chain_vec
                 + photo_w * L_photo
                 + smooth_w * L_smooth
             )
@@ -4134,7 +4289,7 @@ def main():
             bool(torch.isfinite(x).all())
             for x in [
                 R_pred, t_pred, L_pose, L_pose_coarse, L_t_mag, L_tdir_anchor, L_seq_turn, L_seq_turn_chain,
-                L_x, L_cyc, L_rel, L_epi, L_epi_coarse, L_photo, L_smooth, L_tmag_scale, L_tmag_under, L_odom_chain_len, L,
+                L_x, L_cyc, L_rel, L_epi, L_epi_coarse, L_photo, L_smooth, L_tmag_scale, L_tmag_under, L_odom_chain_len, L_odom_chain_vec, L,
             ]
         )
         if not forward_ok:
@@ -4719,6 +4874,9 @@ def main():
                 f"odom_chain_len_target={odom_chain_len_target_ratio:.3f} | "
                 f"odom_chain_len_ratio_mean={odom_chain_len_ratio_mean:.6f} | odom_chain_len_ratio_median={odom_chain_len_ratio_median:.6f} | "
                 f"odom_chain_len_under_frac={odom_chain_len_under_frac:.4f} | odom_chain_len_ratio={odom_chain_len_ratio:.6f} | "
+                f"odom_chain_vec={float(L_odom_chain_vec.detach().cpu()):.4f} | odom_chain_vec_w={odom_chain_vec_w_eff:.4g} | odom_chain_vec_n={int(odom_chain_vec_n)} | "
+                f"odom_chain_vec_cos_mean={odom_chain_vec_cos_mean:.6f} | odom_chain_vec_cos_median={odom_chain_vec_cos_median:.6f} | "
+                f"odom_chain_vec_angle_mean={odom_chain_vec_angle_mean_deg:.2f}° | odom_chain_vec_angle_median={odom_chain_vec_angle_median_deg:.2f}° | "
                 f"x={float(L_x.detach().cpu()):.4f} | cyc={float(L_cyc.detach().cpu()):.4f} | "
                 f"rel={float(L_rel.detach().cpu()):.4f} | epi={float(L_epi.detach().cpu()):.4f} | epi_c={float(L_epi_coarse.detach().cpu()):.4f} | "
                 f"photo={float(L_photo.detach().cpu()):.4f} | smooth={float(L_smooth.detach().cpu()):.4f} | depth_ramp={depth_ramp:.2f} | "
@@ -4878,6 +5036,12 @@ def main():
             "odom_chain_len_only_k": int(getattr(cfg, "odom_chain_len_only_k", 1)),
             "odom_chain_len_start_updates": int(getattr(cfg, "odom_chain_len_start_updates", 50)),
             "odom_chain_len_ramp_updates": int(getattr(cfg, "odom_chain_len_ramp_updates", 150)),
+            "use_odom_chain_vec_loss": bool(getattr(cfg, "use_odom_chain_vec_loss", False)),
+            "odom_chain_vec_loss_w": float(getattr(cfg, "odom_chain_vec_loss_w", 0.0)),
+            "odom_chain_vec_only_k": int(getattr(cfg, "odom_chain_vec_only_k", 1)),
+            "odom_chain_vec_min_gt": float(getattr(cfg, "odom_chain_vec_min_gt", 0.02)),
+            "odom_chain_vec_start_updates": int(getattr(cfg, "odom_chain_vec_start_updates", 50)),
+            "odom_chain_vec_ramp_updates": int(getattr(cfg, "odom_chain_vec_ramp_updates", 150)),
             "odom_eval_smooth_tmag_window": int(getattr(cfg, "odom_eval_smooth_tmag_window", 0)),
             "odom_eval_scale_fit": bool(getattr(cfg, "odom_eval_scale_fit", False)),
             "save_odom_trajectory_debug": bool(getattr(cfg, "save_odom_trajectory_debug", False)),
