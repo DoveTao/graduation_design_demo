@@ -293,12 +293,15 @@ class RflyPanoPanoramaPairsMixedK(Dataset):
                  seqs: Optional[List[str]] = None, min_dt: float = 0.0, max_tries: int = 10, seed: int = 1234,
                  split: str | None = None, H: int | None = None, W: int | None = None, strict_dt: bool | None = None,
                  split_by: str = "scene_seq", train_ratio: float = 0.8, split_seed: int = 3407,
-                 color_aug: bool = False, color_aug_strength: float = 1.0):
+                 color_aug: bool = False, color_aug_strength: float = 1.0,
+                 return_seq_turn_triplet: bool = False, seq_turn_only_k: int = 1):
         self.data_root = data_root
         if (H is not None) and (W is not None):
             hw = (int(H), int(W))
         self.hw = hw
         self.pair_step = int(pair_step)
+        self.return_seq_turn_triplet = bool(return_seq_turn_triplet)
+        self.seq_turn_only_k = int(seq_turn_only_k)
         self.split = split
         self.strict_dt = strict_dt
         self.split_by = _normalize_split_mode(split_by)
@@ -447,15 +450,41 @@ class RflyPanoPanoramaPairsMixedK(Dataset):
         t_BA = (R_wB.T @ (t_wA - t_wB)).astype(np.float32)
         t_mag = float(np.linalg.norm(t_BA))
         t_dir = t_BA / (t_mag + 1e-8)
+        if self.return_seq_turn_triplet and int(k) == int(self.seq_turn_only_k) and (j + 1) < n:
+            R_wC = sd["R_w"][j + 1]
+            t_wC = sd["t_w"][j + 1]
+            R_BC = (R_wC.T @ R_wB).astype(np.float32)
+            t_BC = (R_wC.T @ (t_wB - t_wC)).astype(np.float32)
+            t_BC_mag = float(np.linalg.norm(t_BC))
+            t_BC_dir = t_BC / (t_BC_mag + 1e-8)
+            IC = _read_pano_rgb(sd["pano"][j + 1], self.hw)
+            IC = self._apply_color_aug(IC, rng)
+            has_seq_turn_triplet = True
+        else:
+            IC = torch.zeros_like(IA)
+            R_BC = np.eye(3, dtype=np.float32)
+            t_BC = np.zeros(3, dtype=np.float32)
+            t_BC_mag = 0.0
+            t_BC_dir = np.zeros(3, dtype=np.float32)
+            has_seq_turn_triplet = False
         return {
             "IA": IA, "IB": IB,
+            "IC": IC,
             "R_gt": torch.from_numpy(R_BA),
             "t_gt_vec": torch.from_numpy(t_BA),
             "t_gt_dir": torch.from_numpy(t_dir),
             "t_gt_mag": torch.tensor(t_mag, dtype=torch.float32),
+            "R_gt_bc": torch.from_numpy(R_BC),
+            "t_gt_bc_vec": torch.from_numpy(t_BC),
+            "t_gt_bc_dir": torch.from_numpy(t_BC_dir),
+            "t_gt_bc_mag": torch.tensor(t_BC_mag, dtype=torch.float32),
             "meta": {
-                "scene": sd["scene"], "seq": sd["seq"], "tsA": sd["ts"][i], "tsB": sd["ts"][j],
+                "scene": sd["scene"], "seq": sd["seq"],
+                "tsA": sd["ts"][i], "tsB": sd["ts"][j],
+                "i": int(i), "j": int(j),
                 "k": int(k), "dt_world": float(dt_world),
+                "has_seq_turn_triplet": bool(has_seq_turn_triplet),
+                "seq_turn_only_k": int(self.seq_turn_only_k),
             },
         }
 
