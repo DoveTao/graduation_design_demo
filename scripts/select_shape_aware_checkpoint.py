@@ -1,14 +1,5 @@
 #!/usr/bin/env python3
-"""Offline selector for shape-aware checkpoint ranking.
-
-Inputs:
-  - One or more experiment directories.
-  - Reads <exp_dir>/eval_history.json (expects dict with key 'history').
-
-Outputs:
-  - checkpoints/shape_aware_selection_summary.csv
-  - checkpoints/shape_aware_selection_summary.md
-"""
+"""Offline selector for shape-aware checkpoint ranking."""
 
 from __future__ import annotations
 
@@ -19,11 +10,12 @@ import math
 import os
 import re
 from dataclasses import dataclass
-from typing import Any, List, Optional
+from typing import Any, Dict, List, Optional
 
 
 CSV_PATH_DEFAULT = os.path.join("checkpoints", "shape_aware_selection_summary.csv")
 MD_PATH_DEFAULT = os.path.join("checkpoints", "shape_aware_selection_summary.md")
+META_FILENAME = "batch_shape_item_meta.json"
 
 FIELDS = [
     "exp",
@@ -48,7 +40,7 @@ FIELDS = [
 @dataclass
 class Row:
     exp: str
-    upd: int
+    upd: Optional[int]
     checkpoint: str
     drift: Optional[float]
     length_norm_drift: Optional[float]
@@ -63,6 +55,21 @@ class Row:
     score_shape055_l2: Optional[float]
     score_balanced: Optional[float]
     eligible_shape: bool
+
+
+def _safe_int(value: Any) -> Optional[int]:
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        return value
+    if isinstance(value, float) and value.is_integer():
+        return int(value)
+    if isinstance(value, str):
+        try:
+            return int(value)
+        except ValueError:
+            return None
+    return None
 
 
 def _safe_float(v: Any) -> Optional[float]:
@@ -80,18 +87,25 @@ def _safe_float(v: Any) -> Optional[float]:
 def _normalize_exp_name(exp_name: str) -> str:
     if exp_name.startswith("TRAJ_REPRO_"):
         return exp_name[len("TRAJ_REPRO_"):]
+    if exp_name.startswith("BATCH_"):
+        return exp_name[len("BATCH_"):]
     return exp_name
 
 
 def _infer_exp_meta(exp_name: str) -> tuple[str, Optional[int], str]:
     normalized = _normalize_exp_name(exp_name)
-    m = re.match(r"^(T51a(?:3b|4))_(upd(\d+)|final)$", normalized)
+    m = re.match(r"^(.*)_upd(\d+)$", normalized)
     if m:
-        branch = m.group(1)
-        upd_tag = m.group(2)
-        if upd_tag == "final":
-            return branch, None, upd_tag
-        return branch, int(upd_tag[3:]), upd_tag
+        return m.group(1), int(m.group(2)), f"upd{m.group(2)}"
+
+    m = re.match(r"^(.*)_final$", normalized)
+    if m:
+        return m.group(1), None, "final"
+
+    m = re.match(r"^(T51[a-z]?\w*?)_(?:.*_)?upd(\d+)$", normalized)
+    if m:
+        return m.group(1), int(m.group(2)), f"upd{m.group(2)}"
+
     return normalized, None, ""
 
 
@@ -99,6 +113,10 @@ def _fmt(v: Optional[float], prec: int = 6) -> str:
     if v is None:
         return ""
     return f"{v:.{prec}f}".rstrip("0").rstrip(".")
+
+
+def _upd_sort_key(v: Optional[int]) -> float:
+    return float(v) if v is not None else float("inf")
 
 
 def _resolve_exp_dir(path: str) -> str:
@@ -110,11 +128,27 @@ def _resolve_exp_dir(path: str) -> str:
     return path
 
 
-def _select_ckpt(exp_dir: str, upd: int) -> str:
+def _select_ckpt(exp_dir: str, upd: Optional[int]) -> str:
+    if upd is None:
+        return ""
+    if upd <= 0:
+        return ""
     candidate = os.path.join(exp_dir, f"eval_upd_{upd:04d}.pt")
     if os.path.exists(candidate):
         return candidate
     return ""
+
+
+def _load_exp_meta(exp_dir: str) -> Dict[str, Any]:
+    meta_path = os.path.join(exp_dir, META_FILENAME)
+    if not os.path.exists(meta_path):
+        return {}
+    try:
+        with open(meta_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except Exception:
+        return {}
+    return data if isinstance(data, dict) else {}
 
 
 def _extract_rows(exp_dir: str) -> List[Row]:
@@ -130,19 +164,25 @@ def _extract_rows(exp_dir: str) -> List[Row]:
         return []
 
     exp_name = os.path.basename(os.path.abspath(exp_dir))
-    _, parsed_upd, _ = _infer_exp_meta(exp_name)
-    rows: List[Row] = []
+    parsed_exp, parsed_upd, _ = _infer_exp_meta(exp_name)
+    meta = _load_exp_meta(exp_dir)
+    meta_upd = _safe_int(meta.get("upd"))
+    meta_ckpt = meta.get("ckpt", "")
+    meta_ckpt = str(meta_ckpt) if isinstance(meta_ckpt, str) else ""
 
+    rows: List[Row] = []
     for entry in history:
         if not isinstance(entry, dict):
             continue
 
-        upd = entry.get("upd")
-        if not isinstance(upd, int):
-            continue
-        final_upd = upd
-        if parsed_upd is not None and parsed_upd > 0:
+        entry_upd = _safe_int(entry.get("upd"))
+        final_upd: Optional[int]
+        if parsed_upd is not None:
             final_upd = parsed_upd
+        elif entry_upd is not None:
+            final_upd = entry_upd
+        else:
+            final_upd = meta_upd
 
         drift = _safe_float(entry.get("odom_metric_drift"))
         length_norm_drift = _safe_float(entry.get("odom_metric_length_normalized_drift"))
@@ -182,11 +222,15 @@ def _extract_rows(exp_dir: str) -> List[Row]:
             score_shape055_l2 = None
             score_balanced = None
 
+        ckpt = _select_ckpt(exp_dir, final_upd)
+        if not ckpt and meta_ckpt:
+            ckpt = meta_ckpt
+
         rows.append(
             Row(
                 exp=exp_name,
                 upd=final_upd,
-                checkpoint=_select_ckpt(exp_dir, upd),
+                checkpoint=ckpt,
                 drift=drift,
                 length_norm_drift=length_norm_drift,
                 ate=ate,
@@ -203,6 +247,38 @@ def _extract_rows(exp_dir: str) -> List[Row]:
             )
         )
 
+    if not rows and parsed_upd is not None:
+        rows.append(
+            Row(
+                exp=exp_name,
+                upd=parsed_upd,
+                checkpoint=meta_ckpt,
+                drift=None,
+                length_norm_drift=None,
+                ate=None,
+                tdir_abs=None,
+                tmag_rel_err=None,
+                path_ratio=None,
+                step_dir_err=None,
+                odom_debug_mean_tmag_ratio=None,
+                score_drift=None,
+                score_shape045_l1=None,
+                score_shape055_l2=None,
+                score_balanced=None,
+                eligible_shape=False,
+            )
+        )
+
+    if not rows:
+        return []
+
+    if parsed_exp:
+        # If the parsed branch is known but every row used entry-upd=0 (eval-only),
+        # keep parsed-upd for label clarity.
+        for r in rows:
+            if r.upd in (None, 0) and parsed_upd is not None and parsed_upd > 0:
+                r.upd = parsed_upd
+
     return rows
 
 
@@ -216,10 +292,17 @@ def _score_sort_key(row: Row, metric: str) -> float:
 def _to_summary_row(r: Row) -> str:
     chk = os.path.basename(r.checkpoint) if r.checkpoint else "-"
     return (
-        f"| {r.exp} | {r.upd} | `{chk}` | {_fmt(r.drift)} | {_fmt(r.length_norm_drift)} | {_fmt(r.ate)} | "
+        f"| {r.exp} | {r.upd if r.upd is not None else ''} | `{chk}` | {_fmt(r.drift)} | {_fmt(r.length_norm_drift)} | {_fmt(r.ate)} | "
         f"{_fmt(r.tdir_abs)} | {_fmt(r.tmag_rel_err)} | {_fmt(r.path_ratio)} | {_fmt(r.step_dir_err)} | {_fmt(r.odom_debug_mean_tmag_ratio)} | "
         f"{_fmt(r.score_drift)} | {_fmt(r.score_shape045_l1)} | {_fmt(r.score_shape055_l2)} | {_fmt(r.score_balanced)} | {str(r.eligible_shape)} |"
     )
+
+
+def _infer_family(exp_name: str) -> str:
+    base = _normalize_exp_name(exp_name)
+    if "_upd" in base:
+        return base.split("_upd", 1)[0]
+    return base
 
 
 def generate_outputs(rows: List[Row], csv_path: str, md_path: str) -> None:
@@ -227,7 +310,7 @@ def generate_outputs(rows: List[Row], csv_path: str, md_path: str) -> None:
     if parent:
         os.makedirs(parent, exist_ok=True)
 
-    rows_sorted = sorted(rows, key=lambda x: (x.exp, x.upd))
+    rows_sorted = sorted(rows, key=lambda x: (x.exp, _upd_sort_key(x.upd)))
 
     with open(csv_path, "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
@@ -236,7 +319,7 @@ def generate_outputs(rows: List[Row], csv_path: str, md_path: str) -> None:
             w.writerow(
                 [
                     r.exp,
-                    r.upd,
+                    "" if r.upd is None else r.upd,
                     r.checkpoint,
                     _fmt(r.drift),
                     _fmt(r.length_norm_drift),
@@ -270,6 +353,16 @@ def generate_outputs(rows: List[Row], csv_path: str, md_path: str) -> None:
     )
     if recommended_drift is None:
         recommended_drift = best_drift[0] if best_drift else None
+
+    family = None
+    if best_drift:
+        family = _infer_family(best_drift[0].exp)
+    gated_ref = None
+    if family:
+        family_rows = [r for r in rows_sorted if _infer_family(r.exp) == family and r.upd is not None]
+        family_rows = sorted(family_rows, key=lambda r: _upd_sort_key(r.upd), reverse=True)
+        gated_ref = family_rows[0] if family_rows else None
+
     recommended_non = next((r for r in rows_sorted if _infer_exp_meta(r.exp)[0].startswith("T51a4")), None)
 
     with open(md_path, "w", encoding="utf-8") as f:
@@ -287,30 +380,38 @@ def generate_outputs(rows: List[Row], csv_path: str, md_path: str) -> None:
         f.write("| exp | upd | drift | score_drift |\n")
         f.write("|---|---:|---:|---:|\n")
         for r in best_drift:
-            f.write(f"| {r.exp} | {r.upd} | {_fmt(r.drift)} | {_fmt(r.score_drift)} |\n")
+            f.write(f"| {r.exp} | {r.upd if r.upd is not None else ''} | {_fmt(r.drift)} | {_fmt(r.score_drift)} |\n")
 
         f.write("\n## shape-aware eligible top-3 (score_shape055_l2)\n\n")
         f.write("| exp | upd | path_ratio | score_shape055_l2 | score_shape045_l1 | score_balanced |\n")
         f.write("|---|---:|---:|---:|---:|---:|\n")
         for r in best_shape:
             f.write(
-                f"| {r.exp} | {r.upd} | {_fmt(r.path_ratio)} | {_fmt(r.score_shape055_l2)} | {_fmt(r.score_shape045_l1)} | {_fmt(r.score_balanced)} |\n"
+                f"| {r.exp} | {r.upd if r.upd is not None else ''} | {_fmt(r.path_ratio)} | {_fmt(r.score_shape055_l2)} | {_fmt(r.score_shape045_l1)} | {_fmt(r.score_balanced)} |\n"
             )
 
         f.write("\n## 推荐\n\n")
+        if best_drift:
+            f.write(
+                f"- raw lowest drift（原始最小 drift）：`{best_drift[0].exp}` upd={best_drift[0].upd or ''}"
+                f" (`{best_drift[0].checkpoint}`)\n"
+            )
         if recommended_mainline is not None:
             f.write(
-                f"- 主线 checkpoint（shape-aware）：`{recommended_mainline.exp}` upd={recommended_mainline.upd}"
+                f"- shape-aware recommended（形状约束推荐）：`{recommended_mainline.exp}` upd={recommended_mainline.upd or ''}"
                 f" (`{recommended_mainline.checkpoint}`)\n"
             )
-        if recommended_drift is not None:
+        if gated_ref is not None:
             f.write(
-                f"- best-drift 对照：`{recommended_drift.exp}` upd={recommended_drift.upd}"
-                f" (`{recommended_drift.checkpoint}`)\n"
+                f"- original gated best-odom/best-drift 对照：`{gated_ref.exp}` upd={gated_ref.upd or ''}"
+                f" (`{gated_ref.checkpoint}`)\n"
             )
+        else:
+            f.write("- original gated best-odom/best-drift 对照：未识别到同分支对照 upd。")
+            f.write("\n")
         if recommended_non is not None:
             f.write(
-                f"- 不推荐：`{recommended_non.exp}` upd={recommended_non.upd}（`{os.path.basename(recommended_non.checkpoint or '')}`）\n"
+                f"- 不推荐：`{recommended_non.exp}` upd={recommended_non.upd or ''}（`{os.path.basename(recommended_non.checkpoint or '')}`）\n"
                 "  - 该分支 `path_ratio` 持续不足（小于 0.35），轨迹长度保真退化，作为主线或对照均不优先。\n"
             )
 
@@ -333,6 +434,10 @@ def main() -> int:
     for exp in args.experiments:
         exp_dir = _resolve_exp_dir(exp)
         all_rows.extend(_extract_rows(exp_dir))
+
+    if not all_rows:
+        print("No usable rows extracted.")
+        return 1
 
     generate_outputs(all_rows, args.csv, args.md)
 
