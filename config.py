@@ -181,6 +181,11 @@ class Config:
     tmag_scale_reg_min_gt: float = 1e-4
     tmag_scale_reg_log: bool = True
     tmag_scale_reg_min_dt: float = 0.0
+    use_tmag_under_reg: bool = False
+    w_tmag_under: float = 0.0
+    tmag_under_target_ratio: float = 0.35
+    tmag_under_min_gt: float = 0.02
+    tmag_under_min_dt: float = 0.02
     # T51: dt-conditioned magnitude head
     tmag_condition_on_dt: bool = False
     tmag_dt_clamp_min: float = 0.01

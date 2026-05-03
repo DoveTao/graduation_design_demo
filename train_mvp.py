@@ -2959,6 +2959,11 @@ def main():
         f"tmag_affine={bool(getattr(cfg, 'use_tmag_affine_calib', False))}:"
         f"scale={getattr(cfg, 'tmag_affine_init_scale', 1.0)}:"
         f"bias={getattr(cfg, 'tmag_affine_init_bias', 0.0)} | "
+        f"use_tmag_under={bool(getattr(cfg, 'use_tmag_under_reg', False))}:"
+        f"w={getattr(cfg, 'w_tmag_under', 0.0)}:"
+        f"target={getattr(cfg, 'tmag_under_target_ratio', 0.35)}:"
+        f"gt_min={getattr(cfg, 'tmag_under_min_gt', 0.02)}:"
+        f"dt_min={getattr(cfg, 'tmag_under_min_dt', 0.02)} | "
         f"tdir_anchor={bool(getattr(cfg, 'use_tdir_anchor_loss', False))}:w={getattr(cfg, 'w_tdir_anchor', 0.0)}"
         f":dt>={getattr(cfg, 'tdir_anchor_min_dt', 0.2)}:k>={getattr(cfg, 'tdir_anchor_min_k', 0)}"
         f" | seq_turn={bool(getattr(cfg, 'use_seq_turn_loss', False))}:w={getattr(cfg, 'seq_turn_loss_w', 0.0)}"
@@ -3295,6 +3300,11 @@ def main():
             "tmag_scale_reg_min_gt": float(getattr(cfg, "tmag_scale_reg_min_gt", 1e-4)),
             "tmag_scale_reg_log": bool(getattr(cfg, "tmag_scale_reg_log", True)),
             "tmag_scale_reg_min_dt": float(getattr(cfg, "tmag_scale_reg_min_dt", 0.0)),
+            "use_tmag_under_reg": bool(getattr(cfg, "use_tmag_under_reg", False)),
+            "w_tmag_under": float(getattr(cfg, "w_tmag_under", 0.0)),
+            "tmag_under_target_ratio": float(getattr(cfg, "tmag_under_target_ratio", 0.35)),
+            "tmag_under_min_gt": float(getattr(cfg, "tmag_under_min_gt", 0.02)),
+            "tmag_under_min_dt": float(getattr(cfg, "tmag_under_min_dt", 0.02)),
             "use_tmag_global_bias": bool(getattr(cfg, "use_tmag_global_bias", False)),
             "tmag_global_bias_init": float(getattr(cfg, "tmag_global_bias_init", 0.0)),
             "learned_log_tmag_bias": (
@@ -3572,6 +3582,19 @@ def main():
             tmag_scale_n = 0.0
             L_tmag_scale = torch.zeros((), device=dev)
 
+            tmag_under_w = float(getattr(cfg, "w_tmag_under", 0.0))
+            use_tmag_under_reg = bool(getattr(cfg, "use_tmag_under_reg", False)) and (tmag_under_w > 0.0)
+            tmag_under_target_ratio = float(getattr(cfg, "tmag_under_target_ratio", 0.35))
+            tmag_under_min_gt = float(getattr(cfg, "tmag_under_min_gt", 0.02))
+            tmag_under_min_dt = float(getattr(cfg, "tmag_under_min_dt", 0.02))
+            tmag_under_ratio = float("nan")
+            tmag_under_frac = 0.0
+            tmag_under_ratio_mean = float("nan")
+            tmag_under_ratio_median = float("nan")
+            tmag_under_n = 0.0
+            L_tmag_under = torch.zeros((), device=dev)
+            tmag_under_log_target = float("nan")
+
             if use_tmag_scale_reg and (
                 isinstance(aux, dict)
                 and aux.get("t_mag", None) is not None
@@ -3604,6 +3627,43 @@ def main():
 
             if not use_tmag_scale_reg:
                 tmag_scale_w = 0.0
+
+            if use_tmag_under_reg and (
+                isinstance(aux, dict)
+                and aux.get("t_mag", None) is not None
+                and t_gt_mag is not None
+            ):
+                pred_tmag = aux["t_mag"].float().view(-1)
+                gt_tmag = t_gt_mag.float().view(-1)
+                eps = float(getattr(cfg, "tmag_min", 1.0e-3))
+                valid_mask = (
+                    torch.isfinite(pred_tmag)
+                    & torch.isfinite(gt_tmag)
+                    & (gt_tmag > float(tmag_under_min_gt))
+                )
+                if dt_world is not None and float(tmag_under_min_dt) > 0.0:
+                    dt_world_t = dt_world.float().view(-1)
+                    valid_mask = valid_mask & torch.isfinite(dt_world_t) & (dt_world_t >= float(tmag_under_min_dt))
+
+                tmag_under_n = int(valid_mask.sum().item())
+                if tmag_under_n > 0:
+                    ratio = pred_tmag[valid_mask].clamp_min(eps) / gt_tmag[valid_mask].clamp_min(eps)
+                    tmag_under_ratio = float(ratio.mean().detach().cpu())
+                    tmag_under_ratio_mean = float(ratio.mean().detach().cpu())
+                    tmag_under_ratio_median = float(ratio.median().detach().cpu())
+                    tmag_under_frac = float((ratio < float(tmag_under_target_ratio)).float().mean().detach().cpu())
+                    log_ratio = torch.log(ratio)
+                    tmag_under_log_target = float(math.log(tmag_under_target_ratio))
+                    under = torch.relu(torch.tensor(tmag_under_log_target, device=dev, dtype=log_ratio.dtype) - log_ratio)
+                    L_tmag_under = under.pow(2).mean()
+                else:
+                    tmag_under_ratio = float("nan")
+                    tmag_under_ratio_mean = float("nan")
+                    tmag_under_ratio_median = float("nan")
+                    tmag_under_frac = 0.0
+
+            if not use_tmag_under_reg:
+                tmag_under_w = 0.0
 
             tdir_anchor_w_eff = _cfg_tdir_anchor_effective_weight(cfg, upd)
             L_tdir_anchor = torch.zeros((), device=dev)
@@ -3905,6 +3965,7 @@ def main():
                 + float(getattr(cfg, "w_coarse_epi_aux", 0.0)) * epi_ramp * L_epi_coarse
                 + tmag_w_eff * L_t_mag
                 + tmag_scale_w * L_tmag_scale
+                + tmag_under_w * L_tmag_under
                 + tdir_anchor_w_eff * L_tdir_anchor
                 + seq_turn_w_eff * L_seq_turn
                 + seq_turn_chain_w_eff * L_seq_turn_chain
@@ -3919,7 +3980,7 @@ def main():
             bool(torch.isfinite(x).all())
             for x in [
                 R_pred, t_pred, L_pose, L_pose_coarse, L_t_mag, L_tdir_anchor, L_seq_turn, L_seq_turn_chain,
-                L_x, L_cyc, L_rel, L_epi, L_epi_coarse, L_photo, L_smooth, L_tmag_scale, L,
+                L_x, L_cyc, L_rel, L_epi, L_epi_coarse, L_photo, L_smooth, L_tmag_scale, L_tmag_under, L,
             ]
         )
         if not forward_ok:
@@ -4489,6 +4550,10 @@ def main():
                 f"tmag={float(L_t_mag.detach().cpu()):.4f} | tmag_w={tmag_w_eff:.4g} | "
                 f"tmag_scale={tmag_scale:.6f} | tmag_scale_w={tmag_scale_w:.4g} | "
                 f"tmag_scale_ratio={tmag_scale_ratio:.6f} | tmag_scale_n={int(tmag_scale_n)} | "
+                f"tmag_under={float(L_tmag_under.detach().cpu()):.4f} | tmag_under_w={tmag_under_w:.4g} | "
+                f"tmag_under_target={tmag_under_target_ratio:.3f} | tmag_under_n={int(tmag_under_n)} | "
+                f"tmag_under_frac={tmag_under_frac:.4f} | tmag_under_ratio_mean={tmag_under_ratio_mean:.6f} | "
+                f"tmag_under_ratio_median={tmag_under_ratio_median:.6f} | "
                 f"tmag_bias={log_tmag_bias_val:.4f} | tmag_affine_scale={tmag_affine_scale_val:.6f} | "
                 f"tmag_affine_bias={tmag_affine_bias_val:.6f} | "
                 f"tdir_anchor={float(L_tdir_anchor.detach().cpu()):.4f} | anchor_w={tdir_anchor_w_eff:.4g} | anchor_n={tdir_anchor_n:.0f} | "
@@ -4591,6 +4656,11 @@ def main():
             "tmag_scale_reg_min_gt": float(getattr(cfg, "tmag_scale_reg_min_gt", 1e-4)),
             "tmag_scale_reg_log": bool(getattr(cfg, "tmag_scale_reg_log", True)),
             "tmag_scale_reg_min_dt": float(getattr(cfg, "tmag_scale_reg_min_dt", 0.0)),
+            "use_tmag_under_reg": bool(getattr(cfg, "use_tmag_under_reg", False)),
+            "w_tmag_under": float(getattr(cfg, "w_tmag_under", 0.0)),
+            "tmag_under_target_ratio": float(getattr(cfg, "tmag_under_target_ratio", 0.35)),
+            "tmag_under_min_gt": float(getattr(cfg, "tmag_under_min_gt", 0.02)),
+            "tmag_under_min_dt": float(getattr(cfg, "tmag_under_min_dt", 0.02)),
             "use_tmag_global_bias": bool(getattr(cfg, "use_tmag_global_bias", False)),
             "tmag_global_bias_init": float(getattr(cfg, "tmag_global_bias_init", 0.0)),
             "learned_log_tmag_bias": (
