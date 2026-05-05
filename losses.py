@@ -126,8 +126,17 @@ def translation_magnitude_loss(
     loss_type: str = "log_smooth_l1",
     eps: float = 1.0e-3,
     sample_weight: Optional[torch.Tensor] = None,
+    gt_weight_alpha: float = 0.0,
+    gt_weight_min: float = 1.0,
+    gt_weight_max: float = 4.0,
 ) -> torch.Tensor:
-    """Translation scale loss; default is Smooth L1 in log-magnitude space."""
+    """Translation scale loss; default is Smooth L1 in log-magnitude space.
+
+    When gt_weight_alpha > 0, each sample is reweighted by (gt / median(gt))^alpha
+    (clamped to [gt_weight_min, gt_weight_max]), so large-motion pairs receive
+    stronger absolute gradient (batch-mean normalization) without down-weighting
+    small motions.
+    """
     eps = float(eps)
     pred = t_mag_pred.float().view(-1).clamp_min(eps)
     gt = t_mag_gt.float().view(-1).clamp_min(0.0)
@@ -140,10 +149,21 @@ def translation_magnitude_loss(
         loss = torch.abs(pred - gt)
     else:
         raise ValueError(f"Unsupported translation magnitude loss_type: {loss_type}")
+
+    # Build per-sample weight combining explicit sample_weight and gt-based reweight.
+    w = torch.ones_like(loss)
+    alpha = float(gt_weight_alpha)
+    if alpha > 0.0:
+        gt_ref = gt.median().detach().clamp_min(eps)
+        rel = (gt / gt_ref).clamp_min(eps)
+        w_gt = rel.pow(alpha).clamp(min=float(gt_weight_min), max=float(gt_weight_max))
+        w = w * w_gt
     if sample_weight is not None:
-        w = sample_weight.float().view(-1).to(loss.device).clamp_min(1e-6)
-        return (loss * w).sum() / w.sum().clamp_min(1e-6)
-    return loss.mean()
+        sw = sample_weight.float().view(-1).to(loss.device).clamp_min(1e-6)
+        w = w * sw
+    # Use batch-mean normalization so large-motion weights produce
+    # absolute gradient amplification rather than just relative reweighting.
+    return (loss * w).mean()
 
 
 def epipolar_simplified_loss(

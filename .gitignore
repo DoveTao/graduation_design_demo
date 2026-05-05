@@ -11,6 +11,7 @@ dist/
 *.egg-info/
 
 # ---- Virtual environments ----
+.env
 .venv/
 venv/
 env/
@@ -26,25 +27,25 @@ FisheyeView/
 *.rar
 
 # ---- Model checkpoints / experiment outputs ----
-checkpoints/
 checkpoints_smoke/
 outputs/
 experiments/
 runs/
 wandb/
 logs/
-*.pth
-*.pt
-*.ckpt
-*.npz
 *.npy
 *.pkl
 *.pickle
 
-# ---- Logs ----
+# ---- Logs / temporary ----
 *.log
 *.out
 *.err
+*.tmp
+*.bak
+*.old
+tmp/
+temp/
 
 # ---- Temporary patches / local notes ----
 *.patch
@@ -65,3 +66,45 @@ Thumbs.db
 .idea/
 .codex
 .codex/
+
+# ---- Archives ----
+archive/
+
+# ---- Large model/checkpoint artifacts ----
+checkpoints/**/*.pt
+checkpoints/**/*.pth
+checkpoints/**/*.ckpt
+checkpoints/**/*.npz
+
+# ---- Odom/debug/generated heavy outputs ----
+checkpoints/**/odom_trajectory_debug*.json
+checkpoints/**/odom_trajectory_debug*.npz
+checkpoints/**/odom_trajectory_steps*.csv
+checkpoints/**/eval_history*.json
+checkpoints/**/eval_buckets*.json
+checkpoints/**/eval_buckets*.csv
+checkpoints/**/matching_diag*.json
+checkpoints/**/odom_metrics*.json
+checkpoints/**/eval_pairs_manifest.json
+checkpoints/**/final_summary.json
+
+# ---- Keep S1d5 final clean mainline artifacts ----
+!checkpoints/S1d5_clean_dt_anchor_policy.json
+!checkpoints/S1d5_final_baseline_comparison.md
+!checkpoints/S1d5_final_mainline_summary.md
+!checkpoints/S1d5_freeze_clean_dt_anchor_policy_export_report.md
+!checkpoints/S1d6_minimal_trainable_dt_anchor_head_proposal.md
+
+# ---- Keep S1d5 final dirs, but still ignore heavy internals unless explicitly needed ----
+!checkpoints/S1d5_final_figures/
+!checkpoints/S1d5_final_figures/*.png
+!checkpoints/S1d5_final_repro/
+!checkpoints/S1d5_final_repro/s1d5_policy_eval_summary.json
+
+# ---- Base checkpoint policy ----
+# If final.pt is too large, keep it out of normal Git and store it externally or via Git LFS.
+# !checkpoints/T57b_no_dt_multiscale_tmag_head_400/final.pt
+
+# ---- Generated report policy ----
+reports/tmp/
+reports/drafts/

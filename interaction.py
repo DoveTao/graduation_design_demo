@@ -23,9 +23,11 @@ Notes:
 from __future__ import annotations
 
 import math
+import os
 from dataclasses import dataclass
-from typing import Dict, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -188,13 +190,47 @@ class TranslationOnlyHead(nn.Module):
 class TranslationMagnitudeHead(nn.Module):
     """Predict log relative translation scale from fused token features.
 
-    If condition_dim > 0, expects a condition tensor (e.g. log(dt_world))
-    to be concatenated with the pooled features before the MLP.
+    Four modes:
+      - "scalar":  original MLP → single log_tmag (backward compatible)
+      - "multiscale": softmax-weighted K discrete log-scale centres + tanh residual
+      - "ridge_linear": single Linear(3*D, 1) layer, designed to be initialized
+        from a Ridge probe.  No dt input.
+      - "ridge_calib": frozen ridge direction + tiny global calibration params.
+
+    If condition_dim > 0 (scalar mode only), expects a condition tensor.
     """
 
-    def __init__(self, D: int, condition_dim: int = 0):
+    def __init__(
+        self,
+        D: int,
+        condition_dim: int = 0,
+        *,
+        head_mode: str = "scalar",
+        num_bins: int = 4,
+        log_centers: Optional[List[float]] = None,
+        residual_scale: float = 1.0,
+        # T57c: ridge_linear
+        ridge_head_path: str = "",
+        ridge_head_trainable: bool = True,
+        ridge_head_scale: float = 1.0,
+        # T57e: ridge_calib
+        ridge_calib_init_path: str = "",
+        ridge_calib_gamma_max: float = 0.50,
+        ridge_calib_gamma_init: float = 0.20,
+        ridge_calib_train_gamma: bool = True,
+        ridge_calib_train_bias: bool = True,
+        ridge_calib_raw_center: float = 0.0,
+        ridge_calib_log_base: float = 0.0,
+        ridge_calib_blend_init: float = 1.0,
+        ridge_calib_train_blend: bool = False,
+    ):
         super().__init__()
         self.condition_dim = int(condition_dim)
+        self.head_mode = str(head_mode)
+        if self.head_mode not in ("scalar", "multiscale", "ridge_linear", "ridge_calib"):
+            raise ValueError(f"Unknown tmag_head_mode: {self.head_mode}")
+
+        # --- scalar branch (always present for compatibility) ---
         in_dim = 3 * D + self.condition_dim
         self.net = nn.Sequential(
             nn.LayerNorm(in_dim),
@@ -205,11 +241,115 @@ class TranslationMagnitudeHead(nn.Module):
             nn.Linear(D // 2, 1),
         )
 
-    def forward(
+        # --- ridge branch ---
+        self.ridge_linear: Optional[nn.Linear] = None
+        if self.head_mode in ("ridge_linear", "ridge_calib"):
+            self.ridge_linear = nn.Linear(3 * D, 1, bias=True)
+            ridge_path = str(ridge_head_path)
+            if ridge_path and os.path.isfile(ridge_path):
+                data = np.load(ridge_path)
+                coef = data["coef"]  # [768]
+                intercept = float(data["intercept"].item() if hasattr(data["intercept"], "item") else data["intercept"])
+                expected = 3 * D
+                if coef.shape[0] != expected:
+                    raise ValueError(
+                        f"Ridge coef dim mismatch: got {coef.shape[0]}, expected {expected}"
+                    )
+                with torch.no_grad():
+                    self.ridge_linear.weight.copy_(
+                        torch.from_numpy(coef.astype(np.float32)).view(1, -1)
+                    )
+                    self.ridge_linear.bias.copy_(
+                        torch.tensor([intercept], dtype=torch.float32)
+                    )
+                if (self.head_mode == "ridge_calib") or (not bool(ridge_head_trainable)):
+                    for p in self.ridge_linear.parameters():
+                        p.requires_grad = False
+                print(
+                    f"[T57c/T57e] {self.head_mode} head loaded from {ridge_path} "
+                    f"| trainable={bool(ridge_head_trainable) and self.head_mode != 'ridge_calib'} "
+                    f"| feat_dim={coef.shape[0]}"
+                )
+            elif ridge_path:
+                raise FileNotFoundError(f"Ridge head path not found: {ridge_path}")
+            self.ridge_head_scale = float(ridge_head_scale)
+        self.ridge_calib_gamma_max = float(ridge_calib_gamma_max)
+        self.ridge_calib_gamma_param: Optional[nn.Parameter] = None
+        self.ridge_calib_log_base: Optional[nn.Parameter] = None
+        self.ridge_calib_blend_param: Optional[nn.Parameter] = None
+        self.register_buffer("ridge_calib_raw_center", torch.tensor(float(ridge_calib_raw_center), dtype=torch.float32), persistent=True)
+        if self.head_mode == "ridge_calib":
+            init_payload: Dict[str, float] = {}
+            init_path = str(ridge_calib_init_path)
+            if init_path:
+                if not os.path.isfile(init_path):
+                    raise FileNotFoundError(f"Ridge calib init path not found: {init_path}")
+                data = np.load(init_path, allow_pickle=True)
+                for key in ("raw_center", "log_base", "gamma_init", "gamma_max", "blend_init"):
+                    if key in data.files:
+                        val = data[key]
+                        init_payload[key] = float(val.item() if hasattr(val, "item") else val)
+            raw_center = float(init_payload.get("raw_center", ridge_calib_raw_center))
+            log_base = float(init_payload.get("log_base", ridge_calib_log_base))
+            gamma_init = float(init_payload.get("gamma_init", ridge_calib_gamma_init))
+            self.ridge_calib_gamma_max = float(init_payload.get("gamma_max", ridge_calib_gamma_max))
+            blend_init = float(init_payload.get("blend_init", ridge_calib_blend_init))
+            self.ridge_calib_raw_center.copy_(torch.tensor(raw_center, dtype=torch.float32))
+            gamma_init = min(max(gamma_init, 1e-6), max(self.ridge_calib_gamma_max - 1e-6, 1e-6))
+            gamma_ratio = min(max(gamma_init / max(self.ridge_calib_gamma_max, 1e-6), 1e-6), 1.0 - 1e-6)
+            gamma_param_init = math.log(gamma_ratio / max(1.0 - gamma_ratio, 1e-6))
+            self.ridge_calib_gamma_param = nn.Parameter(torch.tensor(float(gamma_param_init), dtype=torch.float32))
+            self.ridge_calib_gamma_param.requires_grad = bool(ridge_calib_train_gamma)
+            self.ridge_calib_log_base = nn.Parameter(torch.tensor(float(log_base), dtype=torch.float32))
+            self.ridge_calib_log_base.requires_grad = bool(ridge_calib_train_bias)
+            blend_init = min(max(blend_init, 1e-6), 1.0 - 1e-6)
+            blend_param_init = math.log(blend_init / max(1.0 - blend_init, 1e-6))
+            self.ridge_calib_blend_param = nn.Parameter(torch.tensor(float(blend_param_init), dtype=torch.float32))
+            self.ridge_calib_blend_param.requires_grad = bool(ridge_calib_train_blend)
+            print(
+                f"[T57e] ridge_calib init"
+                f" | raw_center={raw_center:.4f}"
+                f" | log_base={log_base:.4f}"
+                f" | gamma_init={gamma_init:.4f}"
+                f" | gamma_max={self.ridge_calib_gamma_max:.4f}"
+                f" | blend_init={blend_init:.4f}"
+            )
+
+        # --- multiscale additions ---
+        self.num_bins = int(num_bins) if self.head_mode == "multiscale" else 0
+        self.residual_scale = float(residual_scale)
+        if self.head_mode == "multiscale":
+            if log_centers is None or len(log_centers) != self.num_bins:
+                raise ValueError(
+                    f"multiscale mode requires log_centers list of length {self.num_bins}, "
+                    f"got {log_centers}"
+                )
+            self.register_buffer(
+                "log_centers",
+                torch.tensor(log_centers, dtype=torch.float32).view(1, self.num_bins),
+            )
+            # scale classification head
+            cls_in_dim = 3 * D  # no dt condition
+            self.scale_cls_head = nn.Sequential(
+                nn.LayerNorm(cls_in_dim),
+                nn.Linear(cls_in_dim, D),
+                nn.GELU(),
+                nn.Linear(D, D // 2),
+                nn.GELU(),
+                nn.Linear(D // 2, self.num_bins),
+            )
+            # residual head
+            self.residual_head = nn.Sequential(
+                nn.LayerNorm(cls_in_dim),
+                nn.Linear(cls_in_dim, D // 2),
+                nn.GELU(),
+                nn.Linear(D // 2, 1),
+            )
+
+    def _pool_features(
         self,
         feat: torch.Tensor,
         token_weight: Optional[torch.Tensor] = None,
-        condition: Optional[torch.Tensor] = None,
     ) -> torch.Tensor:
         feat = feat.float()
         if token_weight is None:
@@ -223,20 +363,72 @@ class TranslationMagnitudeHead(nn.Module):
             z_var = torch.sum(diff2 * w.unsqueeze(-1), dim=1)
         z_std = torch.sqrt(z_var.clamp_min(1e-8))
         z_max = feat.max(dim=1).values
-        z = torch.cat([z_mean, z_max, z_std], dim=-1)
+        return torch.cat([z_mean, z_max, z_std], dim=-1)
 
-        if self.condition_dim > 0:
-            if condition is None:
-                condition = torch.zeros(
-                    (feat.shape[0], self.condition_dim),
-                    device=feat.device,
-                    dtype=z.dtype,
-                )
-            else:
-                condition = condition.float().view(feat.shape[0], self.condition_dim)
-            z = torch.cat([z, condition], dim=-1)
+    def forward(
+        self,
+        feat: torch.Tensor,
+        token_weight: Optional[torch.Tensor] = None,
+        condition: Optional[torch.Tensor] = None,
+    ) -> Union[torch.Tensor, Dict[str, torch.Tensor]]:
+        z = self._pool_features(feat, token_weight)
 
-        return self.net(z).squeeze(-1)
+        if self.head_mode == "scalar":
+            if self.condition_dim > 0:
+                if condition is None:
+                    condition = torch.zeros(
+                        (feat.shape[0], self.condition_dim),
+                        device=feat.device,
+                        dtype=z.dtype,
+                    )
+                else:
+                    condition = condition.float().view(feat.shape[0], self.condition_dim)
+                z = torch.cat([z, condition], dim=-1)
+            return self.net(z).squeeze(-1)
+
+        if self.head_mode == "ridge_linear":
+            log_tmag = self.ridge_linear(z).squeeze(-1) * self.ridge_head_scale
+            return {
+                "log_tmag": log_tmag,
+                "ridge_log_pred": log_tmag,
+            }
+
+        if self.head_mode == "ridge_calib":
+            raw_log = self.ridge_linear(z).squeeze(-1) * self.ridge_head_scale
+            raw_centered = raw_log - self.ridge_calib_raw_center.float().view(())
+            gamma = torch.sigmoid(self.ridge_calib_gamma_param).view(()) * float(self.ridge_calib_gamma_max)
+            log_base = self.ridge_calib_log_base.float().view(())
+            log_tmag_ridge = log_base + gamma * raw_centered
+            tmag_ridge = torch.exp(log_tmag_ridge)
+            blend = torch.sigmoid(self.ridge_calib_blend_param).view(())
+            tmag_const = torch.exp(log_base)
+            tmag = blend * tmag_ridge + (1.0 - blend) * tmag_const
+            log_tmag = torch.log(tmag.clamp_min(1.0e-8))
+            return {
+                "log_tmag": log_tmag,
+                "ridge_raw_log": raw_log,
+                "ridge_raw_centered": raw_centered,
+                "ridge_gamma": gamma.expand_as(raw_log),
+                "ridge_log_base": log_base.expand_as(raw_log),
+                "ridge_blend": blend.expand_as(raw_log),
+                "ridge_log_tmag_preblend": log_tmag_ridge,
+                "head_mode": "ridge_calib",
+            }
+
+        # --- multiscale mode ---
+        logits = self.scale_cls_head(z)                     # [B, K]
+        prob = F.softmax(logits, dim=-1)                    # [B, K]
+        center_log = (prob * self.log_centers).sum(dim=-1)  # [B]
+        residual = self.residual_head(z).squeeze(-1)        # [B]
+        log_tmag = center_log + self.residual_scale * torch.tanh(residual)
+
+        return {
+            "log_tmag": log_tmag,
+            "scale_logits": logits,
+            "scale_prob": prob,
+            "center_log": center_log,
+            "residual_raw": residual,
+        }
 
 
 def positive_translation_magnitude(
@@ -285,6 +477,11 @@ def stable_softmax(logits: torch.Tensor, dim: int = -1, mask: Optional[torch.Ten
     logits = logits - logits.max(dim=dim, keepdim=True).values
     ex = torch.exp(logits)
     return ex / ex.sum(dim=dim, keepdim=True).clamp_min(1e-9)
+
+
+def _parse_log_centers(raw: str) -> List[float]:
+    """Parse comma-separated log-centers string into float list."""
+    return [float(x.strip()) for x in str(raw).split(",") if x.strip()]
 
 
 def build_routing_mask_from_coarse_topk(
@@ -377,6 +574,25 @@ class CoarseInteraction(nn.Module):
         log_tmag_clamp_min: float = -6.0,
         log_tmag_clamp_max: float = 6.0,
         tmag_condition_on_dt: bool = False,
+        # T57b: multiscale tmag head
+        tmag_head_mode: str = "scalar",
+        tmag_num_bins: int = 4,
+        tmag_log_centers: str = "-3.5,-1.7,-0.9,-0.3",
+        tmag_residual_scale: float = 1.0,
+        # T57c: ridge_linear head
+        tmag_ridge_head_path: str = "",
+        tmag_ridge_head_trainable: bool = True,
+        tmag_ridge_head_scale: float = 1.0,
+        # T57e: ridge_calib head
+        tmag_ridge_calib_init_path: str = "",
+        tmag_ridge_calib_gamma_max: float = 0.50,
+        tmag_ridge_calib_gamma_init: float = 0.20,
+        tmag_ridge_calib_train_gamma: bool = True,
+        tmag_ridge_calib_train_bias: bool = True,
+        tmag_ridge_calib_raw_center: float = 0.0,
+        tmag_ridge_calib_log_base: float = 0.0,
+        tmag_ridge_calib_blend_init: float = 1.0,
+        tmag_ridge_calib_train_blend: bool = False,
     ):
         super().__init__()
         self.temperature = float(temperature)
@@ -399,7 +615,34 @@ class CoarseInteraction(nn.Module):
         self.t_fuse = FuseMLP(D) if self.use_translation_feature_branch else None
         self.t_head = TranslationOnlyHead(D) if self.use_translation_feature_branch else None
         _mag_cond_dim = 1 if self.tmag_condition_on_dt else 0
-        self.mag_head = TranslationMagnitudeHead(D, condition_dim=_mag_cond_dim) if self.use_translation_magnitude_head else None
+        # T57b: multiscale config
+        _head_mode = str(tmag_head_mode) if _mag_cond_dim == 0 else "scalar"
+        _num_bins = int(tmag_num_bins) if _head_mode == "multiscale" else 0
+        _log_centers = _parse_log_centers(tmag_log_centers) if _head_mode == "multiscale" else None
+        _residual_scale = float(tmag_residual_scale) if _head_mode == "multiscale" else 1.0
+        self.mag_head = (
+            TranslationMagnitudeHead(
+                D,
+                condition_dim=_mag_cond_dim,
+                head_mode=_head_mode,
+                num_bins=_num_bins,
+                log_centers=_log_centers,
+                residual_scale=_residual_scale,
+                ridge_head_path=str(tmag_ridge_head_path),
+                ridge_head_trainable=bool(tmag_ridge_head_trainable),
+                ridge_head_scale=float(tmag_ridge_head_scale),
+                ridge_calib_init_path=str(tmag_ridge_calib_init_path),
+                ridge_calib_gamma_max=float(tmag_ridge_calib_gamma_max),
+                ridge_calib_gamma_init=float(tmag_ridge_calib_gamma_init),
+                ridge_calib_train_gamma=bool(tmag_ridge_calib_train_gamma),
+                ridge_calib_train_bias=bool(tmag_ridge_calib_train_bias),
+                ridge_calib_raw_center=float(tmag_ridge_calib_raw_center),
+                ridge_calib_log_base=float(tmag_ridge_calib_log_base),
+                ridge_calib_blend_init=float(tmag_ridge_calib_blend_init),
+                ridge_calib_train_blend=bool(tmag_ridge_calib_train_blend),
+            )
+            if self.use_translation_magnitude_head else None
+        )
         self.rel_head = TokenReliabilityHead(D)
 
     def forward(
@@ -456,16 +699,31 @@ class CoarseInteraction(nn.Module):
                         device=mag_feat.device,
                         dtype=mag_feat.dtype,
                     )
-            log_tc_mag = self.mag_head(mag_feat, token_weight=mag_weight, condition=mag_condition)
-            tc_mag, log_tc_mag = positive_translation_magnitude(
-                log_tc_mag,
-                clamp_min=self.log_tmag_clamp_min,
-                clamp_max=self.log_tmag_clamp_max,
-                mag_min=self.tmag_min,
-            )
+            mag_out = self.mag_head(mag_feat, token_weight=mag_weight, condition=mag_condition)
+            if isinstance(mag_out, dict):
+                # multiscale mode
+                log_tc_mag = mag_out["log_tmag"]
+                tc_mag, log_tc_mag = positive_translation_magnitude(
+                    log_tc_mag,
+                    clamp_min=self.log_tmag_clamp_min,
+                    clamp_max=self.log_tmag_clamp_max,
+                    mag_min=self.tmag_min,
+                )
+                ms_aux = {f"tmag_{k}": v for k, v in mag_out.items() if k != "log_tmag"}
+            else:
+                # scalar mode (backward compatible)
+                log_tc_mag = mag_out
+                tc_mag, log_tc_mag = positive_translation_magnitude(
+                    log_tc_mag,
+                    clamp_min=self.log_tmag_clamp_min,
+                    clamp_max=self.log_tmag_clamp_max,
+                    mag_min=self.tmag_min,
+                )
+                ms_aux = {}
         else:
             tc_mag = torch.ones((TokA.feat.shape[0],), device=TokA.feat.device, dtype=torch.float32)
             log_tc_mag = torch.zeros_like(tc_mag)
+            ms_aux = {}
 
         out = {
             "Wc_ab": Wc_ab,
@@ -482,6 +740,8 @@ class CoarseInteraction(nn.Module):
         }
         if Fc_t is not None:
             out["Fc_t"] = Fc_t
+        if ms_aux:
+            out.update(ms_aux)
         return out
 
 

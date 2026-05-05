@@ -69,6 +69,65 @@ def _cfg_to_dict(cfg):
         return {k: v for k, v in vars(cfg).items() if not k.startswith("_")}
 
 
+def _set_train_fine_only(model: nn.Module, cfg: Config) -> Dict[str, Any]:
+    if not bool(getattr(cfg, "train_fine_only", False)):
+        return {
+            "enabled": False,
+            "trainable_param_count": sum(p.numel() for p in model.parameters()),
+            "frozen_param_count": 0,
+            "trainable_groups": {"all": sum(p.numel() for p in model.parameters())},
+            "frozen_groups": {},
+        }
+
+    trainable_prefixes = (
+        "module2.patch_embed_f",
+        "module2.enc_f",
+        "fine.",
+    )
+    frozen_exact = {"log_tmag_bias", "tmag_affine_scale", "tmag_affine_bias"}
+    frozen_prefixes = (
+        "module2.patch_embed_c",
+        "module2.enc_c",
+        "module2.patch_embed_c_t",
+        "module2.enc_c_t",
+        "module2.pos_enc",
+        "direct_head",
+        "coarse.",
+        "depth",
+        "depth_token_proj",
+    )
+
+    trainable_groups: Dict[str, int] = {}
+    frozen_groups: Dict[str, int] = {}
+
+    for name, p in model.named_parameters():
+        is_trainable = name.startswith(trainable_prefixes)
+        if name in frozen_exact or name.startswith(frozen_prefixes):
+            is_trainable = False
+        p.requires_grad_(is_trainable)
+        group_key = "trainable" if is_trainable else "frozen"
+        group_name = name.split(".", 2)[0] if "." in name else name
+        if is_trainable:
+            trainable_groups[group_name] = trainable_groups.get(group_name, 0) + p.numel()
+        else:
+            frozen_groups[group_name] = frozen_groups.get(group_name, 0) + p.numel()
+
+    trainable_param_count = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    frozen_param_count = sum(p.numel() for p in model.parameters() if not p.requires_grad)
+    summary = {
+        "enabled": True,
+        "trainable_param_count": int(trainable_param_count),
+        "frozen_param_count": int(frozen_param_count),
+        "trainable_groups": trainable_groups,
+        "frozen_groups": frozen_groups,
+    }
+    print(
+        f"[Freeze] train_fine_only=True | trainable={trainable_param_count} | "
+        f"frozen={frozen_param_count} | groups(trainable)={sorted(trainable_groups.items())}"
+    )
+    return summary
+
+
 def _parse_args():
     parser = argparse.ArgumentParser(description="Train the panoramic relative pose MVP model.")
     parser.add_argument(
@@ -2931,6 +2990,14 @@ def main():
     else:
         dev = torch.device("cpu")
 
+    freeze_summary = {
+        "enabled": False,
+        "trainable_param_count": 0,
+        "frozen_param_count": 0,
+        "trainable_groups": {},
+        "frozen_groups": {},
+    }
+
     torch.set_float32_matmul_precision(cfg.matmul_precision)
     torch.backends.cuda.matmul.allow_tf32 = bool(cfg.tf32)
     torch.backends.cudnn.allow_tf32 = bool(cfg.tf32)
@@ -3430,6 +3497,12 @@ def main():
             "odom_select_min_points": int(getattr(cfg, "odom_select_min_points", 1)),
             "smallk_select_window": int(getattr(cfg, "smallk_select_window", 1)),
             "smallk_select_min_points": int(getattr(cfg, "smallk_select_min_points", 1)),
+            "freeze_coarse_for_fine_training": bool(getattr(cfg, "freeze_coarse_for_fine_training", False)),
+            "train_fine_only": bool(getattr(cfg, "train_fine_only", False)),
+            "trainable_param_count": int(freeze_summary.get("trainable_param_count", sum(p.numel() for p in model.parameters()))),
+            "frozen_param_count": int(freeze_summary.get("frozen_param_count", 0)),
+            "trainable_groups": freeze_summary.get("trainable_groups", {}),
+            "frozen_groups": freeze_summary.get("frozen_groups", {}),
             "run_device": str(dev.type),
             "run_device_name": str(torch.cuda.get_device_name(dev)) if dev.type == "cuda" else "cpu",
             "has_cuda": bool(torch.cuda.is_available()),
@@ -3454,7 +3527,11 @@ def main():
         tdir_anchor_model.eval()
         for p in tdir_anchor_model.parameters():
             p.requires_grad_(False)
-    optimizer = AdamW(model.parameters(), lr=cfg.lr, weight_decay=cfg.wd)
+    freeze_summary = _set_train_fine_only(model, cfg)
+    trainable_params = [p for p in model.parameters() if p.requires_grad]
+    if len(trainable_params) == 0:
+        raise RuntimeError("No trainable parameters remain after applying freeze policy.")
+    optimizer = AdamW(trainable_params, lr=cfg.lr, weight_decay=cfg.wd)
 
     scheduler = LambdaLR(
         optimizer,
@@ -3634,9 +3711,33 @@ def main():
                     loss_type=str(getattr(cfg, "tmag_loss_type", "log_smooth_l1")),
                     eps=float(getattr(cfg, "tmag_min", 1.0e-3)),
                     sample_weight=None,
+                    gt_weight_alpha=float(getattr(cfg, "tmag_loss_gt_weight_alpha", 0.0)),
+                    gt_weight_min=float(getattr(cfg, "tmag_loss_gt_weight_min", 1.0)),
+                    gt_weight_max=float(getattr(cfg, "tmag_loss_gt_weight_max", 4.0)),
                 )
             else:
                 L_t_mag = torch.zeros((), device=dev)
+
+            # T57b: multiscale tmag scale classification loss
+            tmag_ms_cls_w = float(getattr(cfg, "tmag_multiscale_cls_w", 0.0))
+            tmag_ms_cls_w = tmag_ms_cls_w if str(getattr(cfg, "tmag_head_mode", "scalar")) == "multiscale" else 0.0
+            L_tmag_ms_cls = torch.zeros((), device=dev)
+            tmag_ms_cls_n = 0
+            if tmag_ms_cls_w > 0.0 and isinstance(aux, dict) and "tmag_scale_logits" in aux and t_gt_mag is not None:
+                logits = aux["tmag_scale_logits"]  # [B, K]
+                gt_mag = t_gt_mag.float().view(-1)
+                raw_centers = str(getattr(cfg, "tmag_multiscale_log_centers", "-3.5,-1.7,-0.9,-0.3"))
+                centers = [float(x.strip()) for x in raw_centers.split(",") if x.strip()]
+                K = len(centers)
+                if K >= 2:
+                    centers_t = torch.tensor(centers, device=logits.device, dtype=torch.float32)
+                    log_gt = torch.log(gt_mag.clamp_min(float(getattr(cfg, "tmag_min", 1e-3))))
+                    # nearest log-center assignment (no dt leakage)
+                    gt_bucket = (log_gt[:, None] - centers_t[None, :]).abs().argmin(dim=-1)
+                    L_tmag_ms_cls = F.cross_entropy(logits, gt_bucket)
+                    tmag_ms_cls_n = int(logits.shape[0])
+                else:
+                    tmag_ms_cls_w = 0.0
 
             tmag_scale_w = float(getattr(cfg, "w_tmag_scale", 0.0))
             use_tmag_scale_reg = bool(getattr(cfg, "use_tmag_scale_reg", False)) and (tmag_scale_w > 0.0)
@@ -4271,6 +4372,7 @@ def main():
                 + epi_w * L_epi
                 + float(getattr(cfg, "w_coarse_epi_aux", 0.0)) * epi_ramp * L_epi_coarse
                 + tmag_w_eff * L_t_mag
+                + tmag_ms_cls_w * L_tmag_ms_cls
                 + tmag_scale_w * L_tmag_scale
                 + tmag_under_w * L_tmag_under
                 + tdir_anchor_w_eff * L_tdir_anchor
@@ -4288,7 +4390,7 @@ def main():
         forward_ok = all(
             bool(torch.isfinite(x).all())
             for x in [
-                R_pred, t_pred, L_pose, L_pose_coarse, L_t_mag, L_tdir_anchor, L_seq_turn, L_seq_turn_chain,
+                R_pred, t_pred, L_pose, L_pose_coarse, L_t_mag, L_tmag_ms_cls, L_tdir_anchor, L_seq_turn, L_seq_turn_chain,
                 L_x, L_cyc, L_rel, L_epi, L_epi_coarse, L_photo, L_smooth, L_tmag_scale, L_tmag_under, L_odom_chain_len, L_odom_chain_vec, L,
             ]
         )

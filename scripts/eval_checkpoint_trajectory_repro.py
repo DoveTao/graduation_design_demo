@@ -15,6 +15,28 @@ from typing import Any, Dict, List, Tuple
 
 FIELD_RESTORE_LIST = [
     "tmag_condition_on_dt",
+    "tmag_head_mode",
+    "tmag_multiscale_num_bins",
+    "tmag_multiscale_log_centers",
+    "tmag_multiscale_residual_scale",
+    "tmag_multiscale_cls_w",
+    "tmag_min",
+    "log_tmag_clamp_min",
+    "log_tmag_clamp_max",
+    "tmag_pred_source",
+    "tmag_detach_features",
+    "tmag_ridge_head_path",
+    "tmag_ridge_head_trainable",
+    "tmag_ridge_head_scale",
+    "tmag_ridge_calib_init_path",
+    "tmag_ridge_calib_gamma_max",
+    "tmag_ridge_calib_gamma_init",
+    "tmag_ridge_calib_train_gamma",
+    "tmag_ridge_calib_train_bias",
+    "tmag_ridge_calib_raw_center",
+    "tmag_ridge_calib_log_base",
+    "tmag_ridge_calib_blend_init",
+    "tmag_ridge_calib_train_blend",
     "use_translation_magnitude_head",
     "use_tmag_global_bias",
     "use_tmag_affine_calib",
@@ -152,6 +174,40 @@ def check_keywords(log_path: Path) -> Dict[str, bool]:
     return found
 
 
+TMAG_HEAD_WARNING_PATTERNS = [
+    "coarse.mag_head.scale_cls_head",
+    "coarse.mag_head.log_centers",
+    "coarse.mag_head.residual_head",
+    "fine.mag_head.scale_cls_head",
+    "fine.mag_head.log_centers",
+    "fine.mag_head.residual_head",
+]
+
+
+def summarize_load_from_log(log_path: Path) -> Dict[str, Any]:
+    text = log_path.read_text(encoding="utf-8", errors="ignore")
+    lines = text.splitlines()
+    init_lines = [ln.strip() for ln in lines if "[InitCkpt]" in ln]
+    out: Dict[str, Any] = {
+        "init_lines": init_lines,
+        "warning_hits": [],
+    }
+    m = re.search(r"missing=(\d+)\s+\|\s+unexpected=(\d+)", text)
+    if m:
+        out["missing_count"] = int(m.group(1))
+        out["unexpected_count"] = int(m.group(2))
+    unexpected_preview = None
+    for ln in init_lines:
+        if "unexpected preview=" in ln:
+            unexpected_preview = ln.split("unexpected preview=", 1)[1].strip()
+            break
+    out["unexpected_preview"] = unexpected_preview
+    for pat in TMAG_HEAD_WARNING_PATTERNS:
+        if pat in text:
+            out["warning_hits"].append(pat)
+    return out
+
+
 def main() -> int:
     args = parse_args()
     ckpt_path = Path(args.ckpt)
@@ -179,6 +235,18 @@ def main() -> int:
     print("Recovered cfg fields:")
     for item in recovered:
         print(f"  {item}")
+    print("\nRecovered tmag cfg summary:")
+    for k in [
+        "tmag_head_mode",
+        "tmag_multiscale_num_bins",
+        "tmag_multiscale_log_centers",
+        "tmag_multiscale_residual_scale",
+        "tmag_multiscale_cls_w",
+    ]:
+        if k in cfg:
+            print(f"  {k}={cfg[k]!r}")
+        else:
+            print(f"  {k}=<not in checkpoint cfg>")
 
     printable = format_cmd_for_print(cmd)
     print("\nFinal command:")
@@ -198,6 +266,25 @@ def main() -> int:
     print("\nLog keyword checks:")
     for k, v in matches.items():
         print(f"  {k}: {'found' if v else 'missing'}")
+
+    load_summary = summarize_load_from_log(log_path)
+    print("\nLoad summary from train log:")
+    if "missing_count" in load_summary and "unexpected_count" in load_summary:
+        print(
+            f"  load missing/unexpected: "
+            f"{load_summary['missing_count']}/{load_summary['unexpected_count']}"
+        )
+    if load_summary.get("unexpected_preview"):
+        print(f"  unexpected preview: {load_summary['unexpected_preview']}")
+    for ln in load_summary.get("init_lines", [])[:4]:
+        print(f"  {ln}")
+    if load_summary.get("warning_hits"):
+        print(
+            "\n[WARNING] Tmag head parameters were not loaded; "
+            "eval result may be a wrapper-default cfg mismatch."
+        )
+        for pat in load_summary["warning_hits"]:
+            print(f"  hit: {pat}")
 
     if proc.returncode != 0:
         print(f"\nExecution failed with code {proc.returncode}")

@@ -92,6 +92,11 @@ class Config:
     use_epipolar_loss: bool = True
     epi_mode: str = "bias"   # "bias" | "mask"
     fine_pose_fuse_strength: float = 0.0
+    fine_rot_fuse_strength: float = -1.0
+    fine_tdir_fuse_strength: float = -1.0
+    fine_tmag_fuse_strength: float = -1.0
+    freeze_coarse_for_fine_training: bool = False
+    train_fine_only: bool = False
 
     coarse_temperature: float = 0.10
     fine_temperature: float = 0.07
@@ -189,6 +194,31 @@ class Config:
     # T51: dt-conditioned magnitude head
     tmag_condition_on_dt: bool = False
     tmag_dt_clamp_min: float = 0.01
+    # T57a: gt-aware weighted tmag loss (no dt leakage)
+    tmag_loss_gt_weight_alpha: float = 0.0   # 0=disabled; >0 enables per-sample gt reweight
+    tmag_loss_gt_weight_min: float = 1.0
+    tmag_loss_gt_weight_max: float = 4.0
+    # T57b: multi-scale tmag head (no dt, explicit scale buckets)
+    tmag_head_mode: str = "scalar"  # "scalar" | "multiscale" | "ridge_linear" | "ridge_calib"
+    tmag_multiscale_num_bins: int = 4
+    tmag_multiscale_log_centers: str = "-3.5,-1.7,-0.9,-0.3"  # comma-separated
+    tmag_multiscale_residual_scale: float = 1.0
+    tmag_multiscale_entropy_w: float = 0.0
+    tmag_multiscale_cls_w: float = 0.05
+    # T57c: ridge-initialized linear tmag head
+    tmag_ridge_head_path: str = ""  # path to .npz with coef/intercept
+    tmag_ridge_head_trainable: bool = True
+    tmag_ridge_head_scale: float = 1.0
+    # T57e: constrained ridge calibration head
+    tmag_ridge_calib_init_path: str = ""  # npz with train-only raw_center/log_base/gamma init
+    tmag_ridge_calib_gamma_max: float = 0.50
+    tmag_ridge_calib_gamma_init: float = 0.20
+    tmag_ridge_calib_train_gamma: bool = True
+    tmag_ridge_calib_train_bias: bool = True
+    tmag_ridge_calib_raw_center: float = 0.0
+    tmag_ridge_calib_log_base: float = 0.0
+    tmag_ridge_calib_blend_init: float = 1.0
+    tmag_ridge_calib_train_blend: bool = False
     use_tdir_anchor_loss: bool = False
     tdir_anchor_checkpoint: str = ""
     w_tdir_anchor: float = 0.0

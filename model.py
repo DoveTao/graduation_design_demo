@@ -213,6 +213,13 @@ def _blend_magnitude(m_base: torch.Tensor, m_update: torch.Tensor, strength: flo
     return ((1.0 - a) * m_base + a * m_update).clamp_min(1e-6)
 
 
+def _resolve_fine_fuse_strength(cfg: Config, attr_name: str) -> float:
+    value = float(getattr(cfg, attr_name, -1.0))
+    if value >= 0.0:
+        return value
+    return float(getattr(cfg, "fine_pose_fuse_strength", 1.0))
+
+
 def _apply_log_tmag_bias(
     t_mag: torch.Tensor,
     log_t_mag: torch.Tensor,
@@ -284,6 +291,25 @@ class PanoramaRelPoseModel(nn.Module):
             log_tmag_clamp_min=float(getattr(cfg, "log_tmag_clamp_min", -6.0)),
             log_tmag_clamp_max=float(getattr(cfg, "log_tmag_clamp_max", 6.0)),
             tmag_condition_on_dt=bool(getattr(cfg, "tmag_condition_on_dt", False)),
+            # T57b: multiscale tmag head
+            tmag_head_mode=str(getattr(cfg, "tmag_head_mode", "scalar")),
+            tmag_num_bins=int(getattr(cfg, "tmag_multiscale_num_bins", 4)),
+            tmag_log_centers=str(getattr(cfg, "tmag_multiscale_log_centers", "-3.5,-1.7,-0.9,-0.3")),
+            tmag_residual_scale=float(getattr(cfg, "tmag_multiscale_residual_scale", 1.0)),
+            # T57c: ridge_linear head
+            tmag_ridge_head_path=str(getattr(cfg, "tmag_ridge_head_path", "")),
+            tmag_ridge_head_trainable=bool(getattr(cfg, "tmag_ridge_head_trainable", True)),
+            tmag_ridge_head_scale=float(getattr(cfg, "tmag_ridge_head_scale", 1.0)),
+            # T57e: ridge_calib head
+            tmag_ridge_calib_init_path=str(getattr(cfg, "tmag_ridge_calib_init_path", "")),
+            tmag_ridge_calib_gamma_max=float(getattr(cfg, "tmag_ridge_calib_gamma_max", 0.50)),
+            tmag_ridge_calib_gamma_init=float(getattr(cfg, "tmag_ridge_calib_gamma_init", 0.20)),
+            tmag_ridge_calib_train_gamma=bool(getattr(cfg, "tmag_ridge_calib_train_gamma", True)),
+            tmag_ridge_calib_train_bias=bool(getattr(cfg, "tmag_ridge_calib_train_bias", True)),
+            tmag_ridge_calib_raw_center=float(getattr(cfg, "tmag_ridge_calib_raw_center", 0.0)),
+            tmag_ridge_calib_log_base=float(getattr(cfg, "tmag_ridge_calib_log_base", 0.0)),
+            tmag_ridge_calib_blend_init=float(getattr(cfg, "tmag_ridge_calib_blend_init", 1.0)),
+            tmag_ridge_calib_train_blend=bool(getattr(cfg, "tmag_ridge_calib_train_blend", False)),
         )
         self.fine = FineInteraction(
             cfg.D,
@@ -431,10 +457,12 @@ class PanoramaRelPoseModel(nn.Module):
             epi_mode=self.cfg.epi_mode,
         )
         aux.update(out_f)
-        fine_strength = float(getattr(self.cfg, "fine_pose_fuse_strength", 1.0))
-        R_final = _blend_rotation(out_c["Rc"], out_f["R"], fine_strength)
-        t_local_final = _blend_direction(aux["tc_dir_local"], out_f["t_dir"], fine_strength)
-        t_mag_final = _blend_magnitude(aux["tc_mag"], out_f["t_mag"], fine_strength)
+        fine_rot_strength = _resolve_fine_fuse_strength(self.cfg, "fine_rot_fuse_strength")
+        fine_tdir_strength = _resolve_fine_fuse_strength(self.cfg, "fine_tdir_fuse_strength")
+        fine_tmag_strength = _resolve_fine_fuse_strength(self.cfg, "fine_tmag_fuse_strength")
+        R_final = _blend_rotation(out_c["Rc"], out_f["R"], fine_rot_strength)
+        t_local_final = _blend_direction(aux["tc_dir_local"], out_f["t_dir"], fine_tdir_strength)
+        t_mag_final = _blend_magnitude(aux["tc_mag"], out_f["t_mag"], fine_tmag_strength)
         log_t_mag_final = torch.log(t_mag_final.clamp_min(float(getattr(self.cfg, "tmag_min", 1.0e-3))))
         t_mag_final_unbiased = t_mag_final
         t_mag_final, log_t_mag_final = self._bias_magnitude(t_mag_final, log_t_mag_final)
@@ -446,7 +474,10 @@ class PanoramaRelPoseModel(nn.Module):
         aux["t_mag_unbiased"] = t_mag_final_unbiased
         aux["log_t_mag_unbiased"] = torch.log(t_mag_final_unbiased.clamp_min(float(getattr(self.cfg, "tmag_min", 1.0e-3))))
         aux["log_tmag_bias"] = self.log_tmag_bias.detach().view(()) if self.log_tmag_bias is not None else torch.zeros((), device=IA.device)
-        aux["fine_pose_fuse_strength"] = torch.tensor(fine_strength, device=R_final.device)
+        aux["fine_pose_fuse_strength"] = torch.tensor(float(getattr(self.cfg, "fine_pose_fuse_strength", 1.0)), device=R_final.device)
+        aux["fine_rot_fuse_strength"] = torch.tensor(fine_rot_strength, device=R_final.device)
+        aux["fine_tdir_fuse_strength"] = torch.tensor(fine_tdir_strength, device=R_final.device)
+        aux["fine_tmag_fuse_strength"] = torch.tensor(fine_tmag_strength, device=R_final.device)
         _set_transform_outputs(aux, R_final, t_local_final, t_mag_final, log_t_mag_final)
         aux["stage"] = "coarse_to_fine"
         aux["Wc_tilde"] = aggregate_fine_to_coarse(
