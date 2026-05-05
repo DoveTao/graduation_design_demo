@@ -1,6 +1,7 @@
 # Current Valid Baselines
 
 | label | checkpoint | eval status | drift | ATE | path_ratio | status |
+| S2b train-CV rot policy candidate | `checkpoints/T57b_no_dt_multiscale_tmag_head_400/final.pt` | explicit-cfg / unexpected=0 / clean / train-CV selected / no test labels used for selection | 1.327402 | 7.352371 | 0.934984 | success clean fine-rot policy candidate |
 | --- | --- | --- | ---: | ---: | ---: | --- |
 | S1d5 exported clean dt-anchor + rot policy | `checkpoints/T57b_no_dt_multiscale_tmag_head_400/final.pt` | explicit-cfg / `unexpected=0` / clean exported policy / train-only selected policy / test labels used for selection: false | 1.396358 | 7.632463 | 0.934982 | current clean exported mainline |
 | true T57b multiscale 0/0 | `checkpoints/T57b_no_dt_multiscale_tmag_head_400/final.pt` | explicit-cfg / `unexpected=0` | 1.494 | 9.644 | 0.496 | valid clean baseline |
