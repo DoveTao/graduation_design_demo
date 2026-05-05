@@ -241,6 +241,7 @@ def _run(policy: Dict[str, Any], policy_path: Path, out_dir: Path, eval_variant:
         max_eval_batches=max_eval_batches,
         explicit_selected_k=explicit_selected_k,
     )
+    cfg.use_geometry_refine = bool(policy.get("use_geometry_refine", False))
     if load_summary["unexpected"]:
         raise RuntimeError(
             "Tmag head parameters were not loaded; eval result may be a wrapper-default cfg mismatch. "
