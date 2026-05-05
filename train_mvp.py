@@ -47,6 +47,8 @@ from torch.utils.data import DataLoader
 from config import Config
 from dataset_pano_only import RflyPanoPanoramaPairsEvalFixedKList, RflyPanoPanoramaPairsMixedK
 from losses import (
+    coupled_pose_joint_consistency_loss,
+    coupled_pose_residual_regularization,
     depth_smoothness_loss,
     epipolar_gt_band_nll_loss,
     epipolar_gt_matching_loss,
@@ -71,12 +73,18 @@ def _cfg_to_dict(cfg):
 
 def _set_train_fine_only(model: nn.Module, cfg: Config) -> Dict[str, Any]:
     if not bool(getattr(cfg, "train_fine_only", False)):
+        trainable_names = [name for name, p in model.named_parameters() if p.requires_grad]
+        trainable_param_count = sum(p.numel() for p in model.parameters() if p.requires_grad)
+        frozen_param_count = sum(p.numel() for p in model.parameters() if not p.requires_grad)
         return {
             "enabled": False,
-            "trainable_param_count": sum(p.numel() for p in model.parameters()),
-            "frozen_param_count": 0,
-            "trainable_groups": {"all": sum(p.numel() for p in model.parameters())},
-            "frozen_groups": {},
+            "trainable_param_count": int(trainable_param_count),
+            "frozen_param_count": int(frozen_param_count),
+            "optimizer_param_count": int(trainable_param_count),
+            "trainable_groups": {"all": int(trainable_param_count)},
+            "frozen_groups": {"all": int(frozen_param_count)} if frozen_param_count > 0 else {},
+            "trainable_names": trainable_names,
+            "forbidden_trainable_params": [],
         }
 
     trainable_prefixes = (
@@ -125,6 +133,66 @@ def _set_train_fine_only(model: nn.Module, cfg: Config) -> Dict[str, Any]:
         f"[Freeze] train_fine_only=True | trainable={trainable_param_count} | "
         f"frozen={frozen_param_count} | groups(trainable)={sorted(trainable_groups.items())}"
     )
+    return summary
+
+
+def _set_train_coupled_pose_residual_only(model: nn.Module, cfg: Config) -> Dict[str, Any]:
+    if not bool(getattr(cfg, "train_coupled_pose_residual_only", False)):
+        trainable_names = [name for name, p in model.named_parameters() if p.requires_grad]
+        trainable_param_count = sum(p.numel() for p in model.parameters() if p.requires_grad)
+        frozen_param_count = sum(p.numel() for p in model.parameters() if not p.requires_grad)
+        return {
+            "enabled": False,
+            "mode": "all",
+            "trainable_param_count": int(trainable_param_count),
+            "frozen_param_count": int(frozen_param_count),
+            "optimizer_param_count": int(trainable_param_count),
+            "trainable_groups": {"all": int(trainable_param_count)},
+            "frozen_groups": {"all": int(frozen_param_count)} if frozen_param_count > 0 else {},
+            "trainable_names": trainable_names,
+            "forbidden_trainable_params": [],
+        }
+
+    allowed_prefixes = ("coupled_pose_head.",)
+    trainable_groups: Dict[str, int] = {}
+    frozen_groups: Dict[str, int] = {}
+    trainable_names: List[str] = []
+    forbidden_trainable_params: List[str] = []
+
+    for name, p in model.named_parameters():
+        is_trainable = name.startswith(allowed_prefixes)
+        p.requires_grad_(is_trainable)
+        if is_trainable:
+            trainable_names.append(name)
+            if not name.startswith(allowed_prefixes):
+                forbidden_trainable_params.append(name)
+            group_name = name.split(".", 1)[0]
+            trainable_groups[group_name] = trainable_groups.get(group_name, 0) + p.numel()
+        else:
+            group_name = name.split(".", 1)[0]
+            frozen_groups[group_name] = frozen_groups.get(group_name, 0) + p.numel()
+
+    trainable_param_count = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    frozen_param_count = sum(p.numel() for p in model.parameters() if not p.requires_grad)
+    summary = {
+        "enabled": True,
+        "mode": "coupled_pose_residual_only",
+        "trainable_param_count": int(trainable_param_count),
+        "frozen_param_count": int(frozen_param_count),
+        "optimizer_param_count": int(trainable_param_count),
+        "trainable_groups": trainable_groups,
+        "frozen_groups": frozen_groups,
+        "trainable_names": trainable_names,
+        "forbidden_trainable_params": forbidden_trainable_params,
+    }
+    print(f"[Freeze] train_coupled_pose_residual_only=True")
+    print(f"[Freeze] trainable_names={trainable_names}")
+    print(f"[Freeze] trainable_param_count={trainable_param_count}")
+    print(f"[Freeze] frozen_param_count={frozen_param_count}")
+    print(f"[Freeze] optimizer_param_count={trainable_param_count}")
+    print(f"[Freeze] forbidden_trainable_params={forbidden_trainable_params}")
+    if forbidden_trainable_params:
+        raise RuntimeError(f"Forbidden trainable params detected: {forbidden_trainable_params}")
     return summary
 
 
@@ -3274,6 +3342,9 @@ def main():
         dev,
         strict=bool(getattr(cfg, "strict_load_checkpoint", False)),
     )
+    if hasattr(model, "coupled_pose_head") and not bool(getattr(cfg, "coupled_pose_residual_trainable", False)):
+        for p in model.coupled_pose_head.parameters():
+            p.requires_grad_(False)
     if bool(getattr(cfg, "eval_only", False)):
         t_eval0 = time.perf_counter()
         (
@@ -3501,8 +3572,13 @@ def main():
             "train_fine_only": bool(getattr(cfg, "train_fine_only", False)),
             "trainable_param_count": int(freeze_summary.get("trainable_param_count", sum(p.numel() for p in model.parameters()))),
             "frozen_param_count": int(freeze_summary.get("frozen_param_count", 0)),
+            "optimizer_param_count": int(freeze_summary.get("optimizer_param_count", 0)),
             "trainable_groups": freeze_summary.get("trainable_groups", {}),
             "frozen_groups": freeze_summary.get("frozen_groups", {}),
+            "trainable_names": freeze_summary.get("trainable_names", []),
+            "forbidden_trainable_params": freeze_summary.get("forbidden_trainable_params", []),
+            "use_coupled_pose_residual_head": bool(getattr(cfg, "use_coupled_pose_residual_head", False)),
+            "train_coupled_pose_residual_only": bool(getattr(cfg, "train_coupled_pose_residual_only", False)),
             "run_device": str(dev.type),
             "run_device_name": str(torch.cuda.get_device_name(dev)) if dev.type == "cuda" else "cpu",
             "has_cuda": bool(torch.cuda.is_available()),
@@ -3517,6 +3593,9 @@ def main():
         )
         return
 
+    if bool(getattr(cfg, "train_fine_only", False)) and bool(getattr(cfg, "train_coupled_pose_residual_only", False)):
+        raise ValueError("train_fine_only and train_coupled_pose_residual_only cannot both be True.")
+
     tdir_anchor_model = None
     if bool(getattr(cfg, "use_tdir_anchor_loss", False)) and float(getattr(cfg, "w_tdir_anchor", 0.0)) > 0.0:
         anchor_ckpt = str(getattr(cfg, "tdir_anchor_checkpoint", ""))
@@ -3527,10 +3606,19 @@ def main():
         tdir_anchor_model.eval()
         for p in tdir_anchor_model.parameters():
             p.requires_grad_(False)
-    freeze_summary = _set_train_fine_only(model, cfg)
+    if bool(getattr(cfg, "train_coupled_pose_residual_only", False)):
+        freeze_summary = _set_train_coupled_pose_residual_only(model, cfg)
+    else:
+        freeze_summary = _set_train_fine_only(model, cfg)
     trainable_params = [p for p in model.parameters() if p.requires_grad]
     if len(trainable_params) == 0:
         raise RuntimeError("No trainable parameters remain after applying freeze policy.")
+    optimizer_param_count = sum(p.numel() for p in trainable_params)
+    if int(optimizer_param_count) != int(freeze_summary.get("trainable_param_count", optimizer_param_count)):
+        raise RuntimeError(
+            f"optimizer/trainable count mismatch: optimizer={optimizer_param_count} "
+            f"trainable={freeze_summary.get('trainable_param_count')}"
+        )
     optimizer = AdamW(trainable_params, lr=cfg.lr, weight_decay=cfg.wd)
 
     scheduler = LambdaLR(
@@ -3717,6 +3805,47 @@ def main():
                 )
             else:
                 L_t_mag = torch.zeros((), device=dev)
+
+            coupled_enabled = bool(getattr(cfg, "use_coupled_pose_residual_head", False))
+            coupled_rot_w = float(getattr(cfg, "coupled_pose_rot_loss_w", 1.0)) if coupled_enabled else 0.0
+            coupled_tdir_w = float(getattr(cfg, "coupled_pose_tdir_loss_w", 1.0)) if coupled_enabled else 0.0
+            coupled_joint_w = float(getattr(cfg, "coupled_pose_joint_loss_w", 0.2)) if coupled_enabled else 0.0
+            coupled_reg_w = float(getattr(cfg, "coupled_pose_residual_reg_w", 0.01)) if coupled_enabled else 0.0
+            coupled_chain_w = float(getattr(cfg, "coupled_pose_chain_loss_w", 0.0)) if coupled_enabled else 0.0
+            if coupled_enabled:
+                R_coupled = aux.get("R_after_coupled", R_pred)
+                tdir_coupled_local = aux.get("tdir_after_coupled", aux.get("t_dir_local", t_pose_pred))
+                L_coupled_rot = matrix_geodesic_distance(R_coupled, R_gt).mean()
+                L_coupled_tdir = translation_direction_loss(
+                    tdir_coupled_local,
+                    t_gt,
+                    R_gt,
+                    pred_t_frame=aux.get("t_local_frame", "A"),
+                    oriented_weight=float(getattr(cfg, "pose_t_oriented_weight", 1.0)),
+                    axis_weight=float(getattr(cfg, "pose_t_axis_weight", 0.0)),
+                    sample_weight=dt_t_weight,
+                )
+                L_coupled_joint = coupled_pose_joint_consistency_loss(
+                    R_coupled,
+                    tdir_coupled_local,
+                    t_gt,
+                    R_gt,
+                    oriented_weight=float(getattr(cfg, "pose_t_oriented_weight", 1.0)),
+                    axis_weight=float(getattr(cfg, "pose_t_axis_weight", 0.0)),
+                    sample_weight=dt_t_weight,
+                )
+                L_coupled_reg = coupled_pose_residual_regularization(
+                    aux.get("delta_rot_vec", torch.zeros((IA.shape[0], 3), device=dev)),
+                    aux.get("delta_tdir_vec", torch.zeros((IA.shape[0], 3), device=dev)),
+                    aux.get("coupled_gate", None),
+                )
+                L_coupled_chain = torch.zeros((), device=dev)
+            else:
+                L_coupled_rot = torch.zeros((), device=dev)
+                L_coupled_tdir = torch.zeros((), device=dev)
+                L_coupled_joint = torch.zeros((), device=dev)
+                L_coupled_reg = torch.zeros((), device=dev)
+                L_coupled_chain = torch.zeros((), device=dev)
 
             # T57b: multiscale tmag scale classification loss
             tmag_ms_cls_w = float(getattr(cfg, "tmag_multiscale_cls_w", 0.0))
@@ -4375,6 +4504,11 @@ def main():
                 + tmag_ms_cls_w * L_tmag_ms_cls
                 + tmag_scale_w * L_tmag_scale
                 + tmag_under_w * L_tmag_under
+                + coupled_rot_w * L_coupled_rot
+                + coupled_tdir_w * L_coupled_tdir
+                + coupled_joint_w * L_coupled_joint
+                + coupled_reg_w * L_coupled_reg
+                + coupled_chain_w * L_coupled_chain
                 + tdir_anchor_w_eff * L_tdir_anchor
                 + seq_turn_w_eff * L_seq_turn
                 + seq_turn_chain_w_eff * L_seq_turn_chain
@@ -4390,7 +4524,7 @@ def main():
         forward_ok = all(
             bool(torch.isfinite(x).all())
             for x in [
-                R_pred, t_pred, L_pose, L_pose_coarse, L_t_mag, L_tmag_ms_cls, L_tdir_anchor, L_seq_turn, L_seq_turn_chain,
+                R_pred, t_pred, L_pose, L_pose_coarse, L_t_mag, L_tmag_ms_cls, L_coupled_rot, L_coupled_tdir, L_coupled_joint, L_coupled_reg, L_coupled_chain, L_tdir_anchor, L_seq_turn, L_seq_turn_chain,
                 L_x, L_cyc, L_rel, L_epi, L_epi_coarse, L_photo, L_smooth, L_tmag_scale, L_tmag_under, L_odom_chain_len, L_odom_chain_vec, L,
             ]
         )
@@ -4967,6 +5101,11 @@ def main():
                 f"tmag_under_ratio_median={tmag_under_ratio_median:.6f} | "
                 f"tmag_bias={log_tmag_bias_val:.4f} | tmag_affine_scale={tmag_affine_scale_val:.6f} | "
                 f"tmag_affine_bias={tmag_affine_bias_val:.6f} | "
+                f"c_rot={float(L_coupled_rot.detach().cpu()):.4f} | c_rot_w={coupled_rot_w:.4g} | "
+                f"c_tdir={float(L_coupled_tdir.detach().cpu()):.4f} | c_tdir_w={coupled_tdir_w:.4g} | "
+                f"c_joint={float(L_coupled_joint.detach().cpu()):.4f} | c_joint_w={coupled_joint_w:.4g} | "
+                f"c_reg={float(L_coupled_reg.detach().cpu()):.4f} | c_reg_w={coupled_reg_w:.4g} | "
+                f"c_gate_mean={float(aux.get('coupled_gate_mean', torch.zeros((), device=dev)).detach().cpu()):.6f} | "
                 f"tdir_anchor={float(L_tdir_anchor.detach().cpu()):.4f} | anchor_w={tdir_anchor_w_eff:.4g} | anchor_n={tdir_anchor_n:.0f} | "
                 f"seq_turn={float(L_seq_turn.detach().cpu()):.4f} | seq_turn_w={seq_turn_w_eff:.4g} | seq_turn_n={seq_turn_n:.0f} | "
                 f"seq_turn_chain={float(L_seq_turn_chain.detach().cpu()):.4f} | "
@@ -5162,6 +5301,18 @@ def main():
             "smallk_select_require_status_ok": bool(getattr(cfg, "smallk_select_require_status_ok", True)),
             "smallk_select_window": int(getattr(cfg, "smallk_select_window", 1)),
             "smallk_select_min_points": int(getattr(cfg, "smallk_select_min_points", 1)),
+            "trainable_param_count": int(freeze_summary.get("trainable_param_count", sum(p.numel() for p in model.parameters()))),
+            "frozen_param_count": int(freeze_summary.get("frozen_param_count", 0)),
+            "optimizer_param_count": int(optimizer_param_count),
+            "trainable_groups": freeze_summary.get("trainable_groups", {}),
+            "frozen_groups": freeze_summary.get("frozen_groups", {}),
+            "trainable_names": freeze_summary.get("trainable_names", []),
+            "forbidden_trainable_params": freeze_summary.get("forbidden_trainable_params", []),
+            "use_coupled_pose_residual_head": bool(getattr(cfg, "use_coupled_pose_residual_head", False)),
+            "train_coupled_pose_residual_only": bool(getattr(cfg, "train_coupled_pose_residual_only", False)),
+            "freeze_backbone_for_coupled_pose": bool(getattr(cfg, "freeze_backbone_for_coupled_pose", True)),
+            "freeze_tmag_for_coupled_pose": bool(getattr(cfg, "freeze_tmag_for_coupled_pose", True)),
+            "freeze_dt_anchor_for_coupled_pose": bool(getattr(cfg, "freeze_dt_anchor_for_coupled_pose", True)),
             "run_device": str(dev.type),
             "run_device_name": str(torch.cuda.get_device_name(dev)) if dev.type == "cuda" else "cpu",
             "has_cuda": bool(torch.cuda.is_available()),

@@ -187,6 +187,113 @@ class TranslationOnlyHead(nn.Module):
         return normalize_vec(self.t(z))
 
 
+class CoupledPoseResidualHead(nn.Module):
+    def __init__(
+        self,
+        D: int,
+        *,
+        hidden_dim: int = 128,
+        dropout: float = 0.0,
+        rot_scale: float = 0.05,
+        tdir_scale: float = 0.05,
+        gate_init: float = -4.0,
+        use_dt_embed: bool = True,
+        use_confidence: bool = True,
+    ):
+        super().__init__()
+        self.use_dt_embed = bool(use_dt_embed)
+        self.use_confidence = bool(use_confidence)
+        self.rot_scale = float(rot_scale)
+        self.tdir_scale = float(tdir_scale)
+        conf_dim = 3 if self.use_confidence else 0
+        dt_dim = 1 if self.use_dt_embed else 0
+        in_dim = 3 * D + 9 + 3 + conf_dim + dt_dim
+        hid = int(hidden_dim)
+        drop = float(dropout)
+        self.backbone = nn.Sequential(
+            nn.LayerNorm(in_dim),
+            nn.Linear(in_dim, hid),
+            nn.GELU(),
+            nn.Dropout(drop),
+            nn.Linear(hid, hid),
+            nn.GELU(),
+        )
+        self.rot_head = nn.Linear(hid, 3)
+        self.tdir_head = nn.Linear(hid, 3)
+        self.gate_head = nn.Linear(hid, 1)
+        nn.init.zeros_(self.rot_head.weight)
+        nn.init.zeros_(self.rot_head.bias)
+        nn.init.zeros_(self.tdir_head.weight)
+        nn.init.zeros_(self.tdir_head.bias)
+        nn.init.zeros_(self.gate_head.weight)
+        nn.init.constant_(self.gate_head.bias, float(gate_init))
+
+    @staticmethod
+    def _pool_features(
+        feat: torch.Tensor,
+        token_weight: Optional[torch.Tensor] = None,
+    ) -> torch.Tensor:
+        feat = feat.float()
+        if token_weight is None:
+            z_mean = feat.mean(dim=1)
+            z_var = feat.var(dim=1, unbiased=False)
+            z_max = feat.max(dim=1).values
+        else:
+            w = token_weight.float().clamp_min(1e-6)
+            w = w / w.sum(dim=1, keepdim=True).clamp_min(1e-6)
+            z_mean = torch.sum(feat * w.unsqueeze(-1), dim=1)
+            diff2 = (feat - z_mean.unsqueeze(1)).pow(2)
+            z_var = torch.sum(diff2 * w.unsqueeze(-1), dim=1)
+            z_max = feat.max(dim=1).values
+        z_std = torch.sqrt(z_var.clamp_min(1e-8))
+        return torch.cat([z_mean, z_max, z_std], dim=-1)
+
+    def forward(
+        self,
+        feat: torch.Tensor,
+        *,
+        base_R: torch.Tensor,
+        base_tdir_local: torch.Tensor,
+        token_weight: Optional[torch.Tensor] = None,
+        dt_world: Optional[torch.Tensor] = None,
+    ) -> Dict[str, torch.Tensor]:
+        pieces = [
+            self._pool_features(feat, token_weight=token_weight),
+            base_R.float().reshape(base_R.shape[0], -1),
+            F.normalize(base_tdir_local.float(), dim=-1, eps=1e-6),
+        ]
+        if self.use_confidence:
+            if token_weight is None:
+                conf_feat = torch.zeros((feat.shape[0], 3), device=feat.device, dtype=feat.dtype)
+            else:
+                conf = token_weight.float()
+                conf_feat = torch.stack(
+                    [
+                        conf.mean(dim=-1),
+                        conf.max(dim=-1).values,
+                        torch.sqrt(conf.var(dim=-1, unbiased=False).clamp_min(1e-8)),
+                    ],
+                    dim=-1,
+                )
+            pieces.append(conf_feat)
+        if self.use_dt_embed:
+            if dt_world is None:
+                dt_feat = torch.zeros((feat.shape[0], 1), device=feat.device, dtype=feat.dtype)
+            else:
+                dt_feat = torch.log(dt_world.float().view(-1, 1).clamp_min(1.0e-3)).to(device=feat.device, dtype=feat.dtype)
+            pieces.append(dt_feat)
+        x = torch.cat(pieces, dim=-1)
+        h = self.backbone(x)
+        delta_rot_vec = self.rot_scale * torch.tanh(self.rot_head(h))
+        delta_tdir_vec = self.tdir_scale * torch.tanh(self.tdir_head(h))
+        gate = torch.sigmoid(self.gate_head(h))
+        return {
+            "delta_rot_vec": delta_rot_vec,
+            "delta_tdir_vec": delta_tdir_vec,
+            "gate": gate,
+        }
+
+
 class TranslationMagnitudeHead(nn.Module):
     """Predict log relative translation scale from fused token features.
 

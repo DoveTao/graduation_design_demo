@@ -97,6 +97,15 @@ class Config:
     fine_tmag_fuse_strength: float = -1.0
     freeze_coarse_for_fine_training: bool = False
     train_fine_only: bool = False
+    use_coupled_pose_residual_head: bool = False
+    coupled_pose_residual_trainable: bool = False
+    coupled_pose_residual_hidden_dim: int = 128
+    coupled_pose_residual_dropout: float = 0.0
+    coupled_pose_residual_rot_scale: float = 0.05
+    coupled_pose_residual_tdir_scale: float = 0.05
+    coupled_pose_residual_gate_init: float = -4.0
+    coupled_pose_residual_use_dt_embed: bool = True
+    coupled_pose_residual_use_confidence: bool = True
 
     coarse_temperature: float = 0.10
     fine_temperature: float = 0.07
@@ -229,6 +238,11 @@ class Config:
     pose_t_alpha: float = 1.0
     pose_t_oriented_weight: float = 1.0
     pose_t_axis_weight: float = 0.0
+    coupled_pose_rot_loss_w: float = 1.0
+    coupled_pose_tdir_loss_w: float = 1.0
+    coupled_pose_joint_loss_w: float = 0.2
+    coupled_pose_residual_reg_w: float = 0.01
+    coupled_pose_chain_loss_w: float = 0.0
     large_k_rot_thresh: int = 40
     large_k_rot_weight: float = 1.0
     small_dt_thresh: float = 0.3
@@ -267,6 +281,10 @@ class Config:
     odom_chain_vec_min_gt: float = 0.02
     odom_chain_vec_start_updates: int = 50
     odom_chain_vec_ramp_updates: int = 150
+    train_coupled_pose_residual_only: bool = False
+    freeze_backbone_for_coupled_pose: bool = True
+    freeze_tmag_for_coupled_pose: bool = True
+    freeze_dt_anchor_for_coupled_pose: bool = True
     w_photo: float = 0.0
     w_smooth: float = 0.0
 

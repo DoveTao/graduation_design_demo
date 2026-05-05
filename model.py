@@ -39,6 +39,7 @@ from erp_sampling import (
 from healpix_utils import HealpixHierarchy
 from interaction import (
     CoarseInteraction,
+    CoupledPoseResidualHead,
     FineInteraction,
     PairPoseHead,
     Tokens,
@@ -182,6 +183,42 @@ def _project_to_rotation(M: torch.Tensor) -> torch.Tensor:
     fix = torch.ones((*M.shape[:-2], 3), device=M.device, dtype=M.dtype)
     fix[..., -1] = torch.where(det < 0.0, -1.0, 1.0)
     return torch.matmul(U * fix.unsqueeze(-2), Vh)
+
+
+def _hat(v: torch.Tensor) -> torch.Tensor:
+    vx, vy, vz = v.unbind(dim=-1)
+    O = torch.zeros_like(vx)
+    return torch.stack(
+        [
+            torch.stack([O, -vz, vy], dim=-1),
+            torch.stack([vz, O, -vx], dim=-1),
+            torch.stack([-vy, vx, O], dim=-1),
+        ],
+        dim=-2,
+    )
+
+
+def _so3_exp_map(omega: torch.Tensor) -> torch.Tensor:
+    omega = omega.float()
+    theta = torch.linalg.norm(omega, dim=-1, keepdim=True)
+    K = _hat(omega)
+    I = torch.eye(3, device=omega.device, dtype=omega.dtype).view(1, 3, 3).expand(omega.shape[0], -1, -1)
+    theta2 = theta * theta
+    theta_safe = theta.clamp_min(1.0e-6)
+    theta2_safe = theta2.clamp_min(1.0e-8)
+    sin_term = torch.sin(theta_safe) / theta_safe
+    cos_term = (1.0 - torch.cos(theta_safe)) / theta2_safe
+    sin_over_theta = torch.where(
+        theta > 1.0e-6,
+        sin_term,
+        1.0 - theta2 / 6.0,
+    )
+    one_minus_cos_over_theta2 = torch.where(
+        theta > 1.0e-6,
+        cos_term,
+        0.5 - theta2 / 24.0,
+    )
+    return I + sin_over_theta.unsqueeze(-1) * K + one_minus_cos_over_theta2.unsqueeze(-1) * torch.matmul(K, K)
 
 
 def _blend_rotation(R_base: torch.Tensor, R_update: torch.Tensor, strength: float) -> torch.Tensor:
@@ -351,6 +388,16 @@ class PanoramaRelPoseModel(nn.Module):
         else:
             self.register_parameter("tmag_affine_scale", None)
             self.register_parameter("tmag_affine_bias", None)
+        self.coupled_pose_head = CoupledPoseResidualHead(
+            cfg.D,
+            hidden_dim=int(getattr(cfg, "coupled_pose_residual_hidden_dim", 128)),
+            dropout=float(getattr(cfg, "coupled_pose_residual_dropout", 0.0)),
+            rot_scale=float(getattr(cfg, "coupled_pose_residual_rot_scale", 0.05)),
+            tdir_scale=float(getattr(cfg, "coupled_pose_residual_tdir_scale", 0.05)),
+            gate_init=float(getattr(cfg, "coupled_pose_residual_gate_init", -4.0)),
+            use_dt_embed=bool(getattr(cfg, "coupled_pose_residual_use_dt_embed", True)),
+            use_confidence=bool(getattr(cfg, "coupled_pose_residual_use_confidence", True)),
+        )
 
     def _bias_magnitude(self, t_mag: torch.Tensor, log_t_mag: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         return _apply_log_tmag_bias(
@@ -478,7 +525,46 @@ class PanoramaRelPoseModel(nn.Module):
         aux["fine_rot_fuse_strength"] = torch.tensor(fine_rot_strength, device=R_final.device)
         aux["fine_tdir_fuse_strength"] = torch.tensor(fine_tdir_strength, device=R_final.device)
         aux["fine_tmag_fuse_strength"] = torch.tensor(fine_tmag_strength, device=R_final.device)
-        _set_transform_outputs(aux, R_final, t_local_final, t_mag_final, log_t_mag_final)
+        R_before_coupled = R_final
+        tdir_before_coupled = t_local_final
+        tmag_before_coupled = t_mag_final
+        log_tmag_before_coupled = log_t_mag_final
+        delta_rot_vec = torch.zeros((R_final.shape[0], 3), device=R_final.device, dtype=R_final.dtype)
+        delta_tdir_vec = torch.zeros((R_final.shape[0], 3), device=R_final.device, dtype=R_final.dtype)
+        gate = torch.zeros((R_final.shape[0], 1), device=R_final.device, dtype=R_final.dtype)
+        if bool(getattr(self.cfg, "use_coupled_pose_residual_head", False)):
+            coupled_out = self.coupled_pose_head(
+                out_f.get("Ff_t", out_f["Ff"]),
+                base_R=R_final,
+                base_tdir_local=t_local_final,
+                token_weight=out_f.get("token_weight_f"),
+                dt_world=dt_world,
+            )
+            delta_rot_vec = coupled_out["delta_rot_vec"]
+            delta_tdir_vec = coupled_out["delta_tdir_vec"]
+            gate = coupled_out["gate"]
+            delta_R = _so3_exp_map(gate * delta_rot_vec)
+            R_final = torch.matmul(delta_R, R_final.float())
+            t_local_final = nn.functional.normalize(
+                t_local_final.float() + gate * delta_tdir_vec.float(),
+                dim=-1,
+                eps=1.0e-6,
+            )
+        aux["R_before_coupled"] = R_before_coupled
+        aux["tdir_before_coupled"] = tdir_before_coupled
+        aux["tmag_before_coupled"] = tmag_before_coupled
+        aux["log_tmag_before_coupled"] = log_tmag_before_coupled
+        aux["R_after_coupled"] = R_final
+        aux["tdir_after_coupled"] = t_local_final
+        aux["tmag_after_coupled"] = tmag_before_coupled
+        aux["log_tmag_after_coupled"] = log_tmag_before_coupled
+        aux["delta_rot_vec"] = delta_rot_vec
+        aux["delta_tdir_vec"] = delta_tdir_vec
+        aux["coupled_gate"] = gate
+        aux["coupled_delta_rot_norm"] = torch.linalg.norm(delta_rot_vec.float(), dim=-1)
+        aux["coupled_delta_tdir_norm"] = torch.linalg.norm(delta_tdir_vec.float(), dim=-1)
+        aux["coupled_gate_mean"] = gate.float().mean()
+        _set_transform_outputs(aux, R_final, t_local_final, tmag_before_coupled, log_tmag_before_coupled)
         aux["stage"] = "coarse_to_fine"
         aux["Wc_tilde"] = aggregate_fine_to_coarse(
             Wf_ab=out_f["Wf_ab"],

@@ -166,6 +166,43 @@ def translation_magnitude_loss(
     return (loss * w).mean()
 
 
+def coupled_pose_joint_consistency_loss(
+    R_pred: torch.Tensor,
+    t_local_pred: torch.Tensor,
+    t_gt: torch.Tensor,
+    R_gt: torch.Tensor,
+    *,
+    oriented_weight: float = 1.0,
+    axis_weight: float = 0.0,
+    sample_weight: Optional[torch.Tensor] = None,
+) -> torch.Tensor:
+    """Compare the B-frame direction implied by (R_pred, t_local_pred) against GT."""
+    t_local_pred = _normalize(t_local_pred)
+    t_out_pred = _normalize(torch.matmul(R_pred.float(), t_local_pred.unsqueeze(-1)).squeeze(-1))
+    return translation_direction_loss(
+        t_out_pred,
+        t_gt,
+        R_gt,
+        pred_t_frame="B",
+        oriented_weight=oriented_weight,
+        axis_weight=axis_weight,
+        sample_weight=sample_weight,
+    )
+
+
+def coupled_pose_residual_regularization(
+    delta_rot_vec: torch.Tensor,
+    delta_tdir_vec: torch.Tensor,
+    gate: Optional[torch.Tensor] = None,
+) -> torch.Tensor:
+    rot_term = delta_rot_vec.float().pow(2).sum(dim=-1)
+    tdir_term = delta_tdir_vec.float().pow(2).sum(dim=-1)
+    reg = rot_term + tdir_term
+    if gate is not None:
+        reg = reg + gate.float().view(-1).pow(2)
+    return reg.mean()
+
+
 def epipolar_simplified_loss(
     W_ab: torch.Tensor,
     bearing_a: torch.Tensor,
