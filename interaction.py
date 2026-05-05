@@ -194,17 +194,25 @@ class CoupledPoseResidualHead(nn.Module):
         *,
         hidden_dim: int = 128,
         dropout: float = 0.0,
+        enable_rot: bool = True,
+        enable_tdir: bool = False,
         rot_scale: float = 0.05,
         tdir_scale: float = 0.05,
         gate_init: float = -4.0,
+        gate_max: float = 0.05,
+        force_tdir_zero: bool = True,
         use_dt_embed: bool = True,
         use_confidence: bool = True,
     ):
         super().__init__()
+        self.enable_rot = bool(enable_rot)
+        self.enable_tdir = bool(enable_tdir)
+        self.force_tdir_zero = bool(force_tdir_zero)
         self.use_dt_embed = bool(use_dt_embed)
         self.use_confidence = bool(use_confidence)
         self.rot_scale = float(rot_scale)
         self.tdir_scale = float(tdir_scale)
+        self.gate_max = float(max(0.0, gate_max))
         conf_dim = 3 if self.use_confidence else 0
         dt_dim = 1 if self.use_dt_embed else 0
         in_dim = 3 * D + 9 + 3 + conf_dim + dt_dim
@@ -284,9 +292,17 @@ class CoupledPoseResidualHead(nn.Module):
             pieces.append(dt_feat)
         x = torch.cat(pieces, dim=-1)
         h = self.backbone(x)
-        delta_rot_vec = self.rot_scale * torch.tanh(self.rot_head(h))
-        delta_tdir_vec = self.tdir_scale * torch.tanh(self.tdir_head(h))
+        if self.enable_rot:
+            delta_rot_vec = self.rot_scale * torch.tanh(self.rot_head(h))
+        else:
+            delta_rot_vec = torch.zeros((feat.shape[0], 3), device=feat.device, dtype=feat.dtype)
+        if self.enable_tdir and not self.force_tdir_zero and self.tdir_scale > 0.0:
+            delta_tdir_vec = self.tdir_scale * torch.tanh(self.tdir_head(h))
+        else:
+            delta_tdir_vec = torch.zeros((feat.shape[0], 3), device=feat.device, dtype=feat.dtype)
         gate = torch.sigmoid(self.gate_head(h))
+        if self.gate_max < 1.0:
+            gate = gate * self.gate_max
         return {
             "delta_rot_vec": delta_rot_vec,
             "delta_tdir_vec": delta_tdir_vec,

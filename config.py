@@ -101,9 +101,13 @@ class Config:
     coupled_pose_residual_trainable: bool = False
     coupled_pose_residual_hidden_dim: int = 128
     coupled_pose_residual_dropout: float = 0.0
-    coupled_pose_residual_rot_scale: float = 0.05
-    coupled_pose_residual_tdir_scale: float = 0.05
+    coupled_pose_residual_enable_rot: bool = True
+    coupled_pose_residual_enable_tdir: bool = False
+    coupled_pose_residual_rot_scale: float = 0.02
+    coupled_pose_residual_tdir_scale: float = 0.0
     coupled_pose_residual_gate_init: float = -4.0
+    coupled_pose_residual_gate_max: float = 0.05
+    coupled_pose_residual_force_tdir_zero: bool = True
     coupled_pose_residual_use_dt_embed: bool = True
     coupled_pose_residual_use_confidence: bool = True
     dt_bucket_scale_anchor_policy_json: str = ""

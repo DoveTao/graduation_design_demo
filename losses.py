@@ -194,9 +194,12 @@ def coupled_pose_residual_regularization(
     delta_rot_vec: torch.Tensor,
     delta_tdir_vec: torch.Tensor,
     gate: Optional[torch.Tensor] = None,
+    *,
+    use_rot: bool = True,
+    use_tdir: bool = True,
 ) -> torch.Tensor:
-    rot_term = delta_rot_vec.float().pow(2).sum(dim=-1)
-    tdir_term = delta_tdir_vec.float().pow(2).sum(dim=-1)
+    rot_term = delta_rot_vec.float().pow(2).sum(dim=-1) if use_rot else torch.zeros_like(delta_rot_vec.float().sum(dim=-1))
+    tdir_term = delta_tdir_vec.float().pow(2).sum(dim=-1) if use_tdir else torch.zeros_like(delta_tdir_vec.float().sum(dim=-1))
     reg = rot_term + tdir_term
     if gate is not None:
         reg = reg + gate.float().view(-1).pow(2)

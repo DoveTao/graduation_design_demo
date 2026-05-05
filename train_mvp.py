@@ -84,6 +84,19 @@ def _load_dt_bucket_scale_anchor_policy(path: str) -> Dict[str, Any]:
     return policy
 
 
+def _load_checkpoint_cfg_dict(path: str) -> Dict[str, Any]:
+    ckpt_path = os.path.expanduser(str(path).strip())
+    if not ckpt_path:
+        return {}
+    if not os.path.isfile(ckpt_path):
+        raise FileNotFoundError(f"checkpoint cfg source not found: {ckpt_path}")
+    payload = torch.load(ckpt_path, map_location="cpu")
+    cfg_dict = payload.get("cfg", {})
+    if not isinstance(cfg_dict, dict):
+        raise TypeError(f"Unsupported checkpoint cfg payload type: {type(cfg_dict)}")
+    return cfg_dict
+
+
 def _apply_dt_bucket_scale_anchor_policy(cfg: Config) -> Dict[str, Any]:
     policy_path = str(getattr(cfg, "dt_bucket_scale_anchor_policy_json", "")).strip()
     if not policy_path:
@@ -127,6 +140,32 @@ def _apply_dt_bucket_scale_anchor_policy(cfg: Config) -> Dict[str, Any]:
             "[0.3,0.5)": float(cfg.dt_bucket_scale_anchor_factor_0p3_0p5),
             "[0.5,1)": float(cfg.dt_bucket_scale_anchor_factor_0p5_1p0),
         },
+    }
+
+
+def _restore_cfg_from_policy_base_checkpoint(cfg: Config, overrides: List[str]) -> Tuple[Config, Dict[str, Any]]:
+    policy_path = str(getattr(cfg, "dt_bucket_scale_anchor_policy_json", "")).strip()
+    if not policy_path:
+        return cfg, {"enabled": False}
+
+    policy = _load_dt_bucket_scale_anchor_policy(policy_path)
+    base_ckpt = str(policy.get("base_checkpoint_path", "")).strip()
+    if not base_ckpt:
+        raise ValueError(f"Policy {policy_path} missing base_checkpoint_path.")
+
+    cfg_dict = _load_checkpoint_cfg_dict(base_ckpt)
+    restored_cfg = Config()
+    for k, v in cfg_dict.items():
+        if hasattr(restored_cfg, k):
+            setattr(restored_cfg, k, v)
+    _apply_cfg_overrides(restored_cfg, overrides)
+    policy_summary = _apply_dt_bucket_scale_anchor_policy(restored_cfg)
+    return restored_cfg, {
+        "enabled": True,
+        "policy_path": policy_path,
+        "base_checkpoint_path": base_ckpt,
+        "restored_fields": len(cfg_dict),
+        **policy_summary,
     }
 
 
@@ -212,7 +251,16 @@ def _set_train_coupled_pose_residual_only(model: nn.Module, cfg: Config) -> Dict
             "forbidden_trainable_params": [],
         }
 
-    allowed_prefixes = ("coupled_pose_head.",)
+    allowed_prefixes = [
+        "coupled_pose_head.backbone.",
+        "coupled_pose_head.rot_head.",
+        "coupled_pose_head.gate_head.",
+    ]
+    if bool(getattr(cfg, "coupled_pose_residual_enable_tdir", False)) and not bool(
+        getattr(cfg, "coupled_pose_residual_force_tdir_zero", True)
+    ):
+        allowed_prefixes.append("coupled_pose_head.tdir_head.")
+    allowed_prefixes = tuple(allowed_prefixes)
     trainable_groups: Dict[str, int] = {}
     frozen_groups: Dict[str, int] = {}
     trainable_names: List[str] = []
@@ -3099,6 +3147,8 @@ def main():
     cfg = Config()
     _apply_cfg_overrides(cfg, args.overrides)
     policy_summary = _apply_dt_bucket_scale_anchor_policy(cfg)
+    cfg, restore_summary = _restore_cfg_from_policy_base_checkpoint(cfg, args.overrides)
+    policy_summary = _apply_dt_bucket_scale_anchor_policy(cfg)
     os.environ.setdefault("PYTORCH_ALLOC_CONF", "expandable_segments:True")
     _seed_everything(cfg.data_seed, deterministic=bool(cfg.deterministic))
 
@@ -3171,6 +3221,12 @@ def main():
         f"{getattr(cfg, 'dt_bucket_scale_anchor_factor_0p3_0p5', 1.0):.6f},"
         f"{getattr(cfg, 'dt_bucket_scale_anchor_factor_0p5_1p0', 1.0):.6f})"
     )
+    if bool(restore_summary.get("enabled", False)):
+        print(
+            f"[Cfg ] restored_cfg_from_policy_base=True | "
+            f"base_ckpt={restore_summary.get('base_checkpoint_path', '-') } | "
+            f"restored_fields={restore_summary.get('restored_fields', 0)}"
+        )
     print(
         f"[Cfg ] loss: w_pose={cfg.w_pose} | w_pose_out_t={getattr(cfg, 'w_pose_output_t', 0.0)} | t_alpha={cfg.pose_t_alpha} | "
         f"t_oriented={getattr(cfg, 'pose_t_oriented_weight', 1.0)} | "
@@ -3653,6 +3709,12 @@ def main():
             "forbidden_trainable_params": freeze_summary.get("forbidden_trainable_params", []),
             "use_coupled_pose_residual_head": bool(getattr(cfg, "use_coupled_pose_residual_head", False)),
             "train_coupled_pose_residual_only": bool(getattr(cfg, "train_coupled_pose_residual_only", False)),
+            "coupled_pose_residual_enable_rot": bool(getattr(cfg, "coupled_pose_residual_enable_rot", True)),
+            "coupled_pose_residual_enable_tdir": bool(getattr(cfg, "coupled_pose_residual_enable_tdir", False)),
+            "coupled_pose_residual_force_tdir_zero": bool(getattr(cfg, "coupled_pose_residual_force_tdir_zero", True)),
+            "coupled_pose_residual_rot_scale": float(getattr(cfg, "coupled_pose_residual_rot_scale", 0.02)),
+            "coupled_pose_residual_tdir_scale": float(getattr(cfg, "coupled_pose_residual_tdir_scale", 0.0)),
+            "coupled_pose_residual_gate_max": float(getattr(cfg, "coupled_pose_residual_gate_max", 0.05)),
             "run_device": str(dev.type),
             "run_device_name": str(torch.cuda.get_device_name(dev)) if dev.type == "cuda" else "cpu",
             "has_cuda": bool(torch.cuda.is_available()),
@@ -3756,6 +3818,8 @@ def main():
     odom_select_history: List[Dict[str, Any]] = []
     smallk_select_history: List[Dict[str, Any]] = []
     eval_history: List[Dict[str, Any]] = []
+    first_train_metrics: Dict[str, float] = {}
+    train_metrics_snapshot: Dict[str, float] = {}
     vis_dumped = False
 
     model.train()
@@ -3881,37 +3945,47 @@ def main():
                 L_t_mag = torch.zeros((), device=dev)
 
             coupled_enabled = bool(getattr(cfg, "use_coupled_pose_residual_head", False))
-            coupled_rot_w = float(getattr(cfg, "coupled_pose_rot_loss_w", 1.0)) if coupled_enabled else 0.0
-            coupled_tdir_w = float(getattr(cfg, "coupled_pose_tdir_loss_w", 1.0)) if coupled_enabled else 0.0
-            coupled_joint_w = float(getattr(cfg, "coupled_pose_joint_loss_w", 0.2)) if coupled_enabled else 0.0
+            coupled_rot_enabled = bool(getattr(cfg, "coupled_pose_residual_enable_rot", True))
+            coupled_tdir_enabled = bool(getattr(cfg, "coupled_pose_residual_enable_tdir", False)) and not bool(
+                getattr(cfg, "coupled_pose_residual_force_tdir_zero", True)
+            )
+            coupled_rot_w = float(getattr(cfg, "coupled_pose_rot_loss_w", 1.0)) if coupled_enabled and coupled_rot_enabled else 0.0
+            coupled_tdir_w = float(getattr(cfg, "coupled_pose_tdir_loss_w", 1.0)) if coupled_enabled and coupled_tdir_enabled else 0.0
+            coupled_joint_w = float(getattr(cfg, "coupled_pose_joint_loss_w", 0.2)) if coupled_enabled and coupled_tdir_enabled else 0.0
             coupled_reg_w = float(getattr(cfg, "coupled_pose_residual_reg_w", 0.01)) if coupled_enabled else 0.0
             coupled_chain_w = float(getattr(cfg, "coupled_pose_chain_loss_w", 0.0)) if coupled_enabled else 0.0
             if coupled_enabled:
                 R_coupled = aux.get("R_after_coupled", R_pred)
                 tdir_coupled_local = aux.get("tdir_after_coupled", aux.get("t_dir_local", t_pose_pred))
-                L_coupled_rot = matrix_geodesic_distance(R_coupled, R_gt).mean()
-                L_coupled_tdir = translation_direction_loss(
-                    tdir_coupled_local,
-                    t_gt,
-                    R_gt,
-                    pred_t_frame=aux.get("t_local_frame", "A"),
-                    oriented_weight=float(getattr(cfg, "pose_t_oriented_weight", 1.0)),
-                    axis_weight=float(getattr(cfg, "pose_t_axis_weight", 0.0)),
-                    sample_weight=dt_t_weight,
-                )
-                L_coupled_joint = coupled_pose_joint_consistency_loss(
-                    R_coupled,
-                    tdir_coupled_local,
-                    t_gt,
-                    R_gt,
-                    oriented_weight=float(getattr(cfg, "pose_t_oriented_weight", 1.0)),
-                    axis_weight=float(getattr(cfg, "pose_t_axis_weight", 0.0)),
-                    sample_weight=dt_t_weight,
-                )
+                L_coupled_rot = matrix_geodesic_distance(R_coupled, R_gt).mean() if coupled_rot_enabled else torch.zeros((), device=dev)
+                if coupled_tdir_enabled:
+                    L_coupled_tdir = translation_direction_loss(
+                        tdir_coupled_local,
+                        t_gt,
+                        R_gt,
+                        pred_t_frame=aux.get("t_local_frame", "A"),
+                        oriented_weight=float(getattr(cfg, "pose_t_oriented_weight", 1.0)),
+                        axis_weight=float(getattr(cfg, "pose_t_axis_weight", 0.0)),
+                        sample_weight=dt_t_weight,
+                    )
+                    L_coupled_joint = coupled_pose_joint_consistency_loss(
+                        R_coupled,
+                        tdir_coupled_local,
+                        t_gt,
+                        R_gt,
+                        oriented_weight=float(getattr(cfg, "pose_t_oriented_weight", 1.0)),
+                        axis_weight=float(getattr(cfg, "pose_t_axis_weight", 0.0)),
+                        sample_weight=dt_t_weight,
+                    )
+                else:
+                    L_coupled_tdir = torch.zeros((), device=dev)
+                    L_coupled_joint = torch.zeros((), device=dev)
                 L_coupled_reg = coupled_pose_residual_regularization(
                     aux.get("delta_rot_vec", torch.zeros((IA.shape[0], 3), device=dev)),
                     aux.get("delta_tdir_vec", torch.zeros((IA.shape[0], 3), device=dev)),
                     aux.get("coupled_gate", None),
+                    use_rot=coupled_rot_enabled,
+                    use_tdir=coupled_tdir_enabled,
                 )
                 L_coupled_chain = torch.zeros((), device=dev)
             else:
@@ -5142,6 +5216,20 @@ def main():
                             vis_dumped = True
 
         t_opt = time.perf_counter()
+        train_metrics_snapshot = {
+            "loss_total": float(L.detach().cpu()),
+            "loss_coupled_rot": float(L_coupled_rot.detach().cpu()),
+            "loss_coupled_tdir": float(L_coupled_tdir.detach().cpu()),
+            "loss_coupled_joint": float(L_coupled_joint.detach().cpu()),
+            "loss_coupled_reg": float(L_coupled_reg.detach().cpu()),
+            "coupled_gate_mean": float(aux.get("coupled_gate_mean", torch.zeros((), device=dev)).detach().cpu()),
+            "delta_rot_norm_mean": float(aux.get("delta_rot_norm", torch.zeros((IA.shape[0],), device=dev)).detach().float().mean().cpu()),
+            "delta_tdir_norm_mean": float(aux.get("delta_tdir_norm", torch.zeros((IA.shape[0],), device=dev)).detach().float().mean().cpu()),
+            "tdir_before_after_max_diff": float(aux.get("tdir_before_after_max_diff", torch.zeros((), device=dev)).detach().float().cpu()),
+            "tmag_before_after_max_diff": float(aux.get("tmag_before_after_max_diff", torch.zeros((), device=dev)).detach().float().cpu()),
+        }
+        if not first_train_metrics:
+            first_train_metrics = dict(train_metrics_snapshot)
 
         if step % cfg.log_every == 0:
             with torch.no_grad():
@@ -5266,6 +5354,7 @@ def main():
     nan_like_events = int(bad_forward + skip_updates)
     latest_eval = eval_history[-1] if len(eval_history) > 0 else {}
     latest_eval_metrics = _latest_eval_metrics(latest_eval)
+    last_train_metrics = dict(train_metrics_snapshot)
     final_summary = {
             **final_metrics,
             "bad_forward": int(bad_forward),
@@ -5390,6 +5479,12 @@ def main():
             "forbidden_trainable_params": freeze_summary.get("forbidden_trainable_params", []),
             "use_coupled_pose_residual_head": bool(getattr(cfg, "use_coupled_pose_residual_head", False)),
             "train_coupled_pose_residual_only": bool(getattr(cfg, "train_coupled_pose_residual_only", False)),
+            "coupled_pose_residual_enable_rot": bool(getattr(cfg, "coupled_pose_residual_enable_rot", True)),
+            "coupled_pose_residual_enable_tdir": bool(getattr(cfg, "coupled_pose_residual_enable_tdir", False)),
+            "coupled_pose_residual_force_tdir_zero": bool(getattr(cfg, "coupled_pose_residual_force_tdir_zero", True)),
+            "coupled_pose_residual_rot_scale": float(getattr(cfg, "coupled_pose_residual_rot_scale", 0.02)),
+            "coupled_pose_residual_tdir_scale": float(getattr(cfg, "coupled_pose_residual_tdir_scale", 0.0)),
+            "coupled_pose_residual_gate_max": float(getattr(cfg, "coupled_pose_residual_gate_max", 0.05)),
             "freeze_backbone_for_coupled_pose": bool(getattr(cfg, "freeze_backbone_for_coupled_pose", True)),
             "freeze_tmag_for_coupled_pose": bool(getattr(cfg, "freeze_tmag_for_coupled_pose", True)),
             "freeze_dt_anchor_for_coupled_pose": bool(getattr(cfg, "freeze_dt_anchor_for_coupled_pose", True)),
@@ -5397,6 +5492,8 @@ def main():
             "run_device_name": str(torch.cuda.get_device_name(dev)) if dev.type == "cuda" else "cpu",
             "has_cuda": bool(torch.cuda.is_available()),
             "last_eval": latest_eval_metrics,
+            "first_train": first_train_metrics,
+            "last_train": last_train_metrics,
         }
     if bool(cfg.save_final_summary):
         _save_json(os.path.join(ckpt_root, "final_summary.json"), final_summary)

@@ -455,9 +455,13 @@ class PanoramaRelPoseModel(nn.Module):
             cfg.D,
             hidden_dim=int(getattr(cfg, "coupled_pose_residual_hidden_dim", 128)),
             dropout=float(getattr(cfg, "coupled_pose_residual_dropout", 0.0)),
+            enable_rot=bool(getattr(cfg, "coupled_pose_residual_enable_rot", True)),
+            enable_tdir=bool(getattr(cfg, "coupled_pose_residual_enable_tdir", False)),
             rot_scale=float(getattr(cfg, "coupled_pose_residual_rot_scale", 0.05)),
             tdir_scale=float(getattr(cfg, "coupled_pose_residual_tdir_scale", 0.05)),
             gate_init=float(getattr(cfg, "coupled_pose_residual_gate_init", -4.0)),
+            gate_max=float(getattr(cfg, "coupled_pose_residual_gate_max", 0.05)),
+            force_tdir_zero=bool(getattr(cfg, "coupled_pose_residual_force_tdir_zero", True)),
             use_dt_embed=bool(getattr(cfg, "coupled_pose_residual_use_dt_embed", True)),
             use_confidence=bool(getattr(cfg, "coupled_pose_residual_use_confidence", True)),
         )
@@ -610,11 +614,14 @@ class PanoramaRelPoseModel(nn.Module):
             gate = coupled_out["gate"]
             delta_R = _so3_exp_map(gate * delta_rot_vec)
             R_final = torch.matmul(delta_R, R_final.float())
-            t_local_final = nn.functional.normalize(
-                t_local_final.float() + gate * delta_tdir_vec.float(),
-                dim=-1,
-                eps=1.0e-6,
-            )
+            tdir_enabled = bool(getattr(self.cfg, "coupled_pose_residual_enable_tdir", False))
+            force_tdir_zero = bool(getattr(self.cfg, "coupled_pose_residual_force_tdir_zero", True))
+            if tdir_enabled and not force_tdir_zero:
+                t_local_final = nn.functional.normalize(
+                    t_local_final.float() + gate * delta_tdir_vec.float(),
+                    dim=-1,
+                    eps=1.0e-6,
+                )
         aux["R_before_coupled"] = R_before_coupled
         aux["tdir_before_coupled"] = tdir_before_coupled
         aux["tmag_before_coupled"] = tmag_before_coupled
@@ -626,9 +633,18 @@ class PanoramaRelPoseModel(nn.Module):
         aux["delta_rot_vec"] = delta_rot_vec
         aux["delta_tdir_vec"] = delta_tdir_vec
         aux["coupled_gate"] = gate
+        aux["delta_rot_norm"] = torch.linalg.norm(delta_rot_vec.float(), dim=-1)
+        aux["delta_tdir_norm"] = torch.linalg.norm(delta_tdir_vec.float(), dim=-1)
         aux["coupled_delta_rot_norm"] = torch.linalg.norm(delta_rot_vec.float(), dim=-1)
         aux["coupled_delta_tdir_norm"] = torch.linalg.norm(delta_tdir_vec.float(), dim=-1)
         aux["coupled_gate_mean"] = gate.float().mean()
+        aux["gate_mean"] = aux["coupled_gate_mean"]
+        aux["tdir_before_after_max_diff"] = (
+            aux["tdir_after_coupled"].float() - aux["tdir_before_coupled"].float()
+        ).abs().max()
+        aux["tmag_before_after_max_diff"] = (
+            aux["tmag_after_coupled"].float().view(-1) - aux["tmag_before_coupled"].float().view(-1)
+        ).abs().max()
         _set_transform_outputs(aux, R_final, t_local_final, tmag_before_coupled, log_tmag_before_coupled)
         _apply_dt_bucket_scale_anchor(self.cfg, aux, dt_world=dt_world)
         aux["stage"] = "coarse_to_fine"
