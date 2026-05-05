@@ -17,7 +17,7 @@ sys.path.insert(0, str(REPO_ROOT))
 from config import Config
 from dataset_pano_only import RflyPanoPanoramaPairsEvalFixedKList
 from model import PanoramaRelPoseModel
-from train_mvp import _set_train_coupled_pose_residual_only
+from train_mvp import _apply_dt_bucket_scale_anchor_policy, _set_train_coupled_pose_residual_only
 
 
 POLICY_PATH = REPO_ROOT / "checkpoints" / "S2b_clean_fine_rot_policy.json"
@@ -91,12 +91,8 @@ def main() -> None:
     ckpt_path = REPO_ROOT / str(policy["base_checkpoint_path"])
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     cfg_base = _cfg_from_ckpt(ckpt_path)
-    cfg_base.use_fine_stage = True
-    cfg_base.fine_rot_fuse_strength = float(policy["fine_rot_fuse_strength"])
-    cfg_base.fine_tdir_fuse_strength = float(policy["fine_tdir_fuse_strength"])
-    cfg_base.fine_tmag_fuse_strength = float(policy["fine_tmag_fuse_strength"])
-    cfg_base.use_geometry_refine = bool(policy.get("use_geometry_refine", False))
-    cfg_base.tmag_condition_on_dt = False
+    cfg_base.dt_bucket_scale_anchor_policy_json = str(POLICY_PATH)
+    policy_summary = _apply_dt_bucket_scale_anchor_policy(cfg_base)
 
     sample = _build_sample(cfg_base, device)
 
@@ -161,6 +157,8 @@ def main() -> None:
         f"- base checkpoint: `{ckpt_path}`",
         f"- device: `{device}`",
         f"- audit_pass: `{audit_pass}`",
+        f"- policy apply: `{policy_summary.get('dt_bucket_scale_anchor_apply', False)}`",
+        f"- policy factors: `{policy_summary.get('effective_bucket_factors', {})}`",
         "",
         "## Load Summary",
         "",

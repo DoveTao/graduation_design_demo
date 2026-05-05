@@ -23,14 +23,10 @@ mkdir -p "$OUTDIR"
 "$PYTHON_BIN" train_mvp.py \
   --set exp_name=S3a0_coupled_pose_residual_head_smoke \
   --set ckpt_dir=checkpoints \
+  --set dt_bucket_scale_anchor_policy_json="$POLICY_JSON" \
   --set init_checkpoint="$BASE_CKPT" \
   --set strict_load_checkpoint=False \
   --set use_fine_stage=True \
-  --set fine_rot_fuse_strength=0.45 \
-  --set fine_tdir_fuse_strength=0.0 \
-  --set fine_tmag_fuse_strength=0.0 \
-  --set use_geometry_refine=False \
-  --set tmag_condition_on_dt=False \
   --set use_coupled_pose_residual_head=True \
   --set coupled_pose_residual_trainable=True \
   --set train_coupled_pose_residual_only=True \

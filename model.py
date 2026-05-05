@@ -307,6 +307,69 @@ def _set_transform_outputs(
     aux["t_vec_local"] = aux["t_dir_local"] * t_mag.unsqueeze(-1)
 
 
+def _dt_bucket_scale_anchor_bucket(dt: float) -> Optional[str]:
+    if 0.1 <= dt < 0.3:
+        return "[0.1,0.3)"
+    if 0.3 <= dt < 0.5:
+        return "[0.3,0.5)"
+    if 0.5 <= dt < 1.0:
+        return "[0.5,1)"
+    return None
+
+
+def _dt_bucket_scale_anchor_factor(cfg: Config, dt_world: Optional[torch.Tensor]) -> float:
+    if not bool(getattr(cfg, "dt_bucket_scale_anchor_apply", False)):
+        return 1.0
+    if dt_world is None:
+        return 1.0
+    dt_val = float(dt_world.detach().float().view(-1)[0].cpu().item())
+    bucket = _dt_bucket_scale_anchor_bucket(dt_val)
+    if bucket == "[0.1,0.3)":
+        return float(getattr(cfg, "dt_bucket_scale_anchor_factor_0p1_0p3", 1.0))
+    if bucket == "[0.3,0.5)":
+        return float(getattr(cfg, "dt_bucket_scale_anchor_factor_0p3_0p5", 1.0))
+    if bucket == "[0.5,1)":
+        return float(getattr(cfg, "dt_bucket_scale_anchor_factor_0p5_1p0", 1.0))
+    return 1.0
+
+
+def _apply_dt_bucket_scale_anchor(
+    cfg: Config,
+    aux: Dict[str, torch.Tensor],
+    *,
+    dt_world: Optional[torch.Tensor],
+) -> None:
+    factor = _dt_bucket_scale_anchor_factor(cfg, dt_world)
+    fac_device = dt_world.device if torch.is_tensor(dt_world) else torch.device("cpu")
+    for value in aux.values():
+        if torch.is_tensor(value):
+            fac_device = value.device
+            break
+    fac_t = torch.tensor(factor, device=fac_device, dtype=torch.float32)
+    aux["dt_bucket_scale_anchor_factor"] = fac_t
+    if abs(factor - 1.0) < 1.0e-12:
+        return
+    for mag_key in (
+        "t_mag",
+        "t_mag_unbiased",
+        "tmag_before_coupled",
+        "tmag_after_coupled",
+    ):
+        if mag_key in aux and torch.is_tensor(aux[mag_key]):
+            aux[mag_key] = aux[mag_key].float() * fac_t
+    for log_key, src in (
+        ("log_t_mag", "t_mag"),
+        ("log_t_mag_unbiased", "t_mag_unbiased"),
+        ("log_tmag_before_coupled", "tmag_before_coupled"),
+        ("log_tmag_after_coupled", "tmag_after_coupled"),
+    ):
+        if src in aux and torch.is_tensor(aux[src]):
+            aux[log_key] = torch.log(aux[src].clamp_min(float(getattr(cfg, "tmag_min", 1.0e-3))))
+    for vec_key in ("t_vec", "t_vec_out", "t_vec_local", "t_vec_fine_raw"):
+        if vec_key in aux and torch.is_tensor(aux[vec_key]):
+            aux[vec_key] = aux[vec_key].float() * fac_t
+
+
 class PanoramaRelPoseModel(nn.Module):
     def __init__(self, cfg: Config, device: torch.device):
         super().__init__()
@@ -449,6 +512,7 @@ class PanoramaRelPoseModel(nn.Module):
             R, t_local = self.direct_head(TokA_c.feat, TokB_c.feat)
             t_mag = torch.ones((IA.shape[0],), device=IA.device, dtype=torch.float32)
             _set_transform_outputs(aux, R, t_local, t_mag)
+            _apply_dt_bucket_scale_anchor(self.cfg, aux, dt_world=dt_world)
             aux["stage"] = "encoder_only"
             return R, aux["t_dir"], aux
 
@@ -472,6 +536,7 @@ class PanoramaRelPoseModel(nn.Module):
         aux["log_t_mag_unbiased"] = out_c["log_tc_mag"]
         aux["log_tmag_bias"] = self.log_tmag_bias.detach().view(()) if self.log_tmag_bias is not None else torch.zeros((), device=IA.device)
         _set_transform_outputs(aux, out_c["Rc"], out_c["tc_dir"], t_mag_final, log_t_mag_final)
+        _apply_dt_bucket_scale_anchor(self.cfg, aux, dt_world=dt_world)
         aux["stage"] = "coarse_only"
 
         if not self.cfg.use_fine_stage:
@@ -565,6 +630,7 @@ class PanoramaRelPoseModel(nn.Module):
         aux["coupled_delta_tdir_norm"] = torch.linalg.norm(delta_tdir_vec.float(), dim=-1)
         aux["coupled_gate_mean"] = gate.float().mean()
         _set_transform_outputs(aux, R_final, t_local_final, tmag_before_coupled, log_tmag_before_coupled)
+        _apply_dt_bucket_scale_anchor(self.cfg, aux, dt_world=dt_world)
         aux["stage"] = "coarse_to_fine"
         aux["Wc_tilde"] = aggregate_fine_to_coarse(
             Wf_ab=out_f["Wf_ab"],

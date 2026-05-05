@@ -71,6 +71,65 @@ def _cfg_to_dict(cfg):
         return {k: v for k, v in vars(cfg).items() if not k.startswith("_")}
 
 
+def _load_dt_bucket_scale_anchor_policy(path: str) -> Dict[str, Any]:
+    policy_path = os.path.expanduser(str(path).strip())
+    if not policy_path:
+        return {}
+    if not os.path.isfile(policy_path):
+        raise FileNotFoundError(f"dt_bucket_scale_anchor_policy_json not found: {policy_path}")
+    with open(policy_path, "r", encoding="utf-8") as f:
+        policy = json.load(f)
+    if not isinstance(policy, dict):
+        raise TypeError(f"Unsupported policy payload type: {type(policy)}")
+    return policy
+
+
+def _apply_dt_bucket_scale_anchor_policy(cfg: Config) -> Dict[str, Any]:
+    policy_path = str(getattr(cfg, "dt_bucket_scale_anchor_policy_json", "")).strip()
+    if not policy_path:
+        return {"enabled": False}
+
+    policy = _load_dt_bucket_scale_anchor_policy(policy_path)
+    base_ckpt = str(policy.get("base_checkpoint_path", "")).strip()
+    if not base_ckpt:
+        raise ValueError(f"Policy {policy_path} missing base_checkpoint_path.")
+    init_ckpt = str(getattr(cfg, "init_checkpoint", "")).strip()
+    if init_ckpt and os.path.normpath(init_ckpt) != os.path.normpath(base_ckpt):
+        print(
+            "[Policy] overriding init_checkpoint to match policy base checkpoint: "
+            f"{init_ckpt} -> {base_ckpt}"
+        )
+    cfg.init_checkpoint = base_ckpt
+    cfg.use_fine_stage = True
+    cfg.fine_rot_fuse_strength = float(policy.get("fine_rot_fuse_strength", getattr(cfg, "fine_rot_fuse_strength", 0.0)))
+    cfg.fine_tdir_fuse_strength = float(policy.get("fine_tdir_fuse_strength", getattr(cfg, "fine_tdir_fuse_strength", 0.0)))
+    cfg.fine_tmag_fuse_strength = float(policy.get("fine_tmag_fuse_strength", getattr(cfg, "fine_tmag_fuse_strength", 0.0)))
+    cfg.use_geometry_refine = bool(policy.get("use_geometry_refine", False))
+    cfg.tmag_condition_on_dt = False
+    factors = {str(k): float(v) for k, v in policy.get("effective_bucket_factors", {}).items()}
+    cfg.dt_bucket_scale_anchor_apply = True
+    cfg.dt_bucket_scale_anchor_policy_base_checkpoint = base_ckpt
+    cfg.dt_bucket_scale_anchor_policy_name = str(policy.get("policy_name", os.path.basename(policy_path)))
+    cfg.dt_bucket_scale_anchor_factor_0p1_0p3 = float(factors.get("[0.1,0.3)", 1.0))
+    cfg.dt_bucket_scale_anchor_factor_0p3_0p5 = float(factors.get("[0.3,0.5)", 1.0))
+    cfg.dt_bucket_scale_anchor_factor_0p5_1p0 = float(factors.get("[0.5,1)", 1.0))
+    return {
+        "enabled": True,
+        "policy_path": policy_path,
+        "base_checkpoint_path": base_ckpt,
+        "fine_rot_fuse_strength": float(cfg.fine_rot_fuse_strength),
+        "fine_tdir_fuse_strength": float(cfg.fine_tdir_fuse_strength),
+        "fine_tmag_fuse_strength": float(cfg.fine_tmag_fuse_strength),
+        "use_geometry_refine": bool(cfg.use_geometry_refine),
+        "dt_bucket_scale_anchor_apply": bool(cfg.dt_bucket_scale_anchor_apply),
+        "effective_bucket_factors": {
+            "[0.1,0.3)": float(cfg.dt_bucket_scale_anchor_factor_0p1_0p3),
+            "[0.3,0.5)": float(cfg.dt_bucket_scale_anchor_factor_0p3_0p5),
+            "[0.5,1)": float(cfg.dt_bucket_scale_anchor_factor_0p5_1p0),
+        },
+    }
+
+
 def _set_train_fine_only(model: nn.Module, cfg: Config) -> Dict[str, Any]:
     if not bool(getattr(cfg, "train_fine_only", False)):
         trainable_names = [name for name, p in model.named_parameters() if p.requires_grad]
@@ -3039,6 +3098,7 @@ def main():
     args = _parse_args()
     cfg = Config()
     _apply_cfg_overrides(cfg, args.overrides)
+    policy_summary = _apply_dt_bucket_scale_anchor_policy(cfg)
     os.environ.setdefault("PYTORCH_ALLOC_CONF", "expandable_segments:True")
     _seed_everything(cfg.data_seed, deterministic=bool(cfg.deterministic))
 
@@ -3102,6 +3162,14 @@ def main():
         f"[Cfg ] cuda_sdp: flash={getattr(cfg, 'cuda_flash_sdp', True)} | "
         f"mem_efficient={getattr(cfg, 'cuda_mem_efficient_sdp', True)} | "
         f"math={getattr(cfg, 'cuda_math_sdp', True)}"
+    )
+    print(
+        f"[Cfg ] dt_anchor_policy={bool(policy_summary.get('enabled', False))} | "
+        f"path={policy_summary.get('policy_path', '') or '-'} | "
+        f"apply={bool(getattr(cfg, 'dt_bucket_scale_anchor_apply', False))} | "
+        f"factors=({getattr(cfg, 'dt_bucket_scale_anchor_factor_0p1_0p3', 1.0):.6f},"
+        f"{getattr(cfg, 'dt_bucket_scale_anchor_factor_0p3_0p5', 1.0):.6f},"
+        f"{getattr(cfg, 'dt_bucket_scale_anchor_factor_0p5_1p0', 1.0):.6f})"
     )
     print(
         f"[Cfg ] loss: w_pose={cfg.w_pose} | w_pose_out_t={getattr(cfg, 'w_pose_output_t', 0.0)} | t_alpha={cfg.pose_t_alpha} | "
@@ -3520,6 +3588,12 @@ def main():
             "cuda_math_sdp": bool(getattr(cfg, "cuda_math_sdp", True)),
             "init_checkpoint": str(getattr(cfg, "init_checkpoint", "")),
             "strict_load_checkpoint": bool(getattr(cfg, "strict_load_checkpoint", False)),
+            "dt_bucket_scale_anchor_policy_json": str(getattr(cfg, "dt_bucket_scale_anchor_policy_json", "")),
+            "dt_bucket_scale_anchor_apply": bool(getattr(cfg, "dt_bucket_scale_anchor_apply", False)),
+            "dt_bucket_scale_anchor_policy_base_checkpoint": str(getattr(cfg, "dt_bucket_scale_anchor_policy_base_checkpoint", "")),
+            "dt_bucket_scale_anchor_factor_0p1_0p3": float(getattr(cfg, "dt_bucket_scale_anchor_factor_0p1_0p3", 1.0)),
+            "dt_bucket_scale_anchor_factor_0p3_0p5": float(getattr(cfg, "dt_bucket_scale_anchor_factor_0p3_0p5", 1.0)),
+            "dt_bucket_scale_anchor_factor_0p5_1p0": float(getattr(cfg, "dt_bucket_scale_anchor_factor_0p5_1p0", 1.0)),
             "use_tdir_anchor_loss": bool(getattr(cfg, "use_tdir_anchor_loss", False)),
             "tdir_anchor_checkpoint": str(getattr(cfg, "tdir_anchor_checkpoint", "")),
             "w_tdir_anchor": float(getattr(cfg, "w_tdir_anchor", 0.0)),
@@ -5242,6 +5316,12 @@ def main():
             "cuda_math_sdp": bool(getattr(cfg, "cuda_math_sdp", True)),
             "init_checkpoint": str(getattr(cfg, "init_checkpoint", "")),
             "strict_load_checkpoint": bool(getattr(cfg, "strict_load_checkpoint", False)),
+            "dt_bucket_scale_anchor_policy_json": str(getattr(cfg, "dt_bucket_scale_anchor_policy_json", "")),
+            "dt_bucket_scale_anchor_apply": bool(getattr(cfg, "dt_bucket_scale_anchor_apply", False)),
+            "dt_bucket_scale_anchor_policy_base_checkpoint": str(getattr(cfg, "dt_bucket_scale_anchor_policy_base_checkpoint", "")),
+            "dt_bucket_scale_anchor_factor_0p1_0p3": float(getattr(cfg, "dt_bucket_scale_anchor_factor_0p1_0p3", 1.0)),
+            "dt_bucket_scale_anchor_factor_0p3_0p5": float(getattr(cfg, "dt_bucket_scale_anchor_factor_0p3_0p5", 1.0)),
+            "dt_bucket_scale_anchor_factor_0p5_1p0": float(getattr(cfg, "dt_bucket_scale_anchor_factor_0p5_1p0", 1.0)),
             "use_tdir_anchor_loss": bool(getattr(cfg, "use_tdir_anchor_loss", False)),
             "tdir_anchor_checkpoint": str(getattr(cfg, "tdir_anchor_checkpoint", "")),
             "w_tdir_anchor": float(getattr(cfg, "w_tdir_anchor", 0.0)),

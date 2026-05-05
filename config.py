@@ -106,6 +106,13 @@ class Config:
     coupled_pose_residual_gate_init: float = -4.0
     coupled_pose_residual_use_dt_embed: bool = True
     coupled_pose_residual_use_confidence: bool = True
+    dt_bucket_scale_anchor_policy_json: str = ""
+    dt_bucket_scale_anchor_apply: bool = False
+    dt_bucket_scale_anchor_policy_base_checkpoint: str = ""
+    dt_bucket_scale_anchor_policy_name: str = ""
+    dt_bucket_scale_anchor_factor_0p1_0p3: float = 1.0
+    dt_bucket_scale_anchor_factor_0p3_0p5: float = 1.0
+    dt_bucket_scale_anchor_factor_0p5_1p0: float = 1.0
 
     coarse_temperature: float = 0.10
     fine_temperature: float = 0.07
