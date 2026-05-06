@@ -1,12 +1,11 @@
 # Final S11 Tmag Scale Consistency Summary
 
-- Final classification: `INCONCLUSIVE`
+- Final classification: `NO-STABLE-TMAG-CONSISTENCY-GAIN`
 - S11 replaces S5: `False`
 - S5 remains final clean candidate: `True`
-- Selected candidate: `None`
+- Best diagnostic candidate: `D_high_regime_weighted_consistency`
+- Odometry eval run: `True`
 
-S11 moves optimization back into training-time tmag scale learning. It freezes non-tmag parameters and compares baseline tmag-head tuning against consistency-loss and high-regime weighted variants.
+This stage upgrades S11 from smoke to a lightweight two-fold clean-CV diagnostic over A/C/D. It uses train-only folds, preserves the no-test-selection rule, and checks whether training-time magnitude consistency produces enough safe signal to justify a heavier S11b run.
 
-This first launch only validates the S11 training path and report generation. Odometry clean-CV metrics are intentionally deferred to the next heavier run, so the current result is strictly a smoke-stage `INCONCLUSIVE`.
-
-This launch did not promote a new final clean candidate yet, so S5 remains the locked final candidate while S11 continues as an internal training-direction probe.
+Outcome: `proxy improved but path/odometry safety not stable`. The main positive signal was improved tmag / chain-sum proxy error, but the current lightweight odometry summary path did not provide stable path-ratio evidence for promotion. At this stage S5 still remains the locked final clean candidate.
