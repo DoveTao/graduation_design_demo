@@ -166,6 +166,53 @@ def translation_magnitude_loss(
     return (loss * w).mean()
 
 
+def tmag_speed_loss(
+    t_mag_pred: torch.Tensor,
+    t_mag_gt: torch.Tensor,
+    dt_world: torch.Tensor,
+    *,
+    eps: float = 1.0e-3,
+) -> torch.Tensor:
+    pred = t_mag_pred.float().view(-1).clamp_min(float(eps))
+    gt = t_mag_gt.float().view(-1).clamp_min(float(eps))
+    dt = dt_world.float().view(-1).clamp_min(float(eps))
+    log_speed_pred = torch.log(pred) - torch.log(dt)
+    log_speed_gt = torch.log(gt) - torch.log(dt)
+    return F.smooth_l1_loss(log_speed_pred, log_speed_gt)
+
+
+def tmag_pairwise_ratio_loss(
+    t_mag_pred_a: torch.Tensor,
+    t_mag_pred_b: torch.Tensor,
+    t_mag_gt_a: torch.Tensor,
+    t_mag_gt_b: torch.Tensor,
+    *,
+    eps: float = 1.0e-3,
+) -> torch.Tensor:
+    pred_a = t_mag_pred_a.float().view(-1).clamp_min(float(eps))
+    pred_b = t_mag_pred_b.float().view(-1).clamp_min(float(eps))
+    gt_a = t_mag_gt_a.float().view(-1).clamp_min(float(eps))
+    gt_b = t_mag_gt_b.float().view(-1).clamp_min(float(eps))
+    log_ratio_pred = torch.log(pred_a) - torch.log(pred_b)
+    log_ratio_gt = torch.log(gt_a) - torch.log(gt_b)
+    return F.smooth_l1_loss(log_ratio_pred, log_ratio_gt)
+
+
+def tmag_chain_sum_consistency_loss(
+    t_mag_pred_a: torch.Tensor,
+    t_mag_pred_b: torch.Tensor,
+    t_mag_gt_a: torch.Tensor,
+    t_mag_gt_b: torch.Tensor,
+    *,
+    eps: float = 1.0e-3,
+) -> torch.Tensor:
+    pred_sum = t_mag_pred_a.float().view(-1) + t_mag_pred_b.float().view(-1)
+    gt_sum = t_mag_gt_a.float().view(-1) + t_mag_gt_b.float().view(-1)
+    log_pred = torch.log(pred_sum.clamp_min(float(eps)))
+    log_gt = torch.log(gt_sum.clamp_min(float(eps)))
+    return F.smooth_l1_loss(log_pred, log_gt)
+
+
 def coupled_pose_joint_consistency_loss(
     R_pred: torch.Tensor,
     t_local_pred: torch.Tensor,

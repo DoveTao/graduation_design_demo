@@ -55,6 +55,9 @@ from losses import (
     epipolar_simplified_loss,
     erp_photometric_loss,
     pose_loss,
+    tmag_chain_sum_consistency_loss,
+    tmag_pairwise_ratio_loss,
+    tmag_speed_loss,
     translation_direction_loss,
     translation_magnitude_loss,
 )
@@ -300,6 +303,66 @@ def _set_train_coupled_pose_residual_only(model: nn.Module, cfg: Config) -> Dict
     print(f"[Freeze] forbidden_trainable_params={forbidden_trainable_params}")
     if forbidden_trainable_params:
         raise RuntimeError(f"Forbidden trainable params detected: {forbidden_trainable_params}")
+    return summary
+
+
+def _set_train_tmag_head_only(model: nn.Module, cfg: Config) -> Dict[str, Any]:
+    if not bool(getattr(cfg, "train_tmag_head_only", False)):
+        trainable_names = [name for name, p in model.named_parameters() if p.requires_grad]
+        trainable_param_count = sum(p.numel() for p in model.parameters() if p.requires_grad)
+        frozen_param_count = sum(p.numel() for p in model.parameters() if not p.requires_grad)
+        return {
+            "enabled": False,
+            "mode": "all",
+            "trainable_param_count": int(trainable_param_count),
+            "frozen_param_count": int(frozen_param_count),
+            "optimizer_param_count": int(trainable_param_count),
+            "trainable_groups": {"all": int(trainable_param_count)},
+            "frozen_groups": {"all": int(frozen_param_count)} if frozen_param_count > 0 else {},
+            "trainable_names": trainable_names,
+            "forbidden_trainable_params": [],
+        }
+
+    allowed_exact = {
+        "log_tmag_bias",
+        "tmag_affine_scale",
+        "tmag_affine_bias",
+    }
+    allowed_prefixes = (
+        "coarse.mag_head.",
+        "fine.mag_head.",
+    )
+    trainable_groups: Dict[str, int] = {}
+    frozen_groups: Dict[str, int] = {}
+    trainable_names: List[str] = []
+
+    for name, p in model.named_parameters():
+        is_trainable = (name in allowed_exact) or name.startswith(allowed_prefixes)
+        p.requires_grad_(is_trainable)
+        group_name = name.split(".", 1)[0]
+        if is_trainable:
+            trainable_names.append(name)
+            trainable_groups[group_name] = trainable_groups.get(group_name, 0) + p.numel()
+        else:
+            frozen_groups[group_name] = frozen_groups.get(group_name, 0) + p.numel()
+
+    trainable_param_count = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    frozen_param_count = sum(p.numel() for p in model.parameters() if not p.requires_grad)
+    summary = {
+        "enabled": True,
+        "mode": "tmag_head_only",
+        "trainable_param_count": int(trainable_param_count),
+        "frozen_param_count": int(frozen_param_count),
+        "optimizer_param_count": int(trainable_param_count),
+        "trainable_groups": trainable_groups,
+        "frozen_groups": frozen_groups,
+        "trainable_names": trainable_names,
+        "forbidden_trainable_params": [],
+    }
+    print(f"[Freeze] train_tmag_head_only=True")
+    print(f"[Freeze] trainable_names={trainable_names}")
+    print(f"[Freeze] trainable_param_count={trainable_param_count}")
+    print(f"[Freeze] frozen_param_count={frozen_param_count}")
     return summary
 
 
@@ -755,6 +818,63 @@ def _make_dt_world_tensor(meta: Any, bsz: int, device: torch.device, default: fl
     return torch.tensor(vals, device=device, dtype=torch.float32)
 
 
+def _tmag_regime_sample_weight(
+    cfg: Config,
+    pred_tmag: Optional[torch.Tensor],
+    gt_tmag: Optional[torch.Tensor],
+    dt_world: Optional[torch.Tensor],
+    meta: Any,
+    bsz: int,
+    device: torch.device,
+) -> Optional[torch.Tensor]:
+    if not bool(getattr(cfg, "use_tmag_regime_reweight", False)):
+        return None
+    if pred_tmag is None or gt_tmag is None:
+        return None
+    pred = pred_tmag.float().view(-1)
+    gt = gt_tmag.float().view(-1)
+    if pred.numel() == 0 or gt.numel() == 0:
+        return None
+    w = torch.ones_like(pred, device=device, dtype=torch.float32)
+    pred_q = float(getattr(cfg, "tmag_regime_pred_q", 0.90))
+    gt_q = float(getattr(cfg, "tmag_regime_gt_q", 0.90))
+    if 0.0 < pred_q < 1.0 and pred.numel() > 1:
+        pred_hi = torch.quantile(pred.detach(), q=float(pred_q))
+        w = w * torch.where(
+            pred >= pred_hi,
+            torch.full_like(w, float(getattr(cfg, "tmag_regime_weight_pred_high", 1.0))),
+            torch.ones_like(w),
+        )
+    if 0.0 < gt_q < 1.0 and gt.numel() > 1:
+        gt_hi = torch.quantile(gt.detach(), q=float(gt_q))
+        w = w * torch.where(
+            gt >= gt_hi,
+            torch.full_like(w, float(getattr(cfg, "tmag_regime_weight_gt_high", 1.0))),
+            torch.ones_like(w),
+        )
+    if dt_world is not None:
+        dt = dt_world.float().view(-1)
+        w = w * torch.where(
+            dt >= 1.0,
+            torch.full_like(w, float(getattr(cfg, "tmag_regime_weight_dt_ge_1", 1.0))),
+            torch.ones_like(w),
+        )
+    k_list = _meta_batch_field(meta, "k", bsz, default=None)
+    k_vals = []
+    for x in k_list:
+        try:
+            k_vals.append(int(x))
+        except Exception:
+            k_vals.append(0)
+    k_t = torch.tensor(k_vals, device=device, dtype=torch.int64)
+    w = w * torch.where(
+        k_t == 20,
+        torch.full_like(w, float(getattr(cfg, "tmag_regime_weight_k20", 1.0))),
+        torch.ones_like(w),
+    )
+    return w
+
+
 def _cfg_tmag_weight(cfg: Config) -> float:
     if hasattr(cfg, "w_tmag"):
         return float(getattr(cfg, "w_tmag", 0.0))
@@ -769,6 +889,20 @@ def _cfg_tmag_effective_weight(cfg: Config, upd: int) -> float:
     if upd < start:
         return 0.0
     ramp_updates = int(getattr(cfg, "tmag_ramp_updates", 0))
+    if ramp_updates <= 0:
+        return base_w
+    ramp = min(1.0, max(0.0, float(upd - start) / float(ramp_updates)))
+    return base_w * ramp
+
+
+def _cfg_simple_effective_weight(cfg: Config, upd: int, enabled_key: str, weight_key: str, start_key: str = "tmag_start_updates", ramp_key: str = "tmag_ramp_updates") -> float:
+    base_w = float(getattr(cfg, weight_key, 0.0))
+    if (not bool(getattr(cfg, enabled_key, False))) or base_w <= 0.0:
+        return 0.0
+    start = int(getattr(cfg, start_key, 0))
+    if upd < start:
+        return 0.0
+    ramp_updates = int(getattr(cfg, ramp_key, 0))
     if ramp_updates <= 0:
         return base_w
     ramp = min(1.0, max(0.0, float(upd - start) / float(ramp_updates)))
@@ -3246,6 +3380,21 @@ def main():
         f"tmag_affine={bool(getattr(cfg, 'use_tmag_affine_calib', False))}:"
         f"scale={getattr(cfg, 'tmag_affine_init_scale', 1.0)}:"
         f"bias={getattr(cfg, 'tmag_affine_init_bias', 0.0)} | "
+        f"tmag_speed={bool(getattr(cfg, 'use_tmag_speed_loss', False))}:w={getattr(cfg, 'w_tmag_speed', 0.0)}:"
+        f"dt_min={getattr(cfg, 'tmag_speed_min_dt', 0.02)} | "
+        f"tmag_ratio={bool(getattr(cfg, 'use_tmag_ratio_loss', False))}:w={getattr(cfg, 'w_tmag_ratio', 0.0)}:"
+        f"k=={getattr(cfg, 'tmag_ratio_only_k', 1)}:"
+        f"min_gt={getattr(cfg, 'tmag_ratio_min_gt', 0.02)} | "
+        f"tmag_chain_sum={bool(getattr(cfg, 'use_tmag_chain_sum_loss', False))}:w={getattr(cfg, 'w_tmag_chain_sum', 0.0)}:"
+        f"k=={getattr(cfg, 'tmag_chain_sum_only_k', 1)}:"
+        f"min_gt={getattr(cfg, 'tmag_chain_sum_min_gt', 0.02)} | "
+        f"tmag_regime_reweight={bool(getattr(cfg, 'use_tmag_regime_reweight', False))}:"
+        f"pred_q={getattr(cfg, 'tmag_regime_pred_q', 0.90)}:"
+        f"gt_q={getattr(cfg, 'tmag_regime_gt_q', 0.90)}:"
+        f"pred_hi={getattr(cfg, 'tmag_regime_weight_pred_high', 1.0)}:"
+        f"gt_hi={getattr(cfg, 'tmag_regime_weight_gt_high', 1.0)}:"
+        f"dt_hi={getattr(cfg, 'tmag_regime_weight_dt_ge_1', 1.0)}:"
+        f"k20={getattr(cfg, 'tmag_regime_weight_k20', 1.0)} | "
         f"use_tmag_under={bool(getattr(cfg, 'use_tmag_under_reg', False))}:"
         f"w={getattr(cfg, 'w_tmag_under', 0.0)}:"
         f"target={getattr(cfg, 'tmag_under_target_ratio', 0.35)}:"
@@ -3317,7 +3466,9 @@ def main():
             getattr(cfg, "use_seq_turn_loss", False)
             or getattr(cfg, "use_seq_turn_chain_loss", False)
             or getattr(cfg, "use_odom_chain_len_loss", False)
-            or getattr(cfg, "use_odom_chain_vec_loss", False),
+            or getattr(cfg, "use_odom_chain_vec_loss", False)
+            or getattr(cfg, "use_tmag_ratio_loss", False)
+            or getattr(cfg, "use_tmag_chain_sum_loss", False),
         ),
         seq_turn_only_k=triplet_request_k,
         color_aug=bool(getattr(cfg, "train_color_aug", False)),
@@ -3700,6 +3851,7 @@ def main():
             "smallk_select_min_points": int(getattr(cfg, "smallk_select_min_points", 1)),
             "freeze_coarse_for_fine_training": bool(getattr(cfg, "freeze_coarse_for_fine_training", False)),
             "train_fine_only": bool(getattr(cfg, "train_fine_only", False)),
+            "train_tmag_head_only": bool(getattr(cfg, "train_tmag_head_only", False)),
             "trainable_param_count": int(freeze_summary.get("trainable_param_count", sum(p.numel() for p in model.parameters()))),
             "frozen_param_count": int(freeze_summary.get("frozen_param_count", 0)),
             "optimizer_param_count": int(freeze_summary.get("optimizer_param_count", 0)),
@@ -3709,6 +3861,13 @@ def main():
             "forbidden_trainable_params": freeze_summary.get("forbidden_trainable_params", []),
             "use_coupled_pose_residual_head": bool(getattr(cfg, "use_coupled_pose_residual_head", False)),
             "train_coupled_pose_residual_only": bool(getattr(cfg, "train_coupled_pose_residual_only", False)),
+            "use_tmag_speed_loss": bool(getattr(cfg, "use_tmag_speed_loss", False)),
+            "w_tmag_speed": float(getattr(cfg, "w_tmag_speed", 0.0)),
+            "use_tmag_ratio_loss": bool(getattr(cfg, "use_tmag_ratio_loss", False)),
+            "w_tmag_ratio": float(getattr(cfg, "w_tmag_ratio", 0.0)),
+            "use_tmag_chain_sum_loss": bool(getattr(cfg, "use_tmag_chain_sum_loss", False)),
+            "w_tmag_chain_sum": float(getattr(cfg, "w_tmag_chain_sum", 0.0)),
+            "use_tmag_regime_reweight": bool(getattr(cfg, "use_tmag_regime_reweight", False)),
             "coupled_pose_residual_enable_rot": bool(getattr(cfg, "coupled_pose_residual_enable_rot", True)),
             "coupled_pose_residual_enable_tdir": bool(getattr(cfg, "coupled_pose_residual_enable_tdir", False)),
             "coupled_pose_residual_force_tdir_zero": bool(getattr(cfg, "coupled_pose_residual_force_tdir_zero", True)),
@@ -3729,8 +3888,13 @@ def main():
         )
         return
 
-    if bool(getattr(cfg, "train_fine_only", False)) and bool(getattr(cfg, "train_coupled_pose_residual_only", False)):
-        raise ValueError("train_fine_only and train_coupled_pose_residual_only cannot both be True.")
+    freeze_modes = [
+        bool(getattr(cfg, "train_fine_only", False)),
+        bool(getattr(cfg, "train_coupled_pose_residual_only", False)),
+        bool(getattr(cfg, "train_tmag_head_only", False)),
+    ]
+    if sum(int(x) for x in freeze_modes) > 1:
+        raise ValueError("train_fine_only, train_coupled_pose_residual_only, and train_tmag_head_only are mutually exclusive.")
 
     tdir_anchor_model = None
     if bool(getattr(cfg, "use_tdir_anchor_loss", False)) and float(getattr(cfg, "w_tdir_anchor", 0.0)) > 0.0:
@@ -3744,6 +3908,8 @@ def main():
             p.requires_grad_(False)
     if bool(getattr(cfg, "train_coupled_pose_residual_only", False)):
         freeze_summary = _set_train_coupled_pose_residual_only(model, cfg)
+    elif bool(getattr(cfg, "train_tmag_head_only", False)):
+        freeze_summary = _set_train_tmag_head_only(model, cfg)
     else:
         freeze_summary = _set_train_fine_only(model, cfg)
     trainable_params = [p for p in model.parameters() if p.requires_grad]
@@ -3924,6 +4090,15 @@ def main():
                 L_pose_coarse = torch.zeros((), device=dev)
 
             tmag_w_eff = _cfg_tmag_effective_weight(cfg, upd)
+            tmag_sample_weight = _tmag_regime_sample_weight(
+                cfg,
+                aux.get("t_mag", None) if isinstance(aux, dict) else None,
+                t_gt_mag,
+                dt_world,
+                meta,
+                IA.shape[0],
+                dev,
+            )
             if (
                 bool(getattr(cfg, "use_translation_magnitude_head", True))
                 and tmag_w_eff > 0.0
@@ -3936,13 +4111,125 @@ def main():
                     t_gt_mag,
                     loss_type=str(getattr(cfg, "tmag_loss_type", "log_smooth_l1")),
                     eps=float(getattr(cfg, "tmag_min", 1.0e-3)),
-                    sample_weight=None,
+                    sample_weight=tmag_sample_weight,
                     gt_weight_alpha=float(getattr(cfg, "tmag_loss_gt_weight_alpha", 0.0)),
                     gt_weight_min=float(getattr(cfg, "tmag_loss_gt_weight_min", 1.0)),
                     gt_weight_max=float(getattr(cfg, "tmag_loss_gt_weight_max", 4.0)),
                 )
             else:
                 L_t_mag = torch.zeros((), device=dev)
+
+            tmag_speed_w_eff = _cfg_simple_effective_weight(cfg, upd, "use_tmag_speed_loss", "w_tmag_speed")
+            L_tmag_speed = torch.zeros((), device=dev)
+            tmag_speed_n = 0.0
+            if (
+                tmag_speed_w_eff > 0.0
+                and isinstance(aux, dict)
+                and aux.get("t_mag", None) is not None
+                and t_gt_mag is not None
+                and dt_world is not None
+            ):
+                pred_tmag = aux["t_mag"].float().view(-1)
+                gt_tmag = t_gt_mag.float().view(-1)
+                dt_ab = dt_world.float().view(-1)
+                valid_mask = torch.isfinite(pred_tmag) & torch.isfinite(gt_tmag) & torch.isfinite(dt_ab) & (dt_ab >= float(getattr(cfg, "tmag_speed_min_dt", 0.02)))
+                tmag_speed_n = int(valid_mask.sum().item())
+                if tmag_speed_n > 0:
+                    L_tmag_speed = tmag_speed_loss(
+                        pred_tmag[valid_mask],
+                        gt_tmag[valid_mask],
+                        dt_ab[valid_mask],
+                        eps=float(getattr(cfg, "tmag_min", 1.0e-3)),
+                    )
+
+            tmag_ratio_w_eff = _cfg_simple_effective_weight(cfg, upd, "use_tmag_ratio_loss", "w_tmag_ratio")
+            tmag_chain_sum_w_eff = _cfg_simple_effective_weight(cfg, upd, "use_tmag_chain_sum_loss", "w_tmag_chain_sum")
+            L_tmag_ratio = torch.zeros((), device=dev)
+            L_tmag_chain_sum = torch.zeros((), device=dev)
+            tmag_ratio_n = 0.0
+            tmag_chain_sum_n = 0.0
+            if (tmag_ratio_w_eff > 0.0 or tmag_chain_sum_w_eff > 0.0):
+                IC = batch.get("IC", None)
+                t_gt_bc_mag = batch.get("t_gt_bc_mag", None)
+                has_seq_turn_triplet = _meta_batch_field(meta, "has_seq_turn_triplet", IA.shape[0], default=False)
+                meta_k = _meta_batch_field(meta, "k", IA.shape[0], default=None)
+                if (
+                    IC is not None
+                    and t_gt_mag is not None
+                    and t_gt_bc_mag is not None
+                    and isinstance(aux, dict)
+                    and aux.get("t_mag", None) is not None
+                ):
+                    if isinstance(t_gt_bc_mag, torch.Tensor):
+                        t_gt_bc_mag_t = t_gt_bc_mag.to(dev, non_blocking=True).float().view(-1)
+                    else:
+                        t_gt_bc_mag_t = None
+                    if t_gt_bc_mag_t is not None:
+                        valid_triplet = []
+                        ratio_only_k = int(getattr(cfg, "tmag_ratio_only_k", 1))
+                        chain_only_k = int(getattr(cfg, "tmag_chain_sum_only_k", ratio_only_k))
+                        use_only_k = ratio_only_k if tmag_ratio_w_eff > 0.0 else chain_only_k
+                        for has_ok, k_val in zip(has_seq_turn_triplet, meta_k):
+                            ok = bool(has_ok)
+                            try:
+                                ok = ok and (int(k_val) == int(use_only_k))
+                            except Exception:
+                                ok = False
+                            valid_triplet.append(ok)
+                        triplet_mask = torch.tensor(valid_triplet, device=dev, dtype=torch.bool)
+                        if bool(triplet_mask.any()):
+                            idx = torch.nonzero(triplet_mask, as_tuple=False).view(-1)
+                            IB_valid = IB[idx]
+                            IC_valid = IC.to(dev, non_blocking=True)[idx]
+                            dt_bc = t_gt_bc_mag_t[idx]
+                            R_pred_bc, t_pred_bc, aux_bc = model(
+                                IB_valid,
+                                IC_valid,
+                                enable_depth_fusion=depth_fusion_active,
+                                dt_world=dt_bc,
+                            )
+                            _ = R_pred_bc, t_pred_bc
+                            pred_ab = aux["t_mag"].float().view(-1)[idx]
+                            pred_bc = aux_bc.get("t_mag", None) if isinstance(aux_bc, dict) else None
+                            gt_ab = t_gt_mag.float().view(-1)[idx]
+                            gt_bc = t_gt_bc_mag_t[idx]
+                            if isinstance(pred_bc, torch.Tensor):
+                                pred_bc = pred_bc.float().view(-1)
+                                valid_mask = (
+                                    torch.isfinite(pred_ab)
+                                    & torch.isfinite(pred_bc)
+                                    & torch.isfinite(gt_ab)
+                                    & torch.isfinite(gt_bc)
+                                    & (gt_ab > float(getattr(cfg, "tmag_ratio_min_gt", 0.02)))
+                                    & (gt_bc > float(getattr(cfg, "tmag_ratio_min_gt", 0.02)))
+                                )
+                                valid_n = int(valid_mask.sum().item())
+                                if valid_n > 0 and tmag_ratio_w_eff > 0.0:
+                                    tmag_ratio_n = valid_n
+                                    L_tmag_ratio = tmag_pairwise_ratio_loss(
+                                        pred_ab[valid_mask],
+                                        pred_bc[valid_mask],
+                                        gt_ab[valid_mask],
+                                        gt_bc[valid_mask],
+                                        eps=float(getattr(cfg, "tmag_min", 1.0e-3)),
+                                    )
+                                chain_valid_mask = (
+                                    torch.isfinite(pred_ab)
+                                    & torch.isfinite(pred_bc)
+                                    & torch.isfinite(gt_ab)
+                                    & torch.isfinite(gt_bc)
+                                    & ((gt_ab + gt_bc) > float(getattr(cfg, "tmag_chain_sum_min_gt", 0.02)))
+                                )
+                                chain_valid_n = int(chain_valid_mask.sum().item())
+                                if chain_valid_n > 0 and tmag_chain_sum_w_eff > 0.0:
+                                    tmag_chain_sum_n = chain_valid_n
+                                    L_tmag_chain_sum = tmag_chain_sum_consistency_loss(
+                                        pred_ab[chain_valid_mask],
+                                        pred_bc[chain_valid_mask],
+                                        gt_ab[chain_valid_mask],
+                                        gt_bc[chain_valid_mask],
+                                        eps=float(getattr(cfg, "tmag_min", 1.0e-3)),
+                                    )
 
             coupled_enabled = bool(getattr(cfg, "use_coupled_pose_residual_head", False))
             coupled_rot_enabled = bool(getattr(cfg, "coupled_pose_residual_enable_rot", True))
@@ -4649,6 +4936,9 @@ def main():
                 + epi_w * L_epi
                 + float(getattr(cfg, "w_coarse_epi_aux", 0.0)) * epi_ramp * L_epi_coarse
                 + tmag_w_eff * L_t_mag
+                + tmag_speed_w_eff * L_tmag_speed
+                + tmag_ratio_w_eff * L_tmag_ratio
+                + tmag_chain_sum_w_eff * L_tmag_chain_sum
                 + tmag_ms_cls_w * L_tmag_ms_cls
                 + tmag_scale_w * L_tmag_scale
                 + tmag_under_w * L_tmag_under
@@ -4672,7 +4962,7 @@ def main():
         forward_ok = all(
             bool(torch.isfinite(x).all())
             for x in [
-                R_pred, t_pred, L_pose, L_pose_coarse, L_t_mag, L_tmag_ms_cls, L_coupled_rot, L_coupled_tdir, L_coupled_joint, L_coupled_reg, L_coupled_chain, L_tdir_anchor, L_seq_turn, L_seq_turn_chain,
+                R_pred, t_pred, L_pose, L_pose_coarse, L_t_mag, L_tmag_speed, L_tmag_ratio, L_tmag_chain_sum, L_tmag_ms_cls, L_coupled_rot, L_coupled_tdir, L_coupled_joint, L_coupled_reg, L_coupled_chain, L_tdir_anchor, L_seq_turn, L_seq_turn_chain,
                 L_x, L_cyc, L_rel, L_epi, L_epi_coarse, L_photo, L_smooth, L_tmag_scale, L_tmag_under, L_odom_chain_len, L_odom_chain_vec, L,
             ]
         )
@@ -5218,6 +5508,10 @@ def main():
         t_opt = time.perf_counter()
         train_metrics_snapshot = {
             "loss_total": float(L.detach().cpu()),
+            "loss_tmag": float(L_t_mag.detach().cpu()),
+            "loss_tmag_speed": float(L_tmag_speed.detach().cpu()),
+            "loss_tmag_ratio": float(L_tmag_ratio.detach().cpu()),
+            "loss_tmag_chain_sum": float(L_tmag_chain_sum.detach().cpu()),
             "loss_coupled_rot": float(L_coupled_rot.detach().cpu()),
             "loss_coupled_tdir": float(L_coupled_tdir.detach().cpu()),
             "loss_coupled_joint": float(L_coupled_joint.detach().cpu()),
@@ -5255,6 +5549,9 @@ def main():
                 f"L={float(L.detach().cpu()):.3f} | pose={float(L_pose.detach().cpu()):.3f} | "
                 f"pose_c={float(L_pose_coarse.detach().cpu()):.3f} | "
                 f"tmag={float(L_t_mag.detach().cpu()):.4f} | tmag_w={tmag_w_eff:.4g} | "
+                f"tmag_speed={float(L_tmag_speed.detach().cpu()):.4f} | tmag_speed_w={tmag_speed_w_eff:.4g} | tmag_speed_n={int(tmag_speed_n)} | "
+                f"tmag_ratio={float(L_tmag_ratio.detach().cpu()):.4f} | tmag_ratio_w={tmag_ratio_w_eff:.4g} | tmag_ratio_n={int(tmag_ratio_n)} | "
+                f"tmag_chain_sum={float(L_tmag_chain_sum.detach().cpu()):.4f} | tmag_chain_sum_w={tmag_chain_sum_w_eff:.4g} | tmag_chain_sum_n={int(tmag_chain_sum_n)} | "
                 f"tmag_scale={tmag_scale:.6f} | tmag_scale_w={tmag_scale_w:.4g} | "
                 f"tmag_scale_ratio={tmag_scale_ratio:.6f} | tmag_scale_n={int(tmag_scale_n)} | "
                 f"tmag_under={float(L_tmag_under.detach().cpu()):.4f} | tmag_under_w={tmag_under_w:.4g} | "
@@ -5479,6 +5776,14 @@ def main():
             "forbidden_trainable_params": freeze_summary.get("forbidden_trainable_params", []),
             "use_coupled_pose_residual_head": bool(getattr(cfg, "use_coupled_pose_residual_head", False)),
             "train_coupled_pose_residual_only": bool(getattr(cfg, "train_coupled_pose_residual_only", False)),
+            "train_tmag_head_only": bool(getattr(cfg, "train_tmag_head_only", False)),
+            "use_tmag_speed_loss": bool(getattr(cfg, "use_tmag_speed_loss", False)),
+            "w_tmag_speed": float(getattr(cfg, "w_tmag_speed", 0.0)),
+            "use_tmag_ratio_loss": bool(getattr(cfg, "use_tmag_ratio_loss", False)),
+            "w_tmag_ratio": float(getattr(cfg, "w_tmag_ratio", 0.0)),
+            "use_tmag_chain_sum_loss": bool(getattr(cfg, "use_tmag_chain_sum_loss", False)),
+            "w_tmag_chain_sum": float(getattr(cfg, "w_tmag_chain_sum", 0.0)),
+            "use_tmag_regime_reweight": bool(getattr(cfg, "use_tmag_regime_reweight", False)),
             "coupled_pose_residual_enable_rot": bool(getattr(cfg, "coupled_pose_residual_enable_rot", True)),
             "coupled_pose_residual_enable_tdir": bool(getattr(cfg, "coupled_pose_residual_enable_tdir", False)),
             "coupled_pose_residual_force_tdir_zero": bool(getattr(cfg, "coupled_pose_residual_force_tdir_zero", True)),
