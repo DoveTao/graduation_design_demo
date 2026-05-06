@@ -20,5 +20,19 @@
   "replacement_reason": "clean but marginal tmag-regime-aware calibration gain",
   "leakage_audit": "passed",
   "deployable": true,
-  "caveat": "gain is marginal"
+  "caveat": "gain is marginal",
+  "post_lockdown_attempts": {
+    "S8": {
+      "report": "checkpoints/S8_fine_spherical_reliability_router_report.md",
+      "summary": "reports/final_s8_token_reliability_negative_summary.md",
+      "classification": "TOKEN-NO-ADDED-VALUE",
+      "replacement": false
+    },
+    "S9": {
+      "report": "checkpoints/S9_regime_only_reliability_router_report.md",
+      "summary": "reports/final_s9_regime_only_router_summary.md",
+      "classification": "NO-STABLE-REGIME-ROUTER-GAIN",
+      "replacement": false
+    }
+  }
 }

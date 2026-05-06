@@ -10,10 +10,13 @@
 | S5 final clean tmag calibration | 1.327343 | 7.352288 | 0.932379 | final clean candidate | yes | clean but marginal gain over S2b |
 | S3a residual-head line | N/A | N/A | N/A | negative (not selected) | no | no legal train-CV selected replacement |
 | S3b fine-token diagnostic | N/A | N/A | N/A | negative/diagnostic | no | no stable residual signal for replacement |
+| S8 fine/spherical reliability router | N/A | N/A | N/A | diagnostic negative | no | `TOKEN-NO-ADDED-VALUE`; token-only and token+regime did not beat regime-only |
+| S9 regime-only reliability router | N/A | N/A | N/A | diagnostic negative | no | `NO-STABLE-REGIME-ROUTER-GAIN`; no clean gate pass, final test not run |
 | Oracle-only tmag diagnostic | 1.262237 | 7.214477 | 0.898234 | upper-bound diagnostic only | no | not deployable, uses oracle-style gt_tmag path |
 
 ## Reading guide
 - S1d5 is the decisive path-ratio repair stage.
 - S2b provides the main clean performance improvement.
 - S5 is the final deployable candidate, but improvement over S2b is intentionally described as marginal.
+- S8 and S9 are post-lockdown negative diagnostics and must not be presented as deployable replacements.
 - Oracle numbers are for diagnostic ceiling only and must not be reported as a deployable method.
