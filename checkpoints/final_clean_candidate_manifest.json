@@ -1,0 +1,24 @@
+{
+  "final_candidate_name": "S5_clean_tmag_calibration_policy",
+  "policy_path": "checkpoints/S5_clean_tmag_calibration_policy.json",
+  "eval_script": "scripts/eval_s5_clean_policy.sh",
+  "lockdown_report": "checkpoints/S6_final_clean_candidate_lockdown_audit_report.md",
+  "final_metrics": {
+    "drift": 1.327343,
+    "ATE": 7.352288,
+    "path_ratio": 0.932379
+  },
+  "predecessor": {
+    "name": "S2b_clean_fine_rot_policy",
+    "policy_path": "checkpoints/S2b_clean_fine_rot_policy.json",
+    "metrics": {
+      "drift": 1.327402,
+      "ATE": 7.352371,
+      "path_ratio": 0.934984
+    }
+  },
+  "replacement_reason": "clean but marginal tmag-regime-aware calibration gain",
+  "leakage_audit": "passed",
+  "deployable": true,
+  "caveat": "gain is marginal"
+}
