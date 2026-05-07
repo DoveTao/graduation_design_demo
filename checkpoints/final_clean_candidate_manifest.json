@@ -67,6 +67,20 @@
       "classification": "TRAINING-STILL-UNSTABLE",
       "replacement": false,
       "caveat": "pair-only tiny training remains unstable after harness parity fix"
+    },
+    "S16": {
+      "report": "checkpoints/S16_stronger_visual_backbone_feasibility_report.md",
+      "summary": "reports/final_s16_stronger_visual_backbone_feasibility_summary.md",
+      "classification": "PRETRAINED-WEIGHTS-UNAVAILABLE",
+      "replacement": false
+    },
+    "S16b": {
+      "report": "checkpoints/S16b_frozen_pretrained_backbone_probe_report.md",
+      "summary": "reports/final_s16b_frozen_pretrained_backbone_probe_summary.md",
+      "classification": "NO-STABLE-BACKBONE-FEATURE-GAIN",
+      "replacement": false,
+      "encoder": "torchvision_resnet50",
+      "caveat": "frozen ImageNet feature probe, not full backbone integration"
     }
   }
 }

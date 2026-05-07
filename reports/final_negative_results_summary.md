@@ -46,6 +46,16 @@
 - Attribution chain: policy-wrap mismatch found -> train/eval forward parity fixed -> one-update R/tdir preserved -> tiny pair-only training still collapsed.
 - Practical meaning: the trajectory-level training idea is not dismissed conceptually, but the current tiny-update training route is not stable enough to justify S15f or any final result claim.
 
+## S16 stronger-backbone feasibility
+- Result: feasibility blocked (`PRETRAINED-WEIGHTS-UNAVAILABLE`).
+- Evidence: the initial S16 audit found no local torchvision/timm pretrained weights and, at that time, no internet download had been attempted.
+- Practical meaning: S16 did not produce stronger-feature evidence and therefore could not justify any backbone replacement claim.
+
+## S16b frozen pretrained ResNet50 probe
+- Result: diagnostic negative (`NO-STABLE-BACKBONE-FEATURE-GAIN`).
+- Evidence: after user-approved download of torchvision ResNet50 ImageNet weights, the frozen pretrained probe completed but failed to improve the R/tdir coupling proxy. The current-feature baseline remained `rot_R2=-22.281483`, `tdir_R2=-4.465965`, `joint_AUC=0.708327`, while `resnet50_pretrained_features_only` degraded to `rot_R2=-258.785889`, `tdir_R2=-5.509770`, `joint_AUC=0.383036`.
+- Practical meaning: generic frozen ImageNet classification features did not transfer as stable pose-coupling signal in the current probe, so S16c full integration is not justified and S5 remains the final clean candidate.
+
 ## Fine_tdir sweep
 - Result: no clean gain.
 - Evidence: S2d `NO-TDIR-GAIN` conclusion; increasing fine_tdir harmed or failed to improve drift/ATE under clean constraints.
@@ -61,4 +71,4 @@
 - Practical meaning: use only as an upper-bound diagnostic reference in thesis discussion.
 
 ## Final negative-results takeaway
-Post-S5 optimization attempts did not produce a new deployable replacement. S8 showed that token reliability probing does not outperform regime-only features, S9 showed that regime-only routing does not stably pass the clean CV gate, S10 showed that chain-level smoothing does not recover a safe clean gain, S11 showed only weak proxy improvement without path_ratio-supported clean evidence, S12 showed that regime-balanced sampling still lacked clean-eligible path_ratio support, S14 showed that even with redundant graph constraints a lightweight local-window pose graph could worsen ATE/drift/path_ratio, and S15 showed that even after the harness parity fix, tiny pair-only trajectory-training updates remained unstable. These negative findings justify why the final candidate remains S5 clean calibration and why the thesis should emphasize reliability, reproducibility, marginal gain, and the need for higher-level trajectory methods rather than more local post-lockdown tweaks.
+Post-S5 optimization attempts did not produce a new deployable replacement. S8 showed that token reliability probing does not outperform regime-only features, S9 showed that regime-only routing does not stably pass the clean CV gate, S10 showed that chain-level smoothing does not recover a safe clean gain, S11 showed only weak proxy improvement without path_ratio-supported clean evidence, S12 showed that regime-balanced sampling still lacked clean-eligible path_ratio support, S14 showed that even with redundant graph constraints a lightweight local-window pose graph could worsen ATE/drift/path_ratio, S15 showed that even after the harness parity fix, tiny pair-only trajectory-training updates remained unstable, and S16/S16b showed that a frozen generic pretrained ImageNet ResNet50 backbone does not provide stable added R/tdir coupling signal. These negative findings justify why the final candidate remains S5 clean calibration and why the thesis should emphasize reliability, reproducibility, marginal gain, and the need for higher-level trajectory methods rather than more local post-lockdown tweaks or direct frozen classification-feature replacement.

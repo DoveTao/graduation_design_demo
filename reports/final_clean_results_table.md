@@ -17,11 +17,13 @@
 | S12 regime-balanced sampling | N/A | N/A | N/A | diagnostic negative | no | `NO-STABLE-REGIME-SAMPLING-GAIN`; improved some high-risk proxies but no clean-eligible path_ratio evidence |
 | S14 local-window pose graph diagnostic | N/A | N/A | N/A | diagnostic negative | no | `NO-STABLE-POSE-GRAPH-GAIN`; final test run, selected `D_joint_w7_s1` worsened ATE/drift/path_ratio despite redundant graph constraints |
 | S15 trajectory-level training line | N/A | N/A | N/A | diagnostic negative | no | `TRAINING-STILL-UNSTABLE`; replaces S5=`no`; S15f recommended=`no`; final test=`no`; pair-only tiny training still unstable after harness parity fix |
+| S16 stronger-backbone feasibility | N/A | N/A | N/A | diagnostic blocked | no | `PRETRAINED-WEIGHTS-UNAVAILABLE`; replaces S5=`no`; S16c recommended=`no`; initial run had no local pretrained weights |
+| S16b frozen pretrained ResNet50 probe | N/A | N/A | N/A | diagnostic negative | no | `NO-STABLE-BACKBONE-FEATURE-GAIN`; replaces S5=`no`; S16c recommended=`no`; frozen ImageNet probe worsened joint_AUC from `0.708327` to `0.383036` |
 | Oracle-only tmag diagnostic | 1.262237 | 7.214477 | 0.898234 | upper-bound diagnostic only | no | not deployable, uses oracle-style gt_tmag path |
 
 ## Reading guide
 - S1d5 is the decisive path-ratio repair stage.
 - S2b provides the main clean performance improvement.
 - S5 is the final deployable candidate, but improvement over S2b is intentionally described as marginal.
-- S8/S9/S10/S11/S12/S14/S15 are post-lockdown or post-S5 negative diagnostics and must not be presented as deployable replacements.
+- S8/S9/S10/S11/S12/S14/S15/S16/S16b are post-lockdown or post-S5 negative diagnostics and must not be presented as deployable replacements.
 - Oracle numbers are for diagnostic ceiling only and must not be reported as a deployable method.
