@@ -2291,6 +2291,16 @@ def _camera_center_from_T_c0_np(R_c0: np.ndarray, t_c0: np.ndarray) -> np.ndarra
     return -(R_c0.astype(np.float64).T @ t_c0.astype(np.float64))
 
 
+def _compose_rel_pose_torch(R_rel: torch.Tensor, t_rel: torch.Tensor, R_cur0: torch.Tensor, t_cur0: torch.Tensor):
+    R_next0 = torch.bmm(R_rel.float(), R_cur0.float())
+    t_next0 = torch.bmm(R_rel.float(), t_cur0.float().unsqueeze(-1)).squeeze(-1) + t_rel.float()
+    return R_next0, t_next0
+
+
+def _camera_center_from_T_c0_torch(R_c0: torch.Tensor, t_c0: torch.Tensor) -> torch.Tensor:
+    return -torch.bmm(R_c0.transpose(1, 2).float(), t_c0.float().unsqueeze(-1)).squeeze(-1)
+
+
 def _causal_moving_average_np(vals: List[float], window: int) -> List[float]:
     window = max(int(window), 1)
     out = []
@@ -3884,6 +3894,25 @@ def main():
             "w_tmag_ratio": float(getattr(cfg, "w_tmag_ratio", 0.0)),
             "use_tmag_chain_sum_loss": bool(getattr(cfg, "use_tmag_chain_sum_loss", False)),
             "w_tmag_chain_sum": float(getattr(cfg, "w_tmag_chain_sum", 0.0)),
+            "use_traj_ate_loss": bool(getattr(cfg, "use_traj_ate_loss", False)),
+            "w_traj_ate": float(getattr(cfg, "w_traj_ate", 0.0)),
+            "use_traj_drift_loss": bool(getattr(cfg, "use_traj_drift_loss", False)),
+            "w_traj_drift": float(getattr(cfg, "w_traj_drift", 0.0)),
+            "use_traj_path_loss": bool(getattr(cfg, "use_traj_path_loss", False)),
+            "w_traj_path": float(getattr(cfg, "w_traj_path", 0.0)),
+            "use_traj_rot_loss": bool(getattr(cfg, "use_traj_rot_loss", False)),
+            "w_traj_rot": float(getattr(cfg, "w_traj_rot", 0.0)),
+            "use_traj_tdir_loss": bool(getattr(cfg, "use_traj_tdir_loss", False)),
+            "w_traj_tdir": float(getattr(cfg, "w_traj_tdir", 0.0)),
+            "use_traj_tmag_step_loss": bool(getattr(cfg, "use_traj_tmag_step_loss", False)),
+            "w_traj_tmag_step": float(getattr(cfg, "w_traj_tmag_step", 0.0)),
+            "use_traj_speed_loss": bool(getattr(cfg, "use_traj_speed_loss", False)),
+            "w_traj_speed": float(getattr(cfg, "w_traj_speed", 0.0)),
+            "traj_window_only_k": int(getattr(cfg, "traj_window_only_k", 1)),
+            "traj_window_min_gt": float(getattr(cfg, "traj_window_min_gt", 0.02)),
+            "traj_scale_normalize": bool(getattr(cfg, "traj_scale_normalize", True)),
+            "traj_start_updates": int(getattr(cfg, "traj_start_updates", 0)),
+            "traj_ramp_updates": int(getattr(cfg, "traj_ramp_updates", 0)),
             "use_tmag_regime_reweight": bool(getattr(cfg, "use_tmag_regime_reweight", False)),
             "coupled_pose_residual_enable_rot": bool(getattr(cfg, "coupled_pose_residual_enable_rot", True)),
             "coupled_pose_residual_enable_tdir": bool(getattr(cfg, "coupled_pose_residual_enable_tdir", False)),
@@ -4790,6 +4819,155 @@ def main():
                 odom_chain_vec_angle_mean_deg = float("nan")
                 odom_chain_vec_angle_median_deg = float("nan")
 
+            traj_ate_w_eff = _cfg_simple_effective_weight(cfg, upd, "use_traj_ate_loss", "w_traj_ate", "traj_start_updates", "traj_ramp_updates")
+            traj_drift_w_eff = _cfg_simple_effective_weight(cfg, upd, "use_traj_drift_loss", "w_traj_drift", "traj_start_updates", "traj_ramp_updates")
+            traj_path_w_eff = _cfg_simple_effective_weight(cfg, upd, "use_traj_path_loss", "w_traj_path", "traj_start_updates", "traj_ramp_updates")
+            traj_rot_w_eff = _cfg_simple_effective_weight(cfg, upd, "use_traj_rot_loss", "w_traj_rot", "traj_start_updates", "traj_ramp_updates")
+            traj_tdir_w_eff = _cfg_simple_effective_weight(cfg, upd, "use_traj_tdir_loss", "w_traj_tdir", "traj_start_updates", "traj_ramp_updates")
+            traj_tmag_step_w_eff = _cfg_simple_effective_weight(cfg, upd, "use_traj_tmag_step_loss", "w_traj_tmag_step", "traj_start_updates", "traj_ramp_updates")
+            traj_speed_w_eff = _cfg_simple_effective_weight(cfg, upd, "use_traj_speed_loss", "w_traj_speed", "traj_start_updates", "traj_ramp_updates")
+            L_traj_ate = torch.zeros((), device=dev)
+            L_traj_drift = torch.zeros((), device=dev)
+            L_traj_path = torch.zeros((), device=dev)
+            L_traj_rot = torch.zeros((), device=dev)
+            L_traj_tdir = torch.zeros((), device=dev)
+            L_traj_tmag_step = torch.zeros((), device=dev)
+            L_traj_speed = torch.zeros((), device=dev)
+            traj_triplet_n = 0.0
+            traj_path_ratio_mean = float("nan")
+            traj_endpoint_err_mean = float("nan")
+            traj_rot_mean_deg = float("nan")
+            traj_tdir_mean_deg = float("nan")
+            traj_tmag_step_log_mean = float("nan")
+            use_traj_losses = any(
+                w > 0.0
+                for w in (
+                    traj_ate_w_eff,
+                    traj_drift_w_eff,
+                    traj_path_w_eff,
+                    traj_rot_w_eff,
+                    traj_tdir_w_eff,
+                    traj_tmag_step_w_eff,
+                    traj_speed_w_eff,
+                )
+            )
+            if use_traj_losses:
+                IC = batch.get("IC", None)
+                R_gt_bc_tensor = batch.get("R_gt_bc", None)
+                t_gt_bc_vec_tensor = batch.get("t_gt_bc_vec", None)
+                t_gt_bc_mag = batch.get("t_gt_bc_mag", None)
+                has_seq_turn_triplet = _meta_batch_field(meta, "has_seq_turn_triplet", IA.shape[0], default=False)
+                meta_k = _meta_batch_field(meta, "k", IA.shape[0], default=None)
+                if (
+                    IC is not None
+                    and isinstance(aux, dict)
+                    and aux.get("t_vec_out", None) is not None
+                    and R_gt_bc_tensor is not None
+                    and t_gt_bc_vec_tensor is not None
+                    and t_gt_bc_mag is not None
+                    and t_gt is not None
+                ):
+                    traj_only_k = int(getattr(cfg, "traj_window_only_k", 1))
+                    traj_min_gt = float(getattr(cfg, "traj_window_min_gt", 0.02))
+                    has_triplet_mask = []
+                    for has_ok, k_val in zip(has_seq_turn_triplet, meta_k):
+                        ok = bool(has_ok)
+                        try:
+                            ok = ok and (int(k_val) == int(traj_only_k))
+                        except Exception:
+                            ok = False
+                        has_triplet_mask.append(ok)
+                    traj_mask = torch.tensor(has_triplet_mask, device=dev, dtype=torch.bool)
+                    if bool(traj_mask.any()):
+                        idx_traj = torch.nonzero(traj_mask, as_tuple=False).view(-1)
+                        IB_valid = IB[idx_traj]
+                        IC_valid = IC.to(dev, non_blocking=True)[idx_traj]
+                        dt_bc_tensor = t_gt_bc_mag.to(dev, non_blocking=True).float().view(-1)[idx_traj]
+                        R_pred_bc, _t_pred_bc, aux_bc = model(
+                            IB_valid,
+                            IC_valid,
+                            enable_depth_fusion=depth_fusion_active,
+                            dt_world=dt_bc_tensor,
+                        )
+                        pred_t_AB = aux["t_vec_out"].float().view(-1, 3)[idx_traj]
+                        pred_t_CB = aux_bc.get("t_vec_out", None) if isinstance(aux_bc, dict) else None
+                        if isinstance(pred_t_CB, torch.Tensor):
+                            pred_t_CB = pred_t_CB.float().view(-1, 3)
+                            R_pred_AB = R_pred[idx_traj].float()
+                            R_pred_CB = R_pred_bc.float()
+                            R_gt_AB = R_gt[idx_traj].float()
+                            R_gt_CB = R_gt_bc_tensor.to(dev, non_blocking=True).float().view(-1, 3, 3)[idx_traj]
+                            t_gt_AB = t_gt[idx_traj].float()
+                            t_gt_CB = t_gt_bc_vec_tensor.to(dev, non_blocking=True).float().view(-1, 3)[idx_traj]
+                            dt_ab = dt_world[idx_traj].float() if dt_world is not None else t_gt_mag.view(-1)[idx_traj].float()
+                            Irot = torch.eye(3, device=dev, dtype=torch.float32).unsqueeze(0).expand(idx_traj.numel(), 3, 3)
+                            Izero = torch.zeros((idx_traj.numel(), 3), device=dev, dtype=torch.float32)
+                            R_pred_BA, t_pred_BA = _compose_rel_pose_torch(R_pred_AB, pred_t_AB, Irot, Izero)
+                            R_pred_CA, t_pred_CA = _compose_rel_pose_torch(R_pred_CB, pred_t_CB, R_pred_BA, t_pred_BA)
+                            R_gt_BA, t_gt_BA = _compose_rel_pose_torch(R_gt_AB, t_gt_AB, Irot, Izero)
+                            R_gt_CA, t_gt_CA = _compose_rel_pose_torch(R_gt_CB, t_gt_CB, R_gt_BA, t_gt_BA)
+                            p1_pred = _camera_center_from_T_c0_torch(R_pred_BA, t_pred_BA)
+                            p2_pred = _camera_center_from_T_c0_torch(R_pred_CA, t_pred_CA)
+                            p1_gt = _camera_center_from_T_c0_torch(R_gt_BA, t_gt_BA)
+                            p2_gt = _camera_center_from_T_c0_torch(R_gt_CA, t_gt_CA)
+                            step1_pred = p1_pred
+                            step2_pred = p2_pred - p1_pred
+                            step1_gt = p1_gt
+                            step2_gt = p2_gt - p1_gt
+                            gt_path = step1_gt.norm(dim=1) + step2_gt.norm(dim=1)
+                            pred_path = step1_pred.norm(dim=1) + step2_pred.norm(dim=1)
+                            valid_mask = (
+                                torch.isfinite(pred_path)
+                                & torch.isfinite(gt_path)
+                                & torch.isfinite(p2_pred).all(dim=1)
+                                & torch.isfinite(p2_gt).all(dim=1)
+                                & (gt_path > float(traj_min_gt))
+                            )
+                            traj_triplet_n = int(valid_mask.sum().item())
+                            if traj_triplet_n > 0:
+                                p1_err = (p1_pred[valid_mask] - p1_gt[valid_mask]).norm(dim=1)
+                                p2_err = (p2_pred[valid_mask] - p2_gt[valid_mask]).norm(dim=1)
+                                if bool(getattr(cfg, "traj_scale_normalize", True)):
+                                    denom = gt_path[valid_mask].clamp_min(1.0e-6)
+                                    ate_terms = torch.cat([p1_err / denom, p2_err / denom], dim=0)
+                                    drift_terms = p2_err / denom
+                                else:
+                                    ate_terms = torch.cat([p1_err, p2_err], dim=0)
+                                    drift_terms = p2_err
+                                path_terms = torch.log(pred_path[valid_mask].clamp_min(1.0e-6)) - torch.log(gt_path[valid_mask].clamp_min(1.0e-6))
+                                R_err_B = matrix_geodesic_distance(R_pred_BA[valid_mask], R_gt_BA[valid_mask])
+                                R_err_C = matrix_geodesic_distance(R_pred_CA[valid_mask], R_gt_CA[valid_mask])
+                                rot_terms = torch.cat([R_err_B, R_err_C], dim=0)
+                                s1p = F.normalize(step1_pred[valid_mask], dim=1, eps=1.0e-6)
+                                s2p = F.normalize(step2_pred[valid_mask], dim=1, eps=1.0e-6)
+                                s1g = F.normalize(step1_gt[valid_mask], dim=1, eps=1.0e-6)
+                                s2g = F.normalize(step2_gt[valid_mask], dim=1, eps=1.0e-6)
+                                cos_terms = torch.cat([(s1p * s1g).sum(dim=1), (s2p * s2g).sum(dim=1)], dim=0).clamp(-1.0, 1.0)
+                                tdir_terms = 1.0 - cos_terms
+                                mag1_pred = step1_pred[valid_mask].norm(dim=1).clamp_min(1.0e-6)
+                                mag2_pred = step2_pred[valid_mask].norm(dim=1).clamp_min(1.0e-6)
+                                mag1_gt = step1_gt[valid_mask].norm(dim=1).clamp_min(1.0e-6)
+                                mag2_gt = step2_gt[valid_mask].norm(dim=1).clamp_min(1.0e-6)
+                                tmag_terms = torch.cat([torch.log(mag1_pred) - torch.log(mag1_gt), torch.log(mag2_pred) - torch.log(mag2_gt)], dim=0)
+                                dt_bc = dt_bc_tensor[valid_mask].clamp_min(1.0e-6)
+                                dt_ab_valid = dt_ab[valid_mask].clamp_min(1.0e-6)
+                                speed_terms = torch.cat([
+                                    torch.log((mag1_pred / dt_ab_valid).clamp_min(1.0e-6)) - torch.log((mag1_gt / dt_ab_valid).clamp_min(1.0e-6)),
+                                    torch.log((mag2_pred / dt_bc).clamp_min(1.0e-6)) - torch.log((mag2_gt / dt_bc).clamp_min(1.0e-6)),
+                                ], dim=0)
+                                L_traj_ate = F.smooth_l1_loss(ate_terms, torch.zeros_like(ate_terms))
+                                L_traj_drift = F.smooth_l1_loss(drift_terms, torch.zeros_like(drift_terms))
+                                L_traj_path = F.smooth_l1_loss(path_terms, torch.zeros_like(path_terms))
+                                L_traj_rot = F.smooth_l1_loss(rot_terms, torch.zeros_like(rot_terms))
+                                L_traj_tdir = F.smooth_l1_loss(tdir_terms, torch.zeros_like(tdir_terms))
+                                L_traj_tmag_step = F.smooth_l1_loss(tmag_terms, torch.zeros_like(tmag_terms))
+                                L_traj_speed = F.smooth_l1_loss(speed_terms, torch.zeros_like(speed_terms))
+                                traj_path_ratio_mean = float((pred_path[valid_mask] / gt_path[valid_mask].clamp_min(1.0e-6)).mean().detach().cpu())
+                                traj_endpoint_err_mean = float(p2_err.mean().detach().cpu())
+                                traj_rot_mean_deg = float((torch.rad2deg(rot_terms)).mean().detach().cpu())
+                                traj_tdir_mean_deg = float(torch.rad2deg(torch.acos(cos_terms.clamp(-1.0 + 1.0e-6, 1.0 - 1.0e-6))).mean().detach().cpu())
+                                traj_tmag_step_log_mean = float(tmag_terms.abs().mean().detach().cpu())
+
             use_fine_epi = bool(cfg.use_fine_stage) and (aux.get("Wf_ab", None) is not None)
             if use_fine_epi:
                 W_ab = aux.get("Wf_ab", None)
@@ -4969,6 +5147,13 @@ def main():
                 + seq_turn_chain_w_eff * L_seq_turn_chain
                 + odom_chain_len_w_eff * L_odom_chain_len
                 + odom_chain_vec_w_eff * L_odom_chain_vec
+                + traj_ate_w_eff * L_traj_ate
+                + traj_drift_w_eff * L_traj_drift
+                + traj_path_w_eff * L_traj_path
+                + traj_rot_w_eff * L_traj_rot
+                + traj_tdir_w_eff * L_traj_tdir
+                + traj_tmag_step_w_eff * L_traj_tmag_step
+                + traj_speed_w_eff * L_traj_speed
                 + photo_w * L_photo
                 + smooth_w * L_smooth
             )
@@ -4980,7 +5165,7 @@ def main():
             bool(torch.isfinite(x).all())
             for x in [
                 R_pred, t_pred, L_pose, L_pose_coarse, L_t_mag, L_tmag_speed, L_tmag_ratio, L_tmag_chain_sum, L_tmag_ms_cls, L_coupled_rot, L_coupled_tdir, L_coupled_joint, L_coupled_reg, L_coupled_chain, L_tdir_anchor, L_seq_turn, L_seq_turn_chain,
-                L_x, L_cyc, L_rel, L_epi, L_epi_coarse, L_photo, L_smooth, L_tmag_scale, L_tmag_under, L_odom_chain_len, L_odom_chain_vec, L,
+                L_x, L_cyc, L_rel, L_epi, L_epi_coarse, L_photo, L_smooth, L_tmag_scale, L_tmag_under, L_odom_chain_len, L_odom_chain_vec, L_traj_ate, L_traj_drift, L_traj_path, L_traj_rot, L_traj_tdir, L_traj_tmag_step, L_traj_speed, L,
             ]
         )
         if not forward_ok:
@@ -5529,6 +5714,16 @@ def main():
             "loss_tmag_speed": float(L_tmag_speed.detach().cpu()),
             "loss_tmag_ratio": float(L_tmag_ratio.detach().cpu()),
             "loss_tmag_chain_sum": float(L_tmag_chain_sum.detach().cpu()),
+            "loss_traj_ate": float(L_traj_ate.detach().cpu()),
+            "loss_traj_drift": float(L_traj_drift.detach().cpu()),
+            "loss_traj_path": float(L_traj_path.detach().cpu()),
+            "loss_traj_rot": float(L_traj_rot.detach().cpu()),
+            "loss_traj_tdir": float(L_traj_tdir.detach().cpu()),
+            "loss_traj_tmag_step": float(L_traj_tmag_step.detach().cpu()),
+            "loss_traj_speed": float(L_traj_speed.detach().cpu()),
+            "traj_triplet_n": float(traj_triplet_n),
+            "traj_path_ratio_mean": float(traj_path_ratio_mean),
+            "traj_endpoint_err_mean": float(traj_endpoint_err_mean),
             "loss_coupled_rot": float(L_coupled_rot.detach().cpu()),
             "loss_coupled_tdir": float(L_coupled_tdir.detach().cpu()),
             "loss_coupled_joint": float(L_coupled_joint.detach().cpu()),
@@ -5594,6 +5789,16 @@ def main():
                 f"odom_chain_vec={float(L_odom_chain_vec.detach().cpu()):.4f} | odom_chain_vec_w={odom_chain_vec_w_eff:.4g} | odom_chain_vec_n={int(odom_chain_vec_n)} | "
                 f"odom_chain_vec_cos_mean={odom_chain_vec_cos_mean:.6f} | odom_chain_vec_cos_median={odom_chain_vec_cos_median:.6f} | "
                 f"odom_chain_vec_angle_mean={odom_chain_vec_angle_mean_deg:.2f}° | odom_chain_vec_angle_median={odom_chain_vec_angle_median_deg:.2f}° | "
+                f"traj_ate={float(L_traj_ate.detach().cpu()):.4f} | traj_ate_w={traj_ate_w_eff:.4g} | "
+                f"traj_drift={float(L_traj_drift.detach().cpu()):.4f} | traj_drift_w={traj_drift_w_eff:.4g} | "
+                f"traj_path={float(L_traj_path.detach().cpu()):.4f} | traj_path_w={traj_path_w_eff:.4g} | "
+                f"traj_rot={float(L_traj_rot.detach().cpu()):.4f} | traj_rot_w={traj_rot_w_eff:.4g} | "
+                f"traj_tdir={float(L_traj_tdir.detach().cpu()):.4f} | traj_tdir_w={traj_tdir_w_eff:.4g} | "
+                f"traj_tmag_step={float(L_traj_tmag_step.detach().cpu()):.4f} | traj_tmag_step_w={traj_tmag_step_w_eff:.4g} | "
+                f"traj_speed={float(L_traj_speed.detach().cpu()):.4f} | traj_speed_w={traj_speed_w_eff:.4g} | "
+                f"traj_triplet_n={int(traj_triplet_n)} | traj_path_ratio_mean={traj_path_ratio_mean:.6f} | "
+                f"traj_endpoint_err_mean={traj_endpoint_err_mean:.6f} | traj_rot_mean={traj_rot_mean_deg:.2f}° | "
+                f"traj_tdir_mean={traj_tdir_mean_deg:.2f}° | traj_tmag_step_log_mean={traj_tmag_step_log_mean:.6f} | "
                 f"x={float(L_x.detach().cpu()):.4f} | cyc={float(L_cyc.detach().cpu()):.4f} | "
                 f"rel={float(L_rel.detach().cpu()):.4f} | epi={float(L_epi.detach().cpu()):.4f} | epi_c={float(L_epi_coarse.detach().cpu()):.4f} | "
                 f"photo={float(L_photo.detach().cpu()):.4f} | smooth={float(L_smooth.detach().cpu()):.4f} | depth_ramp={depth_ramp:.2f} | "

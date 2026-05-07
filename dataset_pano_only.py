@@ -484,6 +484,7 @@ class RflyPanoPanoramaPairsMixedK(Dataset):
                 "tsA": sd["ts"][i], "tsB": sd["ts"][j],
                 "i": int(i), "j": int(j),
                 "k": int(k), "dt_world": float(dt_world),
+                "dt_world_bc": float(t_BC_mag),
                 "has_seq_turn_triplet": bool(has_seq_turn_triplet),
                 "seq_turn_only_k": int(self.seq_turn_only_k),
             },
@@ -757,6 +758,7 @@ class RflyPanoPanoramaPairsTrainFixedList(Dataset):
             "j": int(j),
             "k": int(k),
             "dt_world": float(meta.get("dt_world", t_mag)),
+            "dt_world_bc": float(t_BC_mag),
             "has_seq_turn_triplet": bool(has_seq_turn_triplet),
             "seq_turn_only_k": int(self.seq_turn_only_k),
         }
