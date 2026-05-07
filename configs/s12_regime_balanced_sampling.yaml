@@ -5,7 +5,8 @@ locked_s5_metrics:
   ATE: 7.352288
   path_ratio: 0.932379
 launch_defaults:
-  mode: audit
+  mode: cv
+  max_steps: 100
   train_cv_groups:
     - scene01/seq01
     - scene01/seq02
@@ -41,3 +42,8 @@ candidate_samplers:
   - name: F_mixed_balanced_sampling
     family: mixed_balanced_sampling
     notes: capped combination of tmag and dt-k balancing
+lightweight_cv_subset:
+  - A_baseline_uniform_sampling
+  - D_dt_k_balanced_sampling
+  - E_hard_regime_oversampling
+  - F_mixed_balanced_sampling
