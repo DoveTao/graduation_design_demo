@@ -45,7 +45,11 @@ from torch.optim.lr_scheduler import LambdaLR
 from torch.utils.data import DataLoader
 
 from config import Config
-from dataset_pano_only import RflyPanoPanoramaPairsEvalFixedKList, RflyPanoPanoramaPairsMixedK
+from dataset_pano_only import (
+    RflyPanoPanoramaPairsEvalFixedKList,
+    RflyPanoPanoramaPairsMixedK,
+    RflyPanoPanoramaPairsTrainFixedList,
+)
 from losses import (
     coupled_pose_joint_consistency_loss,
     coupled_pose_residual_regularization,
@@ -3449,32 +3453,45 @@ def main():
             int(getattr(cfg, "odom_chain_vec_only_k", triplet_request_k)),
         )
 
-    train_ds = RflyPanoPanoramaPairsMixedK(
-        data_root=cfg.data_root,
-        split="train",
-        split_by=cfg.split_by,
-        train_ratio=cfg.train_ratio,
-        split_seed=cfg.split_seed,
-        seed=cfg.data_seed,
-        H=cfg.H,
-        W=cfg.W,
-        min_dt=cfg.min_dt,
-        k_choices=cfg.k_choices,
-        k_probs=cfg.k_probs,
-        strict_dt=True,
-        return_seq_turn_triplet=bool(
-            getattr(cfg, "use_seq_turn_loss", False)
-            or getattr(cfg, "use_seq_turn_chain_loss", False)
-            or getattr(cfg, "use_odom_chain_len_loss", False)
-            or getattr(cfg, "use_odom_chain_vec_loss", False)
-            or getattr(cfg, "use_tmag_ratio_loss", False)
-            or getattr(cfg, "use_tmag_chain_sum_loss", False),
-        ),
-        seq_turn_only_k=triplet_request_k,
-        color_aug=bool(getattr(cfg, "train_color_aug", False)),
-        color_aug_strength=float(getattr(cfg, "train_color_aug_strength", 1.0)),
-    )
-    train_ds.max_dt = cfg.max_dt
+    train_manifest_json = str(getattr(cfg, "train_fixed_pairs_manifest_json", "")).strip()
+    if train_manifest_json:
+        train_ds = RflyPanoPanoramaPairsTrainFixedList(
+            data_root=cfg.data_root,
+            manifest_json=train_manifest_json,
+            hw=(int(cfg.H), int(cfg.W)),
+            color_aug=bool(getattr(cfg, "train_color_aug", False)),
+            color_aug_strength=float(getattr(cfg, "train_color_aug_strength", 1.0)),
+            return_seq_turn_triplet=bool(getattr(cfg, "train_fixed_pairs_return_triplet", False)),
+            seq_turn_only_k=int(getattr(cfg, "train_fixed_pairs_seq_turn_only_k", triplet_request_k)),
+            seed=int(cfg.data_seed),
+        )
+    else:
+        train_ds = RflyPanoPanoramaPairsMixedK(
+            data_root=cfg.data_root,
+            split="train",
+            split_by=cfg.split_by,
+            train_ratio=cfg.train_ratio,
+            split_seed=cfg.split_seed,
+            seed=cfg.data_seed,
+            H=cfg.H,
+            W=cfg.W,
+            min_dt=cfg.min_dt,
+            k_choices=cfg.k_choices,
+            k_probs=cfg.k_probs,
+            strict_dt=True,
+            return_seq_turn_triplet=bool(
+                getattr(cfg, "use_seq_turn_loss", False)
+                or getattr(cfg, "use_seq_turn_chain_loss", False)
+                or getattr(cfg, "use_odom_chain_len_loss", False)
+                or getattr(cfg, "use_odom_chain_vec_loss", False)
+                or getattr(cfg, "use_tmag_ratio_loss", False)
+                or getattr(cfg, "use_tmag_chain_sum_loss", False),
+            ),
+            seq_turn_only_k=triplet_request_k,
+            color_aug=bool(getattr(cfg, "train_color_aug", False)),
+            color_aug_strength=float(getattr(cfg, "train_color_aug_strength", 1.0)),
+        )
+        train_ds.max_dt = cfg.max_dt
 
     if bool(cfg.eval_use_fixed_pairs):
         test_ds = RflyPanoPanoramaPairsEvalFixedKList(

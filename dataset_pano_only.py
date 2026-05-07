@@ -20,6 +20,7 @@ Notes:
     buckets for odometry-oriented relative transforms.
 """
 
+import json
 import os
 import re
 import glob
@@ -596,4 +597,193 @@ class RflyPanoPanoramaPairsEvalFixedKList(Dataset):
                 "scene": meta["scene"], "seq": meta["seq"], "tsA": meta["tsA"], "tsB": meta["tsB"],
                 "k": meta["k"], "dt_world": meta["dt_world"], "eval_fixed": True,
             },
+        }
+
+
+class RflyPanoPanoramaPairsTrainFixedList(Dataset):
+    """Training dataset driven by an explicit pair manifest.
+
+    This is intended for train-only curriculum / balancing experiments where
+    pair selection must be controlled externally rather than sampled online.
+    """
+
+    def __init__(
+        self,
+        data_root: str,
+        manifest_json: str,
+        hw: Tuple[int, int] = (1024, 2048),
+        *,
+        color_aug: bool = False,
+        color_aug_strength: float = 1.0,
+        return_seq_turn_triplet: bool = False,
+        seq_turn_only_k: int = 1,
+        seed: int = 1234,
+    ):
+        self.data_root = data_root
+        self.hw = hw
+        self.color_aug = bool(color_aug)
+        self.color_aug_strength = float(color_aug_strength)
+        self.return_seq_turn_triplet = bool(return_seq_turn_triplet)
+        self.seq_turn_only_k = int(seq_turn_only_k)
+        self.seed = int(seed)
+        path = os.path.expanduser(str(manifest_json))
+        payload = json.loads(open(path, "r", encoding="utf-8").read())
+        if isinstance(payload, dict):
+            items = payload.get("pairs", [])
+            self.split_summary = dict(payload.get("split_summary", {}))
+        elif isinstance(payload, list):
+            items = payload
+            self.split_summary = {}
+        else:
+            raise TypeError(f"Unsupported fixed-pair manifest payload: {type(payload)}")
+        self.pairs_meta: List[Dict[str, Any]] = []
+        self.sequence_keys = sorted({(str(x["scene"]), str(x["seq"])) for x in items})
+        seq_frames = _scan_seq_frames(data_root=data_root, scenes=None, seqs=None)
+        self.seqs_data: List[Dict[str, Any]] = []
+        seq_to_idx: Dict[Tuple[str, str], int] = {}
+        for scene, seq in self.sequence_keys:
+            frames = seq_frames.get((scene, seq), None)
+            if not frames:
+                raise FileNotFoundError(f"Missing frames for fixed-pair sequence: {(scene, seq)}")
+            n = len(frames)
+            R_w = np.zeros((n, 3, 3), dtype=np.float32)
+            t_w = np.zeros((n, 3), dtype=np.float32)
+            pano_list: List[str] = []
+            ts_list: List[str] = []
+            for i, fr in enumerate(frames):
+                R_i, t_i = _parse_label_13(fr.label_path)
+                R_w[i] = R_i
+                t_w[i] = t_i
+                pano_list.append(fr.pano_path)
+                ts_list.append(fr.ts_str)
+            seq_to_idx[(scene, seq)] = len(self.seqs_data)
+            self.seqs_data.append({
+                "scene": scene,
+                "seq": seq,
+                "n": n,
+                "R_w": R_w,
+                "t_w": t_w,
+                "pano": pano_list,
+                "ts": ts_list,
+            })
+        for item in items:
+            scene = str(item["scene"])
+            seq = str(item["seq"])
+            seq_idx = seq_to_idx[(scene, seq)]
+            meta = dict(item)
+            meta["seq_idx"] = int(seq_idx)
+            self.pairs_meta.append(meta)
+        if not self.pairs_meta:
+            raise RuntimeError("Empty fixed-pair training manifest.")
+        self.split_summary.setdefault("num_pairs", len(self.pairs_meta))
+        self.split_summary.setdefault("num_sequences_after_filter", len(self.sequence_keys))
+        self._rng = np.random.default_rng(self.seed)
+
+    def _get_rng(self):
+        info = get_worker_info()
+        if info is None:
+            return self._rng
+        if not hasattr(self, "_worker_rng"):
+            wseed = (self.seed + 1000003 * info.id) % (2**32)
+            self._worker_rng = np.random.default_rng(wseed)
+        return self._worker_rng
+
+    def _apply_color_aug(self, img: torch.Tensor, rng: np.random.Generator) -> torch.Tensor:
+        if (not self.color_aug) or self.color_aug_strength <= 0.0:
+            return img
+        s = float(self.color_aug_strength)
+        brightness = float(rng.uniform(1.0 - 0.12 * s, 1.0 + 0.12 * s))
+        contrast = float(rng.uniform(1.0 - 0.12 * s, 1.0 + 0.12 * s))
+        gamma = float(rng.uniform(1.0 - 0.08 * s, 1.0 + 0.08 * s))
+        noise_std = 0.008 * s
+        out = img.float()
+        mean = out.mean(dim=(1, 2), keepdim=True)
+        out = (out - mean) * contrast + mean
+        out = out * brightness
+        out = out.clamp(0.0, 1.0).pow(gamma)
+        if noise_std > 0.0:
+            noise = torch.from_numpy(rng.normal(0.0, noise_std, size=tuple(out.shape)).astype(np.float32))
+            out = out + noise
+        return out.clamp(0.0, 1.0)
+
+    def __len__(self) -> int:
+        return len(self.pairs_meta)
+
+    def manifest(self) -> List[Dict[str, Any]]:
+        return list(self.pairs_meta)
+
+    def __getitem__(self, idx: int):
+        rng = self._get_rng()
+        meta = self.pairs_meta[idx]
+        sd = self.seqs_data[int(meta["seq_idx"])]
+        i = int(meta["i"])
+        j = int(meta["j"])
+        k = int(meta["k"])
+        IA = _read_pano_rgb(sd["pano"][i], self.hw)
+        IB = _read_pano_rgb(sd["pano"][j], self.hw)
+        IA = self._apply_color_aug(IA, rng)
+        IB = self._apply_color_aug(IB, rng)
+        R_wA = sd["R_w"][i]
+        t_wA = sd["t_w"][i]
+        R_wB = sd["R_w"][j]
+        t_wB = sd["t_w"][j]
+        R_BA = (R_wB.T @ R_wA).astype(np.float32)
+        t_BA = (R_wB.T @ (t_wA - t_wB)).astype(np.float32)
+        t_mag = float(np.linalg.norm(t_BA))
+        t_dir = t_BA / (t_mag + 1e-8)
+        if self.return_seq_turn_triplet and int(k) == int(self.seq_turn_only_k) and (j + 1) < int(sd["n"]):
+            R_wC = sd["R_w"][j + 1]
+            t_wC = sd["t_w"][j + 1]
+            R_BC = (R_wC.T @ R_wB).astype(np.float32)
+            t_BC = (R_wC.T @ (t_wB - t_wC)).astype(np.float32)
+            t_BC_mag = float(np.linalg.norm(t_BC))
+            t_BC_dir = t_BC / (t_BC_mag + 1e-8)
+            IC = _read_pano_rgb(sd["pano"][j + 1], self.hw)
+            IC = self._apply_color_aug(IC, rng)
+            has_seq_turn_triplet = True
+        else:
+            IC = torch.zeros_like(IA)
+            R_BC = np.eye(3, dtype=np.float32)
+            t_BC = np.zeros(3, dtype=np.float32)
+            t_BC_mag = 0.0
+            t_BC_dir = np.zeros(3, dtype=np.float32)
+            has_seq_turn_triplet = False
+        meta_out = {
+            "scene": str(meta["scene"]),
+            "seq": str(meta["seq"]),
+            "tsA": sd["ts"][i],
+            "tsB": sd["ts"][j],
+            "i": int(i),
+            "j": int(j),
+            "k": int(k),
+            "dt_world": float(meta.get("dt_world", t_mag)),
+            "has_seq_turn_triplet": bool(has_seq_turn_triplet),
+            "seq_turn_only_k": int(self.seq_turn_only_k),
+        }
+        for extra_key in (
+            "pred_tmag",
+            "gt_tmag",
+            "pred_tmag_bucket",
+            "gt_tmag_bucket",
+            "dt_bucket",
+            "k_bucket",
+            "dt_k_bucket",
+            "hard_bucket",
+            "weight_tag",
+        ):
+            if extra_key in meta:
+                meta_out[extra_key] = meta[extra_key]
+        return {
+            "IA": IA,
+            "IB": IB,
+            "IC": IC,
+            "R_gt": torch.from_numpy(R_BA),
+            "t_gt_vec": torch.from_numpy(t_BA),
+            "t_gt_dir": torch.from_numpy(t_dir),
+            "t_gt_mag": torch.tensor(t_mag, dtype=torch.float32),
+            "R_gt_bc": torch.from_numpy(R_BC),
+            "t_gt_bc_vec": torch.from_numpy(t_BC),
+            "t_gt_bc_dir": torch.from_numpy(t_BC_dir),
+            "t_gt_bc_mag": torch.tensor(t_BC_mag, dtype=torch.float32),
+            "meta": meta_out,
         }

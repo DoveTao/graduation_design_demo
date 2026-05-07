@@ -45,6 +45,9 @@ class Config:
     k_probs: Tuple[float, ...] = (0.25, 0.30, 0.30, 0.15)
     train_color_aug: bool = False
     train_color_aug_strength: float = 0.25
+    train_fixed_pairs_manifest_json: str = ""
+    train_fixed_pairs_return_triplet: bool = False
+    train_fixed_pairs_seq_turn_only_k: int = 1
 
     # Deterministic evaluation protocol
     eval_use_fixed_pairs: bool = True
