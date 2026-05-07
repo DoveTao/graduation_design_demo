@@ -45,6 +45,21 @@
       "summary": "reports/final_s11_tmag_scale_consistency_summary.md",
       "classification": "NO-STABLE-TMAG-CONSISTENCY-GAIN",
       "replacement": false
+    },
+    "S12": {
+      "report": "checkpoints/S12_regime_balanced_sampling_report.md",
+      "summary": "reports/final_s12_regime_balanced_sampling_summary.md",
+      "classification": "NO-STABLE-REGIME-SAMPLING-GAIN",
+      "replacement": false
+    },
+    "S14": {
+      "report": "checkpoints/S14_local_window_pose_graph_optimization_report.md",
+      "summary": "reports/final_s14_local_window_pose_graph_summary.md",
+      "classification": "NO-STABLE-POSE-GRAPH-GAIN",
+      "replacement": false,
+      "best_candidate": "D_joint_w7_s1",
+      "final_test_run": true,
+      "caveat": "lightweight pose graph worsened path_ratio"
     }
   }
 }

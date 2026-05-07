@@ -14,6 +14,9 @@
 - Regime-only routing showed some diagnostic signal in S9, but did not remain stable under the clean CV gate because path_ratio moved outside the safe deployable range.
 - Post-S5 router/smoother/training attempts did not produce a new clean deployable candidate beyond `S5_clean_tmag_calibration_policy`.
 - Training-time tmag consistency in S11 showed weak proxy improvement and slight fold ATE/drift improvement, but lacked path_ratio-supported clean evidence for promotion.
+- Regime-balanced sampling in S12 improved some high-risk proxy behavior, but still did not produce stable clean-eligible path_ratio evidence.
+- Lightweight pose-graph post-optimization in S14 was insufficient in the current formulation: even with redundant multi-edge constraints, the selected candidate worsened ATE/drift/path_ratio on the final diagnostic.
+- If practical-ready performance is required, the next step likely needs a stronger trajectory-level formulation, stronger backbone, or data/supervision redesign rather than another lightweight local-window tweak.
 
 ## Do-not-claim
 - Do not claim S5 is a large performance breakthrough.
@@ -27,9 +30,12 @@
 - Do not claim S10 chain smoothing is deployable.
 - Do not claim S11 tmag consistency training replaced S5.
 - Do not present S11 lightweight CV proxy improvements as final clean results.
+- Do not claim S12 regime-balanced sampling replaced S5.
+- Do not claim S14 lightweight pose graph is deployable.
+- Do not present S14 diagnostic graph availability as evidence of final practical readiness.
 
 ## Recommended thesis wording
 - Preferred: "S5 provides a clean but marginal inference-time calibration gain over S2b."
 - Preferred: "Main contribution is a reproducible clean pipeline from scale repair to locked final candidate."
-- Preferred: "Later post-lockdown token-reliability, routing, smoothing, and training-time tmag-consistency attempts were informative diagnostics, but did not yield a new clean deployable replacement."
+- Preferred: "Later post-lockdown token-reliability, routing, smoothing, sampling, training-time tmag-consistency, and lightweight pose-graph attempts were informative diagnostics, but did not yield a new clean deployable replacement."
 - Avoid: any phrasing that implies dramatic end-to-end model redesign gains.
