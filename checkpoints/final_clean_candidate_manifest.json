@@ -60,6 +60,13 @@
       "best_candidate": "D_joint_w7_s1",
       "final_test_run": true,
       "caveat": "lightweight pose graph worsened path_ratio"
+    },
+    "S15": {
+      "report": "checkpoints/S15e_tiny_trajectory_retest_after_harness_fix_report.md",
+      "summary": "reports/final_s15e_tiny_trajectory_retest_after_harness_fix_summary.md",
+      "classification": "TRAINING-STILL-UNSTABLE",
+      "replacement": false,
+      "caveat": "pair-only tiny training remains unstable after harness parity fix"
     }
   }
 }

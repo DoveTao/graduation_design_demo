@@ -40,6 +40,12 @@
 - Evidence: graph constraints were sufficient and redundant on `scene01/seq03` (`454` frames, `1695` edges, non-adjacent edges present), but the selected candidate `D_joint_w7_s1` worsened the final diagnostic from `ATE=2.635339`, `drift=1.326834`, `path_ratio=4.944008` to `ATE=2.785907`, `drift=1.495600`, `path_ratio=7.277363`.
 - Practical meaning: simply adding a lightweight local-window consistency layer is not enough in the current formulation; the practical-ready gap is not closed by this class of post-S5 pose-graph tweak.
 
+## S15 trajectory-level training line
+- Result: negative (`TRAINING-STILL-UNSTABLE`).
+- Evidence: the S15 attribution chain found and fixed real harness bugs, but the final tiny retest still failed the stability gate. S15b found a policy-wrap mismatch, S15c aligned the S5/S2b wrapped policy path, S15d fixed train/eval parity and one-update R/tdir containment, yet S15e still showed pair-only tiny instability under the fixed harness: `A_pair_only_baseline_fixed_harness` reached `val_ate_proxy=5.457961`, `val_path_proxy=1.734796`, `odom_ATE=21.710394`, `drift=35.126991`, `path_ratio=2.647609`.
+- Attribution chain: policy-wrap mismatch found -> train/eval forward parity fixed -> one-update R/tdir preserved -> tiny pair-only training still collapsed.
+- Practical meaning: the trajectory-level training idea is not dismissed conceptually, but the current tiny-update training route is not stable enough to justify S15f or any final result claim.
+
 ## Fine_tdir sweep
 - Result: no clean gain.
 - Evidence: S2d `NO-TDIR-GAIN` conclusion; increasing fine_tdir harmed or failed to improve drift/ATE under clean constraints.
@@ -55,4 +61,4 @@
 - Practical meaning: use only as an upper-bound diagnostic reference in thesis discussion.
 
 ## Final negative-results takeaway
-Post-S5 optimization attempts did not produce a new deployable replacement. S8 showed that token reliability probing does not outperform regime-only features, S9 showed that regime-only routing does not stably pass the clean CV gate, S10 showed that chain-level smoothing does not recover a safe clean gain, S11 showed only weak proxy improvement without path_ratio-supported clean evidence, S12 showed that regime-balanced sampling still lacked clean-eligible path_ratio support, and S14 showed that even with redundant graph constraints, a lightweight local-window pose graph could worsen ATE/drift/path_ratio. These negative findings justify why the final candidate remains S5 clean calibration and why the thesis should emphasize reliability, reproducibility, marginal gain, and the need for higher-level trajectory methods rather than more local post-lockdown tweaks.
+Post-S5 optimization attempts did not produce a new deployable replacement. S8 showed that token reliability probing does not outperform regime-only features, S9 showed that regime-only routing does not stably pass the clean CV gate, S10 showed that chain-level smoothing does not recover a safe clean gain, S11 showed only weak proxy improvement without path_ratio-supported clean evidence, S12 showed that regime-balanced sampling still lacked clean-eligible path_ratio support, S14 showed that even with redundant graph constraints a lightweight local-window pose graph could worsen ATE/drift/path_ratio, and S15 showed that even after the harness parity fix, tiny pair-only trajectory-training updates remained unstable. These negative findings justify why the final candidate remains S5 clean calibration and why the thesis should emphasize reliability, reproducibility, marginal gain, and the need for higher-level trajectory methods rather than more local post-lockdown tweaks.
