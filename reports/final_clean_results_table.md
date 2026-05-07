@@ -12,11 +12,13 @@
 | S3b fine-token diagnostic | N/A | N/A | N/A | negative/diagnostic | no | no stable residual signal for replacement |
 | S8 fine/spherical reliability router | N/A | N/A | N/A | diagnostic negative | no | `TOKEN-NO-ADDED-VALUE`; token-only and token+regime did not beat regime-only |
 | S9 regime-only reliability router | N/A | N/A | N/A | diagnostic negative | no | `NO-STABLE-REGIME-ROUTER-GAIN`; no clean gate pass, final test not run |
+| S10 chain-level path-ratio smoother | N/A | N/A | N/A | diagnostic negative | no | `NO-STABLE-CHAIN-SMOOTHER-GAIN`; no stable clean gain over S5 |
+| S11 tmag scale consistency training | N/A | N/A | N/A | diagnostic negative | no | `NO-STABLE-TMAG-CONSISTENCY-GAIN`; weak proxy gain but no stable path_ratio-supported clean evidence |
 | Oracle-only tmag diagnostic | 1.262237 | 7.214477 | 0.898234 | upper-bound diagnostic only | no | not deployable, uses oracle-style gt_tmag path |
 
 ## Reading guide
 - S1d5 is the decisive path-ratio repair stage.
 - S2b provides the main clean performance improvement.
 - S5 is the final deployable candidate, but improvement over S2b is intentionally described as marginal.
-- S8 and S9 are post-lockdown negative diagnostics and must not be presented as deployable replacements.
+- S8/S9/S10/S11 are post-lockdown or post-S5 negative diagnostics and must not be presented as deployable replacements.
 - Oracle numbers are for diagnostic ceiling only and must not be reported as a deployable method.

@@ -33,6 +33,18 @@
       "summary": "reports/final_s9_regime_only_router_summary.md",
       "classification": "NO-STABLE-REGIME-ROUTER-GAIN",
       "replacement": false
+    },
+    "S10": {
+      "report": "checkpoints/S10_chain_level_path_ratio_preserving_smoother_report.md",
+      "summary": "reports/final_s10_chain_smoother_summary.md",
+      "classification": "NO-STABLE-CHAIN-SMOOTHER-GAIN",
+      "replacement": false
+    },
+    "S11": {
+      "report": "checkpoints/S11_tmag_scale_consistency_report.md",
+      "summary": "reports/final_s11_tmag_scale_consistency_summary.md",
+      "classification": "NO-STABLE-TMAG-CONSISTENCY-GAIN",
+      "replacement": false
     }
   }
 }
