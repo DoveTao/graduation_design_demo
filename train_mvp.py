@@ -68,6 +68,9 @@ from losses import (
 from model import PanoramaRelPoseModel
 from erp_sampling import warp_erp_with_depth_pose
 from geometry_refine import refine_pose_from_matches
+
+
+REPO_ROOT = os.path.dirname(os.path.abspath(__file__))
 from pose_head import matrix_geodesic_distance
 
 
@@ -91,6 +94,50 @@ def _load_dt_bucket_scale_anchor_policy(path: str) -> Dict[str, Any]:
     return policy
 
 
+def _resolve_policy_path(base_path: str, ref_path: str) -> str:
+    cand = os.path.expanduser(str(base_path).strip())
+    if not cand:
+        return ""
+    if os.path.isabs(cand) and os.path.isfile(cand):
+        return cand
+    ref_dir = os.path.dirname(os.path.abspath(ref_path))
+    rel_from_ref = os.path.normpath(os.path.join(ref_dir, cand))
+    if os.path.isfile(rel_from_ref):
+        return rel_from_ref
+    rel_from_repo = os.path.normpath(os.path.join(REPO_ROOT, cand))
+    if os.path.isfile(rel_from_repo):
+        return rel_from_repo
+    return cand
+
+
+def _resolve_clean_policy_payload(path: str, seen: Optional[set[str]] = None) -> Dict[str, Any]:
+    policy_path = os.path.abspath(os.path.expanduser(str(path).strip()))
+    if not policy_path:
+        return {}
+    if seen is None:
+        seen = set()
+    if policy_path in seen:
+        raise RuntimeError(f"Policy inheritance cycle detected at {policy_path}")
+    seen.add(policy_path)
+    policy = _load_dt_bucket_scale_anchor_policy(policy_path)
+    parent_ref = str(policy.get("base_policy_path", "")).strip() or str(policy.get("inherits_policy", "")).strip()
+    if not parent_ref:
+        out = dict(policy)
+        out["_resolved_policy_path"] = policy_path
+        out["_policy_lineage"] = [policy_path]
+        return out
+    parent_path = _resolve_policy_path(parent_ref, policy_path)
+    parent = _resolve_clean_policy_payload(parent_path, seen)
+    merged = dict(parent)
+    merged.update(policy)
+    lineage = list(parent.get("_policy_lineage", []))
+    lineage.append(policy_path)
+    merged["_resolved_policy_path"] = policy_path
+    merged["_resolved_parent_policy_path"] = parent_path
+    merged["_policy_lineage"] = lineage
+    return merged
+
+
 def _load_checkpoint_cfg_dict(path: str) -> Dict[str, Any]:
     ckpt_path = os.path.expanduser(str(path).strip())
     if not ckpt_path:
@@ -109,7 +156,7 @@ def _apply_dt_bucket_scale_anchor_policy(cfg: Config) -> Dict[str, Any]:
     if not policy_path:
         return {"enabled": False}
 
-    policy = _load_dt_bucket_scale_anchor_policy(policy_path)
+    policy = _resolve_clean_policy_payload(policy_path)
     base_ckpt = str(policy.get("base_checkpoint_path", "")).strip()
     if not base_ckpt:
         raise ValueError(f"Policy {policy_path} missing base_checkpoint_path.")
@@ -136,6 +183,9 @@ def _apply_dt_bucket_scale_anchor_policy(cfg: Config) -> Dict[str, Any]:
     return {
         "enabled": True,
         "policy_path": policy_path,
+        "resolved_policy_path": str(policy.get("_resolved_policy_path", policy_path)),
+        "resolved_parent_policy_path": str(policy.get("_resolved_parent_policy_path", "")),
+        "policy_lineage": list(policy.get("_policy_lineage", [])),
         "base_checkpoint_path": base_ckpt,
         "fine_rot_fuse_strength": float(cfg.fine_rot_fuse_strength),
         "fine_tdir_fuse_strength": float(cfg.fine_tdir_fuse_strength),
@@ -155,7 +205,7 @@ def _restore_cfg_from_policy_base_checkpoint(cfg: Config, overrides: List[str]) 
     if not policy_path:
         return cfg, {"enabled": False}
 
-    policy = _load_dt_bucket_scale_anchor_policy(policy_path)
+    policy = _resolve_clean_policy_payload(policy_path)
     base_ckpt = str(policy.get("base_checkpoint_path", "")).strip()
     if not base_ckpt:
         raise ValueError(f"Policy {policy_path} missing base_checkpoint_path.")
@@ -367,6 +417,42 @@ def _set_train_tmag_head_only(model: nn.Module, cfg: Config) -> Dict[str, Any]:
     print(f"[Freeze] trainable_names={trainable_names}")
     print(f"[Freeze] trainable_param_count={trainable_param_count}")
     print(f"[Freeze] frozen_param_count={frozen_param_count}")
+    return summary
+
+
+def _apply_train_mode_preserving_frozen_subtrees(model: nn.Module) -> Dict[str, Any]:
+    summary = {
+        "dropout_modules": 0,
+        "dropout_trainable_train": 0,
+        "dropout_frozen_eval": 0,
+        "trainable_modules": 0,
+        "frozen_modules": 0,
+    }
+
+    def _recurse(mod: nn.Module) -> bool:
+        has_direct_trainable = any(bool(p.requires_grad) for p in mod.parameters(recurse=False))
+        has_child_trainable = False
+        for child in mod.children():
+            if _recurse(child):
+                has_child_trainable = True
+        has_trainable = bool(has_direct_trainable or has_child_trainable)
+        mod.train(has_trainable)
+        cls_name = mod.__class__.__name__
+        if "Dropout" in cls_name:
+            summary["dropout_modules"] += 1
+            if has_trainable:
+                summary["dropout_trainable_train"] += 1
+            else:
+                summary["dropout_frozen_eval"] += 1
+        if mod is not model:
+            if has_trainable:
+                summary["trainable_modules"] += 1
+            else:
+                summary["frozen_modules"] += 1
+        return has_trainable
+
+    _recurse(model)
+    model.train(True)
     return summary
 
 
@@ -2253,7 +2339,7 @@ def eval_model(model, loader, device, cfg: Config, *, collect_vis: bool = False,
         _format_bucket_summary('Eval-BKT-kdt', bucket_k_dt_fin),
     ]
 
-    model.train()
+    _apply_train_mode_preserving_frozen_subtrees(model)
     return (
         rot, tdir, tdir_abs, tdir_local_A, tdir_local_A_abs, {**mean_map, **diag_mean}, msg, msg_local, vis_payload,
         bucket_k_fin, bucket_dt_fin, bucket_k_dt_fin, bucket_msgs,
@@ -3364,6 +3450,8 @@ def main():
     print(
         f"[Cfg ] dt_anchor_policy={bool(policy_summary.get('enabled', False))} | "
         f"path={policy_summary.get('policy_path', '') or '-'} | "
+        f"resolved={policy_summary.get('resolved_policy_path', '') or '-'} | "
+        f"parent={policy_summary.get('resolved_parent_policy_path', '') or '-'} | "
         f"apply={bool(getattr(cfg, 'dt_bucket_scale_anchor_apply', False))} | "
         f"factors=({getattr(cfg, 'dt_bucket_scale_anchor_factor_0p1_0p3', 1.0):.6f},"
         f"{getattr(cfg, 'dt_bucket_scale_anchor_factor_0p3_0p5', 1.0):.6f},"
@@ -4034,7 +4122,14 @@ def main():
     train_metrics_snapshot: Dict[str, float] = {}
     vis_dumped = False
 
-    model.train()
+    train_mode_summary = _apply_train_mode_preserving_frozen_subtrees(model)
+    print(
+        f"[TrainMode] dropout_total={train_mode_summary['dropout_modules']} | "
+        f"dropout_trainable_train={train_mode_summary['dropout_trainable_train']} | "
+        f"dropout_frozen_eval={train_mode_summary['dropout_frozen_eval']} | "
+        f"trainable_modules={train_mode_summary['trainable_modules']} | "
+        f"frozen_modules={train_mode_summary['frozen_modules']}"
+    )
     optimizer.zero_grad(set_to_none=True)
     train_iter = iter(train_loader)
 

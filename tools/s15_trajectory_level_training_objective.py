@@ -28,6 +28,8 @@ from train_mvp import _camera_center_from_T_c0_np, _compose_rel_pose_np, _rot_ge
 
 PYTHON_BIN = os.environ.get("PYTHON_BIN", "/home/dovetao/miniconda3/envs/pytorch/bin/python")
 BASE_CKPT = REPO_ROOT / "checkpoints" / "T57b_no_dt_multiscale_tmag_head_400" / "final.pt"
+S5_POLICY_PATH = REPO_ROOT / "checkpoints" / "S5_clean_tmag_calibration_policy.json"
+S2B_POLICY_PATH = REPO_ROOT / "checkpoints" / "S2b_clean_fine_rot_policy.json"
 S8B_CONTRACT_PATH = REPO_ROOT / "checkpoints" / "S8b_reproduction_contract.json"
 S8B_S5_RESULT_PATH = REPO_ROOT / "checkpoints" / "S8b_current_arch_s5_wrapper_result.json"
 REPORT_PATH = REPO_ROOT / "checkpoints" / "S15_trajectory_level_training_objective_report.md"
@@ -131,6 +133,10 @@ def _build_base_cfg() -> Config:
     return _cfg_from_dict(_load_ckpt_cfg(BASE_CKPT))
 
 
+def _load_policy(path: Path) -> Dict[str, Any]:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
 def _load_model(path: Path, device: torch.device) -> PanoramaRelPoseModel:
     cfg = _cfg_from_dict(_load_ckpt_cfg(path))
     model = PanoramaRelPoseModel(cfg, device).to(device)
@@ -214,14 +220,16 @@ def _build_window_manifest(data_root: Path, split_seed: int, split: str) -> Tupl
 
 def _candidate_configs() -> List[CandidateConfig]:
     ckpt_cfg = _load_ckpt_cfg(BASE_CKPT)
+    s5_policy = _load_policy(S5_POLICY_PATH)
     common = (
         "use_coupled_pose_residual_head=False",
         "strict_load_checkpoint=False",
         f"init_checkpoint={BASE_CKPT}",
+        f"dt_bucket_scale_anchor_policy_json={S5_POLICY_PATH}",
         "use_fine_stage=True",
-        "fine_rot_fuse_strength=0.45",
-        "fine_tdir_fuse_strength=0.0",
-        "fine_tmag_fuse_strength=0.0",
+        f"fine_rot_fuse_strength={float(s5_policy['fine_rot_fuse_strength'])}",
+        f"fine_tdir_fuse_strength={float(s5_policy['fine_tdir_fuse_strength'])}",
+        f"fine_tmag_fuse_strength={float(s5_policy['fine_tmag_fuse_strength'])}",
         "use_geometry_refine=False",
         "use_translation_magnitude_head=True",
         f"tmag_head_mode={ckpt_cfg.get('tmag_head_mode', 'multiscale')}",
