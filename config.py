@@ -100,6 +100,7 @@ class Config:
     fine_tmag_fuse_strength: float = -1.0
     freeze_coarse_for_fine_training: bool = False
     train_fine_only: bool = False
+    train_forward_eval_mode: bool = False
     use_coupled_pose_residual_head: bool = False
     coupled_pose_residual_trainable: bool = False
     coupled_pose_residual_hidden_dim: int = 128

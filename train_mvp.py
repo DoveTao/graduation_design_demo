@@ -420,23 +420,25 @@ def _set_train_tmag_head_only(model: nn.Module, cfg: Config) -> Dict[str, Any]:
     return summary
 
 
-def _apply_train_mode_preserving_frozen_subtrees(model: nn.Module) -> Dict[str, Any]:
+def _apply_train_mode_preserving_frozen_subtrees(model: nn.Module, *, root_train: bool = True) -> Dict[str, Any]:
     summary = {
         "dropout_modules": 0,
         "dropout_trainable_train": 0,
         "dropout_frozen_eval": 0,
         "trainable_modules": 0,
         "frozen_modules": 0,
+        "root_train": bool(root_train),
     }
 
-    def _recurse(mod: nn.Module) -> bool:
+    def _recurse(mod: nn.Module, *, is_root: bool = False) -> bool:
         has_direct_trainable = any(bool(p.requires_grad) for p in mod.parameters(recurse=False))
         has_child_trainable = False
         for child in mod.children():
             if _recurse(child):
                 has_child_trainable = True
         has_trainable = bool(has_direct_trainable or has_child_trainable)
-        mod.train(has_trainable)
+        if not is_root:
+            mod.train(has_trainable)
         cls_name = mod.__class__.__name__
         if "Dropout" in cls_name:
             summary["dropout_modules"] += 1
@@ -451,8 +453,18 @@ def _apply_train_mode_preserving_frozen_subtrees(model: nn.Module) -> Dict[str, 
                 summary["frozen_modules"] += 1
         return has_trainable
 
-    _recurse(model)
-    model.train(True)
+    _recurse(model, is_root=True)
+    model.training = bool(root_train)
+    return summary
+
+
+def _configure_model_train_mode(model: nn.Module, cfg: Any) -> Dict[str, Any]:
+    if bool(getattr(cfg, "train_forward_eval_mode", False)):
+        summary = _apply_train_mode_preserving_frozen_subtrees(model, root_train=False)
+        summary["mode"] = "eval_forward_training"
+        return summary
+    summary = _apply_train_mode_preserving_frozen_subtrees(model, root_train=True)
+    summary["mode"] = "mixed_train_eval_subtrees"
     return summary
 
 
@@ -3372,7 +3384,7 @@ def eval_odometry_sequence(model, ds, device, cfg: Config, output_dir: Optional[
         payload["odom_shape_metric_path_weighted_turn_abs_err_deg"] = debug_metric_turn_err_w
         payload["odom_shape_metric_path_weighted_straightness_abs_err"] = debug_metric_straightness_err_w
         payload["odom_shape_metric_path_weighted_path_length_ratio"] = debug_metric_path_ratio_w
-    model.train()
+    _configure_model_train_mode(model, cfg)
     return payload
 
 
@@ -4122,9 +4134,11 @@ def main():
     train_metrics_snapshot: Dict[str, float] = {}
     vis_dumped = False
 
-    train_mode_summary = _apply_train_mode_preserving_frozen_subtrees(model)
+    train_mode_summary = _configure_model_train_mode(model, cfg)
     print(
-        f"[TrainMode] dropout_total={train_mode_summary['dropout_modules']} | "
+        f"[TrainMode] mode={train_mode_summary.get('mode', 'unknown')} | "
+        f"root_train={train_mode_summary.get('root_train')} | "
+        f"dropout_total={train_mode_summary['dropout_modules']} | "
         f"dropout_trainable_train={train_mode_summary['dropout_trainable_train']} | "
         f"dropout_frozen_eval={train_mode_summary['dropout_frozen_eval']} | "
         f"trainable_modules={train_mode_summary['trainable_modules']} | "
@@ -5801,6 +5815,7 @@ def main():
                             _plot_depth_overview(vis_payload, os.path.join(vis_root, f"vis_depth_{tag}.png"))
                             _plot_depth_overview(vis_payload, os.path.join(vis_root, "vis_depth_latest.png"))
                             vis_dumped = True
+                        _configure_model_train_mode(model, cfg)
 
         t_opt = time.perf_counter()
         train_metrics_snapshot = {
@@ -6094,6 +6109,9 @@ def main():
             "use_coupled_pose_residual_head": bool(getattr(cfg, "use_coupled_pose_residual_head", False)),
             "train_coupled_pose_residual_only": bool(getattr(cfg, "train_coupled_pose_residual_only", False)),
             "train_tmag_head_only": bool(getattr(cfg, "train_tmag_head_only", False)),
+            "train_forward_eval_mode": bool(getattr(cfg, "train_forward_eval_mode", False)),
+            "train_mode_root_train": bool(train_mode_summary.get("root_train", True)),
+            "train_mode_kind": str(train_mode_summary.get("mode", "")),
             "use_tmag_speed_loss": bool(getattr(cfg, "use_tmag_speed_loss", False)),
             "w_tmag_speed": float(getattr(cfg, "w_tmag_speed", 0.0)),
             "use_tmag_ratio_loss": bool(getattr(cfg, "use_tmag_ratio_loss", False)),
