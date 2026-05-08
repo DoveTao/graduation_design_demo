@@ -18,6 +18,7 @@
 - Lightweight pose-graph post-optimization in S14 was insufficient in the current formulation: even with redundant multi-edge constraints, the selected candidate worsened ATE/drift/path_ratio on the final diagnostic.
 - Trajectory-level training in S15 is conceptually promising, but the current implementation remained unstable: after the harness parity fix, even the pair-only tiny baseline still collapsed in odometry, so no S15 trajectory result should be claimed as an improvement over S5.
 - S16b showed that generic frozen ImageNet classification features are insufficient in the current stronger-backbone probe: frozen ResNet50 features did not improve stable R/tdir coupling proxy behavior over the locked current-feature baseline.
+- S19 showed that lightweight geometry-aware pretraining on top of frozen current features is also insufficient in the tested shallow form: probe-head-only geometry supervision produced partial single-component signal, but no stable coupled R/tdir gain over the current task-specific baseline.
 - If practical-ready performance is required, the next step likely needs task-specific geometric or multi-frame visual pretraining, stronger trajectory-level formulation, or data/supervision redesign rather than another lightweight local-window tweak or direct frozen ImageNet feature replacement.
 
 ## Do-not-claim
@@ -40,11 +41,14 @@
 - Do not claim stronger backbone was fully integrated as a final model.
 - Do not present the S16b frozen ResNet50 probe as evidence that generic pretrained classification features help this pose task.
 - Do not claim S16c was recommended or evaluated.
+- Do not claim S19 geometry-aware pretraining improved over S5 or justified S19b full integration.
+- Do not present partial component-level probe improvements as evidence that the R/tdir coupling bottleneck is solved.
 
 ## Recommended thesis wording
 - Preferred: "S5 provides a clean but marginal inference-time calibration gain over S2b."
 - Preferred: "Main contribution is a reproducible clean pipeline from scale repair to locked final candidate."
 - Preferred: "Later post-lockdown token-reliability, routing, smoothing, sampling, training-time tmag-consistency, lightweight pose-graph, trajectory-level training, and stronger-backbone feasibility attempts were informative diagnostics, but did not yield a new clean deployable replacement."
-- Preferred: "Future backbone work should focus on task-specific geometric or multi-frame pretraining rather than direct frozen ImageNet feature replacement."
+- Preferred: "Future backbone work should focus on task-specific geometric or multi-frame pretraining integrated into the representation itself rather than direct frozen ImageNet feature replacement or shallow probe-head-only geometry supervision."
 - Preferred: "Future work on trajectory-level training should redesign the training harness and supervision more fundamentally rather than continuing the current tiny-update route."
+- Preferred: "Resolving the R/tdir coupling bottleneck likely requires deeper architectural or data-level redesign rather than another shallow probe-head geometry-pretraining pass."
 - Avoid: any phrasing that implies dramatic end-to-end model redesign gains.

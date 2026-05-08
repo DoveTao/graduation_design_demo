@@ -81,6 +81,14 @@
       "replacement": false,
       "encoder": "torchvision_resnet50",
       "caveat": "frozen ImageNet feature probe, not full backbone integration"
+    },
+    "S19": {
+      "report": "checkpoints/S19_geometry_aware_pretraining_feasibility_report.md",
+      "summary": "reports/final_s19_geometry_aware_pretraining_feasibility_summary.md",
+      "classification": "NO-STABLE-GEOMETRY-PRETRAINING-GAIN",
+      "replacement": false,
+      "S19b_recommended": false,
+      "caveat": "partial single-component probe signal, no stable R/tdir coupling gain"
     }
   }
 }
