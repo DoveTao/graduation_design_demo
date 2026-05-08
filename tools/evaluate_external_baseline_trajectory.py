@@ -169,8 +169,10 @@ def evaluate_external_baseline_trajectory(
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Evaluate an external baseline trajectory against exported GT in TUM format.")
-    p.add_argument("--gt", required=True, help="Ground-truth TUM trajectory path.")
-    p.add_argument("--est", required=True, help="Estimated TUM trajectory path.")
+    p.add_argument("--gt", default="", help="Ground-truth TUM trajectory path.")
+    p.add_argument("--groundtruth", default="", help="Alias for --gt.")
+    p.add_argument("--est", default="", help="Estimated TUM trajectory path.")
+    p.add_argument("--trajectory", default="", help="Alias for --est.")
     p.add_argument("--alignment", default="se3", choices=["none", "se3", "sim3"], help="Alignment mode.")
     p.add_argument("--match-tolerance", type=float, default=1.0e-3, help="Timestamp matching tolerance in seconds.")
     p.add_argument("--output-json", default="", help="Optional output json path.")
@@ -179,9 +181,15 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
+    gt_raw = args.groundtruth or args.gt
+    est_raw = args.trajectory or args.est
+    if not gt_raw:
+        raise SystemExit("missing required ground-truth path: use --gt or --groundtruth")
+    if not est_raw:
+        raise SystemExit("missing required trajectory path: use --est or --trajectory")
     result = evaluate_external_baseline_trajectory(
-        gt_path=Path(args.gt),
-        est_path=Path(args.est),
+        gt_path=Path(gt_raw),
+        est_path=Path(est_raw),
         alignment=args.alignment,
         match_tolerance=float(args.match_tolerance),
     )
