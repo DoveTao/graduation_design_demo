@@ -19,6 +19,16 @@
   },
   "baseline_methods": [
     {
+      "method": "Pano-ORB-VO",
+      "category": "protocol-compatible classical panorama VO baseline",
+      "input": "panorama-derived virtual pinhole",
+      "loop_closure": "no",
+      "learning_based": "no",
+      "run_status": "ready_to_evaluate",
+      "output_trajectory_path": "external_baselines/results/pano_orb_vo/scene01_seq03_est_tum.txt",
+      "notes": "Repo-local strong baseline built from panorama-derived virtual pinhole views; not an external published method."
+    },
+    {
       "method": "ORB-SLAM2",
       "category": "feature-based SLAM",
       "input": "monocular / stereo / RGB-D",
@@ -78,6 +88,33 @@
       "path_ratio": 0.932379,
       "tracking_success_rate": 1.0,
       "notes": "Locked internal clean result on the historical final test sequence."
+    },
+    {
+      "method": "Pano-ORB-VO",
+      "alignment": "none",
+      "ATE": 10.194694875196557,
+      "drift": 0.17236044858969543,
+      "path_ratio": 0.8113342173472655,
+      "tracking_success_rate": 1.0,
+      "notes": "Same-sequence evaluation only; do not compare against cross-dataset published numbers."
+    },
+    {
+      "method": "Pano-ORB-VO",
+      "alignment": "se3",
+      "ATE": 4.137858003823986,
+      "drift": 0.17315893947104516,
+      "path_ratio": 0.8113342173472655,
+      "tracking_success_rate": 1.0,
+      "notes": "Same-sequence evaluation only; do not compare against cross-dataset published numbers."
+    },
+    {
+      "method": "Pano-ORB-VO",
+      "alignment": "sim3",
+      "ATE": 4.133322001007926,
+      "drift": 0.23337763407732723,
+      "path_ratio": 0.8113342173472655,
+      "tracking_success_rate": 1.0,
+      "notes": "Same-sequence evaluation only; do not compare against cross-dataset published numbers."
     }
   ],
   "caveats": [

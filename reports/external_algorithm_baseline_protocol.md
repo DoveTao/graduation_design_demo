@@ -16,6 +16,7 @@ Published results from different datasets are not compared directly against S5.
 ## Baseline Methods
 | method | category | input | loop_closure | learning_based | run_status | output_trajectory_path | notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| Pano-ORB-VO | protocol-compatible classical panorama VO baseline | panorama-derived virtual pinhole | no | no | ready_to_evaluate | external_baselines/results/pano_orb_vo/scene01_seq03_est_tum.txt | Repo-local strong baseline built from panorama-derived virtual pinhole views; not an external published method. |
 | ORB-SLAM2 | feature-based SLAM | monocular / stereo / RGB-D | yes | no | pending_external_run | (missing) | Protocol-compatible only if built and run on the exported sequence. |
 | ORB-SLAM3 | feature-based visual / visual-inertial SLAM | monocular / stereo / RGB-D / visual-inertial | yes | no | pending_external_run | (missing) | Protocol-compatible only if built and run on the exported sequence. |
 | DSO | direct sparse visual odometry | monocular | no | no | pending_external_run | (missing) | Requires an input mode compatible with the exported panorama sequence or a documented adapter. |
@@ -23,6 +24,7 @@ Published results from different datasets are not compared directly against S5.
 | S5 | proposed method | monocular panorama / equirectangular RGB | no | yes | locked_internal_result | internal clean eval / locked metrics | Final clean candidate under the historical protocol. |
 
 ## Literature Context
+- Pano-ORB-VO is a repo-local protocol-compatible classical panorama VO strong baseline.
 - ORB-SLAM2 and ORB-SLAM3 represent classical feature-based SLAM baselines.
 - DSO represents a direct sparse monocular odometry baseline.
 - DROID-SLAM represents a learning-based SLAM baseline.

@@ -1,0 +1,243 @@
+{
+  "name": "SB1_pano_orb_vo_baseline",
+  "dataset_summary": {
+    "dataset_dir": "/home/dovetao/graduation_design_demo/external_baselines/dataset/scene01_seq03",
+    "sequence": "scene01/seq03",
+    "num_frames": 454
+  },
+  "virtual_camera": {
+    "fov_deg": 90.0,
+    "view_yaws_deg": [
+      0.0,
+      90.0,
+      180.0,
+      270.0
+    ],
+    "view_pitch_deg": 0.0,
+    "view_width": 640,
+    "view_height": 480,
+    "fx": 320.00000000000006,
+    "fy": 320.00000000000006,
+    "cx": 320.0,
+    "cy": 240.0,
+    "derived_virtual_pinhole": true
+  },
+  "scale_policy": {
+    "policy_name": "train_median_k1_step_scale",
+    "value": 0.011908447102386463,
+    "num_train_steps": 786,
+    "mean": 0.06651195321738113,
+    "median": 0.011908447102386463
+  },
+  "pair_diagnostics_path": "/home/dovetao/graduation_design_demo/external_baselines/results/pano_orb_vo/pair_diagnostics.json",
+  "trajectory_path": "/home/dovetao/graduation_design_demo/external_baselines/results/pano_orb_vo/scene01_seq03_est_tum.txt",
+  "oracle_trajectory_path": "/home/dovetao/graduation_design_demo/external_baselines/results/pano_orb_vo/scene01_seq03_est_oracle_scale_tum.txt",
+  "num_pairs": 453,
+  "success_pairs": 453,
+  "failed_pairs": 0,
+  "tracking_success_rate": 1.0,
+  "mean_inliers": 191.66887417218544,
+  "median_inliers": 88.0,
+  "main_evaluation": {
+    "none": {
+      "status": "ok",
+      "alignment_mode": "none",
+      "ATE": 10.194694875196557,
+      "drift": 0.17236044858969543,
+      "path_ratio": 0.8113342173472655,
+      "num_est_poses": 454,
+      "num_gt_poses": 454,
+      "num_matched_poses": 454,
+      "tracking_success_rate": 1.0,
+      "gt_path_length": 25.83364036045875,
+      "est_path_length_raw": 20.95971638308353,
+      "metric_notes": {
+        "ATE": "RMSE position error after requested alignment.",
+        "drift": "RPE-like translation RMSE on consecutive matched steps after requested alignment.",
+        "path_ratio": "Raw estimated path length divided by GT path length; scale-sensitive and not Sim(3)-normalized."
+      }
+    },
+    "se3": {
+      "status": "ok",
+      "alignment_mode": "se3",
+      "ATE": 4.137858003823986,
+      "drift": 0.1731589394710452,
+      "path_ratio": 0.8113342173472655,
+      "num_est_poses": 454,
+      "num_gt_poses": 454,
+      "num_matched_poses": 454,
+      "tracking_success_rate": 1.0,
+      "gt_path_length": 25.83364036045875,
+      "est_path_length_raw": 20.95971638308353,
+      "metric_notes": {
+        "ATE": "RMSE position error after requested alignment.",
+        "drift": "RPE-like translation RMSE on consecutive matched steps after requested alignment.",
+        "path_ratio": "Raw estimated path length divided by GT path length; scale-sensitive and not Sim(3)-normalized."
+      }
+    },
+    "sim3": {
+      "status": "ok",
+      "alignment_mode": "sim3",
+      "ATE": 4.133322001007926,
+      "drift": 0.23337763407732712,
+      "path_ratio": 0.8113342173472655,
+      "num_est_poses": 454,
+      "num_gt_poses": 454,
+      "num_matched_poses": 454,
+      "tracking_success_rate": 1.0,
+      "gt_path_length": 25.83364036045875,
+      "est_path_length_raw": 20.95971638308353,
+      "metric_notes": {
+        "ATE": "RMSE position error after requested alignment.",
+        "drift": "RPE-like translation RMSE on consecutive matched steps after requested alignment.",
+        "path_ratio": "Raw estimated path length divided by GT path length; scale-sensitive and not Sim(3)-normalized."
+      }
+    }
+  },
+  "oracle_scale_evaluation": {
+    "none": {
+      "status": "ok",
+      "alignment_mode": "none",
+      "ATE": 10.61052024663974,
+      "drift": 0.5881030787230126,
+      "path_ratio": 4.055540311656341,
+      "num_est_poses": 454,
+      "num_gt_poses": 454,
+      "num_matched_poses": 454,
+      "tracking_success_rate": 1.0,
+      "gt_path_length": 25.83364036045875,
+      "est_path_length_raw": 104.76936987867272,
+      "metric_notes": {
+        "ATE": "RMSE position error after requested alignment.",
+        "drift": "RPE-like translation RMSE on consecutive matched steps after requested alignment.",
+        "path_ratio": "Raw estimated path length divided by GT path length; scale-sensitive and not Sim(3)-normalized."
+      }
+    },
+    "se3": {
+      "status": "ok",
+      "alignment_mode": "se3",
+      "ATE": 3.5592211693432327,
+      "drift": 0.581264773818108,
+      "path_ratio": 4.055540311656341,
+      "num_est_poses": 454,
+      "num_gt_poses": 454,
+      "num_matched_poses": 454,
+      "tracking_success_rate": 1.0,
+      "gt_path_length": 25.83364036045875,
+      "est_path_length_raw": 104.76936987867272,
+      "metric_notes": {
+        "ATE": "RMSE position error after requested alignment.",
+        "drift": "RPE-like translation RMSE on consecutive matched steps after requested alignment.",
+        "path_ratio": "Raw estimated path length divided by GT path length; scale-sensitive and not Sim(3)-normalized."
+      }
+    },
+    "sim3": {
+      "status": "ok",
+      "alignment_mode": "sim3",
+      "ATE": 3.1608613713540827,
+      "drift": 1.4471708392291447,
+      "path_ratio": 4.055540311656341,
+      "num_est_poses": 454,
+      "num_gt_poses": 454,
+      "num_matched_poses": 454,
+      "tracking_success_rate": 1.0,
+      "gt_path_length": 25.83364036045875,
+      "est_path_length_raw": 104.76936987867272,
+      "metric_notes": {
+        "ATE": "RMSE position error after requested alignment.",
+        "drift": "RPE-like translation RMSE on consecutive matched steps after requested alignment.",
+        "path_ratio": "Raw estimated path length divided by GT path length; scale-sensitive and not Sim(3)-normalized."
+      }
+    }
+  },
+  "result_rows": [
+    {
+      "method": "Pano-ORB-VO-train-scale",
+      "alignment": "none",
+      "ATE": 10.194694875196557,
+      "drift": 0.17236044858969543,
+      "path_ratio": 0.8113342173472655,
+      "tracking_success_rate": 1.0,
+      "mean_inliers": 191.66887417218544,
+      "median_inliers": 88.0,
+      "notes": "main fair baseline with train-only median step scale",
+      "diagnostic_only": false
+    },
+    {
+      "method": "Pano-ORB-VO-train-scale",
+      "alignment": "se3",
+      "ATE": 4.137858003823986,
+      "drift": 0.1731589394710452,
+      "path_ratio": 0.8113342173472655,
+      "tracking_success_rate": 1.0,
+      "mean_inliers": 191.66887417218544,
+      "median_inliers": 88.0,
+      "notes": "main fair baseline with train-only median step scale",
+      "diagnostic_only": false
+    },
+    {
+      "method": "Pano-ORB-VO-train-scale",
+      "alignment": "sim3",
+      "ATE": 4.133322001007926,
+      "drift": 0.23337763407732712,
+      "path_ratio": 0.8113342173472655,
+      "tracking_success_rate": 1.0,
+      "mean_inliers": 191.66887417218544,
+      "median_inliers": 88.0,
+      "notes": "main fair baseline with train-only median step scale",
+      "diagnostic_only": false
+    },
+    {
+      "method": "Pano-ORB-VO-oracle-scale",
+      "alignment": "none",
+      "ATE": 10.61052024663974,
+      "drift": 0.5881030787230126,
+      "path_ratio": 4.055540311656341,
+      "tracking_success_rate": 1.0,
+      "mean_inliers": 191.66887417218544,
+      "median_inliers": 88.0,
+      "notes": "diagnostic_only=true; uses test GT step magnitudes and is not deployable",
+      "diagnostic_only": true
+    },
+    {
+      "method": "Pano-ORB-VO-oracle-scale",
+      "alignment": "se3",
+      "ATE": 3.5592211693432327,
+      "drift": 0.581264773818108,
+      "path_ratio": 4.055540311656341,
+      "tracking_success_rate": 1.0,
+      "mean_inliers": 191.66887417218544,
+      "median_inliers": 88.0,
+      "notes": "diagnostic_only=true; uses test GT step magnitudes and is not deployable",
+      "diagnostic_only": true
+    },
+    {
+      "method": "Pano-ORB-VO-oracle-scale",
+      "alignment": "sim3",
+      "ATE": 3.1608613713540827,
+      "drift": 1.4471708392291447,
+      "path_ratio": 4.055540311656341,
+      "tracking_success_rate": 1.0,
+      "mean_inliers": 191.66887417218544,
+      "median_inliers": 88.0,
+      "notes": "diagnostic_only=true; uses test GT step magnitudes and is not deployable",
+      "diagnostic_only": true
+    }
+  ],
+  "s5_locked_metrics": {
+    "drift": 1.327343,
+    "ATE": 7.352288,
+    "path_ratio": 0.932379
+  },
+  "comparison_with_s5": [
+    {
+      "method": "Pano-ORB-VO-train-scale",
+      "ATE": 4.137858003823986,
+      "drift": 0.1731589394710452,
+      "path_ratio": 0.8113342173472655,
+      "notes": "Protocol-compatible classical panorama VO baseline using derived virtual pinhole views."
+    }
+  ],
+  "interpretation": "Pano-ORB-VO is competitive in at least one trajectory metric, but scale/path stability and failure rate still need to be considered together.",
+  "diagnostic_only_oracle_scale": true
+}

@@ -16,6 +16,7 @@ Published results from different datasets are not compared directly against S5.
 ## Baseline Methods
 | method | category | input | loop_closure | learning_based | run_status | output_trajectory_path | notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| Pano-ORB-VO | protocol-compatible classical panorama VO baseline | panorama-derived virtual pinhole | no | no | ready_to_evaluate | external_baselines/results/pano_orb_vo/scene01_seq03_est_tum.txt | Repo-local strong baseline built from panorama-derived virtual pinhole views; not an external published method. |
 | ORB-SLAM2 | feature-based SLAM | monocular / stereo / RGB-D | yes | no | pending_external_run | (missing) | Protocol-compatible only if built and run on the exported sequence. |
 | ORB-SLAM3 | feature-based visual / visual-inertial SLAM | monocular / stereo / RGB-D / visual-inertial | yes | no | pending_external_run | (missing) | Protocol-compatible only if built and run on the exported sequence. |
 | DSO | direct sparse visual odometry | monocular | no | no | pending_external_run | (missing) | Requires an input mode compatible with the exported panorama sequence or a documented adapter. |
@@ -26,8 +27,12 @@ Published results from different datasets are not compared directly against S5.
 | method | alignment | ATE | drift | path_ratio | tracking_success_rate | notes |
 | --- | --- | --- | --- | --- | --- | --- |
 | S5 | historical_clean_eval | 7.352288 | 1.327343 | 0.932379 | 1.000000 | Locked internal clean result on the historical final test sequence. |
+| Pano-ORB-VO | none | 10.194695 | 0.172360 | 0.811334 | 1.000000 | Same-sequence evaluation only; do not compare against cross-dataset published numbers. |
+| Pano-ORB-VO | se3 | 4.137858 | 0.173159 | 0.811334 | 1.000000 | Same-sequence evaluation only; do not compare against cross-dataset published numbers. |
+| Pano-ORB-VO | sim3 | 4.133322 | 0.233378 | 0.811334 | 1.000000 | Same-sequence evaluation only; do not compare against cross-dataset published numbers. |
 
 ## Literature Context
+- Pano-ORB-VO is a protocol-compatible strong baseline implemented in this repo and should not be described as an external published method.
 - ORB-SLAM2/3, DSO, and DROID-SLAM are included as representative external baselines only when they produce trajectories on the exported sequence.
 - Published numbers from different datasets remain method context only and are not used for direct numerical comparison against S5.
 

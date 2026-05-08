@@ -25,6 +25,15 @@ DEFAULT_MANIFEST = REPO_ROOT / "checkpoints" / "final_clean_candidate_manifest.j
 
 METHOD_SPECS = [
     {
+        "method": "Pano-ORB-VO",
+        "slug": "pano_orb_vo",
+        "category": "protocol-compatible classical panorama VO baseline",
+        "input": "panorama-derived virtual pinhole",
+        "loop_closure": "no",
+        "learning_based": "no",
+        "notes": "Repo-local strong baseline built from panorama-derived virtual pinhole views; not an external published method.",
+    },
+    {
         "method": "ORB-SLAM2",
         "slug": "orbslam2",
         "category": "feature-based SLAM",
@@ -201,6 +210,7 @@ def _write_protocol_report(path: Path, payload: Dict[str, Any]) -> None:
         ),
         "",
         "## Literature Context",
+        "- Pano-ORB-VO is a repo-local protocol-compatible classical panorama VO strong baseline.",
         "- ORB-SLAM2 and ORB-SLAM3 represent classical feature-based SLAM baselines.",
         "- DSO represents a direct sparse monocular odometry baseline.",
         "- DROID-SLAM represents a learning-based SLAM baseline.",
@@ -250,6 +260,7 @@ def _write_comparison_report(path: Path, payload: Dict[str, Any]) -> None:
         ),
         "",
         "## Literature Context",
+        "- Pano-ORB-VO is a protocol-compatible strong baseline implemented in this repo and should not be described as an external published method.",
         "- ORB-SLAM2/3, DSO, and DROID-SLAM are included as representative external baselines only when they produce trajectories on the exported sequence.",
         "- Published numbers from different datasets remain method context only and are not used for direct numerical comparison against S5.",
         "",
