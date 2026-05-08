@@ -67,3 +67,18 @@ bash scripts/verify_final_candidate.sh
 ```
 
 This verifier is a reproducibility guardrail for the locked final clean candidate. It checks whether code changes have unintentionally broken the final S5 result under the existing evaluation path. It is not a new experiment, does not select a new policy, and does not change the thesis conclusion.
+
+## Lightweight project health check
+Recommended command:
+
+```bash
+bash scripts/project_health_check.sh
+```
+
+This script runs:
+- the final S5 verifier
+- the unittest static checks
+
+In the current environment, `pytest` is not installed as a required dependency, so the lightweight static checks use `unittest discover` instead. If `pytest` is available in a future environment, the script may print it as an optional extra command, but it is not required for the final reproducibility guardrail.
+
+This health check is not a new experiment, does not select a new candidate, and does not change the final thesis conclusion.
