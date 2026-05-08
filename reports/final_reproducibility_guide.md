@@ -52,3 +52,18 @@ Expected S2b metrics:
 ## Final interpretation rule
 If reproduced values match within normal float tolerance and loading stays `unexpected=0`, final candidate remains:
 `S5_clean_tmag_calibration_policy` with the conclusion "clean but marginal gain."
+
+## Final S5 candidate verification
+- current final candidate: `S5_clean_tmag_calibration_policy`
+- locked metrics:
+  - ATE = `7.352288`
+  - drift = `1.327343`
+  - path_ratio = `0.932379`
+
+Run:
+
+```bash
+bash scripts/verify_final_candidate.sh
+```
+
+This verifier is a reproducibility guardrail for the locked final clean candidate. It checks whether code changes have unintentionally broken the final S5 result under the existing evaluation path. It is not a new experiment, does not select a new policy, and does not change the thesis conclusion.
