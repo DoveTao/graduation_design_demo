@@ -1,0 +1,9 @@
+camera_model: equirectangular_panorama
+image_width: 2048
+image_height: 1024
+pinhole_intrinsics_available: false
+fx: null
+fy: null
+cx: null
+cy: null
+note: This dataset uses panorama images rather than a standard pinhole camera model.
