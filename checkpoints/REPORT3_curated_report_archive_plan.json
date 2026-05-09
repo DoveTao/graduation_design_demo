@@ -1,0 +1,404 @@
+{
+  "branch_handling_policy": {
+    "policy": [
+      "Do not merge experiment branches back into polish/final-reproducibility-guardrails.",
+      "Keep JRT1 and MF1 as preserved negative-experiment branches.",
+      "Keep experiment/orbslam3-fisheye-strong-baseline as the dedicated external baseline branch.",
+      "Keep experiment/s5d2-dense-export-convention-audit as the dedicated diagnostic and reporting branch.",
+      "If a unified thesis/report branch is needed later, cherry-pick curated reports and supporting checkpoints only, never an entire experiment branch."
+    ]
+  },
+  "canonical_report_selection": [
+    {
+      "curated_target_path": "reports_curated/ablations/final_ablation_baseline_comparison.md",
+      "reason": "final ablation summary should stay with final baseline line",
+      "source_branch": "polish/final-reproducibility-guardrails",
+      "source_commit": "7cb0a2c",
+      "source_path": "reports/final_ablation_baseline_comparison.md",
+      "status": "ready_to_cherry_pick_later"
+    },
+    {
+      "curated_target_path": "reports_curated/ablations/thesis_three_axis_ablation.md",
+      "reason": "three-axis thesis ablation companion report",
+      "source_branch": "polish/final-reproducibility-guardrails",
+      "source_commit": "7cb0a2c",
+      "source_path": "reports/thesis_three_axis_ablation.md",
+      "status": "ready_to_cherry_pick_later"
+    },
+    {
+      "curated_target_path": "reports_curated/audits/REPO2_untracked_experiment_artifact_resolution.md",
+      "reason": "tracks branch-specific artifact resolution history",
+      "source_branch": "experiment/s5d2-dense-export-convention-audit",
+      "source_commit": "9fcdd5d",
+      "source_path": "reports/REPO2_untracked_experiment_artifact_resolution.md",
+      "status": "ready_to_cherry_pick_later"
+    },
+    {
+      "curated_target_path": "reports_curated/audits/all_branch_inventory_and_classification.md",
+      "reason": "all-branch inventory that feeds later archive curation",
+      "source_branch": "experiment/s5d2-dense-export-convention-audit",
+      "source_commit": "9fcdd5d",
+      "source_path": "reports/all_branch_inventory_and_classification.md",
+      "status": "ready_to_cherry_pick_later"
+    },
+    {
+      "curated_target_path": "reports_curated/audits/multibranch_reports_inventory.md",
+      "reason": "cross-branch matrix for report canonicalization",
+      "source_branch": "experiment/s5d2-dense-export-convention-audit",
+      "source_commit": "9fcdd5d",
+      "source_path": "reports/multibranch_reports_inventory.md",
+      "status": "ready_to_cherry_pick_later"
+    },
+    {
+      "curated_target_path": "reports_curated/audits/repo_remote_sync_and_hygiene_audit.md",
+      "reason": "pre-JRT hygiene audit with reproducibility context",
+      "source_branch": "polish/final-reproducibility-guardrails",
+      "source_commit": "7cb0a2c",
+      "source_path": "reports/repo_remote_sync_and_hygiene_audit.md",
+      "status": "ready_to_cherry_pick_later"
+    },
+    {
+      "curated_target_path": "reports_curated/baselines/external_algorithm_baseline_comparison.md",
+      "reason": "thesis-facing baseline comparison on the final/polish line",
+      "source_branch": "polish/final-reproducibility-guardrails",
+      "source_commit": "7cb0a2c",
+      "source_path": "reports/external_algorithm_baseline_comparison.md",
+      "status": "ready_to_cherry_pick_later"
+    },
+    {
+      "curated_target_path": "reports_curated/baselines/orbslam3_fisheye_evaluation_report.md",
+      "reason": "ORB-specific artifacts and reports live on the dedicated external baseline branch",
+      "source_branch": "experiment/orbslam3-fisheye-strong-baseline",
+      "source_commit": "797865b",
+      "source_path": "reports/orbslam3_fisheye_evaluation_report.md",
+      "status": "ready_to_cherry_pick_later"
+    },
+    {
+      "curated_target_path": "reports_curated/baselines/pano_orb_vo_baseline_report.md",
+      "reason": "final baseline branch keeps the stable panorama baseline story",
+      "source_branch": "polish/final-reproducibility-guardrails",
+      "source_commit": "7cb0a2c",
+      "source_path": "reports/pano_orb_vo_baseline_report.md",
+      "status": "ready_to_cherry_pick_later"
+    },
+    {
+      "curated_target_path": "reports_curated/baselines/pano_orb_vo_component_diagnostics.md",
+      "reason": "component-level companion for the panorama baseline",
+      "source_branch": "polish/final-reproducibility-guardrails",
+      "source_commit": "7cb0a2c",
+      "source_path": "reports/pano_orb_vo_component_diagnostics.md",
+      "status": "ready_to_cherry_pick_later"
+    },
+    {
+      "curated_target_path": "reports_curated/baselines/s5_orbslam3_same_evaluator_comparison.md",
+      "reason": "paired comparison with ORB-SLAM3 belongs to the ORB branch",
+      "source_branch": "experiment/orbslam3-fisheye-strong-baseline",
+      "source_commit": "797865b",
+      "source_path": "reports/s5_orbslam3_same_evaluator_comparison.md",
+      "status": "ready_to_cherry_pick_later"
+    },
+    {
+      "curated_target_path": "reports_curated/diagnostics/S5D2_dense_export_convention_audit.md",
+      "reason": "latest branch-specific audit of dense export scope and convention",
+      "source_branch": "experiment/s5d2-dense-export-convention-audit",
+      "source_commit": "9fcdd5d",
+      "source_path": "reports/S5D2_dense_export_convention_audit.md",
+      "status": "ready_to_cherry_pick_later"
+    },
+    {
+      "curated_target_path": "reports_curated/diagnostics/s5_dense_external_export_report.md",
+      "reason": "paired dense export diagnostic used in same-evaluator comparison line",
+      "source_branch": "experiment/orbslam3-fisheye-strong-baseline",
+      "source_commit": "797865b",
+      "source_path": "reports/s5_dense_external_export_report.md",
+      "status": "ready_to_cherry_pick_later"
+    },
+    {
+      "curated_target_path": "reports_curated/diagnostics/s5_external_export_compatibility_audit.md",
+      "reason": "older compatibility audit retained as supporting diagnostic history",
+      "source_branch": "polish/final-reproducibility-guardrails",
+      "source_commit": "7cb0a2c",
+      "source_path": "reports/s5_external_export_compatibility_audit.md",
+      "status": "ready_to_cherry_pick_later"
+    },
+    {
+      "curated_target_path": "reports_curated/environment/droidslam_environment_setup_report.md",
+      "reason": "DROID-SLAM setup feasibility context",
+      "source_branch": "polish/final-reproducibility-guardrails",
+      "source_commit": "7cb0a2c",
+      "source_path": "reports/droidslam_environment_setup_report.md",
+      "status": "ready_to_cherry_pick_later"
+    },
+    {
+      "curated_target_path": "reports_curated/environment/external_baseline_environment_audit.md",
+      "reason": "baseline environment feasibility audit",
+      "source_branch": "polish/final-reproducibility-guardrails",
+      "source_commit": "7cb0a2c",
+      "source_path": "reports/external_baseline_environment_audit.md",
+      "status": "ready_to_cherry_pick_later"
+    },
+    {
+      "curated_target_path": "reports_curated/environment/orbslam3_environment_setup_report.md",
+      "reason": "ORB-SLAM3 setup feasibility context",
+      "source_branch": "polish/final-reproducibility-guardrails",
+      "source_commit": "7cb0a2c",
+      "source_path": "reports/orbslam3_environment_setup_report.md",
+      "status": "ready_to_cherry_pick_later"
+    },
+    {
+      "curated_target_path": "reports_curated/final/final_clean_results_table.md",
+      "reason": "canonical locked final results table",
+      "source_branch": "polish/final-reproducibility-guardrails",
+      "source_commit": "7cb0a2c",
+      "source_path": "reports/final_clean_results_table.md",
+      "status": "ready_to_cherry_pick_later"
+    },
+    {
+      "curated_target_path": "reports_curated/final/final_project_mainline_summary.md",
+      "reason": "final mainline overview for thesis-facing archive",
+      "source_branch": "polish/final-reproducibility-guardrails",
+      "source_commit": "7cb0a2c",
+      "source_path": "reports/final_project_mainline_summary.md",
+      "status": "ready_to_cherry_pick_later"
+    },
+    {
+      "curated_target_path": "reports_curated/final/final_reproducibility_guide.md",
+      "reason": "authoritative final reproducibility branch",
+      "source_branch": "polish/final-reproducibility-guardrails",
+      "source_commit": "7cb0a2c",
+      "source_path": "reports/final_reproducibility_guide.md",
+      "status": "ready_to_cherry_pick_later"
+    },
+    {
+      "curated_target_path": "reports_curated/final/final_thesis_claims_and_limitations.md",
+      "reason": "canonical claims/limitations summary",
+      "source_branch": "polish/final-reproducibility-guardrails",
+      "source_commit": "7cb0a2c",
+      "source_path": "reports/final_thesis_claims_and_limitations.md",
+      "status": "ready_to_cherry_pick_later"
+    },
+    {
+      "curated_target_path": "reports_curated/final/thesis_experiment_section_draft.md",
+      "reason": "thesis draft that ties experiments together",
+      "source_branch": "polish/final-reproducibility-guardrails",
+      "source_commit": "7cb0a2c",
+      "source_path": "reports/thesis_experiment_section_draft.md",
+      "status": "ready_to_cherry_pick_later"
+    },
+    {
+      "curated_target_path": "reports_curated/negative_experiments/jrt1/JRT1_final_closeout_summary.md",
+      "reason": "negative experiment conclusion belongs to its own branch",
+      "source_branch": "experiment/jrt1-joint-rtdir-coupled-refiner",
+      "source_commit": "6765af3",
+      "source_path": "reports/JRT1_final_closeout_summary.md",
+      "status": "ready_to_cherry_pick_later"
+    },
+    {
+      "curated_target_path": "reports_curated/negative_experiments/jrt1/JRT1b_train_cv_report.md",
+      "reason": "stage report retained as supporting evidence under the JRT1 closeout",
+      "source_branch": "experiment/jrt1-joint-rtdir-coupled-refiner",
+      "source_commit": "6765af3",
+      "source_path": "reports/JRT1b_train_cv_report.md",
+      "status": "ready_to_cherry_pick_later"
+    },
+    {
+      "curated_target_path": "reports_curated/negative_experiments/jrt1/JRT1c_train_cv_trajectory_proxy_report.md",
+      "reason": "trajectory-proxy stage report retained as supporting evidence under the JRT1 closeout",
+      "source_branch": "experiment/jrt1-joint-rtdir-coupled-refiner",
+      "source_commit": "6765af3",
+      "source_path": "reports/JRT1c_train_cv_trajectory_proxy_report.md",
+      "status": "ready_to_cherry_pick_later"
+    },
+    {
+      "curated_target_path": "reports_curated/negative_experiments/mf1/MF1_final_closeout_summary.md",
+      "reason": "negative experiment conclusion belongs to its own branch",
+      "source_branch": "experiment/mf1-multi-frame-chain-refiner",
+      "source_commit": "ea559d5",
+      "source_path": "reports/MF1_final_closeout_summary.md",
+      "status": "ready_to_cherry_pick_later"
+    },
+    {
+      "curated_target_path": "reports_curated/negative_experiments/mf1/MF1a_chain_refiner_smoke_report.md",
+      "reason": "smoke harness evidence for MF1 line",
+      "source_branch": "experiment/mf1-multi-frame-chain-refiner",
+      "source_commit": "ea559d5",
+      "source_path": "reports/MF1a_chain_refiner_smoke_report.md",
+      "status": "ready_to_cherry_pick_later"
+    },
+    {
+      "curated_target_path": "reports_curated/negative_experiments/mf1/MF1b_train_cv_report.md",
+      "reason": "train-CV evidence for MF1 line",
+      "source_branch": "experiment/mf1-multi-frame-chain-refiner",
+      "source_commit": "ea559d5",
+      "source_path": "reports/MF1b_train_cv_report.md",
+      "status": "ready_to_cherry_pick_later"
+    },
+    {
+      "curated_target_path": "reports_curated/negative_experiments/optimize/final_s10_chain_smoother_summary.md",
+      "reason": "represents optimize S10 negative summary without bringing full branch payload",
+      "source_branch": "optimize/s10-chain-pathratio-smoother",
+      "source_commit": "0ae9aee",
+      "source_path": "reports/final_s10_chain_smoother_summary.md",
+      "status": "needs_user_review"
+    },
+    {
+      "curated_target_path": "reports_curated/negative_experiments/optimize/final_s11_tmag_scale_consistency_summary.md",
+      "reason": "represents optimize S11 negative summary without bringing full branch payload",
+      "source_branch": "optimize/s11-tmag-scale-consistency-training",
+      "source_commit": "b00eab4",
+      "source_path": "reports/final_s11_tmag_scale_consistency_summary.md",
+      "status": "needs_user_review"
+    },
+    {
+      "curated_target_path": "reports_curated/negative_experiments/optimize/final_s12_regime_balanced_sampling_summary.md",
+      "reason": "represents optimize S12 negative summary without bringing full branch payload",
+      "source_branch": "optimize/s12-regime-balanced-sampling",
+      "source_commit": "34edd74",
+      "source_path": "reports/final_s12_regime_balanced_sampling_summary.md",
+      "status": "needs_user_review"
+    },
+    {
+      "curated_target_path": "reports_curated/negative_experiments/optimize/final_s14_local_window_pose_graph_summary.md",
+      "reason": "represents optimize S14 negative summary without bringing full branch payload",
+      "source_branch": "optimize/s14-local-window-pose-graph",
+      "source_commit": "36e68fe",
+      "source_path": "reports/final_s14_local_window_pose_graph_summary.md",
+      "status": "needs_user_review"
+    },
+    {
+      "curated_target_path": "reports_curated/negative_experiments/optimize/final_s15_trajectory_level_training_objective_summary.md",
+      "reason": "represents optimize S15 negative summary without bringing full branch payload",
+      "source_branch": "optimize/s15-trajectory-level-training-objective",
+      "source_commit": "8a28577",
+      "source_path": "reports/final_s15_trajectory_level_training_objective_summary.md",
+      "status": "needs_user_review"
+    },
+    {
+      "curated_target_path": "reports_curated/negative_experiments/optimize/final_s16_stronger_visual_backbone_feasibility_summary.md",
+      "reason": "represents optimize S16 negative summary without bringing full branch payload",
+      "source_branch": "optimize/s16-stronger-visual-backbone-feasibility",
+      "source_commit": "8f52076",
+      "source_path": "reports/final_s16_stronger_visual_backbone_feasibility_summary.md",
+      "status": "needs_user_review"
+    },
+    {
+      "curated_target_path": "reports_curated/negative_experiments/optimize/final_s17_pose_supervision_dataset_quality_summary.md",
+      "reason": "represents optimize S17 negative summary without bringing full branch payload",
+      "source_branch": "optimize/s17-pose-supervision-dataset-quality-audit",
+      "source_commit": "e020e11",
+      "source_path": "reports/final_s17_pose_supervision_dataset_quality_summary.md",
+      "status": "needs_user_review"
+    },
+    {
+      "curated_target_path": "reports_curated/negative_experiments/optimize/final_s19_geometry_aware_pretraining_feasibility_summary.md",
+      "reason": "represents optimize S19 negative summary without bringing full branch payload",
+      "source_branch": "optimize/s19-geometry-aware-pretraining-feasibility",
+      "source_commit": "f90d167",
+      "source_path": "reports/final_s19_geometry_aware_pretraining_feasibility_summary.md",
+      "status": "needs_user_review"
+    }
+  ],
+  "diagnostics_selection": [
+    "reports_curated/diagnostics/S5D2_dense_export_convention_audit.md",
+    "reports_curated/diagnostics/s5_dense_external_export_report.md",
+    "reports_curated/diagnostics/s5_external_export_compatibility_audit.md"
+  ],
+  "duplicate_policy": {
+    "divergent_same_path_reports_count": 6,
+    "do_not_include_wholesale": [
+      "cleanup_* historical notes",
+      "git staging / commit bookkeeping reports",
+      "branch-local intermediate diagnostics that are superseded by closeout or final summaries"
+    ],
+    "duplicate_topic_groups_count": 14,
+    "policy": [
+      "Choose one canonical branch per report topic; do not merge whole branches just to consolidate reports.",
+      "Keep closeout reports as the canonical summary for JRT1 and MF1, with stage reports retained only as supporting evidence.",
+      "Keep S5D2 as the canonical dense-export convention audit; retain older S5 export audits as supporting history.",
+      "For optimize/* branches, prefer final summary / negative summary reports only and require manual review before selecting additional artifacts.",
+      "Branch-local hygiene and cleanup audits should remain on their original branches unless a later REPORT4 materialization is explicitly approved."
+    ]
+  },
+  "external_baseline_selection": {
+    "orbslam3": [
+      "reports_curated/baselines/orbslam3_fisheye_evaluation_report.md"
+    ],
+    "pano_orb_vo": [
+      "reports_curated/baselines/pano_orb_vo_baseline_report.md",
+      "reports_curated/baselines/pano_orb_vo_component_diagnostics.md"
+    ],
+    "s5_dense_same_evaluator": [
+      "reports_curated/baselines/s5_orbslam3_same_evaluator_comparison.md"
+    ]
+  },
+  "negative_experiment_selection": {
+    "JRT1": {
+      "canonical_closeout": "reports_curated/negative_experiments/jrt1/JRT1_final_closeout_summary.md",
+      "policy": "keep stage reports as supporting evidence, but treat closeout as canonical summary",
+      "supporting_reports": [
+        "reports_curated/negative_experiments/jrt1/JRT1b_train_cv_report.md",
+        "reports_curated/negative_experiments/jrt1/JRT1c_train_cv_trajectory_proxy_report.md"
+      ]
+    },
+    "MF1": {
+      "canonical_closeout": "reports_curated/negative_experiments/mf1/MF1_final_closeout_summary.md",
+      "policy": "keep stage reports as supporting evidence, but treat closeout as canonical summary",
+      "supporting_reports": [
+        "reports_curated/negative_experiments/mf1/MF1a_chain_refiner_smoke_report.md",
+        "reports_curated/negative_experiments/mf1/MF1b_train_cv_report.md"
+      ]
+    }
+  },
+  "no_branches_merged": true,
+  "no_cherry_picks": true,
+  "no_files_deleted": true,
+  "no_files_moved": true,
+  "proposed_structure": {
+    "reports_curated/README.md": "overview and provenance policy",
+    "reports_curated/ablations/": [
+      "final_ablation_baseline_comparison.md",
+      "thesis_three_axis_ablation.md"
+    ],
+    "reports_curated/audits/": [
+      "repo_remote_sync_and_hygiene_audit.md",
+      "REPO2_untracked_experiment_artifact_resolution.md",
+      "all_branch_inventory_and_classification.md",
+      "multibranch_reports_inventory.md"
+    ],
+    "reports_curated/baselines/": [
+      "pano_orb_vo_baseline_report.md",
+      "pano_orb_vo_component_diagnostics.md",
+      "external_algorithm_baseline_comparison.md",
+      "orbslam3_fisheye_evaluation_report.md",
+      "s5_orbslam3_same_evaluator_comparison.md"
+    ],
+    "reports_curated/diagnostics/": [
+      "S5D2_dense_export_convention_audit.md",
+      "s5_dense_external_export_report.md",
+      "s5_external_export_compatibility_audit.md"
+    ],
+    "reports_curated/environment/": [
+      "external_baseline_environment_audit.md",
+      "orbslam3_environment_setup_report.md",
+      "droidslam_environment_setup_report.md"
+    ],
+    "reports_curated/final/": [
+      "final_project_mainline_summary.md",
+      "final_clean_results_table.md",
+      "final_reproducibility_guide.md",
+      "final_thesis_claims_and_limitations.md",
+      "thesis_experiment_section_draft.md"
+    ],
+    "reports_curated/negative_experiments/jrt1/": [
+      "JRT1_final_closeout_summary.md",
+      "JRT1b_train_cv_report.md",
+      "JRT1c_train_cv_trajectory_proxy_report.md"
+    ],
+    "reports_curated/negative_experiments/mf1/": [
+      "MF1_final_closeout_summary.md",
+      "MF1a_chain_refiner_smoke_report.md",
+      "MF1b_train_cv_report.md"
+    ]
+  },
+  "recommended_next_task": "REPORT4_curated_report_archive_materialization"
+}
