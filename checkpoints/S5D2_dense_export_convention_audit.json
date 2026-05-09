@@ -1,0 +1,266 @@
+{
+  "convention_variants": [
+    {
+      "ATE_none": 21.681522044975264,
+      "ATE_se3": 8.231468716451547,
+      "ATE_sim3": 4.07912293550008,
+      "num_matches": 454,
+      "path_length": 71.74693165730041,
+      "path_ratio": 2.777267572676944,
+      "rotation_continuity": {
+        "max": 21.796170378392592,
+        "mean": 20.747645172700473,
+        "median": 20.626242043159703,
+        "p90": 21.344696938192374
+      },
+      "status": "ok",
+      "translation_step_distribution": {
+        "max": 0.5314627512124741,
+        "mean": 0.1583817475878596,
+        "median": 0.13720072278852508,
+        "p90": 0.2016920525790495
+      },
+      "variant": "original_xyzw"
+    },
+    {
+      "ATE_none": 21.133301784901857,
+      "ATE_se3": 8.438498618396462,
+      "ATE_sim3": 4.057328739897682,
+      "num_matches": 454,
+      "path_length": 375.5856439921687,
+      "path_ratio": 14.538626331852328,
+      "rotation_continuity": {
+        "max": 21.796170378392556,
+        "mean": 20.747645172700473,
+        "median": 20.626242043159703,
+        "p90": 21.344696938192403
+      },
+      "status": "ok",
+      "translation_step_distribution": {
+        "max": 1.5984826086464659,
+        "mean": 0.8291073818811671,
+        "median": 0.8219968586046538,
+        "p90": 1.3558156616192045
+      },
+      "variant": "invert_pose"
+    },
+    {
+      "ATE_none": 23.561148921428764,
+      "ATE_se3": 8.228929012685906,
+      "ATE_sim3": 4.07859626230039,
+      "num_matches": 454,
+      "path_length": 71.74693165730041,
+      "path_ratio": 2.777267572676944,
+      "rotation_continuity": {
+        "max": 21.796170378392592,
+        "mean": 20.747645172700473,
+        "median": 20.626242043159703,
+        "p90": 21.344696938192374
+      },
+      "status": "ok",
+      "translation_step_distribution": {
+        "max": 0.5314627512124741,
+        "mean": 0.1583817475878596,
+        "median": 0.13720072278852508,
+        "p90": 0.2016920525790495
+      },
+      "variant": "axis_flip_x"
+    },
+    {
+      "ATE_none": 18.589689776345008,
+      "ATE_se3": 8.228929012685906,
+      "ATE_sim3": 4.07859626230039,
+      "num_matches": 454,
+      "path_length": 71.74693165730041,
+      "path_ratio": 2.777267572676944,
+      "rotation_continuity": {
+        "max": 21.796170378392592,
+        "mean": 20.747645172700473,
+        "median": 20.626242043159703,
+        "p90": 21.344696938192374
+      },
+      "status": "ok",
+      "translation_step_distribution": {
+        "max": 0.5314627512124741,
+        "mean": 0.1583817475878596,
+        "median": 0.13720072278852508,
+        "p90": 0.2016920525790495
+      },
+      "variant": "axis_flip_y"
+    },
+    {
+      "ATE_none": 21.6751450344072,
+      "ATE_se3": 8.228929012685906,
+      "ATE_sim3": 4.07859626230039,
+      "num_matches": 454,
+      "path_length": 71.74693165730041,
+      "path_ratio": 2.777267572676944,
+      "rotation_continuity": {
+        "max": 21.796170378392592,
+        "mean": 20.747645172700473,
+        "median": 20.626242043159703,
+        "p90": 21.344696938192374
+      },
+      "status": "ok",
+      "translation_step_distribution": {
+        "max": 0.5314627512124741,
+        "mean": 0.1583817475878596,
+        "median": 0.13720072278852508,
+        "p90": 0.2016920525790495
+      },
+      "variant": "axis_flip_z"
+    },
+    {
+      "ATE_none": 21.681522044975264,
+      "ATE_se3": 8.231468716451547,
+      "ATE_sim3": 4.07912293550008,
+      "num_matches": 454,
+      "path_length": 71.74693165730041,
+      "path_ratio": 2.777267572676944,
+      "rotation_continuity": {
+        "max": 21.796170378392592,
+        "mean": 20.747645172700455,
+        "median": 20.626242043159703,
+        "p90": 21.344696938192396
+      },
+      "status": "ok",
+      "translation_step_distribution": {
+        "max": 0.5314627512124741,
+        "mean": 0.1583817475878596,
+        "median": 0.13720072278852508,
+        "p90": 0.2016920525790495
+      },
+      "variant": "quaternion_order_wxyz"
+    },
+    {
+      "ATE_none": 21.84909800001379,
+      "ATE_se3": 6.966183526759398,
+      "ATE_sim3": 3.634526976730513,
+      "num_matches": 454,
+      "path_length": 71.74693165730041,
+      "path_ratio": 2.777267572676944,
+      "rotation_continuity": {
+        "max": 21.796170378392592,
+        "mean": 20.747645172700473,
+        "median": 20.626242043159703,
+        "p90": 21.344696938192374
+      },
+      "status": "ok",
+      "translation_step_distribution": {
+        "max": 0.5314627512124741,
+        "mean": 0.1583817475878596,
+        "median": 0.13720072278852508,
+        "p90": 0.2016920525790495
+      },
+      "variant": "reverse_position_order"
+    }
+  ],
+  "dense_export_found": true,
+  "dense_export_path": "external_baselines/results/s5_dense/scene01_seq03_s5_dense_est_tum.txt",
+  "dense_export_summary": {
+    "duplicate_timestamps": 0,
+    "has_nan_or_inf": false,
+    "matched_poses": 454,
+    "num_gt_poses": 454,
+    "num_pred_poses": 454,
+    "position_jump_outlier_count": 0,
+    "position_step_distribution": {
+      "max": 0.5314627512124741,
+      "mean": 0.1583817475878596,
+      "median": 0.13720072278852508,
+      "p90": 0.2016920525790495
+    },
+    "quaternion_norm": {
+      "max": 1.0000000007635996,
+      "mean": 1.0000000000018272,
+      "median": 1.0000000000041398,
+      "p90": 1.0000000003384986
+    },
+    "quaternion_norm_close_to_1": true,
+    "timestamp_match_rate": 1.0,
+    "timestamps_strictly_increasing": true
+  },
+  "dense_external_metrics": {
+    "ATE_none": 21.681522,
+    "ATE_se3": 8.231469,
+    "ATE_sim3": 4.079123,
+    "path_ratio": 2.777268
+  },
+  "experiment_name": "S5D2_dense_export_convention_audit",
+  "final_classification": "S5D2-EVAL-SCOPE-MISMATCH",
+  "manifest_path": "checkpoints/final_clean_candidate_manifest.json",
+  "matched_poses": 454,
+  "num_gt_poses": 454,
+  "num_pred_poses": 454,
+  "official_locked_metrics": {
+    "ATE": 7.352288,
+    "drift": 1.327343,
+    "path_ratio": 0.932379
+  },
+  "official_vs_dense_scope": {
+    "dense_export_scope": "scene01/seq03 split=None dense adjacent k=1 all-frame stream exported to TUM for external evaluator",
+    "evidence": {
+      "dense_uses_k1": true,
+      "dense_uses_split_none": true,
+      "dense_writes_camera_center": true,
+      "official_uses_eval_odometry_sequence": true,
+      "official_uses_split_test": true
+    },
+    "official_eval_scope": "test split odometry evaluation via eval_odometry_sequence over selected odometry chains and configured eval k-list",
+    "path_ratio_definition_match": false,
+    "same_pair_source": "unknown"
+  },
+  "path_length_audit": {
+    "dense_external_reference_path_ratio": 2.777268,
+    "gt_path_length_full": 25.83364036045875,
+    "gt_path_length_matched": 25.83364036045875,
+    "gt_tmag_distribution": {
+      "max": 0.740239318259982,
+      "mean": 0.057027903665471856,
+      "median": 0.007506645044218322,
+      "p90": 0.21251344154401194
+    },
+    "log_tmag_error_distribution": {
+      "max": 5.815659595548674,
+      "mean": 2.5226503923382695,
+      "median": 2.856695484057001,
+      "p90": 4.1643977559344805
+    },
+    "official_locked_path_ratio": 0.932379,
+    "path_ratio_dense": 2.777267572676944,
+    "path_ratio_mismatch": true,
+    "pred_path_length_dense": 71.74693165730041,
+    "pred_tmag_distribution": {
+      "max": 0.5314627512124741,
+      "mean": 0.1583817475878596,
+      "median": 0.13720072278852508,
+      "p90": 0.2016920525790495
+    },
+    "scale_factor_to_match_gt": 0.3600661347282873,
+    "suspected_scale_over_application": true
+  },
+  "policy_path": "checkpoints/S5_clean_tmag_calibration_policy.json",
+  "recommendation": "Do not compare official S5 locked path_ratio directly with dense external path_ratio; audit scope-specific scale behavior separately.",
+  "s5_locked_metrics_unchanged": true,
+  "s5_policy_unchanged": true,
+  "tmag_distribution": {
+    "gt_tmag": {
+      "max": 0.740239318259982,
+      "mean": 0.057027903665471856,
+      "median": 0.007506645044218322,
+      "p90": 0.21251344154401194
+    },
+    "log_tmag_error": {
+      "max": 5.815659595548674,
+      "mean": 2.5226503923382695,
+      "median": 2.856695484057001,
+      "p90": 4.1643977559344805
+    },
+    "pred_tmag": {
+      "max": 0.5314627512124741,
+      "mean": 0.1583817475878596,
+      "median": 0.13720072278852508,
+      "p90": 0.2016920525790495
+    }
+  }
+}
