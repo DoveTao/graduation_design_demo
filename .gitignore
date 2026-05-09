@@ -108,3 +108,6 @@ checkpoints/**/final_summary.json
 # ---- Generated report policy ----
 reports/tmp/
 reports/drafts/
+
+# ---- Local ORB-SLAM3 runner binaries ----
+external_baselines/runners/orbslam3_mono_fisheye_runner
