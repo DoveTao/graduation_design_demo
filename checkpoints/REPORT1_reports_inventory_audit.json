@@ -1,0 +1,1042 @@
+{
+  "archive_candidates": [
+    {
+      "path": "reports/checkpoints_live_cleanup_inventory.md",
+      "reason": "historical cleanup planning",
+      "safe_to_move_now": "unknown",
+      "suggested_future_location": "reports/audits/checkpoint_cleanup/"
+    },
+    {
+      "path": "reports/checkpoints_live_cleanup_state.json",
+      "reason": "paired state artifact for cleanup audit",
+      "safe_to_move_now": "unknown",
+      "suggested_future_location": "reports/audits/checkpoint_cleanup/"
+    },
+    {
+      "path": "reports/checkpoints_live_cleanup_summary.md",
+      "reason": "historical cleanup summary",
+      "safe_to_move_now": "unknown",
+      "suggested_future_location": "reports/audits/checkpoint_cleanup/"
+    },
+    {
+      "path": "reports/cleanup_actions_s1d5.md",
+      "reason": "transitional cleanup action log",
+      "safe_to_move_now": "unknown",
+      "suggested_future_location": "reports/audits/checkpoint_cleanup/"
+    },
+    {
+      "path": "reports/cleanup_delete_candidates_s1d5.md",
+      "reason": "historical delete-candidate note",
+      "safe_to_move_now": "unknown",
+      "suggested_future_location": "reports/audits/checkpoint_cleanup/"
+    },
+    {
+      "path": "reports/cleanup_inventory_s1d5.md",
+      "reason": "inventory-style historical note",
+      "safe_to_move_now": "unknown",
+      "suggested_future_location": "reports/audits/checkpoint_cleanup/"
+    },
+    {
+      "path": "reports/cleanup_summary_s1d5.md",
+      "reason": "summary of cleanup round",
+      "safe_to_move_now": "unknown",
+      "suggested_future_location": "reports/audits/checkpoint_cleanup/"
+    },
+    {
+      "path": "reports/git_staging_s1d5_precheck.md",
+      "reason": "staging precheck, not thesis-facing",
+      "safe_to_move_now": "unknown",
+      "suggested_future_location": "reports/audits/git_history/"
+    },
+    {
+      "path": "reports/git_staging_s1d5_summary.md",
+      "reason": "staging summary, not thesis-facing",
+      "safe_to_move_now": "unknown",
+      "suggested_future_location": "reports/audits/git_history/"
+    },
+    {
+      "path": "reports/git_commit_s1d5_summary.md",
+      "reason": "commit bookkeeping",
+      "safe_to_move_now": "unknown",
+      "suggested_future_location": "reports/audits/git_history/"
+    },
+    {
+      "path": "reports/git_commit_s2b_summary.md",
+      "reason": "commit bookkeeping",
+      "safe_to_move_now": "unknown",
+      "suggested_future_location": "reports/audits/git_history/"
+    },
+    {
+      "path": "reports/post_commit_workspace_cleanup_plan.md",
+      "reason": "workspace cleanup planning artifact",
+      "safe_to_move_now": "unknown",
+      "suggested_future_location": "reports/audits/git_history/"
+    },
+    {
+      "path": "reports/post_s5d2_git_uncommitted_audit.md",
+      "reason": "superseded by REPO2 resolution audit",
+      "safe_to_move_now": "unknown",
+      "suggested_future_location": "reports/audits/repo_sync/"
+    }
+  ],
+  "duplicate_candidates": [
+    {
+      "assessment": "overlapping_but_not_duplicate",
+      "keep": "protocol + comparison + one diagnostic summary",
+      "reports": [
+        "reports/external_algorithm_baseline_protocol.md",
+        "reports/external_algorithm_baseline_comparison.md",
+        "reports/alignment_consistent_strong_baseline_comparison.md",
+        "reports/current_valid_baselines.md"
+      ],
+      "topic": "External baseline comparison framing"
+    },
+    {
+      "assessment": "same_theme_different_stage",
+      "keep": "S5D2 as current active dense-export audit; older compatibility audit remains diagnostic history",
+      "reports": [
+        "reports/s5_external_export_compatibility_audit.md",
+        "reports/S5D2_dense_export_convention_audit.md"
+      ],
+      "topic": "S5 external export and dense audit chain"
+    },
+    {
+      "assessment": "complementary_final_set",
+      "keep": "all; they serve different thesis-facing roles",
+      "reports": [
+        "reports/final_project_mainline_summary.md",
+        "reports/final_clean_results_table.md",
+        "reports/final_negative_results_summary.md",
+        "reports/final_thesis_claims_and_limitations.md"
+      ],
+      "topic": "Final summary overlap"
+    },
+    {
+      "assessment": "archive_candidate_cluster",
+      "keep": "retain for auditability now; good future archive target",
+      "reports": [
+        "reports/cleanup_inventory_s1d5.md",
+        "reports/cleanup_summary_s1d5.md",
+        "reports/git_staging_s1d5_precheck.md",
+        "reports/git_staging_s1d5_summary.md",
+        "reports/post_commit_workspace_cleanup_plan.md"
+      ],
+      "topic": "Cleanup and staging documentation"
+    }
+  ],
+  "groups": {
+    "ablation": 4,
+    "diagnostics": 3,
+    "external": 7,
+    "final": 14,
+    "negative_experiments": 27,
+    "repo_audits": 17
+  },
+  "no_files_deleted": true,
+  "no_files_moved": true,
+  "recommended_structure": [
+    "reports/final/",
+    "reports/ablations/",
+    "reports/baselines/",
+    "reports/diagnostics/",
+    "reports/experiments/jrt1/",
+    "reports/experiments/mf1/",
+    "reports/experiments/orbslam3/",
+    "reports/audits/",
+    "reports/environment/"
+  ],
+  "report_entries": [
+    {
+      "archive_candidate": false,
+      "group": "repo_audits",
+      "likely_referenced_by_scripts_or_tests": false,
+      "notes": [
+        "latest_repo2_resolution_audit",
+        "likely_ref=no"
+      ],
+      "path": "reports/REPO2_untracked_experiment_artifact_resolution.md",
+      "section": "Repository Hygiene Reports",
+      "should_remain_top_level": true,
+      "status": "audit_only"
+    },
+    {
+      "archive_candidate": false,
+      "group": "negative_experiments",
+      "likely_referenced_by_scripts_or_tests": false,
+      "notes": [
+        "likely_ref=no"
+      ],
+      "path": "reports/S3a0_minimal_coupled_pose_head_implementation_checklist.md",
+      "section": "Negative Experiment Reports",
+      "should_remain_top_level": true,
+      "status": "negative_or_diagnostic"
+    },
+    {
+      "archive_candidate": false,
+      "group": "negative_experiments",
+      "likely_referenced_by_scripts_or_tests": false,
+      "notes": [
+        "likely_ref=no"
+      ],
+      "path": "reports/S3a_coupled_pose_head_design_plan.md",
+      "section": "Negative Experiment Reports",
+      "should_remain_top_level": true,
+      "status": "negative_or_diagnostic"
+    },
+    {
+      "archive_candidate": false,
+      "group": "diagnostics",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "active_dense_export_audit",
+        "likely_ref=yes"
+      ],
+      "path": "reports/S5D2_dense_export_convention_audit.md",
+      "section": "Diagnostics and Audits",
+      "should_remain_top_level": true,
+      "status": "diagnostic_only"
+    },
+    {
+      "archive_candidate": false,
+      "group": "ablation",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "diagnostic_baseline_overlap",
+        "likely_ref=yes"
+      ],
+      "path": "reports/alignment_consistent_strong_baseline_comparison.md",
+      "section": "Ablation and Baseline Reports",
+      "should_remain_top_level": true,
+      "status": "keep"
+    },
+    {
+      "archive_candidate": true,
+      "group": "repo_audits",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "archive_candidate",
+        "likely_ref=yes"
+      ],
+      "path": "reports/checkpoints_live_cleanup_inventory.md",
+      "section": "Repository Hygiene Reports",
+      "should_remain_top_level": true,
+      "status": "audit_only"
+    },
+    {
+      "archive_candidate": true,
+      "group": "repo_audits",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "archive_candidate",
+        "non_markdown_artifact",
+        "likely_ref=yes"
+      ],
+      "path": "reports/checkpoints_live_cleanup_state.json",
+      "section": "Repository Hygiene Reports",
+      "should_remain_top_level": true,
+      "status": "audit_only"
+    },
+    {
+      "archive_candidate": true,
+      "group": "repo_audits",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "archive_candidate",
+        "likely_ref=yes"
+      ],
+      "path": "reports/checkpoints_live_cleanup_summary.md",
+      "section": "Repository Hygiene Reports",
+      "should_remain_top_level": true,
+      "status": "audit_only"
+    },
+    {
+      "archive_candidate": true,
+      "group": "repo_audits",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "archive_candidate",
+        "likely_ref=yes"
+      ],
+      "path": "reports/cleanup_actions_s1d5.md",
+      "section": "Repository Hygiene Reports",
+      "should_remain_top_level": true,
+      "status": "audit_only"
+    },
+    {
+      "archive_candidate": true,
+      "group": "repo_audits",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "archive_candidate",
+        "likely_ref=yes"
+      ],
+      "path": "reports/cleanup_delete_candidates_s1d5.md",
+      "section": "Repository Hygiene Reports",
+      "should_remain_top_level": true,
+      "status": "audit_only"
+    },
+    {
+      "archive_candidate": true,
+      "group": "repo_audits",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "archive_candidate",
+        "likely_ref=yes"
+      ],
+      "path": "reports/cleanup_inventory_s1d5.md",
+      "section": "Repository Hygiene Reports",
+      "should_remain_top_level": true,
+      "status": "audit_only"
+    },
+    {
+      "archive_candidate": true,
+      "group": "repo_audits",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "archive_candidate",
+        "likely_ref=yes"
+      ],
+      "path": "reports/cleanup_summary_s1d5.md",
+      "section": "Repository Hygiene Reports",
+      "should_remain_top_level": true,
+      "status": "audit_only"
+    },
+    {
+      "archive_candidate": false,
+      "group": "ablation",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "partly_superseded_by_final_clean_results_table",
+        "likely_ref=yes"
+      ],
+      "path": "reports/current_valid_baselines.md",
+      "section": "Ablation and Baseline Reports",
+      "should_remain_top_level": true,
+      "status": "keep"
+    },
+    {
+      "archive_candidate": false,
+      "group": "external",
+      "likely_referenced_by_scripts_or_tests": false,
+      "notes": [
+        "likely_ref=no"
+      ],
+      "path": "reports/droidslam_environment_setup_report.md",
+      "section": "External Baseline / ORB-SLAM3 Reports",
+      "should_remain_top_level": true,
+      "status": "keep"
+    },
+    {
+      "archive_candidate": false,
+      "group": "external",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "paired_protocol_and_results",
+        "likely_ref=yes"
+      ],
+      "path": "reports/external_algorithm_baseline_comparison.md",
+      "section": "External Baseline / ORB-SLAM3 Reports",
+      "should_remain_top_level": true,
+      "status": "keep"
+    },
+    {
+      "archive_candidate": false,
+      "group": "external",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "paired_protocol_and_results",
+        "likely_ref=yes"
+      ],
+      "path": "reports/external_algorithm_baseline_protocol.md",
+      "section": "External Baseline / ORB-SLAM3 Reports",
+      "should_remain_top_level": true,
+      "status": "keep"
+    },
+    {
+      "archive_candidate": false,
+      "group": "external",
+      "likely_referenced_by_scripts_or_tests": false,
+      "notes": [
+        "likely_ref=no"
+      ],
+      "path": "reports/external_baseline_environment_audit.md",
+      "section": "External Baseline / ORB-SLAM3 Reports",
+      "should_remain_top_level": true,
+      "status": "keep"
+    },
+    {
+      "archive_candidate": false,
+      "group": "ablation",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "likely_ref=yes"
+      ],
+      "path": "reports/final_ablation_baseline_comparison.md",
+      "section": "Ablation and Baseline Reports",
+      "should_remain_top_level": true,
+      "status": "keep"
+    },
+    {
+      "archive_candidate": false,
+      "group": "final",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "likely_ref=yes"
+      ],
+      "path": "reports/final_clean_results_table.md",
+      "section": "Final / Thesis Reports",
+      "should_remain_top_level": true,
+      "status": "active_final"
+    },
+    {
+      "archive_candidate": false,
+      "group": "final",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "likely_ref=yes"
+      ],
+      "path": "reports/final_figure_index.md",
+      "section": "Final / Thesis Reports",
+      "should_remain_top_level": true,
+      "status": "active_final"
+    },
+    {
+      "archive_candidate": false,
+      "group": "final",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "thesis_facing",
+        "likely_ref=yes"
+      ],
+      "path": "reports/final_negative_results_summary.md",
+      "section": "Final / Thesis Reports",
+      "should_remain_top_level": true,
+      "status": "active_final"
+    },
+    {
+      "archive_candidate": false,
+      "group": "negative_experiments",
+      "likely_referenced_by_scripts_or_tests": false,
+      "notes": [
+        "likely_ref=no"
+      ],
+      "path": "reports/final_post_s11_code_optimization_closure.md",
+      "section": "Negative Experiment Reports",
+      "should_remain_top_level": true,
+      "status": "negative_or_diagnostic"
+    },
+    {
+      "archive_candidate": false,
+      "group": "negative_experiments",
+      "likely_referenced_by_scripts_or_tests": false,
+      "notes": [
+        "likely_ref=no"
+      ],
+      "path": "reports/final_post_s14_code_optimization_closure.md",
+      "section": "Negative Experiment Reports",
+      "should_remain_top_level": true,
+      "status": "negative_or_diagnostic"
+    },
+    {
+      "archive_candidate": false,
+      "group": "negative_experiments",
+      "likely_referenced_by_scripts_or_tests": false,
+      "notes": [
+        "likely_ref=no"
+      ],
+      "path": "reports/final_post_s15_trajectory_training_closure.md",
+      "section": "Negative Experiment Reports",
+      "should_remain_top_level": true,
+      "status": "negative_or_diagnostic"
+    },
+    {
+      "archive_candidate": false,
+      "group": "negative_experiments",
+      "likely_referenced_by_scripts_or_tests": false,
+      "notes": [
+        "likely_ref=no"
+      ],
+      "path": "reports/final_post_s16_backbone_feasibility_closure.md",
+      "section": "Negative Experiment Reports",
+      "should_remain_top_level": true,
+      "status": "negative_or_diagnostic"
+    },
+    {
+      "archive_candidate": false,
+      "group": "negative_experiments",
+      "likely_referenced_by_scripts_or_tests": false,
+      "notes": [
+        "likely_ref=no"
+      ],
+      "path": "reports/final_post_s19_geometry_pretraining_closure.md",
+      "section": "Negative Experiment Reports",
+      "should_remain_top_level": true,
+      "status": "negative_or_diagnostic"
+    },
+    {
+      "archive_candidate": false,
+      "group": "negative_experiments",
+      "likely_referenced_by_scripts_or_tests": false,
+      "notes": [
+        "likely_ref=no"
+      ],
+      "path": "reports/final_post_s9_code_optimization_closure.md",
+      "section": "Negative Experiment Reports",
+      "should_remain_top_level": true,
+      "status": "negative_or_diagnostic"
+    },
+    {
+      "archive_candidate": false,
+      "group": "final",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "likely_ref=yes"
+      ],
+      "path": "reports/final_project_mainline_summary.md",
+      "section": "Final / Thesis Reports",
+      "should_remain_top_level": true,
+      "status": "active_final"
+    },
+    {
+      "archive_candidate": false,
+      "group": "final",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "likely_ref=yes"
+      ],
+      "path": "reports/final_reproducibility_guide.md",
+      "section": "Final / Thesis Reports",
+      "should_remain_top_level": true,
+      "status": "active_final"
+    },
+    {
+      "archive_candidate": false,
+      "group": "negative_experiments",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "likely_ref=yes"
+      ],
+      "path": "reports/final_s10_chain_smoother_summary.md",
+      "section": "Negative Experiment Reports",
+      "should_remain_top_level": true,
+      "status": "negative_or_diagnostic"
+    },
+    {
+      "archive_candidate": false,
+      "group": "negative_experiments",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "likely_ref=yes"
+      ],
+      "path": "reports/final_s11_tmag_scale_consistency_summary.md",
+      "section": "Negative Experiment Reports",
+      "should_remain_top_level": true,
+      "status": "negative_or_diagnostic"
+    },
+    {
+      "archive_candidate": false,
+      "group": "negative_experiments",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "likely_ref=yes"
+      ],
+      "path": "reports/final_s12_regime_balanced_sampling_summary.md",
+      "section": "Negative Experiment Reports",
+      "should_remain_top_level": true,
+      "status": "negative_or_diagnostic"
+    },
+    {
+      "archive_candidate": false,
+      "group": "negative_experiments",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "likely_ref=yes"
+      ],
+      "path": "reports/final_s13_practical_usability_gap_summary.md",
+      "section": "Negative Experiment Reports",
+      "should_remain_top_level": true,
+      "status": "negative_or_diagnostic"
+    },
+    {
+      "archive_candidate": false,
+      "group": "negative_experiments",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "likely_ref=yes"
+      ],
+      "path": "reports/final_s14_local_window_pose_graph_summary.md",
+      "section": "Negative Experiment Reports",
+      "should_remain_top_level": true,
+      "status": "negative_or_diagnostic"
+    },
+    {
+      "archive_candidate": false,
+      "group": "negative_experiments",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "likely_ref=yes"
+      ],
+      "path": "reports/final_s15_trajectory_level_training_objective_summary.md",
+      "section": "Negative Experiment Reports",
+      "should_remain_top_level": true,
+      "status": "negative_or_diagnostic"
+    },
+    {
+      "archive_candidate": false,
+      "group": "negative_experiments",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "likely_ref=yes"
+      ],
+      "path": "reports/final_s15a_trajectory_training_smoke_failure_attribution_summary.md",
+      "section": "Negative Experiment Reports",
+      "should_remain_top_level": true,
+      "status": "negative_or_diagnostic"
+    },
+    {
+      "archive_candidate": false,
+      "group": "negative_experiments",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "likely_ref=yes"
+      ],
+      "path": "reports/final_s15b_pair_training_harness_stability_audit_summary.md",
+      "section": "Negative Experiment Reports",
+      "should_remain_top_level": true,
+      "status": "negative_or_diagnostic"
+    },
+    {
+      "archive_candidate": false,
+      "group": "negative_experiments",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "likely_ref=yes"
+      ],
+      "path": "reports/final_s15c_clean_policy_wrapped_training_harness_fix_summary.md",
+      "section": "Negative Experiment Reports",
+      "should_remain_top_level": true,
+      "status": "negative_or_diagnostic"
+    },
+    {
+      "archive_candidate": false,
+      "group": "negative_experiments",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "likely_ref=yes"
+      ],
+      "path": "reports/final_s15d_train_eval_forward_parity_fix_summary.md",
+      "section": "Negative Experiment Reports",
+      "should_remain_top_level": true,
+      "status": "negative_or_diagnostic"
+    },
+    {
+      "archive_candidate": false,
+      "group": "negative_experiments",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "likely_ref=yes"
+      ],
+      "path": "reports/final_s15e_tiny_trajectory_retest_after_harness_fix_summary.md",
+      "section": "Negative Experiment Reports",
+      "should_remain_top_level": true,
+      "status": "negative_or_diagnostic"
+    },
+    {
+      "archive_candidate": false,
+      "group": "negative_experiments",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "likely_ref=yes"
+      ],
+      "path": "reports/final_s16_stronger_visual_backbone_feasibility_summary.md",
+      "section": "Negative Experiment Reports",
+      "should_remain_top_level": true,
+      "status": "negative_or_diagnostic"
+    },
+    {
+      "archive_candidate": false,
+      "group": "negative_experiments",
+      "likely_referenced_by_scripts_or_tests": false,
+      "notes": [
+        "likely_ref=no"
+      ],
+      "path": "reports/final_s16b_frozen_pretrained_backbone_probe_summary.md",
+      "section": "Negative Experiment Reports",
+      "should_remain_top_level": true,
+      "status": "negative_or_diagnostic"
+    },
+    {
+      "archive_candidate": false,
+      "group": "negative_experiments",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "likely_ref=yes"
+      ],
+      "path": "reports/final_s17_pose_supervision_dataset_quality_summary.md",
+      "section": "Negative Experiment Reports",
+      "should_remain_top_level": true,
+      "status": "negative_or_diagnostic"
+    },
+    {
+      "archive_candidate": false,
+      "group": "negative_experiments",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "likely_ref=yes"
+      ],
+      "path": "reports/final_s18_split_redesign_representativeness_summary.md",
+      "section": "Negative Experiment Reports",
+      "should_remain_top_level": true,
+      "status": "negative_or_diagnostic"
+    },
+    {
+      "archive_candidate": false,
+      "group": "negative_experiments",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "likely_ref=yes"
+      ],
+      "path": "reports/final_s19_geometry_aware_pretraining_feasibility_summary.md",
+      "section": "Negative Experiment Reports",
+      "should_remain_top_level": true,
+      "status": "negative_or_diagnostic"
+    },
+    {
+      "archive_candidate": false,
+      "group": "final",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "likely_ref=yes"
+      ],
+      "path": "reports/final_s1d5_english_abstract.md",
+      "section": "Final / Thesis Reports",
+      "should_remain_top_level": true,
+      "status": "active_final"
+    },
+    {
+      "archive_candidate": false,
+      "group": "final",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "likely_ref=yes"
+      ],
+      "path": "reports/final_s1d5_mainline_report.md",
+      "section": "Final / Thesis Reports",
+      "should_remain_top_level": true,
+      "status": "active_final"
+    },
+    {
+      "archive_candidate": false,
+      "group": "final",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "non_markdown_artifact",
+        "likely_ref=yes"
+      ],
+      "path": "reports/final_s1d5_results_table.csv",
+      "section": "Final / Thesis Reports",
+      "should_remain_top_level": true,
+      "status": "active_final"
+    },
+    {
+      "archive_candidate": false,
+      "group": "final",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "likely_ref=yes"
+      ],
+      "path": "reports/final_s1d5_thesis_summary.md",
+      "section": "Final / Thesis Reports",
+      "should_remain_top_level": true,
+      "status": "active_final"
+    },
+    {
+      "archive_candidate": false,
+      "group": "final",
+      "likely_referenced_by_scripts_or_tests": false,
+      "notes": [
+        "likely_ref=no"
+      ],
+      "path": "reports/final_s2_fine_refinement_summary.md",
+      "section": "Final / Thesis Reports",
+      "should_remain_top_level": true,
+      "status": "active_final"
+    },
+    {
+      "archive_candidate": false,
+      "group": "negative_experiments",
+      "likely_referenced_by_scripts_or_tests": false,
+      "notes": [
+        "likely_ref=no"
+      ],
+      "path": "reports/final_s3a_residual_head_summary.md",
+      "section": "Negative Experiment Reports",
+      "should_remain_top_level": true,
+      "status": "negative_or_diagnostic"
+    },
+    {
+      "archive_candidate": false,
+      "group": "final",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "likely_ref=yes"
+      ],
+      "path": "reports/final_s5_clean_candidate_summary.md",
+      "section": "Final / Thesis Reports",
+      "should_remain_top_level": true,
+      "status": "active_final"
+    },
+    {
+      "archive_candidate": false,
+      "group": "final",
+      "likely_referenced_by_scripts_or_tests": false,
+      "notes": [
+        "likely_ref=no"
+      ],
+      "path": "reports/final_s7_project_delivery_summary.md",
+      "section": "Final / Thesis Reports",
+      "should_remain_top_level": true,
+      "status": "active_final"
+    },
+    {
+      "archive_candidate": false,
+      "group": "negative_experiments",
+      "likely_referenced_by_scripts_or_tests": false,
+      "notes": [
+        "likely_ref=no"
+      ],
+      "path": "reports/final_s8_token_reliability_negative_summary.md",
+      "section": "Negative Experiment Reports",
+      "should_remain_top_level": true,
+      "status": "negative_or_diagnostic"
+    },
+    {
+      "archive_candidate": false,
+      "group": "negative_experiments",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "likely_ref=yes"
+      ],
+      "path": "reports/final_s9_regime_only_router_summary.md",
+      "section": "Negative Experiment Reports",
+      "should_remain_top_level": true,
+      "status": "negative_or_diagnostic"
+    },
+    {
+      "archive_candidate": false,
+      "group": "final",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "thesis_facing",
+        "likely_ref=yes"
+      ],
+      "path": "reports/final_thesis_claims_and_limitations.md",
+      "section": "Final / Thesis Reports",
+      "should_remain_top_level": true,
+      "status": "active_final"
+    },
+    {
+      "archive_candidate": false,
+      "group": "repo_audits",
+      "likely_referenced_by_scripts_or_tests": false,
+      "notes": [
+        "likely_ref=no"
+      ],
+      "path": "reports/git_branch_remote_sync_audit.md",
+      "section": "Repository Hygiene Reports",
+      "should_remain_top_level": true,
+      "status": "audit_only"
+    },
+    {
+      "archive_candidate": true,
+      "group": "repo_audits",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "archive_candidate",
+        "likely_ref=yes"
+      ],
+      "path": "reports/git_commit_s1d5_summary.md",
+      "section": "Repository Hygiene Reports",
+      "should_remain_top_level": true,
+      "status": "audit_only"
+    },
+    {
+      "archive_candidate": true,
+      "group": "repo_audits",
+      "likely_referenced_by_scripts_or_tests": false,
+      "notes": [
+        "archive_candidate",
+        "likely_ref=no"
+      ],
+      "path": "reports/git_commit_s2b_summary.md",
+      "section": "Repository Hygiene Reports",
+      "should_remain_top_level": true,
+      "status": "audit_only"
+    },
+    {
+      "archive_candidate": true,
+      "group": "repo_audits",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "archive_candidate",
+        "likely_ref=yes"
+      ],
+      "path": "reports/git_staging_s1d5_precheck.md",
+      "section": "Repository Hygiene Reports",
+      "should_remain_top_level": true,
+      "status": "audit_only"
+    },
+    {
+      "archive_candidate": true,
+      "group": "repo_audits",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "archive_candidate",
+        "likely_ref=yes"
+      ],
+      "path": "reports/git_staging_s1d5_summary.md",
+      "section": "Repository Hygiene Reports",
+      "should_remain_top_level": true,
+      "status": "audit_only"
+    },
+    {
+      "archive_candidate": true,
+      "group": "repo_audits",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "archive_candidate",
+        "likely_ref=yes"
+      ],
+      "path": "reports/git_track_s1d5_final_files.md",
+      "section": "Repository Hygiene Reports",
+      "should_remain_top_level": true,
+      "status": "audit_only"
+    },
+    {
+      "archive_candidate": true,
+      "group": "repo_audits",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "archive_candidate",
+        "likely_ref=yes"
+      ],
+      "path": "reports/gitignore_cleanup_plan.md",
+      "section": "Repository Hygiene Reports",
+      "should_remain_top_level": true,
+      "status": "audit_only"
+    },
+    {
+      "archive_candidate": false,
+      "group": "external",
+      "likely_referenced_by_scripts_or_tests": false,
+      "notes": [
+        "likely_ref=no"
+      ],
+      "path": "reports/orbslam3_environment_setup_report.md",
+      "section": "External Baseline / ORB-SLAM3 Reports",
+      "should_remain_top_level": true,
+      "status": "keep"
+    },
+    {
+      "archive_candidate": false,
+      "group": "external",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "likely_ref=yes"
+      ],
+      "path": "reports/pano_orb_vo_baseline_report.md",
+      "section": "External Baseline / ORB-SLAM3 Reports",
+      "should_remain_top_level": true,
+      "status": "keep"
+    },
+    {
+      "archive_candidate": false,
+      "group": "external",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "likely_ref=yes"
+      ],
+      "path": "reports/pano_orb_vo_component_diagnostics.md",
+      "section": "External Baseline / ORB-SLAM3 Reports",
+      "should_remain_top_level": true,
+      "status": "keep"
+    },
+    {
+      "archive_candidate": true,
+      "group": "repo_audits",
+      "likely_referenced_by_scripts_or_tests": false,
+      "notes": [
+        "archive_candidate",
+        "likely_ref=no"
+      ],
+      "path": "reports/post_commit_workspace_cleanup_plan.md",
+      "section": "Repository Hygiene Reports",
+      "should_remain_top_level": true,
+      "status": "audit_only"
+    },
+    {
+      "archive_candidate": false,
+      "group": "diagnostics",
+      "likely_referenced_by_scripts_or_tests": false,
+      "notes": [
+        "superseded_by_REPO2_untracked_experiment_artifact_resolution",
+        "likely_ref=no"
+      ],
+      "path": "reports/post_s5d2_git_uncommitted_audit.md",
+      "section": "Diagnostics and Audits",
+      "should_remain_top_level": true,
+      "status": "diagnostic_only"
+    },
+    {
+      "archive_candidate": false,
+      "group": "repo_audits",
+      "likely_referenced_by_scripts_or_tests": false,
+      "notes": [
+        "likely_ref=no"
+      ],
+      "path": "reports/repo_remote_sync_and_hygiene_audit.md",
+      "section": "Repository Hygiene Reports",
+      "should_remain_top_level": true,
+      "status": "audit_only"
+    },
+    {
+      "archive_candidate": false,
+      "group": "diagnostics",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "older_export_compatibility_audit",
+        "likely_ref=yes"
+      ],
+      "path": "reports/s5_external_export_compatibility_audit.md",
+      "section": "Diagnostics and Audits",
+      "should_remain_top_level": true,
+      "status": "diagnostic_only"
+    },
+    {
+      "archive_candidate": false,
+      "group": "final",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "thesis_facing",
+        "likely_ref=yes"
+      ],
+      "path": "reports/thesis_experiment_section_draft.md",
+      "section": "Final / Thesis Reports",
+      "should_remain_top_level": true,
+      "status": "active_final"
+    },
+    {
+      "archive_candidate": false,
+      "group": "ablation",
+      "likely_referenced_by_scripts_or_tests": true,
+      "notes": [
+        "likely_ref=yes"
+      ],
+      "path": "reports/thesis_three_axis_ablation.md",
+      "section": "Ablation and Baseline Reports",
+      "should_remain_top_level": true,
+      "status": "keep"
+    }
+  ],
+  "total_reports": 72
+}
