@@ -1,0 +1,51 @@
+%YAML:1.0
+
+File.version: "1.0"
+
+Camera.type: "KannalaBrandt8"
+
+Camera1.fx: 168.053131238
+Camera1.fy: 168.053131238
+Camera1.cx: 320.7997
+Camera1.cy: 321.6138
+
+Camera1.k1: 0.282901085273
+Camera1.k2: 0.315712379177
+Camera1.k3: -0.212037427128
+Camera1.k4: 0.161608442244
+
+Camera.width: 640
+Camera.height: 640
+Camera.fps: 20
+Camera.RGB: 1
+
+ORB1b.audit: "fitted KB8 approximation; do not treat as factory calibration"
+ORB1b.source_cam_infos: "/home/dovetao/graduation_design_demo/data/PanoramaView/scene01/seq03/cam_infos.txt"
+ORB1b.raw_root: "/home/dovetao/graduation_design_demo/data/FisheyeView"
+ORB1b.scene: "scene01"
+ORB1b.seq: "seq03"
+
+# ORB1b source YAML warning moved below the YAML directive for OpenCV FileStorage compatibility.
+# This file is generated from dataset polynomial fisheye calibration.
+# It is a fitted/converted approximation for ORB-SLAM3 compatibility.
+# It must not be treated as original factory KannalaBrandt8 calibration.
+
+# Runtime ORB extractor parameters added by ORB1c without modifying the ORB1b source YAML.
+ORBextractor.nFeatures: 1500
+ORBextractor.scaleFactor: 1.2
+ORBextractor.nLevels: 8
+ORBextractor.iniThFAST: 20
+ORBextractor.minThFAST: 7
+
+
+# Runtime viewer parameters required by ORB-SLAM3 settings parser. Viewer is disabled in ORB1c.
+Viewer.KeyFrameSize: 0.05
+Viewer.KeyFrameLineWidth: 1.0
+Viewer.GraphLineWidth: 0.9
+Viewer.PointSize: 2.0
+Viewer.CameraSize: 0.08
+Viewer.CameraLineWidth: 3.0
+Viewer.ViewpointX: 0.0
+Viewer.ViewpointY: -0.7
+Viewer.ViewpointZ: -3.5
+Viewer.ViewpointF: 500.0

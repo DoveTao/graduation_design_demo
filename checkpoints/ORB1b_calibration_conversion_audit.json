@@ -1,0 +1,92 @@
+{
+  "camera_index": 0,
+  "conversion": {
+    "classification": "FITTED_KB8_APPROXIMATION_SUPPORTED",
+    "diagnostics": {
+      "assumed_polynomial_convention": "z = sum(mapping_coeffs[i] * rho**i); theta = atan2(rho, z)",
+      "direct_copy_guard": "Never copy mapping_coeffs directly into k1/k2/k3/k4.",
+      "fit_rank": 5,
+      "residual_sum": 25.401479437956734,
+      "sample_count": 2401,
+      "singular_values": [
+        122.9954533924963,
+        31.617810271651095,
+        8.486970551849575,
+        1.600463135434017,
+        0.18773938164131312
+      ]
+    },
+    "fitted_parameters": {
+      "cx": 320.7997,
+      "cy": 321.6138,
+      "fx": 168.05313123774886,
+      "fy": 168.05313123774886,
+      "k1": 0.2829010852727219,
+      "k2": 0.31571237917741585,
+      "k3": -0.21203742712797907,
+      "k4": 0.16160844224350826
+    },
+    "method": "fitted_approximation",
+    "ready_for_orbslam3_yaml": true,
+    "reprojection_error_px": {
+      "max": 0.936757119573362,
+      "mean": 0.07213930683935682,
+      "median": 0.06914809149759579,
+      "p90": 0.12449130361462074
+    },
+    "target_model": "ORB_SLAM3_KannalaBrandt8",
+    "thresholds": {
+      "max_max": 5.0,
+      "mean_max": 1.0,
+      "p90_max": 2.0
+    }
+  },
+  "experiment": "ORB1b_calibration_conversion_feasibility_audit",
+  "final_classification": "ORB1B_READY_FITTED_KB8",
+  "input_audit": "checkpoints/ORB1a_fisheye_dataset_audit.json",
+  "notes": [
+    "Source calibration is dataset polynomial fisheye, not native ORB-SLAM3 KannalaBrandt8.",
+    "Never copy mapping_coeffs directly into k1/k2/k3/k4.",
+    "Direct KB8 conversion is not claimed; this audit uses sampled polynomial projection fitting.",
+    "The generated YAML is only an ORB-SLAM3 compatibility candidate, not factory KannalaBrandt8 calibration."
+  ],
+  "output_yaml": {
+    "path": "/home/dovetao/graduation_design_demo/external_baselines/config/orbslam3_fisheye_cam0_scene01_seq03.yaml",
+    "status": "official_candidate",
+    "written": true
+  },
+  "source_calibration": {
+    "cam_infos_path": "/home/dovetao/graduation_design_demo/data/PanoramaView/scene01/seq03/cam_infos.txt",
+    "distortion_center": [
+      320.7997,
+      321.6138
+    ],
+    "image_size": [
+      640,
+      640
+    ],
+    "mapping_coeffs": [
+      167.6389,
+      -0.002,
+      0.0,
+      -0.0
+    ],
+    "model": "dataset_polynomial_fisheye",
+    "rpy": [
+      0.0,
+      0.0,
+      45.0
+    ],
+    "stretch_matrix": [
+      1.0,
+      0.0,
+      0.0,
+      1.0
+    ],
+    "translation": [
+      0.18,
+      0.18,
+      0.0
+    ]
+  }
+}

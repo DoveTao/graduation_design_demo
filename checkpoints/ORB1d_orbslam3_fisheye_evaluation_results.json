@@ -1,0 +1,71 @@
+{
+  "allowed_final_classifications": [
+    "ORB1D_EVALUATION_COMPLETE",
+    "ORB1D_PARTIAL_EVALUATION",
+    "ORB1D_EVALUATION_FAILED",
+    "ORB1D_BLOCKED_BY_ORB1C",
+    "ORB1D_ERROR"
+  ],
+  "calibration_caveat": {
+    "camera_model": "fitted_KB8_compatibility_approximation",
+    "native_factory_kb8": false
+  },
+  "comparison_scope": {
+    "reason": "S5 dense external trajectory export is not available; S5 external TUM export is sparse diagnostic only.",
+    "s5_official_locked_metrics_unchanged": true,
+    "same_evaluator_main_table_allowed": false
+  },
+  "evaluation": {
+    "alignment_results": {
+      "none": {
+        "ate": 11.46685113827757,
+        "drift": 0.03737053832593786,
+        "num_matched_poses": 273,
+        "path_ratio": 0.2998258665660257,
+        "raw_output": "external_baselines/results/orbslam3_fisheye_cam0/eval_alignment_none.json",
+        "status": "ok"
+      },
+      "se3": {
+        "ate": 0.30854441069248173,
+        "drift": 0.0374760642069601,
+        "num_matched_poses": 273,
+        "path_ratio": 0.2998258665660257,
+        "raw_output": "external_baselines/results/orbslam3_fisheye_cam0/eval_alignment_se3.json",
+        "status": "ok"
+      },
+      "sim3": {
+        "ate": 0.224292165986624,
+        "drift": 0.06452708470276013,
+        "num_matched_poses": 273,
+        "path_ratio": 0.2998258665660257,
+        "raw_output": "external_baselines/results/orbslam3_fisheye_cam0/eval_alignment_sim3.json",
+        "status": "ok"
+      }
+    },
+    "commands": [
+      "/home/dovetao/miniconda3/envs/pytorch/bin/python tools/evaluate_external_baseline_trajectory.py --trajectory external_baselines/results/orbslam3_fisheye_cam0/scene01_seq03_est_tum.txt --groundtruth external_baselines/dataset/scene01_seq03/groundtruth_tum.txt --alignment none",
+      "/home/dovetao/miniconda3/envs/pytorch/bin/python tools/evaluate_external_baseline_trajectory.py --trajectory external_baselines/results/orbslam3_fisheye_cam0/scene01_seq03_est_tum.txt --groundtruth external_baselines/dataset/scene01_seq03/groundtruth_tum.txt --alignment se3",
+      "/home/dovetao/miniconda3/envs/pytorch/bin/python tools/evaluate_external_baseline_trajectory.py --trajectory external_baselines/results/orbslam3_fisheye_cam0/scene01_seq03_est_tum.txt --groundtruth external_baselines/dataset/scene01_seq03/groundtruth_tum.txt --alignment sim3"
+    ],
+    "evaluator": "tools/evaluate_external_baseline_trajectory.py"
+  },
+  "experiment": "ORB1d_evaluate_orbslam3_fisheye_trajectory",
+  "final_classification": "ORB1D_EVALUATION_COMPLETE",
+  "groundtruth": {
+    "path": "external_baselines/dataset/scene01_seq03/groundtruth_tum.txt"
+  },
+  "input_run_checkpoint": "checkpoints/ORB1c_orbslam3_fisheye_run.json",
+  "notes": [
+    "ORB-SLAM3 metrics are external baseline results from tools/evaluate_external_baseline_trajectory.py.",
+    "ORB-SLAM3 used a fitted KB8 compatibility YAML, not native factory KB8 calibration.",
+    "Tracking coverage is sparse: 273 matched estimated poses out of 454 input frames.",
+    "ORB-SLAM3 results do not replace S5.",
+    "S5 locked metrics/policy were not changed."
+  ],
+  "trajectory": {
+    "num_est_poses": 273,
+    "num_input_frames": 454,
+    "path": "external_baselines/results/orbslam3_fisheye_cam0/scene01_seq03_est_tum.txt",
+    "tracking_success_rate": 0.6013215859030837
+  }
+}

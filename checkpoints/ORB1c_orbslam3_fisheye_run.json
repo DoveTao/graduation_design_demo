@@ -1,0 +1,58 @@
+{
+  "allowed_final_classifications": [
+    "ORB1C_RUN_COMPLETE",
+    "ORB1C_TRACKING_FAILED",
+    "ORB1C_SEQUENCE_EXPORT_FAILED",
+    "ORB1C_BLOCKED_BY_PRECHECK",
+    "ORB1C_RUNTIME_ERROR",
+    "ORB1C_ERROR"
+  ],
+  "baseline_metrics": {
+    "ate": null,
+    "drift": null,
+    "evaluation_run": false,
+    "path_ratio": null
+  },
+  "experiment": "ORB1c_run_orbslam3_fisheye_cam0_scene01_seq03",
+  "final_classification": "ORB1C_RUN_COMPLETE",
+  "inputs": {
+    "camera": "cam0",
+    "num_images": 454,
+    "num_timestamps": 454,
+    "raw_root": "/home/dovetao/graduation_design_demo/data/FisheyeView",
+    "runtime_settings_yaml": "/home/dovetao/graduation_design_demo/external_baselines/results/orbslam3_fisheye_cam0/scene01_seq03_orbslam3_runtime.yaml",
+    "sequence": "scene01/seq03",
+    "settings_yaml": "/home/dovetao/graduation_design_demo/external_baselines/config/orbslam3_fisheye_cam0_scene01_seq03.yaml",
+    "vocabulary": "/home/dovetao/third_party/ORB_SLAM3/Vocabulary/ORBvoc.txt"
+  },
+  "notes": [
+    "YAML is a fitted KB8 compatibility approximation, not original factory KannalaBrandt8 calibration.",
+    "The runtime settings YAML is an OpenCV FileStorage-compatible copy of the ORB1b YAML with ORB extractor/viewer runtime parameters added; the ORB1b source YAML was not modified.",
+    "This step runs ORB-SLAM3 and exports trajectory only.",
+    "It does not evaluate ATE/drift/path_ratio.",
+    "It does not modify S5 locked metrics or policy."
+  ],
+  "prechecks": {
+    "orb0b_classification": "ORB0_READY_AFTER_REMEDIATION",
+    "orb0b_ready_for_orb1c": true,
+    "orb1a_classification": "RAW_FISHEYE_READY",
+    "orb1b_classification": "ORB1B_READY_FITTED_KB8",
+    "passed": true
+  },
+  "runtime": {
+    "command": "bash external_baselines/runners/run_orbslam3_fisheye_cam0.sh",
+    "exit_code": 0,
+    "orbslam3_root": "/home/dovetao/third_party/ORB_SLAM3",
+    "runner": "external_baselines/runners/orbslam3_mono_fisheye_runner",
+    "stderr_log": "external_baselines/results/orbslam3_fisheye_cam0/orbslam3_stderr.log",
+    "stdout_log": "external_baselines/results/orbslam3_fisheye_cam0/orbslam3_stdout.log"
+  },
+  "trajectory": {
+    "exists": true,
+    "num_est_poses": 273,
+    "num_input_frames": 454,
+    "output_path": "external_baselines/results/orbslam3_fisheye_cam0/scene01_seq03_est_tum.txt",
+    "tracking_failure_count": 181,
+    "tracking_success_rate": 0.6013215859030837
+  }
+}

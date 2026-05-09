@@ -1,0 +1,44 @@
+{
+  "allowed_final_classifications": [
+    "ORB0_READY",
+    "ORB0_SOURCE_UNAVAILABLE",
+    "ORB0_BUILD_FAILED",
+    "ORB0_ERROR"
+  ],
+  "artifacts": {
+    "executables_found": [],
+    "libORB_SLAM3_so_exists": false
+  },
+  "build": {
+    "attempted": true,
+    "build_command": "CMAKE_PREFIX_PATH=/opt/ros/humble ./build.sh",
+    "error_summary": "Build failed while compiling src/System.cc.o. The compiler included /opt/ros/humble/include/sigslot/signal.hpp and reported template/member errors around cow_read/cow_write and m_slots, then make exited with code 2.",
+    "log_path": "/home/dovetao/graduation_design_demo/logs/orbslam3_build.log",
+    "success": false
+  },
+  "environment": {
+    "cmake": "cmake version 3.22.1",
+    "cmake_prefix_path": "/opt/ros/humble",
+    "eigen": "3.4.0",
+    "gcc": "gcc (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0",
+    "gxx": "g++ (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0",
+    "opencv": "4.5.4",
+    "pangolin_status": "pkg-config pangolin not found"
+  },
+  "experiment": "ORB0_orbslam3_local_setup",
+  "final_classification": "ORB0_BUILD_FAILED",
+  "notes": [
+    "ORB-SLAM3 source was cloned outside the graduation_design_demo repository.",
+    "No ORB-SLAM3 dataset baseline was run.",
+    "No ORB-SLAM3 trajectory or metrics were generated.",
+    "Build failure does not change ORB1a, ORB1b, or S5 artifacts."
+  ],
+  "ready_for_orb1c": false,
+  "source": {
+    "exists": true,
+    "git_branch": "master",
+    "git_commit": "4452a3c4ab75b1cde34e5505a36ec3f9edcdc4c4",
+    "repo_clean": true,
+    "target_path": "/home/dovetao/third_party/ORB_SLAM3"
+  }
+}

@@ -1,0 +1,125 @@
+{
+  "allowed_classifications": [
+    "CALIBRATION_PARSE_FAILED",
+    "IMAGE_SIZE_MISMATCH",
+    "RAW_FISHEYE_MISSING",
+    "RAW_FISHEYE_READY",
+    "TIMESTAMP_ALIGNMENT_ISSUE"
+  ],
+  "cam_infos_exists": true,
+  "cam_infos_parse_ok": true,
+  "cam_infos_parse_status": "ok",
+  "cam_infos_path": "/home/dovetao/graduation_design_demo/data/PanoramaView/scene01/seq03/cam_infos.txt",
+  "camera_streams": {
+    "cam0": {
+      "discovery_pattern": "flat_filename_prefix",
+      "first_image": "/home/dovetao/graduation_design_demo/data/FisheyeView/scene01/seq03/img_0_1745407684.847602.jpg",
+      "image_size_calibration": [
+        640,
+        640
+      ],
+      "image_size_match": true,
+      "image_size_observed": [
+        640,
+        640
+      ],
+      "num_images": 454,
+      "num_parseable_timestamps": 454,
+      "path": "/home/dovetao/graduation_design_demo/data/FisheyeView/scene01/seq03"
+    },
+    "cam1": {
+      "discovery_pattern": "flat_filename_prefix",
+      "first_image": "/home/dovetao/graduation_design_demo/data/FisheyeView/scene01/seq03/img_1_1745407684.847602.jpg",
+      "image_size_calibration": [
+        640,
+        640
+      ],
+      "image_size_match": true,
+      "image_size_observed": [
+        640,
+        640
+      ],
+      "num_images": 454,
+      "num_parseable_timestamps": 454,
+      "path": "/home/dovetao/graduation_design_demo/data/FisheyeView/scene01/seq03"
+    },
+    "cam2": {
+      "discovery_pattern": "flat_filename_prefix",
+      "first_image": "/home/dovetao/graduation_design_demo/data/FisheyeView/scene01/seq03/img_2_1745407684.847602.jpg",
+      "image_size_calibration": [
+        640,
+        640
+      ],
+      "image_size_match": true,
+      "image_size_observed": [
+        640,
+        640
+      ],
+      "num_images": 454,
+      "num_parseable_timestamps": 454,
+      "path": "/home/dovetao/graduation_design_demo/data/FisheyeView/scene01/seq03"
+    },
+    "cam3": {
+      "discovery_pattern": "flat_filename_prefix",
+      "first_image": "/home/dovetao/graduation_design_demo/data/FisheyeView/scene01/seq03/img_3_1745407684.847602.jpg",
+      "image_size_calibration": [
+        640,
+        640
+      ],
+      "image_size_match": true,
+      "image_size_observed": [
+        640,
+        640
+      ],
+      "num_images": 454,
+      "num_parseable_timestamps": 454,
+      "path": "/home/dovetao/graduation_design_demo/data/FisheyeView/scene01/seq03"
+    }
+  },
+  "classification": "RAW_FISHEYE_READY",
+  "experiment": "ORB1a_raw_fisheye_dataset_audit",
+  "exported_baseline_dataset": {
+    "camera_yaml_exists": true,
+    "groundtruth_tum_exists": true,
+    "image_list_exists": true,
+    "metadata_exists": true,
+    "num_exported_timestamps": 454,
+    "num_gt_poses": 454,
+    "path": "/home/dovetao/graduation_design_demo/external_baselines/dataset/scene01_seq03",
+    "timestamps_exists": true
+  },
+  "notes": [
+    "Using provided raw root: /home/dovetao/graduation_design_demo/data/FisheyeView",
+    "Using panorama-side cam_infos.txt: /home/dovetao/graduation_design_demo/data/PanoramaView/scene01/seq03/cam_infos.txt"
+  ],
+  "num_cameras_in_calibration": 4,
+  "orbslam3_candidate_input": {
+    "candidate_camera": "cam0",
+    "notes": [
+      "cam0 is a plausible monocular fisheye input for the next stage."
+    ],
+    "ready_for_next_stage": true
+  },
+  "panorama_side_dataset": {
+    "exists": true,
+    "label_alignment_status": "aligned_exact",
+    "labels_align_with_exported": true,
+    "num_label_timestamps": 454,
+    "num_labels": 454,
+    "num_panorama_images": 454,
+    "num_panorama_timestamps": 454,
+    "panorama_align_with_exported": true,
+    "panorama_alignment_status": "aligned_exact",
+    "path": "/home/dovetao/graduation_design_demo/data/PanoramaView/scene01/seq03"
+  },
+  "raw_root": "/home/dovetao/graduation_design_demo/data/FisheyeView",
+  "scene": "scene01",
+  "scene_seq_exists": true,
+  "seq": "seq03",
+  "timestamp_alignment": {
+    "alignment_status": "aligned_exact",
+    "num_exported_timestamps": 454,
+    "num_raw_timestamps": 454,
+    "raw_timestamps_parseable": true
+  }
+}

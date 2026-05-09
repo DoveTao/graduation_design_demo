@@ -1,0 +1,102 @@
+{
+  "allowed_final_classifications": [
+    "ORB0_READY_AFTER_REMEDIATION",
+    "ORB0B_CPP_STANDARD_PATCH_FAILED",
+    "ORB0B_ISOLATED_PANGOLIN_FAILED",
+    "ORB0B_ERROR"
+  ],
+  "base_orb0_checkpoint": "checkpoints/ORB0_orbslam3_local_setup.json",
+  "baseline_run": {
+    "dataset_baseline_run": false,
+    "metrics_generated": false,
+    "trajectory_generated": false
+  },
+  "build_artifacts": {
+    "all_executables_found": [
+      "/home/dovetao/third_party/ORB_SLAM3/Examples/Calibration/recorder_realsense_D435i",
+      "/home/dovetao/third_party/ORB_SLAM3/Examples/Calibration/recorder_realsense_T265",
+      "/home/dovetao/third_party/ORB_SLAM3/Examples/Monocular-Inertial/mono_inertial_euroc",
+      "/home/dovetao/third_party/ORB_SLAM3/Examples/Monocular-Inertial/mono_inertial_realsense_D435i",
+      "/home/dovetao/third_party/ORB_SLAM3/Examples/Monocular-Inertial/mono_inertial_realsense_t265",
+      "/home/dovetao/third_party/ORB_SLAM3/Examples/Monocular-Inertial/mono_inertial_tum_vi",
+      "/home/dovetao/third_party/ORB_SLAM3/Examples/Monocular/mono_euroc",
+      "/home/dovetao/third_party/ORB_SLAM3/Examples/Monocular/mono_kitti",
+      "/home/dovetao/third_party/ORB_SLAM3/Examples/Monocular/mono_realsense_D435i",
+      "/home/dovetao/third_party/ORB_SLAM3/Examples/Monocular/mono_realsense_t265",
+      "/home/dovetao/third_party/ORB_SLAM3/Examples/Monocular/mono_tum",
+      "/home/dovetao/third_party/ORB_SLAM3/Examples/Monocular/mono_tum_vi",
+      "/home/dovetao/third_party/ORB_SLAM3/Examples/RGB-D-Inertial/rgbd_inertial_realsense_D435i",
+      "/home/dovetao/third_party/ORB_SLAM3/Examples/RGB-D/rgbd_realsense_D435i",
+      "/home/dovetao/third_party/ORB_SLAM3/Examples/RGB-D/rgbd_tum",
+      "/home/dovetao/third_party/ORB_SLAM3/Examples/Stereo-Inertial/stereo_inertial_euroc",
+      "/home/dovetao/third_party/ORB_SLAM3/Examples/Stereo-Inertial/stereo_inertial_realsense_D435i",
+      "/home/dovetao/third_party/ORB_SLAM3/Examples/Stereo-Inertial/stereo_inertial_realsense_t265",
+      "/home/dovetao/third_party/ORB_SLAM3/Examples/Stereo-Inertial/stereo_inertial_tum_vi",
+      "/home/dovetao/third_party/ORB_SLAM3/Examples/Stereo/stereo_euroc",
+      "/home/dovetao/third_party/ORB_SLAM3/Examples/Stereo/stereo_kitti",
+      "/home/dovetao/third_party/ORB_SLAM3/Examples/Stereo/stereo_realsense_D435i",
+      "/home/dovetao/third_party/ORB_SLAM3/Examples/Stereo/stereo_realsense_t265",
+      "/home/dovetao/third_party/ORB_SLAM3/Examples/Stereo/stereo_tum_vi"
+    ],
+    "libORB_SLAM3_so_exists": true,
+    "libORB_SLAM3_so_path": "/home/dovetao/third_party/ORB_SLAM3/lib/libORB_SLAM3.so",
+    "monocular_executables_found": [
+      "/home/dovetao/third_party/ORB_SLAM3/Examples/Monocular/mono_euroc",
+      "/home/dovetao/third_party/ORB_SLAM3/Examples/Monocular/mono_kitti",
+      "/home/dovetao/third_party/ORB_SLAM3/Examples/Monocular/mono_realsense_D435i",
+      "/home/dovetao/third_party/ORB_SLAM3/Examples/Monocular/mono_realsense_t265",
+      "/home/dovetao/third_party/ORB_SLAM3/Examples/Monocular/mono_tum",
+      "/home/dovetao/third_party/ORB_SLAM3/Examples/Monocular/mono_tum_vi"
+    ]
+  },
+  "experiment": "ORB0b_orbslam3_build_remediation_without_running_baseline",
+  "final_classification": "ORB0_READY_AFTER_REMEDIATION",
+  "git": {
+    "branch": "master",
+    "commit": "4452a3c4ab75b1cde34e5505a36ec3f9edcdc4c4",
+    "local_patches": [
+      "CMakeLists.txt patched from C++11/C++0x to C++14 and explicit CMAKE_CXX_STANDARD 14.",
+      "CMakeLists.txt.bak_orb0b_cpp_standard created as a local backup."
+    ],
+    "repo_clean_after_remediation": false
+  },
+  "ldd_summary": {
+    "checked": true,
+    "log_paths": [
+      "/home/dovetao/graduation_design_demo/logs/orbslam3_mono_tum_ldd_orb0b.log"
+    ],
+    "missing_dependencies": []
+  },
+  "notes": [
+    "C++14 patch fixed the ROS Humble sigslot compile failure; C++17 and isolated Pangolin remediation were not attempted.",
+    "ROS Humble sigslot still appears in generated dependency files, but the build now succeeds under C++14.",
+    "Pangolin used by the successful build resolved from the ROS Humble environment via CMAKE_PREFIX_PATH=/opt/ros/humble.",
+    "No dataset baseline was run; no trajectory or metrics were generated."
+  ],
+  "ready_for_orb1c": true,
+  "remediation_attempts": [
+    {
+      "attempted": true,
+      "error_summary": "",
+      "log_path": "/home/dovetao/graduation_design_demo/logs/orbslam3_build_orb0b_cpp14.log",
+      "name": "cpp14_patch",
+      "success": true
+    },
+    {
+      "attempted": false,
+      "error_summary": "Not attempted because cpp14_patch succeeded.",
+      "log_path": "/home/dovetao/graduation_design_demo/logs/orbslam3_build_orb0b_cpp17.log",
+      "name": "cpp17_patch",
+      "success": false
+    },
+    {
+      "attempted": false,
+      "error_summary": "Not attempted because cpp14_patch succeeded.",
+      "log_path": "/home/dovetao/graduation_design_demo/logs/orbslam3_build_orb0b_isolated_pangolin.log",
+      "name": "isolated_pangolin",
+      "pangolin_install_path": "/home/dovetao/third_party/pangolin_install",
+      "success": false
+    }
+  ],
+  "source_path": "/home/dovetao/third_party/ORB_SLAM3"
+}
