@@ -1,0 +1,50 @@
+{
+  "experiment_name": "MF1b_train_cv_chain_refiner",
+  "stage": "MF1b_train_cv",
+  "dataset_source": "RflyPanoPanoramaPairsEvalFixedKList train split with S5 k=1 predictions",
+  "source_policy": "checkpoints/S5_clean_tmag_calibration_policy.json",
+  "source_policy_name": "S5_clean_tmag_calibration_policy",
+  "window_size": 8,
+  "stride": 4,
+  "num_pair_rows": 293,
+  "num_available_windows": 51,
+  "num_train_chains": 34,
+  "num_val_chains": 17,
+  "num_test_chains": 0,
+  "num_available_test_k1_pairs": 132,
+  "feature_dim": 15,
+  "feature_fields": [
+    "R_pred_00",
+    "R_pred_01",
+    "R_pred_02",
+    "R_pred_10",
+    "R_pred_11",
+    "R_pred_12",
+    "R_pred_20",
+    "R_pred_21",
+    "R_pred_22",
+    "tdir_pred_x",
+    "tdir_pred_y",
+    "tdir_pred_z",
+    "log_tmag_pred",
+    "dt_world",
+    "k"
+  ],
+  "label_fields": [
+    "R_gt_3x3",
+    "tdir_gt_3",
+    "tmag_gt"
+  ],
+  "no_test_gt_used_for_training": true,
+  "test_gt_cached": false,
+  "variants": [
+    "A_s5_chain_reference",
+    "B_pairwise_jrt_style_reference",
+    "C_temporal_conv_chain_refiner",
+    "D_gru_chain_refiner",
+    "E_gru_chain_refiner_pathratio_loss",
+    "F_gru_chain_refiner_tmag_head_diagnostic"
+  ],
+  "load_missing": 14,
+  "load_unexpected": 0
+}

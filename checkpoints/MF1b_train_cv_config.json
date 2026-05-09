@@ -1,0 +1,61 @@
+{
+  "experiment_name": "MF1b_train_cv_chain_refiner",
+  "stage": "MF1b_train_cv",
+  "base_candidate": "S5_clean_tmag_calibration_policy",
+  "base_policy_path": "checkpoints/S5_clean_tmag_calibration_policy.json",
+  "manifest_path": "checkpoints/final_clean_candidate_manifest.json",
+  "locked_s5_metrics": {
+    "ATE": 7.352288,
+    "drift": 1.327343,
+    "path_ratio": 0.932379
+  },
+  "chain": {
+    "split": "train",
+    "k": 1,
+    "window_size": 8,
+    "stride": 4
+  },
+  "train_cv": {
+    "num_folds": 3,
+    "seed": 2026,
+    "max_train_chains_per_fold": 128,
+    "max_val_chains_per_fold": 64,
+    "num_updates": 300,
+    "batch_size": 8,
+    "learning_rate": 0.001,
+    "weight_decay": 0.0001
+  },
+  "smoke": {
+    "max_train_chains": 128,
+    "max_val_chains": 64,
+    "num_updates": 50,
+    "batch_size": 8,
+    "learning_rate": 0.001,
+    "seed": 2026
+  },
+  "variants": [
+    "A_s5_chain_reference",
+    "B_pairwise_jrt_style_reference",
+    "C_temporal_conv_chain_refiner",
+    "D_gru_chain_refiner",
+    "E_gru_chain_refiner_pathratio_loss",
+    "F_gru_chain_refiner_tmag_head_diagnostic"
+  ],
+  "loss_weights": {
+    "w_pair_rot": 1.0,
+    "w_pair_tdir": 1.0,
+    "w_chain_pos": 0.5,
+    "w_drift": 0.2,
+    "w_path_ratio": 0.2,
+    "w_reg": 0.01,
+    "w_tmag": 0.5
+  },
+  "gate": {
+    "safe_path_ratio_min": 0.90,
+    "safe_path_ratio_max": 1.05,
+    "max_ATE_worsening": 0.05,
+    "max_drift_worsening": 0.05,
+    "no_final_test": true,
+    "no_candidate_replacement": true
+  }
+}

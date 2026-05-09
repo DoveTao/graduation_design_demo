@@ -1,0 +1,144 @@
+{
+  "caveats": [
+    "train-CV only",
+    "no final test",
+    "proxy trajectory is not official final test",
+    "small sequence protocol",
+    "S5 unchanged",
+    "no practical-ready claim",
+    "F tmag-head is diagnostic only and did not pass stability gate"
+  ],
+  "experiment_name": "MF1_multi_frame_chain_refiner_closeout",
+  "final_classification": "NO_STABLE_MF1_CHAIN_GAIN",
+  "final_decision": {
+    "do_not_continue_mf1c": true,
+    "no_mf1_variant_proceeds_to_final_test": true,
+    "s5_remains_final_clean_candidate": true,
+    "selected_candidate_for_next_stage": null
+  },
+  "mf1a_summary": {
+    "chain_dataset_and_train_harness_worked": true,
+    "classification": "MF1A-FRAMEWORK-SMOKE-PASS",
+    "interpretation": "MF1a smoke passed. GRU and JRT-style smoke variants improved ATE_proxy, drift_proxy, rotation, and tdir, while path_ratio remained around 1.445 because scale was unchanged.",
+    "key_metrics": {
+      "A_s5_chain_reference": {
+        "ATE_proxy": 0.9141066074371338,
+        "drift_proxy": 1.7557497024536133,
+        "num_chains": 17,
+        "num_pairs": 136,
+        "path_ratio_proxy": 1.445230484008789,
+        "rot_mean_deg": 20.61405372619629,
+        "tdir_mean_cosine": 0.942108154296875,
+        "tdir_mean_deg": 19.020076751708984,
+        "tmag_mean_log_error": 0.4469580352306366
+      },
+      "D_gru_chain_refiner": {
+        "ATE_proxy": 0.2814784646034241,
+        "drift_proxy": 0.4562760591506958,
+        "num_chains": 17,
+        "num_pairs": 136,
+        "path_ratio_proxy": 1.4452306032180786,
+        "rot_mean_deg": 4.381053447723389,
+        "tdir_mean_cosine": 0.9703423976898193,
+        "tdir_mean_deg": 12.343295097351074,
+        "tmag_mean_log_error": 0.4469580352306366
+      }
+    }
+  },
+  "mf1b_summary": {
+    "classification": "NO_STABLE_MF1_CHAIN_GAIN",
+    "folds": [
+      {
+        "fold_id": 0,
+        "num_train_chains": 34,
+        "num_val_chains": 17
+      },
+      {
+        "fold_id": 1,
+        "num_train_chains": 34,
+        "num_val_chains": 17
+      },
+      {
+        "fold_id": 2,
+        "num_train_chains": 34,
+        "num_val_chains": 17
+      }
+    ],
+    "interpretation": "Train-CV retained trajectory-shape signal, but the stability gate did not pass. B/C/D/E improved ATE_proxy and drift_proxy without fixing path_ratio. F improved mean path_ratio diagnostically, but did not pass the 2/3 fold stability requirement.",
+    "mean_cv_metrics": [
+      {
+        "ATE_proxy": 0.9457897146542867,
+        "drift_proxy": 1.699603756268819,
+        "gate_status": "REFERENCE",
+        "path_ratio": 1.4299451510111492,
+        "rot_mean": 20.803044001261394,
+        "tdir_cos": 0.7877224683761597,
+        "tdir_mean": 31.563479741414387,
+        "variant": "A_s5_chain_reference"
+      },
+      {
+        "ATE_proxy": 0.3880143960316976,
+        "drift_proxy": 0.6145138243834177,
+        "gate_status": "FAIL",
+        "path_ratio": 1.4299451510111492,
+        "rot_mean": 2.158425291379293,
+        "tdir_cos": 0.8804327845573425,
+        "tdir_mean": 17.339510599772137,
+        "variant": "B_pairwise_jrt_style_reference"
+      },
+      {
+        "ATE_proxy": 0.34604789316654205,
+        "drift_proxy": 0.5529325902462006,
+        "gate_status": "FAIL",
+        "path_ratio": 1.4299451907475789,
+        "rot_mean": 1.8418542544047039,
+        "tdir_cos": 0.8867259422938029,
+        "tdir_mean": 16.3517959912618,
+        "variant": "C_temporal_conv_chain_refiner"
+      },
+      {
+        "ATE_proxy": 0.39346128702163696,
+        "drift_proxy": 0.6352850596110026,
+        "gate_status": "FAIL",
+        "path_ratio": 1.4299453496932983,
+        "rot_mean": 2.803790291150411,
+        "tdir_cos": 0.8588229815165201,
+        "tdir_mean": 19.246766408284504,
+        "variant": "D_gru_chain_refiner"
+      },
+      {
+        "ATE_proxy": 0.397350549697876,
+        "drift_proxy": 0.6252560913562775,
+        "gate_status": "FAIL",
+        "path_ratio": 1.4299453099568684,
+        "rot_mean": 1.9095327456792195,
+        "tdir_cos": 0.858602782090505,
+        "tdir_mean": 18.811730702718098,
+        "variant": "E_gru_chain_refiner_pathratio_loss"
+      },
+      {
+        "ATE_proxy": 0.3003796935081482,
+        "drift_proxy": 0.4525578022003174,
+        "gate_status": "FAIL",
+        "path_ratio": 1.0364479819933574,
+        "rot_mean": 2.4142203330993652,
+        "tdir_cos": 0.8606719772020975,
+        "tdir_mean": 19.463260332743328,
+        "variant": "F_gru_chain_refiner_tmag_head_diagnostic"
+      }
+    ],
+    "no_final_test": true,
+    "no_test_gt_used": true,
+    "num_folds": 3,
+    "selected_candidate_for_next_stage": null,
+    "train_split_only": true
+  },
+  "no_final_test": true,
+  "s5_locked_metrics": {
+    "ATE": 7.352288,
+    "drift": 1.327343,
+    "path_ratio": 0.932379
+  },
+  "s5_remains_final": true,
+  "selected_candidate": null
+}
