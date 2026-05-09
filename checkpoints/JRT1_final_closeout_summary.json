@@ -1,0 +1,160 @@
+{
+  "experiment_name": "JRT1_joint_R_tdir_coupled_refiner_closeout",
+  "final_classification": "NO_STABLE_JRT1_TRAJECTORY_GAIN",
+  "s5_locked_metrics": {
+    "ATE": 7.352288,
+    "drift": 1.327343,
+    "path_ratio": 0.932379
+  },
+  "jrt1a_summary": {
+    "classification": "JRT1A-FRAMEWORK-SMOKE-PASS",
+    "interpretation": [
+      "framework and harness worked",
+      "rotation residual learning worked in smoke",
+      "translation direction smoke did not yet improve"
+    ],
+    "key_metrics": {
+      "A_s5_no_refiner_reference": {
+        "rot_mean": 20.415323,
+        "tdir_mean": 51.167244
+      },
+      "B_rot_only_residual_smoke": {
+        "rot_mean": 7.142703,
+        "tdir_mean": 51.167244
+      },
+      "D_joint_rtdir_residual_smoke": {
+        "rot_mean": 8.765825,
+        "tdir_mean": 51.617874
+      }
+    }
+  },
+  "jrt1b_summary": {
+    "classification": "TRAJECTORY-GATE-UNAVAILABLE",
+    "interpretation": [
+      "component-level positive signal existed",
+      "C_tdir_residual_cosine gave the strongest translation-direction improvement",
+      "E and F gave balanced joint diagnostic signal",
+      "no trajectory gate was available in JRT1b"
+    ],
+    "mean_cv_metrics": {
+      "A_s5_no_refiner_reference": {
+        "rot_mean": 21.093326,
+        "tdir_mean": 39.315952,
+        "tdir_cos": 0.686719,
+        "interpretation": "S5 train-CV component reference"
+      },
+      "B_rot_only_residual": {
+        "rot_mean": 1.217314,
+        "tdir_mean": 39.315952,
+        "tdir_cos": 0.686719,
+        "interpretation": "strong rotation improvement, no translation-direction improvement"
+      },
+      "C_tdir_residual_cosine": {
+        "rot_mean": 21.093326,
+        "tdir_mean": 16.559566,
+        "tdir_cos": 0.904896,
+        "interpretation": "strongest translation-direction component improvement"
+      },
+      "D_joint_rtdir_residual": {
+        "rot_mean": 1.413717,
+        "tdir_mean": 24.310256,
+        "tdir_cos": 0.815147,
+        "interpretation": "joint diagnostic signal, weaker translation-direction result than C"
+      },
+      "E_joint_rtdir_tdir_weighted": {
+        "rot_mean": 1.78321,
+        "tdir_mean": 17.323818,
+        "tdir_cos": 0.896417,
+        "interpretation": "balanced joint diagnostic signal"
+      },
+      "F_joint_rtdir_tdir_hardcase_weighted": {
+        "rot_mean": 2.060442,
+        "tdir_mean": 17.957445,
+        "tdir_cos": 0.899039,
+        "interpretation": "balanced joint diagnostic signal with train-only hardcase weighting"
+      }
+    }
+  },
+  "jrt1c_summary": {
+    "classification": "NO_STABLE_JRT1_TRAJECTORY_GAIN",
+    "trajectory_proxy": "deterministic k=1 validation odometry chains from train-CV folds",
+    "interpretation": [
+      "no variant passed the trajectory proxy gate",
+      "no selected next-stage candidate",
+      "component improvements did not transfer to stable trajectory-level proxy gains",
+      "path_ratio proxy was outside the safe band for all variants including A"
+    ],
+    "mean_cv_trajectory_metrics": {
+      "A_s5_no_refiner_reference": {
+        "ATE_proxy": 0.174705,
+        "drift_proxy": 0.174946,
+        "path_ratio": 1.146411,
+        "rot_mean": 20.844836,
+        "tdir_mean": 45.816231,
+        "tdir_cos": 0.612203,
+        "gate": "REFERENCE"
+      },
+      "B_rot_only_residual": {
+        "ATE_proxy": 0.178203,
+        "drift_proxy": 0.182629,
+        "path_ratio": 1.146411,
+        "rot_mean": 7.69597,
+        "tdir_mean": 45.816231,
+        "tdir_cos": 0.612203,
+        "gate": "FAIL"
+      },
+      "C_tdir_residual_cosine": {
+        "ATE_proxy": 0.186241,
+        "drift_proxy": 0.195738,
+        "path_ratio": 1.146411,
+        "rot_mean": 20.844836,
+        "tdir_mean": 46.180848,
+        "tdir_cos": 0.593234,
+        "gate": "FAIL"
+      },
+      "D_joint_rtdir_residual": {
+        "ATE_proxy": 0.180036,
+        "drift_proxy": 0.17999,
+        "path_ratio": 1.146411,
+        "rot_mean": 4.804207,
+        "tdir_mean": 44.890367,
+        "tdir_cos": 0.604381,
+        "gate": "FAIL"
+      },
+      "E_joint_rtdir_tdir_weighted": {
+        "ATE_proxy": 0.185991,
+        "drift_proxy": 0.18788,
+        "path_ratio": 1.146411,
+        "rot_mean": 5.200944,
+        "tdir_mean": 46.576359,
+        "tdir_cos": 0.590124,
+        "gate": "FAIL"
+      },
+      "F_joint_rtdir_tdir_hardcase_weighted": {
+        "ATE_proxy": 0.191893,
+        "drift_proxy": 0.193065,
+        "path_ratio": 1.146411,
+        "rot_mean": 7.542631,
+        "tdir_mean": 48.327126,
+        "tdir_cos": 0.560232,
+        "gate": "FAIL"
+      }
+    }
+  },
+  "final_decision": {
+    "proceed_to_jrt1d_final_test": false,
+    "jrt1_replaces_s5": false,
+    "reason": "JRT1 produced component diagnostics but no stable train-CV trajectory proxy gain."
+  },
+  "no_final_test": true,
+  "selected_candidate": null,
+  "s5_remains_final": true,
+  "caveats": [
+    "train-CV only",
+    "no final test",
+    "proxy trajectory is not official final test",
+    "small sequence protocol",
+    "S5 unchanged",
+    "no practical-ready claim"
+  ]
+}
