@@ -1,0 +1,29 @@
+{
+  "experiment_name": "JRT1b_train_cv_joint_rtdir_refiner",
+  "base_candidate": "S5_clean_tmag_calibration_policy",
+  "base_policy_path": "checkpoints/S5_clean_tmag_calibration_policy.json",
+  "manifest_path": "checkpoints/final_clean_candidate_manifest.json",
+  "locked_s5_metrics": {
+    "ATE": 7.352288,
+    "drift": 1.327343,
+    "path_ratio": 0.932379
+  },
+  "train_cv": {
+    "num_folds": 3,
+    "seed": 2026,
+    "max_train_pairs_per_fold": 1024,
+    "max_val_pairs_per_fold": 512,
+    "num_updates": 300,
+    "batch_size": 32,
+    "learning_rate": 0.0005,
+    "weight_decay": 0.0001
+  },
+  "gate": {
+    "min_tdir_mean_improvement_deg": 5.0,
+    "max_rot_mean_worsening_deg": 2.0,
+    "safe_path_ratio_min": 0.90,
+    "safe_path_ratio_max": 1.05,
+    "max_ATE_worsening": 0.05,
+    "no_final_test_unless_gate_pass": true
+  }
+}
