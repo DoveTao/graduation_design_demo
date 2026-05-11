@@ -1,0 +1,61 @@
+{
+  "experiment": "ARCH2_mainline_rotation_compensated_softcorr_geometry",
+  "rows": [
+    {
+      "method": "S5E15",
+      "status": "S5E15_SCALE_DEUNDERFIT_IMPROVED",
+      "coverage": 1.0,
+      "signed_tdir_mean_deg": null,
+      "anti_parallel_rate": null,
+      "tmag_median_ratio": null,
+      "path_ratio": null,
+      "sim3_ate": 3.968240516140872,
+      "caveat": "S5E15_SCALE_DEUNDERFIT_IMPROVED"
+    },
+    {
+      "method": "S5E20",
+      "status": "S5E20_REAL_TRAINING_NO_IMPROVEMENT",
+      "coverage": 1.0,
+      "signed_tdir_mean_deg": 50.36741404926226,
+      "anti_parallel_rate": 0.15011037527593818,
+      "tmag_median_ratio": 1.1480486240737986,
+      "path_ratio": 0.142260065005239,
+      "sim3_ate": 3.968171243900437,
+      "caveat": "S5E20_REAL_TRAINING_NO_IMPROVEMENT"
+    },
+    {
+      "method": "S5E21",
+      "status": "S5E21_SUBSET_IMPROVED_GLOBAL_NOT",
+      "coverage": 1.0,
+      "signed_tdir_mean_deg": 50.34489159380542,
+      "anti_parallel_rate": 0.1479028697571744,
+      "tmag_median_ratio": 1.2685174015382987,
+      "path_ratio": 0.1571668166639846,
+      "sim3_ate": 3.9683522211608793,
+      "caveat": "S5E21_SUBSET_IMPROVED_GLOBAL_NOT"
+    },
+    {
+      "method": "ARCH2",
+      "status": "ARCH2_SUBSET_IMPROVED_GLOBAL_NOT",
+      "coverage": 1.0,
+      "signed_tdir_mean_deg": 50.352550059420615,
+      "anti_parallel_rate": 0.1479028697571744,
+      "tmag_median_ratio": 1.171006033440564,
+      "path_ratio": 0.14508782048566882,
+      "sim3_ate": 3.9682545773053644,
+      "caveat": "ARCH2_SUBSET_IMPROVED_GLOBAL_NOT"
+    },
+    {
+      "method": "ORB-SLAM3",
+      "status": "external_baseline",
+      "coverage": 0.6013215859030837,
+      "signed_tdir_mean_deg": null,
+      "anti_parallel_rate": null,
+      "tmag_median_ratio": null,
+      "path_ratio": 0.2998258665660257,
+      "sim3_ate": 0.224292165986624,
+      "caveat": "external_baseline"
+    }
+  ],
+  "summary": "ARCH2 吸收了 S5E21 的 no-harm 控制，同时把 soft correspondence geometry、rotation compensation 和 true k-step 放回主线。如果它仍没有全局超过 S5E15，就说明下一步更适合进入 STRUCT1 级别的主结构重构，而不是继续在轻量 residual 上打补丁。"
+}
