@@ -103,8 +103,21 @@
     "unittest": "PASS"
   },
   "git": {
-    "commits_created": [],
-    "pushed_to_remote": false,
+    "commits_created": [
+      {
+        "hash": "9fbcb84",
+        "message": "S5E19: add reports checkpoints and lightweight summaries"
+      },
+      {
+        "hash": "859a22c",
+        "message": "S5E19: add rotation compensated multiframe geometry refinement"
+      },
+      {
+        "hash": "e4f1166",
+        "message": "S5E18: add reports checkpoints and lightweight summaries"
+      }
+    ],
+    "pushed_to_remote": true,
     "tag_created": false,
     "working_tree_clean": false
   },
