@@ -119,9 +119,18 @@ external_baselines/results/**/*_tum_*.txt
 external_baselines/results/**/*_tum_raw.txt
 external_baselines/results/**/*_tum_*_raw.txt
 external_baselines/results/**/*_tum_*_only.txt
+external_baselines/results/**/scene*_seq*_*.txt
+external_baselines/results/**/router_decisions.jsonl
+external_baselines/results/**/spherical_bearing_flow_features.jsonl
+external_baselines/results/**/correspondence_loss_weights.jsonl
+external_baselines/results/**/correspondence_refinement_weights.jsonl
+external_baselines/results/**/scale_antiparallel_refinement_weights.jsonl
 
 # ---- Raw pairwise replay exports kept local for reproduction ----
 external_baselines/results/s5_pairwise_replay*/final_s5_pairwise_vectors_scene01_seq03.jsonl
 external_baselines/results/s5_pairwise_replay*/final_s5_pairwise_vectors_scene01_seq03.npz
 external_baselines/results/s5_pairwise_replay_s5d10/componentwise_replay_declared/
 external_baselines/results/s5_pairwise_replay_s5d10/componentwise_replay_inverse/
+
+# ---- Local candidate working files kept out of Git by default ----
+checkpoints/**/correspondence_weighted_dataset.json
