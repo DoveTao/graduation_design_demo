@@ -1,0 +1,1092 @@
+{
+  "experiment": "AUDIT1_experimental_candidate_validity_and_noop_sweep",
+  "candidate_validity": {
+    "S5E13": {
+      "name": "S5E13_real_correspondence_signed_direction_candidate",
+      "inventory": {
+        "candidate": "S5E13_real_correspondence_signed_direction_candidate",
+        "files": {
+          "checkpoint": {
+            "exists": true,
+            "sha256": "3a4aa7a2fea4c2273a161a2473240d3b37cdd3edc4c21d540ebab2ddb3d5000e",
+            "size": 15730,
+            "mtime": 1778495110.462527,
+            "path": "checkpoints/S5E13_real_correspondence_signed_direction_candidate.json"
+          },
+          "report": {
+            "exists": true,
+            "sha256": "ba680d185389c740baeb8e2d2a54ee4b2bdaf02337c0c83f21f78467bbdca4d1",
+            "size": 13520,
+            "mtime": 1778495110.463527,
+            "path": "reports/s5e13_real_correspondence_signed_direction_report.md"
+          },
+          "config": {
+            "exists": true,
+            "sha256": "18eaf755ddfbdca47044a44d0dee2fd6493c602e08d149aaf8aacf5dd89b11b2",
+            "size": 2777,
+            "mtime": 1778493247.7402606,
+            "path": "configs/s5e13_real_correspondence_signed_direction.yaml"
+          },
+          "training_status": {
+            "exists": true,
+            "sha256": "23d9fc6d7d6a904cb80d2d4913c3520c77a8b838563ff92decc4a86ad11fe4fc",
+            "size": 7603,
+            "mtime": 1778495070.233874,
+            "path": "checkpoints/S5E13_real_correspondence_signed_direction_candidate/training_status.json"
+          },
+          "trajectory": {
+            "exists": true,
+            "sha256": "00dd439b1a21d6d4363a364ce604c802fd874ae10354f61dad7516c593824186",
+            "size": 47890,
+            "mtime": 1778495086.8287308,
+            "path": "external_baselines/results/s5e13_traceable_dense/scene01_seq03_s5e13_traceable_dense_tum.txt"
+          },
+          "edge_component_metrics": {
+            "exists": true,
+            "sha256": "8dd92c0946816df28fb5bc656079aec2515f2b6e241fc529b5adc6095badc5f9",
+            "size": 197078,
+            "mtime": 1778495086.8527305,
+            "path": "external_baselines/results/s5e13_traceable_dense/edge_component_metrics.json"
+          },
+          "edge_provenance": {
+            "exists": true,
+            "sha256": "8f2b49ac8315e7944c97896804dff6a333b46f3db62af4737395dcf1d850f74d",
+            "size": 695551,
+            "mtime": 1778495086.8377306,
+            "path": "external_baselines/results/s5e13_traceable_dense/edge_provenance.jsonl"
+          },
+          "eval_alignment_none": {
+            "exists": true,
+            "sha256": "36700b68b55053ff1f5fc9e5aa24d79f23576956a5f713e2994e6bed50be296d",
+            "size": 637,
+            "mtime": 1778495110.2115293,
+            "path": "external_baselines/results/s5e13_traceable_dense/eval_alignment_none.json"
+          },
+          "eval_alignment_se3": {
+            "exists": true,
+            "sha256": "eb8ab6a64d618a99dbec0404b4445f96ddc21689de08ad8b3646f478e73aa028",
+            "size": 635,
+            "mtime": 1778495110.3285282,
+            "path": "external_baselines/results/s5e13_traceable_dense/eval_alignment_se3.json"
+          },
+          "eval_alignment_sim3": {
+            "exists": true,
+            "sha256": "1d2ab0d8cf6b37fa9246577a8e97c5d4dafad32d04e1ff53ea31eb8492191063",
+            "size": 638,
+            "mtime": 1778495110.4535272,
+            "path": "external_baselines/results/s5e13_traceable_dense/eval_alignment_sim3.json"
+          },
+          "comparison_json": {
+            "exists": true,
+            "sha256": "f3dd78340a6a4bdc2cf9724b9dcb04d9d3b74acc5176318c2f5342addfd3fc4f",
+            "size": 5214,
+            "mtime": 1778495120.9104373,
+            "path": "external_baselines/results/s5e13_traceable_dense/s5e12_s5e9_s5e6_to_s5e2_orbslam3_comparison.json"
+          },
+          "export_tool": {
+            "exists": true,
+            "sha256": "30d56ac734207bea6089bf3c1e116d79e2d90e475465c5bf7221a100c7768f85",
+            "size": 13077,
+            "mtime": 1778494900.6743603,
+            "path": "tools/export_s5e13_adjacent_dense_predictions.py"
+          },
+          "eval_tool": {
+            "exists": true,
+            "sha256": "23271a935edac41162c9c1f86e61fc8668979edd3ae268c9170f8c69aa793d54",
+            "size": 13269,
+            "mtime": 1778494086.70961,
+            "path": "tools/evaluate_s5e13_traceable_dense.py"
+          }
+        },
+        "exists": true,
+        "missing_files": []
+      },
+      "training_authenticity": {
+        "real_training_executed": null,
+        "smoke_only": false,
+        "optimizer_step_count": null,
+        "learned_weights_saved": null,
+        "uses_eval_gt_for_training": false,
+        "uses_orbslam3_teacher": null,
+        "uses_restored_dense": false,
+        "train_eval_split_separated": null,
+        "training_authenticity": "real"
+      },
+      "export_authenticity": {
+        "loads_current_candidate": true,
+        "loads_base_candidate": true,
+        "fallback_to_previous": false,
+        "uses_restored_dense_for_prediction": false,
+        "uses_eval_gt_for_prediction": false,
+        "source_model_consistent": true,
+        "all_edges_traceable": true,
+        "export_authenticity": "derived_with_declared_base"
+      },
+      "evaluator_authenticity": {
+        "reads_candidate_trajectory": true,
+        "reads_old_trajectory": false,
+        "hardcoded_previous_ref": true,
+        "metrics_from_eval_json": true,
+        "eval_json_exists": true,
+        "evaluator_authenticity": "mixed_ref"
+      },
+      "validity_classification": "CANDIDATE_VALID_DERIVED_DECLARED"
+    },
+    "S5E14": {
+      "name": "S5E14_observable_edge_direction_refinement_candidate",
+      "inventory": {
+        "candidate": "S5E14_observable_edge_direction_refinement_candidate",
+        "files": {
+          "checkpoint": {
+            "exists": true,
+            "sha256": "1c6648bdc914338a1434e36e2586ef18616fc9fbeff2aada73e36d048e663b75",
+            "size": 11088,
+            "mtime": 1778499514.4061968,
+            "path": "checkpoints/S5E14_observable_edge_direction_refinement_candidate.json"
+          },
+          "report": {
+            "exists": true,
+            "sha256": "303936870e8adc54b3cc35d1b60184c2bb7d2ffeed1af0cd577cb48439d75a0a",
+            "size": 10220,
+            "mtime": 1778499514.4061968,
+            "path": "reports/s5e14_observable_edge_direction_refinement_report.md"
+          },
+          "config": {
+            "exists": true,
+            "sha256": "3e75ab4bcc997ee1170f1e53bdcdcb979a2dc851261816272a53b03779f0db68",
+            "size": 2128,
+            "mtime": 1778498908.6402423,
+            "path": "configs/s5e14_observable_edge_direction_refinement.yaml"
+          },
+          "training_status": {
+            "exists": true,
+            "sha256": "8c336649a86cebcd04c63c1a83b86bae187fb848edc57d48d5e80486fd2df2cb",
+            "size": 953,
+            "mtime": 1778499489.8228683,
+            "path": "checkpoints/S5E14_observable_edge_direction_refinement_candidate/training_status.json"
+          },
+          "trajectory": {
+            "exists": true,
+            "sha256": "7c0d95f4ab45a3ea4fbec6256b54f703110a5cde8852cd1a87d92becb1ea32c1",
+            "size": 47890,
+            "mtime": 1778499496.979851,
+            "path": "external_baselines/results/s5e14_traceable_dense/scene01_seq03_s5e14_traceable_dense_tum.txt"
+          },
+          "edge_component_metrics": {
+            "exists": true,
+            "sha256": "70a098fb6c7f8847016459b8eb8ea2ca773804bfe0df3c1c36939bf7487e1cc2",
+            "size": 197089,
+            "mtime": 1778499496.9978535,
+            "path": "external_baselines/results/s5e14_traceable_dense/edge_component_metrics.json"
+          },
+          "edge_provenance": {
+            "exists": true,
+            "sha256": "ec82dec91143df3ef63fa9f7b333191a9e4e5b43ac9d92fa3edcdb8a73a22054",
+            "size": 718067,
+            "mtime": 1778499496.986852,
+            "path": "external_baselines/results/s5e14_traceable_dense/edge_provenance.jsonl"
+          },
+          "eval_alignment_none": {
+            "exists": true,
+            "sha256": "aac5b94d180645d9b256465dc096e02d4fad53c4a7bd2986f71022970bf200e9",
+            "size": 636,
+            "mtime": 1778499514.196169,
+            "path": "external_baselines/results/s5e14_traceable_dense/eval_alignment_none.json"
+          },
+          "eval_alignment_se3": {
+            "exists": true,
+            "sha256": "12c36eec3e371341f87cd3f291a61557837cbd015c43f3c0ce51c559dc320cd3",
+            "size": 636,
+            "mtime": 1778499514.2941818,
+            "path": "external_baselines/results/s5e14_traceable_dense/eval_alignment_se3.json"
+          },
+          "eval_alignment_sim3": {
+            "exists": true,
+            "sha256": "80f3282b02e47e9a0cfb597f8d05e0ad5b5e35424a46bfcea53986f666cbfd21",
+            "size": 636,
+            "mtime": 1778499514.3961954,
+            "path": "external_baselines/results/s5e14_traceable_dense/eval_alignment_sim3.json"
+          },
+          "comparison_json": {
+            "exists": true,
+            "sha256": "33e9315b355214070061419fa36b557f0c864158c0e11dd19c61029015510c19",
+            "size": 3981,
+            "mtime": 1778499520.0029364,
+            "path": "external_baselines/results/s5e14_traceable_dense/s5e13_s5e12_s5e9_orbslam3_comparison.json"
+          },
+          "export_tool": {
+            "exists": true,
+            "sha256": "6157c26e582cffe4d1774de3e449930a20678af3e96a83e9f49b3bc724f44b68",
+            "size": 12546,
+            "mtime": 1778499044.8376327,
+            "path": "tools/export_s5e14_adjacent_dense_predictions.py"
+          },
+          "eval_tool": {
+            "exists": true,
+            "sha256": "70bb78a025a9dc7404f480a723efb5b53ae5be7f073614067b58f4c0db864450",
+            "size": 14577,
+            "mtime": 1778499124.6847706,
+            "path": "tools/evaluate_s5e14_traceable_dense.py"
+          }
+        },
+        "exists": true,
+        "missing_files": []
+      },
+      "training_authenticity": {
+        "real_training_executed": null,
+        "smoke_only": false,
+        "optimizer_step_count": null,
+        "learned_weights_saved": null,
+        "uses_eval_gt_for_training": false,
+        "uses_orbslam3_teacher": null,
+        "uses_restored_dense": false,
+        "train_eval_split_separated": null,
+        "training_authenticity": "inference_only"
+      },
+      "export_authenticity": {
+        "loads_current_candidate": true,
+        "loads_base_candidate": true,
+        "fallback_to_previous": false,
+        "uses_restored_dense_for_prediction": false,
+        "uses_eval_gt_for_prediction": false,
+        "source_model_consistent": true,
+        "all_edges_traceable": true,
+        "export_authenticity": "derived_with_declared_base"
+      },
+      "evaluator_authenticity": {
+        "reads_candidate_trajectory": true,
+        "reads_old_trajectory": false,
+        "hardcoded_previous_ref": true,
+        "metrics_from_eval_json": true,
+        "eval_json_exists": true,
+        "evaluator_authenticity": "mixed_ref"
+      },
+      "validity_classification": "CANDIDATE_NOOP_RISK"
+    },
+    "S5E15": {
+      "name": "S5E15_scale_deunderfit_antiparallel_candidate",
+      "inventory": {
+        "candidate": "S5E15_scale_deunderfit_antiparallel_candidate",
+        "files": {
+          "checkpoint": {
+            "exists": true,
+            "sha256": "d9ec6969ff64aa5e0d88a757c4cb0282b4545a4221a5ba0edc9f2fd5b9925b4c",
+            "size": 9379,
+            "mtime": 1778511713.6136496,
+            "path": "checkpoints/S5E15_scale_deunderfit_antiparallel_candidate.json"
+          },
+          "report": {
+            "exists": true,
+            "sha256": "610e787f76a1bb7259cc04ca8fe5119eea8455db31536f5b181002a320f13d92",
+            "size": 7832,
+            "mtime": 1778511713.6136496,
+            "path": "reports/s5e15_scale_deunderfit_antiparallel_report.md"
+          },
+          "config": {
+            "exists": true,
+            "sha256": "9a3637f036cafbd33f3c949517fb627402af7308bfda1fb4b97b02037f04745a",
+            "size": 1513,
+            "mtime": 1778502314.3430283,
+            "path": "configs/s5e15_scale_deunderfit_antiparallel.yaml"
+          },
+          "training_status": {
+            "exists": true,
+            "sha256": "25483a77005a54b76644cceb25559f0d6a227c696529bdd68b7c56c6d085a684",
+            "size": 734,
+            "mtime": 1778511668.3994093,
+            "path": "checkpoints/S5E15_scale_deunderfit_antiparallel_candidate/training_status.json"
+          },
+          "trajectory": {
+            "exists": true,
+            "sha256": "6a9e4450a00b89ffccb2be151ef0cd14f57075fc8923aa09287f5ed3dc39bda7",
+            "size": 47887,
+            "mtime": 1778511675.4597237,
+            "path": "external_baselines/results/s5e15_traceable_dense/scene01_seq03_s5e15_traceable_dense_tum.txt"
+          },
+          "edge_component_metrics": {
+            "exists": true,
+            "sha256": "d9df940271f67e92ad36f1d8dbf92cc01c0630ea8bdfd7226e8d3ed24351d16c",
+            "size": 196563,
+            "mtime": 1778511675.4817455,
+            "path": "external_baselines/results/s5e15_traceable_dense/edge_component_metrics.json"
+          },
+          "edge_provenance": {
+            "exists": true,
+            "sha256": "fde9f2feab573e60c79dc7b84c047f08e274cae0b242620fab51b8bf1754e98e",
+            "size": 775794,
+            "mtime": 1778511675.4687326,
+            "path": "external_baselines/results/s5e15_traceable_dense/edge_provenance.jsonl"
+          },
+          "eval_alignment_none": {
+            "exists": true,
+            "sha256": "e11b44b6dd46cf502929c1f8249c7f806b612d25e6c9e8160b20707f197fd6a0",
+            "size": 636,
+            "mtime": 1778511713.4114804,
+            "path": "external_baselines/results/s5e15_traceable_dense/eval_alignment_none.json"
+          },
+          "eval_alignment_se3": {
+            "exists": true,
+            "sha256": "604ffd8e04ce440c1d0b870d0e5760fe6b5cc60f9d8f07801e04dc84e1faa569",
+            "size": 636,
+            "mtime": 1778511713.5085616,
+            "path": "external_baselines/results/s5e15_traceable_dense/eval_alignment_se3.json"
+          },
+          "eval_alignment_sim3": {
+            "exists": true,
+            "sha256": "88e1060502baa2d735152725619213844e821ea7e5bd1810626e0e45982c98f6",
+            "size": 636,
+            "mtime": 1778511713.6036413,
+            "path": "external_baselines/results/s5e15_traceable_dense/eval_alignment_sim3.json"
+          },
+          "comparison_json": {
+            "exists": true,
+            "sha256": "5a867e5d14136df4ef5c2365d7ab73b57df067297af7ed4bd44110d694d386e2",
+            "size": 3084,
+            "mtime": 1778511720.2387676,
+            "path": "external_baselines/results/s5e15_traceable_dense/s5e14_s5e13_s5e9_orbslam3_comparison.json"
+          },
+          "export_tool": {
+            "exists": true,
+            "sha256": "9e6d9b2350d5b0e2e0edddeaa86507402917fd834db9e94383ff64c97cbf61aa",
+            "size": 10381,
+            "mtime": 1778502178.5348358,
+            "path": "tools/export_s5e15_adjacent_dense_predictions.py"
+          },
+          "eval_tool": {
+            "exists": true,
+            "sha256": "00ee3fa8a1d9fa0f2746b5aea33b9579f87be582a6ae0b03ccdba6aaf7099e90",
+            "size": 11982,
+            "mtime": 1778502245.6338413,
+            "path": "tools/evaluate_s5e15_traceable_dense.py"
+          }
+        },
+        "exists": true,
+        "missing_files": []
+      },
+      "training_authenticity": {
+        "real_training_executed": null,
+        "smoke_only": false,
+        "optimizer_step_count": null,
+        "learned_weights_saved": null,
+        "uses_eval_gt_for_training": false,
+        "uses_orbslam3_teacher": null,
+        "uses_restored_dense": false,
+        "train_eval_split_separated": null,
+        "training_authenticity": "inference_only"
+      },
+      "export_authenticity": {
+        "loads_current_candidate": true,
+        "loads_base_candidate": true,
+        "fallback_to_previous": false,
+        "uses_restored_dense_for_prediction": false,
+        "uses_eval_gt_for_prediction": false,
+        "source_model_consistent": true,
+        "all_edges_traceable": true,
+        "export_authenticity": "derived_with_declared_base"
+      },
+      "evaluator_authenticity": {
+        "reads_candidate_trajectory": true,
+        "reads_old_trajectory": false,
+        "hardcoded_previous_ref": true,
+        "metrics_from_eval_json": true,
+        "eval_json_exists": true,
+        "evaluator_authenticity": "mixed_ref"
+      },
+      "validity_classification": "CANDIDATE_VALID_DERIVED_DECLARED"
+    },
+    "S5E16": {
+      "name": "S5E16_confidence_calibrated_sign_scale_router",
+      "inventory": {
+        "candidate": "S5E16_confidence_calibrated_sign_scale_router",
+        "files": {
+          "checkpoint": {
+            "exists": true,
+            "sha256": "0371ff0553aff78361953b464da02fc4f9042411f9ff571e0d6512aa1a02519c",
+            "size": 14073,
+            "mtime": 1778512783.1796172,
+            "path": "checkpoints/S5E16_confidence_calibrated_sign_scale_router.json"
+          },
+          "report": {
+            "exists": true,
+            "sha256": "4b54c3000eaf8a25f9e4fa42e4de2db6e3a5490c0de5e2be614e41255f8641e6",
+            "size": 11779,
+            "mtime": 1778512783.1796172,
+            "path": "reports/s5e16_confidence_calibrated_sign_scale_router_report.md"
+          },
+          "config": {
+            "exists": true,
+            "sha256": "527a8055cf36a835ed5d7d6cad1bf9214d153bd3cb4ef0873a526e6d506b4585",
+            "size": 1261,
+            "mtime": 1778512195.863959,
+            "path": "configs/s5e16_confidence_calibrated_sign_scale_router.yaml"
+          },
+          "training_status": {
+            "exists": true,
+            "sha256": "375ea6b4fb21ff9f7d75833bde47eacdce9ad646add4f18ec11d49d167c7806b",
+            "size": 617,
+            "mtime": 1778512756.8103569,
+            "path": "checkpoints/S5E16_confidence_calibrated_sign_scale_router/training_status.json"
+          },
+          "trajectory": {
+            "exists": true,
+            "sha256": "d67c49747878b32097e4462f45842a3cc41a0cfd1e29595c352d02c0f0d9fa3f",
+            "size": 47887,
+            "mtime": 1778512756.9333575,
+            "path": "external_baselines/results/s5e16_traceable_dense/scene01_seq03_s5e16_traceable_dense_tum.txt"
+          },
+          "edge_component_metrics": {
+            "exists": true,
+            "sha256": "12d2fd299bb7d2aacd817a204a131344964f9fa3ab98f96bdaae85c217936b78",
+            "size": 196693,
+            "mtime": 1778512756.9553576,
+            "path": "external_baselines/results/s5e16_traceable_dense/edge_component_metrics.json"
+          },
+          "edge_provenance": {
+            "exists": true,
+            "sha256": "d6bc84e256a1bf2684e21c9a31c2bea0c1310a5a732761e566b738f974ac1fc6",
+            "size": 801187,
+            "mtime": 1778512756.9433575,
+            "path": "external_baselines/results/s5e16_traceable_dense/edge_provenance.jsonl"
+          },
+          "eval_alignment_none": {
+            "exists": true,
+            "sha256": "14b067a87e56806a415b386862778cd17869f5eaa85d96c1137fe2ed657345c3",
+            "size": 636,
+            "mtime": 1778512782.9826145,
+            "path": "external_baselines/results/s5e16_traceable_dense/eval_alignment_none.json"
+          },
+          "eval_alignment_se3": {
+            "exists": true,
+            "sha256": "5bfd51e572053cd81a9c144eadcfd5470a18a4670a82ad1df378f189b45699a9",
+            "size": 634,
+            "mtime": 1778512783.0726156,
+            "path": "external_baselines/results/s5e16_traceable_dense/eval_alignment_se3.json"
+          },
+          "eval_alignment_sim3": {
+            "exists": true,
+            "sha256": "8e72b479a1af1938d1391346180dfbd005894d047973946efeefa015f4caa556",
+            "size": 636,
+            "mtime": 1778512783.169617,
+            "path": "external_baselines/results/s5e16_traceable_dense/eval_alignment_sim3.json"
+          },
+          "comparison_json": {
+            "exists": true,
+            "sha256": "e95d4dd96a94edbc37725e3de8fa380f421d53f656e9f1628d52b021deddc0c6",
+            "size": 3539,
+            "mtime": 1778512790.4577208,
+            "path": "external_baselines/results/s5e16_traceable_dense/s5e15_s5e14_s5e13_s5e9_orbslam3_comparison.json"
+          },
+          "export_tool": {
+            "exists": true,
+            "sha256": "705a00cceb71bdc1f17b75a625b714a39376a43c779e9c4329017ca1483c5554",
+            "size": 11451,
+            "mtime": 1778512324.698127,
+            "path": "tools/export_s5e16_adjacent_dense_predictions.py"
+          },
+          "eval_tool": {
+            "exists": true,
+            "sha256": "d47cd61c3928217f5bf6c0271a11ff33106cf4d45e8a8a21ce14f6172f4700ca",
+            "size": 12382,
+            "mtime": 1778512431.9182713,
+            "path": "tools/evaluate_s5e16_traceable_dense.py"
+          }
+        },
+        "exists": true,
+        "missing_files": []
+      },
+      "training_authenticity": {
+        "real_training_executed": null,
+        "smoke_only": false,
+        "optimizer_step_count": null,
+        "learned_weights_saved": null,
+        "uses_eval_gt_for_training": false,
+        "uses_orbslam3_teacher": null,
+        "uses_restored_dense": false,
+        "train_eval_split_separated": null,
+        "training_authenticity": "inference_only"
+      },
+      "export_authenticity": {
+        "loads_current_candidate": true,
+        "loads_base_candidate": true,
+        "fallback_to_previous": false,
+        "uses_restored_dense_for_prediction": false,
+        "uses_eval_gt_for_prediction": false,
+        "source_model_consistent": true,
+        "all_edges_traceable": true,
+        "export_authenticity": "derived_with_declared_base"
+      },
+      "evaluator_authenticity": {
+        "reads_candidate_trajectory": true,
+        "reads_old_trajectory": false,
+        "hardcoded_previous_ref": true,
+        "metrics_from_eval_json": true,
+        "eval_json_exists": true,
+        "evaluator_authenticity": "mixed_ref"
+      },
+      "validity_classification": "CANDIDATE_VALID_DERIVED_DECLARED"
+    },
+    "S5E17": {
+      "name": "S5E17_router_activation_threshold_repair_candidate",
+      "inventory": {
+        "candidate": "S5E17_router_activation_threshold_repair_candidate",
+        "files": {
+          "checkpoint": {
+            "exists": true,
+            "sha256": "f786339b6a341ee18716dfaf1ed23d9ec0a5f0656dfcde26ff057c1ca8ade2b1",
+            "size": 11559,
+            "mtime": 1778513838.8134744,
+            "path": "checkpoints/S5E17_router_activation_threshold_repair_candidate.json"
+          },
+          "report": {
+            "exists": true,
+            "sha256": "4b1806d20acbd5d8bf082da995f4cb950a5550b7911b0e5383025fa688f3a422",
+            "size": 152,
+            "mtime": 1778513838.8134744,
+            "path": "reports/s5e17_router_activation_threshold_repair_report.md"
+          },
+          "config": {
+            "exists": true,
+            "sha256": "127259a5164ab2c56dd53ba7bd32c833a35f0ed1375c75697904ac890f5e7582",
+            "size": 1181,
+            "mtime": 1778513267.7455602,
+            "path": "configs/s5e17_router_activation_threshold_repair.yaml"
+          },
+          "training_status": {
+            "exists": true,
+            "sha256": "793f909e30be5101a88967f2668a5d2bf67ac7922f909e8bdb405bb133544229",
+            "size": 749,
+            "mtime": 1778513790.2146678,
+            "path": "checkpoints/S5E17_router_activation_threshold_repair_candidate/router_status.json"
+          },
+          "trajectory": {
+            "exists": true,
+            "sha256": "9761820aa23f5963899b68a7d6668a5388ceabd62763feffca9f85a042e7e1d5",
+            "size": 47891,
+            "mtime": 1778513838.33644,
+            "path": "external_baselines/results/s5e17_traceable_dense/scene01_seq03_s5e17_traceable_dense_tum.txt"
+          },
+          "edge_component_metrics": {
+            "exists": true,
+            "sha256": "32846e2e9c33ca2e9b095515376c2122b41ad8b14419f8742c6f833e60b9cfcb",
+            "size": 196667,
+            "mtime": 1778513838.3514411,
+            "path": "external_baselines/results/s5e17_traceable_dense/edge_component_metrics.json"
+          },
+          "edge_provenance": {
+            "exists": true,
+            "sha256": "1b3981df51dae104de16534490961a71df396f0b70800ffb9c80fcc86ca75e35",
+            "size": 818625,
+            "mtime": 1778513838.3454409,
+            "path": "external_baselines/results/s5e17_traceable_dense/edge_provenance.jsonl"
+          },
+          "eval_alignment_none": {
+            "exists": true,
+            "sha256": "5a002e8ffacf7c0b273be9ac5cd2fabfda8e4f5c3d29a3327f9fdbab84745ce2",
+            "size": 636,
+            "mtime": 1778513838.5904584,
+            "path": "external_baselines/results/s5e17_traceable_dense/eval_alignment_none.json"
+          },
+          "eval_alignment_se3": {
+            "exists": true,
+            "sha256": "85a5906f79070f2202984230b7d5f4e5aaa8eaebac2cb13724a30a689a220ae6",
+            "size": 635,
+            "mtime": 1778513838.6974661,
+            "path": "external_baselines/results/s5e17_traceable_dense/eval_alignment_se3.json"
+          },
+          "eval_alignment_sim3": {
+            "exists": true,
+            "sha256": "1eac046cf73da92d5542a3de8188f00c83586b9a5069f4334dd688df73fc56ad",
+            "size": 638,
+            "mtime": 1778513838.8014736,
+            "path": "external_baselines/results/s5e17_traceable_dense/eval_alignment_sim3.json"
+          },
+          "comparison_json": {
+            "exists": true,
+            "sha256": "b74eaeead980a5d8e218656e93cbcdb0bb355845a512e3288c2aa8ccc9553ff5",
+            "size": 2499,
+            "mtime": 1778513838.9244823,
+            "path": "external_baselines/results/s5e17_traceable_dense/s5e16_s5e15_orbslam3_comparison.json"
+          },
+          "export_tool": {
+            "exists": true,
+            "sha256": "6652f1f869616758d981370f9a3396ae2735962f72d1e3f1b6af5eb05f6100a6",
+            "size": 9772,
+            "mtime": 1778513432.977927,
+            "path": "tools/export_s5e17_adjacent_dense_predictions.py"
+          },
+          "eval_tool": {
+            "exists": true,
+            "sha256": "f5ebe0bed5cd750d68db62a39b68ed8eceb9f045e5a09e2d4dbed4a4827348ab",
+            "size": 8370,
+            "mtime": 1778513618.8784368,
+            "path": "tools/evaluate_s5e17_traceable_dense.py"
+          }
+        },
+        "exists": true,
+        "missing_files": []
+      },
+      "training_authenticity": {
+        "real_training_executed": null,
+        "smoke_only": false,
+        "optimizer_step_count": null,
+        "learned_weights_saved": null,
+        "uses_eval_gt_for_training": null,
+        "uses_orbslam3_teacher": null,
+        "uses_restored_dense": false,
+        "train_eval_split_separated": null,
+        "training_authenticity": "inference_only"
+      },
+      "export_authenticity": {
+        "loads_current_candidate": true,
+        "loads_base_candidate": true,
+        "fallback_to_previous": false,
+        "uses_restored_dense_for_prediction": false,
+        "uses_eval_gt_for_prediction": false,
+        "source_model_consistent": true,
+        "all_edges_traceable": true,
+        "export_authenticity": "derived_with_declared_base"
+      },
+      "evaluator_authenticity": {
+        "reads_candidate_trajectory": true,
+        "reads_old_trajectory": false,
+        "hardcoded_previous_ref": false,
+        "metrics_from_eval_json": true,
+        "eval_json_exists": true,
+        "evaluator_authenticity": "fresh_eval"
+      },
+      "validity_classification": "CANDIDATE_VALID_DERIVED_DECLARED"
+    },
+    "S5E18": {
+      "name": "S5E18_equirectangular_bearing_flow_candidate",
+      "inventory": {
+        "candidate": "S5E18_equirectangular_bearing_flow_candidate",
+        "files": {
+          "checkpoint": {
+            "exists": true,
+            "sha256": "4cd5f78ae3febf6de1cec744162f01a0e3b6e02c51027e77b5830ca7f3c37984",
+            "size": 2413,
+            "mtime": 1778514298.502687,
+            "path": "checkpoints/S5E18_equirectangular_bearing_flow_candidate.json"
+          },
+          "report": {
+            "exists": true,
+            "sha256": "f0912abce189ecaa214efb293ebdcb346b128d7e13711e5a90d89eec8e23c423",
+            "size": 125,
+            "mtime": 1778514298.502687,
+            "path": "reports/s5e18_equirectangular_bearing_flow_report.md"
+          },
+          "config": {
+            "exists": true,
+            "sha256": "795c20b78e325ceef4103df0d841f241d19a240260bac48dfffe0737c9f733b9",
+            "size": 948,
+            "mtime": 1778514107.2221944,
+            "path": "configs/s5e18_equirectangular_bearing_flow.yaml"
+          },
+          "training_status": {
+            "exists": false,
+            "path": null
+          },
+          "trajectory": {
+            "exists": true,
+            "sha256": "9761820aa23f5963899b68a7d6668a5388ceabd62763feffca9f85a042e7e1d5",
+            "size": 47891,
+            "mtime": 1778514288.5535028,
+            "path": "external_baselines/results/s5e18_bearing_flow/scene01_seq03_s5e18_traceable_dense_tum.txt"
+          },
+          "edge_component_metrics": {
+            "exists": true,
+            "sha256": "32846e2e9c33ca2e9b095515376c2122b41ad8b14419f8742c6f833e60b9cfcb",
+            "size": 196667,
+            "mtime": 1778514288.5535028,
+            "path": "external_baselines/results/s5e18_bearing_flow/edge_component_metrics.json"
+          },
+          "edge_provenance": {
+            "exists": true,
+            "sha256": "48f15fa290b5c5967923f6b81736ee0ce5685e68d74c197a619f1ffd05e191a6",
+            "size": 904079,
+            "mtime": 1778514288.5535028,
+            "path": "external_baselines/results/s5e18_bearing_flow/edge_provenance.jsonl"
+          },
+          "eval_alignment_none": {
+            "exists": true,
+            "sha256": "5a002e8ffacf7c0b273be9ac5cd2fabfda8e4f5c3d29a3327f9fdbab84745ce2",
+            "size": 636,
+            "mtime": 1778514298.2596827,
+            "path": "external_baselines/results/s5e18_bearing_flow/eval_alignment_none.json"
+          },
+          "eval_alignment_se3": {
+            "exists": true,
+            "sha256": "85a5906f79070f2202984230b7d5f4e5aaa8eaebac2cb13724a30a689a220ae6",
+            "size": 635,
+            "mtime": 1778514298.3646846,
+            "path": "external_baselines/results/s5e18_bearing_flow/eval_alignment_se3.json"
+          },
+          "eval_alignment_sim3": {
+            "exists": true,
+            "sha256": "1eac046cf73da92d5542a3de8188f00c83586b9a5069f4334dd688df73fc56ad",
+            "size": 638,
+            "mtime": 1778514298.490687,
+            "path": "external_baselines/results/s5e18_bearing_flow/eval_alignment_sim3.json"
+          },
+          "comparison_json": {
+            "exists": true,
+            "sha256": "98cfcb127ef3a2690c9cff56132ebac3b1d4f7a69100b58533903fb6b3561be8",
+            "size": 2513,
+            "mtime": 1778514298.6316893,
+            "path": "external_baselines/results/s5e18_bearing_flow/s5e17_s5e15_orbslam3_comparison.json"
+          },
+          "export_tool": {
+            "exists": true,
+            "sha256": "378809ea2ef3dfc91aa7dbe768bea612e12d8d38b74ff7af8107be37d0cf56eb",
+            "size": 2758,
+            "mtime": 1778514168.4748876,
+            "path": "tools/export_s5e18_adjacent_dense_predictions.py"
+          },
+          "eval_tool": {
+            "exists": true,
+            "sha256": "e49faddabed15197efef9bc3c1394f9af2421af799f9a6bb6b7da121c23d7487",
+            "size": 4749,
+            "mtime": 1778514198.171611,
+            "path": "tools/evaluate_s5e18_traceable_dense.py"
+          }
+        },
+        "exists": true,
+        "missing_files": [
+          "training_status"
+        ]
+      },
+      "training_authenticity": {
+        "real_training_executed": null,
+        "smoke_only": null,
+        "optimizer_step_count": null,
+        "learned_weights_saved": null,
+        "uses_eval_gt_for_training": null,
+        "uses_orbslam3_teacher": null,
+        "uses_restored_dense": false,
+        "train_eval_split_separated": null,
+        "training_authenticity": "inference_only"
+      },
+      "export_authenticity": {
+        "loads_current_candidate": true,
+        "loads_base_candidate": true,
+        "fallback_to_previous": true,
+        "uses_restored_dense_for_prediction": false,
+        "uses_eval_gt_for_prediction": false,
+        "source_model_consistent": true,
+        "all_edges_traceable": true,
+        "export_authenticity": "fallback_risk"
+      },
+      "evaluator_authenticity": {
+        "reads_candidate_trajectory": true,
+        "reads_old_trajectory": false,
+        "hardcoded_previous_ref": false,
+        "metrics_from_eval_json": true,
+        "eval_json_exists": true,
+        "evaluator_authenticity": "fresh_eval"
+      },
+      "validity_classification": "CANDIDATE_NOOP_RISK"
+    },
+    "S5E19": {
+      "name": "S5E19_rotation_compensated_multiframe_geometry_candidate",
+      "inventory": {
+        "candidate": "S5E19_rotation_compensated_multiframe_geometry_candidate",
+        "files": {
+          "checkpoint": {
+            "exists": true,
+            "sha256": "6951e32b518fa0220ed6e2edf1740e82832b637c9ecb095b735332a1b4a14182",
+            "size": 3987,
+            "mtime": 1778517835.4280083,
+            "path": "checkpoints/S5E19_rotation_compensated_multiframe_geometry_candidate.json"
+          },
+          "report": {
+            "exists": true,
+            "sha256": "71b6a54b6e6306380c5ba394a50304090e589528abdca410087e2acda1a63735",
+            "size": 3557,
+            "mtime": 1778517717.4053166,
+            "path": "reports/s5e19_rotation_compensated_multiframe_geometry_report.md"
+          },
+          "config": {
+            "exists": true,
+            "sha256": "621e32b2e57331230791630b98bc22af859df0815cb774e73dfd7b1df5098687",
+            "size": 2652,
+            "mtime": 1778516956.2441835,
+            "path": "configs/s5e19_rotation_compensated_multiframe_geometry.yaml"
+          },
+          "training_status": {
+            "exists": true,
+            "sha256": "ef3bbafcfd18a673989926ce9ea9b0693ef319f5ad55389866bcfa46d36bedaf",
+            "size": 1268,
+            "mtime": 1778517411.3120246,
+            "path": "checkpoints/S5E19_rotation_compensated_multiframe_geometry_candidate/training_status.json"
+          },
+          "trajectory": {
+            "exists": true,
+            "sha256": "5eb5831b765286a12cff96409a2e42f7249ee2f09ad17761e98aab4584828ef7",
+            "size": 47887,
+            "mtime": 1778517506.1668293,
+            "path": "external_baselines/results/s5e19_traceable_dense/scene01_seq03_s5e19_traceable_dense_tum.txt"
+          },
+          "edge_component_metrics": {
+            "exists": true,
+            "sha256": "0ac17cf5a90aeef566f8b796afaa64707842ca012a703674a99d8c7bc11b4703",
+            "size": 208321,
+            "mtime": 1778517506.1828294,
+            "path": "external_baselines/results/s5e19_traceable_dense/edge_component_metrics.json"
+          },
+          "edge_provenance": {
+            "exists": true,
+            "sha256": "4db54849a68266eec08086609192679f7197601f2a2f465d3df76daf7613aed8",
+            "size": 843450,
+            "mtime": 1778517506.1778295,
+            "path": "external_baselines/results/s5e19_traceable_dense/edge_provenance.jsonl"
+          },
+          "eval_alignment_none": {
+            "exists": true,
+            "sha256": "a3cf7493ebbd1af8054ff68734fbd35d527bb5e74042ec49cb594f9a1fea90d9",
+            "size": 636,
+            "mtime": 1778517717.1923153,
+            "path": "external_baselines/results/s5e19_traceable_dense/eval_alignment_none.json"
+          },
+          "eval_alignment_se3": {
+            "exists": true,
+            "sha256": "1976e9931412cbb4d7c9076e62ff0597fd4852918d1481ac5ef61669804a89b5",
+            "size": 636,
+            "mtime": 1778517717.294316,
+            "path": "external_baselines/results/s5e19_traceable_dense/eval_alignment_se3.json"
+          },
+          "eval_alignment_sim3": {
+            "exists": true,
+            "sha256": "8b33942e5341a876910de104a5e7e5bf789d86bef0f2e380fed531d8c57221f5",
+            "size": 637,
+            "mtime": 1778517717.3953166,
+            "path": "external_baselines/results/s5e19_traceable_dense/eval_alignment_sim3.json"
+          },
+          "comparison_json": {
+            "exists": true,
+            "sha256": "b49dc8cf13b5831f158a8b329414574a881b2568a90180a4243dccdff3065768",
+            "size": 2995,
+            "mtime": 1778517547.7241523,
+            "path": "external_baselines/results/s5e19_traceable_dense/s5e15_s5e18_orbslam3_comparison.json"
+          },
+          "export_tool": {
+            "exists": true,
+            "sha256": "f4cb3797cd78510d3318d179357d9101149524466c289e05b5f8a426374094cb",
+            "size": 11479,
+            "mtime": 1778517494.548736,
+            "path": "tools/export_s5e19_adjacent_dense_predictions.py"
+          },
+          "eval_tool": {
+            "exists": true,
+            "sha256": "84b21f224ba0c9d605e2a5415328394fa45e40f2eb32af1fd4e0324072781439",
+            "size": 12604,
+            "mtime": 1778517703.9612324,
+            "path": "tools/evaluate_s5e19_traceable_dense.py"
+          }
+        },
+        "exists": true,
+        "missing_files": []
+      },
+      "training_authenticity": {
+        "real_training_executed": null,
+        "smoke_only": true,
+        "optimizer_step_count": null,
+        "learned_weights_saved": null,
+        "uses_eval_gt_for_training": false,
+        "uses_orbslam3_teacher": false,
+        "uses_restored_dense": false,
+        "train_eval_split_separated": true,
+        "training_authenticity": "smoke_only"
+      },
+      "export_authenticity": {
+        "loads_current_candidate": true,
+        "loads_base_candidate": true,
+        "fallback_to_previous": true,
+        "uses_restored_dense_for_prediction": false,
+        "uses_eval_gt_for_prediction": false,
+        "source_model_consistent": true,
+        "all_edges_traceable": true,
+        "export_authenticity": "fallback_risk"
+      },
+      "evaluator_authenticity": {
+        "reads_candidate_trajectory": true,
+        "reads_old_trajectory": false,
+        "hardcoded_previous_ref": true,
+        "metrics_from_eval_json": true,
+        "eval_json_exists": true,
+        "evaluator_authenticity": "mixed_ref"
+      },
+      "validity_classification": "CANDIDATE_SMOKE_ONLY"
+    }
+  },
+  "pairwise_noop_diff": [
+    {
+      "pair": "S5E13_vs_S5E14",
+      "num_common_timestamps": 454,
+      "max_translation_difference": 6.480740763521137e-09,
+      "mean_translation_difference": 4.4400231155646e-09,
+      "max_quaternion_angular_difference_deg": 2.9575586669421963e-06,
+      "mean_quaternion_angular_difference_deg": 2.6774602917887413e-07,
+      "identical_pose_count": 15,
+      "near_identical_pose_count": 454,
+      "trajectory_exact_copy": false,
+      "trajectory_near_identical": true,
+      "mean_abs_diff_rot": 0.0,
+      "mean_abs_diff_tdir": 1.1205022105989866e-06,
+      "mean_abs_diff_tdir_abs": 1.1205022106381998e-06,
+      "anti_parallel_flag_changed_count": 0,
+      "tmag_ratio_mean_abs_diff": 3.5773391454103322e-09,
+      "changed_edge_count": 112,
+      "unchanged_edge_count": 341,
+      "edge_metrics_near_identical": true,
+      "path_ratio_delta": -3.6946300185913827e-10,
+      "sim3_ate_delta": -2.4616113591946487e-09,
+      "likely_noop": true
+    },
+    {
+      "pair": "S5E14_vs_S5E15",
+      "num_common_timestamps": 454,
+      "max_translation_difference": 1.8346248478145826,
+      "mean_translation_difference": 1.105857250661601,
+      "max_quaternion_angular_difference_deg": 2.9575586669421963e-06,
+      "mean_quaternion_angular_difference_deg": 2.6774602917887413e-07,
+      "identical_pose_count": 1,
+      "near_identical_pose_count": 1,
+      "trajectory_exact_copy": false,
+      "trajectory_near_identical": false,
+      "mean_abs_diff_rot": 0.0,
+      "mean_abs_diff_tdir": 1.5572042061508433e-14,
+      "mean_abs_diff_tdir_abs": 1.562694050687621e-14,
+      "anti_parallel_flag_changed_count": 0,
+      "tmag_ratio_mean_abs_diff": 1.1027869681583484,
+      "changed_edge_count": 453,
+      "unchanged_edge_count": 0,
+      "edge_metrics_near_identical": false,
+      "path_ratio_delta": 0.10444170106048392,
+      "sim3_ate_delta": 0.020339233391367006,
+      "likely_noop": false
+    },
+    {
+      "pair": "S5E15_vs_S5E16",
+      "num_common_timestamps": 454,
+      "max_translation_difference": 0.5959580657301968,
+      "mean_translation_difference": 0.355868883451403,
+      "max_quaternion_angular_difference_deg": 2.9575586669421963e-06,
+      "mean_quaternion_angular_difference_deg": 2.6774602917887413e-07,
+      "identical_pose_count": 1,
+      "near_identical_pose_count": 1,
+      "trajectory_exact_copy": false,
+      "trajectory_near_identical": false,
+      "mean_abs_diff_rot": 0.0,
+      "mean_abs_diff_tdir": 1.6607269888443677e-14,
+      "mean_abs_diff_tdir_abs": 1.6560214078128437e-14,
+      "anti_parallel_flag_changed_count": 0,
+      "tmag_ratio_mean_abs_diff": 0.36184572921287245,
+      "changed_edge_count": 453,
+      "unchanged_edge_count": 0,
+      "edge_metrics_near_identical": false,
+      "path_ratio_delta": -0.033678603570853824,
+      "sim3_ate_delta": 1.1722178783202253e-11,
+      "likely_noop": false
+    },
+    {
+      "pair": "S5E16_vs_S5E17",
+      "num_common_timestamps": 454,
+      "max_translation_difference": 0.08401245915626417,
+      "mean_translation_difference": 0.058593695257827996,
+      "max_quaternion_angular_difference_deg": 2.9575586669421963e-06,
+      "mean_quaternion_angular_difference_deg": 2.6774602917887413e-07,
+      "identical_pose_count": 5,
+      "near_identical_pose_count": 5,
+      "trajectory_exact_copy": false,
+      "trajectory_near_identical": false,
+      "mean_abs_diff_rot": 0.0,
+      "mean_abs_diff_tdir": 4.151694930938223e-15,
+      "mean_abs_diff_tdir_abs": 4.167380201043303e-15,
+      "anti_parallel_flag_changed_count": 0,
+      "tmag_ratio_mean_abs_diff": 0.04399108732408173,
+      "changed_edge_count": 68,
+      "unchanged_edge_count": 385,
+      "edge_metrics_near_identical": false,
+      "path_ratio_delta": 0.005246788338002309,
+      "sim3_ate_delta": 0.004443993748928232,
+      "likely_noop": false
+    },
+    {
+      "pair": "S5E17_vs_S5E18",
+      "num_common_timestamps": 454,
+      "max_translation_difference": 0.0,
+      "mean_translation_difference": 0.0,
+      "max_quaternion_angular_difference_deg": 2.9575586669421963e-06,
+      "mean_quaternion_angular_difference_deg": 2.6774602917887413e-07,
+      "identical_pose_count": 391,
+      "near_identical_pose_count": 454,
+      "trajectory_exact_copy": false,
+      "trajectory_near_identical": true,
+      "mean_abs_diff_rot": 0.0,
+      "mean_abs_diff_tdir": 0.0,
+      "mean_abs_diff_tdir_abs": 0.0,
+      "anti_parallel_flag_changed_count": 0,
+      "tmag_ratio_mean_abs_diff": 0.0,
+      "changed_edge_count": 0,
+      "unchanged_edge_count": 453,
+      "edge_metrics_near_identical": true,
+      "path_ratio_delta": 0.0,
+      "sim3_ate_delta": 0.0,
+      "likely_noop": true
+    },
+    {
+      "pair": "S5E15_vs_S5E19",
+      "num_common_timestamps": 454,
+      "max_translation_difference": 0.009740779281393427,
+      "mean_translation_difference": 0.005958948542946845,
+      "max_quaternion_angular_difference_deg": 2.9575586669421963e-06,
+      "mean_quaternion_angular_difference_deg": 2.6774602917887413e-07,
+      "identical_pose_count": 1,
+      "near_identical_pose_count": 11,
+      "trajectory_exact_copy": false,
+      "trajectory_near_identical": false,
+      "mean_abs_diff_rot": 0.0,
+      "mean_abs_diff_tdir": 1.4832873707806563e-14,
+      "mean_abs_diff_tdir_abs": 1.487208688306926e-14,
+      "anti_parallel_flag_changed_count": 0,
+      "tmag_ratio_mean_abs_diff": 0.00602250857850935,
+      "changed_edge_count": 453,
+      "unchanged_edge_count": 0,
+      "edge_metrics_near_identical": false,
+      "path_ratio_delta": -0.0004204067639026199,
+      "sim3_ate_delta": -3.0015983056408402e-05,
+      "likely_noop": true
+    }
+  ],
+  "s5e15_validity": {
+    "valid_as_best_self_developed_composite_candidate": true,
+    "independent_of_s5e14": false,
+    "scale_improvement_authentic": true,
+    "uses_eval_gt_calibration": false,
+    "fallback_risk": false,
+    "hardcoded_metric_risk": false,
+    "traceability_ok": true,
+    "final_recommendation": "keep_as_best_candidate"
+  },
+  "recommendation": {
+    "best_self_developed_candidate": "S5E15",
+    "positive_results": [
+      "S5E13",
+      "S5E15"
+    ],
+    "diagnostic_only_results": [
+      "S5E14",
+      "S5E16",
+      "S5E17",
+      "S5E18",
+      "S5E19"
+    ],
+    "repair_required": [
+      "S5E14",
+      "S5E18",
+      "S5E19"
+    ]
+  },
+  "s5_locked_metrics_policy_unchanged": true,
+  "final_classification": "AUDIT1_S5E15_VALID_BEST_CANDIDATE"
+}
