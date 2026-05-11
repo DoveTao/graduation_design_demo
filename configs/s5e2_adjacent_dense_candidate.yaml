@@ -1,0 +1,50 @@
+experiment: S5E2_real_adjacent_dense_candidate
+status:
+  experimental_candidate: true
+  not_official_replacement: true
+  official_s5_locked_metrics_unchanged: true
+
+data:
+  data_root: data
+  split_by: scene_seq
+  train_ratio: 0.8
+  split_seed: 3407
+  train_sequences:
+    - scene01/seq01
+    - scene01/seq02
+  eval_sequence: scene01/seq03
+  test_gt_used_for_training: false
+  no_gt_leakage: true
+  no_restored_dense_artifact_for_prediction: true
+
+model:
+  backbone: minimal_image_statistics
+  head: adjacent_dense_pose_head
+  candidate_type: minimal adjacent pose regressor baseline
+  ridge_lambda: 0.001
+  feature_image_size: [32, 64]
+
+losses:
+  SO(3) geodesic: true
+  tdir: true
+  tmag log: true
+  path length consistency: true
+  short-window consistency: true
+  small_translation_mask: 0.001
+
+training:
+  batch_size: 64
+  epochs: 1
+  lr: closed_form_ridge
+  device: cpu
+  no_gt_leakage: true
+
+outputs:
+  checkpoint_dir: checkpoints/S5E2_adjacent_dense_candidate
+  dense_result_dir: external_baselines/results/s5e2_traceable_dense
+
+caveats:
+  - S5E2 is experimental and does not replace official S5 locked result.
+  - S5 locked metrics/policy unchanged.
+  - scene01/seq03 GT is used only for evaluation / diagnostics.
+  - No restored dense artifact is used to generate prediction.

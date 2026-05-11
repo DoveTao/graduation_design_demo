@@ -1,0 +1,48 @@
+experiment: S5E1_traceable_adjacent_dense_candidate
+status:
+  experimental_candidate: true
+  not_official_replacement: true
+  official_s5_locked_metrics_unchanged: true
+
+data:
+  scene: scene01
+  seq: seq03
+  timestamps: external_baselines/dataset/scene01_seq03/timestamps.txt
+  groundtruth_for_evaluation_only: external_baselines/dataset/scene01_seq03/groundtruth_tum.txt
+  no_gt_used_for_prediction: true
+  do_not_modify_train_test_split: true
+
+model:
+  reuse_existing_s5_backbone: true
+  adjacent_dense_pose_head: experimental_only
+  geometry_consistency_head: experimental_only
+
+losses:
+  so3_geodesic:
+    enabled: true
+    description: "SO(3) geodesic rotation loss"
+  tdir:
+    enabled: true
+    description: "translation direction angular/cosine loss with small-motion mask"
+  tmag_log:
+    enabled: true
+    description: "tmag log magnitude ratio loss"
+  path_length_consistency:
+    enabled: true
+    window_sizes: [5, 10]
+  short_window_consistency:
+    enabled: true
+    description: "short-window consistency over adjacent chains"
+  nonselected_edge_scale_guard:
+    enabled: true
+    description: "monitor and penalize extreme adjacent-edge tmag_ratio"
+
+outputs:
+  checkpoint_dir: checkpoints/S5E1_geometry_candidate
+  dense_result_dir: external_baselines/results/s5e1_traceable_dense
+
+caveats:
+  - S5E1 is experimental and does not replace official S5 locked result.
+  - S5 locked metrics/policy unchanged.
+  - No restored dense artifact is used to fill predictions.
+  - No GT is used to generate or scale predictions.

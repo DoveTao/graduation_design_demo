@@ -1,0 +1,52 @@
+experiment: S5E4_temporal_direction_head_candidate
+status:
+  experimental_candidate: true
+  not_official_replacement: true
+  official_s5_locked_metrics_unchanged: true
+
+data:
+  data_root: data
+  split_by: scene_seq
+  train_ratio: 0.8
+  split_seed: 3407
+  train_sequences: [scene01/seq01, scene01/seq02]
+  eval_sequence: scene01/seq03
+  uses_scene01_seq03_for_training: false
+  no_gt_leakage: true
+  no_restored_dense_artifact_for_prediction: true
+  no_orbslam3_distillation: true
+
+base_candidates:
+  s5e2_checkpoint_dir: checkpoints/S5E2_adjacent_dense_candidate
+  s5e3_checkpoint_dir: checkpoints/S5E3_scale_calibrated_adjacent_dense_candidate
+
+model:
+  strategy: temporal_order_sign_disambiguation
+  rot_head: inherited_s5e2_rotation
+  direction_head: s5e2_signed_direction_prior
+  magnitude_head: s5e3_log_magnitude_head
+  sign_head: temporal_order_prior_from_s5e2
+  ordered_features:
+    - feat_i
+    - feat_j
+    - feat_j_minus_feat_i
+    - feat_j_div_feat_i_eps
+    - timestamp_delta
+    - frame_order_token
+
+losses:
+  so3_geodesic: true
+  signed_tdir: true
+  anti_parallel_penalty: true
+  tdir_abs_aux: true
+  tmag_log: true
+  path_length_consistency: true
+  short_window_direction_consistency: true
+  small_motion_mask: 0.001
+
+caveats:
+  - S5E4 is experimental and does not replace official S5 locked result.
+  - S5 locked metrics/policy unchanged.
+  - scene01/seq03 GT is used only for evaluation / diagnostics.
+  - No restored dense artifact is used to generate prediction.
+  - ORB-SLAM3 trajectory is not used as a training label.
