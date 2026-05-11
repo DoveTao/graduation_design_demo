@@ -1,0 +1,66 @@
+{
+  "experiment": "S5E19C_real_direction_training_no_fallback",
+  "rows": [
+    {
+      "method": "S5E15",
+      "status": "S5E15_SCALE_DEUNDERFIT_IMPROVED",
+      "coverage": 1.0,
+      "signed_tdir_mean_deg": null,
+      "tdir_abs_mean_deg": null,
+      "anti_parallel_rate": null,
+      "tmag_median_ratio": null,
+      "tmag_p95_ratio": null,
+      "path_ratio": null,
+      "none_ate": 9.328085906618083,
+      "se3_ate": 3.9807674584476227,
+      "sim3_ate": 3.968240516140872,
+      "caveat": "S5E15_SCALE_DEUNDERFIT_IMPROVED"
+    },
+    {
+      "method": "S5E19",
+      "status": "S5E19_TRAINING_SMOKE_ONLY",
+      "coverage": 1.0,
+      "signed_tdir_mean_deg": 50.353041365033235,
+      "tdir_abs_mean_deg": 43.16064629037026,
+      "anti_parallel_rate": 0.1479028697571744,
+      "tmag_median_ratio": 1.26853220360632,
+      "tmag_p95_ratio": 4.668572667067984,
+      "path_ratio": 0.15674640990008198,
+      "none_ate": 9.328785504501196,
+      "se3_ate": 3.9809703358574935,
+      "sim3_ate": 3.9682105001578156,
+      "caveat": "S5E19_TRAINING_SMOKE_ONLY"
+    },
+    {
+      "method": "S5E19C",
+      "status": "S5E19C_REAL_TRAINING_NO_IMPROVEMENT",
+      "coverage": 1.0,
+      "signed_tdir_mean_deg": 56.17528018993624,
+      "tdir_abs_mean_deg": 50.59318455427033,
+      "anti_parallel_rate": 0.16556291390728478,
+      "tmag_median_ratio": 0.9879222977344607,
+      "tmag_p95_ratio": 3.6359100915472986,
+      "path_ratio": 0.12240164100086463,
+      "none_ate": 9.63427551263089,
+      "se3_ate": 4.016260541940681,
+      "sim3_ate": 3.9958080586973814,
+      "caveat": "S5E19C_REAL_TRAINING_NO_IMPROVEMENT"
+    },
+    {
+      "method": "ORB-SLAM3",
+      "status": "external_baseline",
+      "coverage": 0.6013215859030837,
+      "signed_tdir_mean_deg": null,
+      "tdir_abs_mean_deg": null,
+      "anti_parallel_rate": null,
+      "tmag_median_ratio": null,
+      "tmag_p95_ratio": null,
+      "path_ratio": 0.2998258665660257,
+      "none_ate": 11.46685113827757,
+      "se3_ate": 0.30854441069248173,
+      "sim3_ate": 0.224292165986624,
+      "caveat": "external_baseline"
+    }
+  ],
+  "summary": "S5E19C 的目标不是再做 smoke/no-op，而是证明 real training + no-fallback export 是否真的改变了 direction path。"
+}

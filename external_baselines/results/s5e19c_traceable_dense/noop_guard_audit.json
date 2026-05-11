@@ -1,0 +1,10 @@
+{
+  "delta_tdir_zero_count": 0,
+  "delta_tdir_norm_mean": 0.6029416022053354,
+  "sign_score_unique_count": 453,
+  "final_equals_s5e15_direction_count": 0,
+  "fallback_to_s5e15_direction": false,
+  "learned_weights_loaded": true,
+  "export_used_learned_weights": true,
+  "evaluator_hardcoded_s5e15_metrics": false
+}
