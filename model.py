@@ -370,6 +370,117 @@ def _apply_dt_bucket_scale_anchor(
             aux[vec_key] = aux[vec_key].float() * fac_t
 
 
+class RotationCompensatedMotionToken(nn.Module):
+    """Experimental ARCH2 helper that fuses soft correspondence geometry."""
+
+    def __init__(self, feature_dim: int, hidden_dim: int = 128):
+        super().__init__()
+        self.mlp = nn.Sequential(
+            nn.LayerNorm(feature_dim + 3 + 3 + 3 + 1 + 1 + 1),
+            nn.Linear(feature_dim + 3 + 3 + 3 + 1 + 1 + 1, hidden_dim),
+            nn.GELU(),
+            nn.Linear(hidden_dim, hidden_dim),
+            nn.GELU(),
+        )
+
+    def forward(
+        self,
+        interaction_features: torch.Tensor,
+        bearing_a: torch.Tensor,
+        bearing_b: torch.Tensor,
+        W_ab: torch.Tensor,
+        R_coarse: torch.Tensor,
+        *,
+        W_ba: Optional[torch.Tensor] = None,
+    ) -> Dict[str, torch.Tensor]:
+        feat = interaction_features.float()
+        ba = nn.functional.normalize(bearing_a.float(), dim=-1, eps=1e-6)
+        bb = nn.functional.normalize(bearing_b.float(), dim=-1, eps=1e-6)
+        W_ab = W_ab.float()
+        bA_rot = torch.matmul(R_coarse.float(), ba.transpose(1, 2)).transpose(1, 2)
+        bB_match = torch.matmul(W_ab, bb)
+        bB_match = nn.functional.normalize(bB_match, dim=-1, eps=1e-6)
+        residual_flow = bB_match - nn.functional.normalize(bA_rot, dim=-1, eps=1e-6)
+        confidence = W_ab.max(dim=-1).values.unsqueeze(-1)
+        probs = W_ab.clamp_min(1.0e-9)
+        entropy = -(probs * probs.log()).sum(dim=-1, keepdim=True)
+        if W_ba is not None:
+            cyc = torch.matmul(W_ab, W_ba.float())
+            eye = torch.eye(cyc.shape[-1], device=cyc.device, dtype=cyc.dtype).view(1, cyc.shape[-2], cyc.shape[-1])
+            cycle_error = torch.mean(torch.abs(cyc - eye), dim=-1, keepdim=True)
+        else:
+            cycle_error = torch.zeros_like(confidence)
+        fused = torch.cat([feat, bA_rot, bB_match, residual_flow, confidence, entropy, cycle_error], dim=-1)
+        motion_tokens = self.mlp(fused)
+        return {
+            "motion_tokens": motion_tokens,
+            "bA_rot": bA_rot,
+            "matched_bearing_b": bB_match,
+            "residual_flow": residual_flow,
+            "confidence": confidence.squeeze(-1),
+            "entropy": entropy.squeeze(-1),
+            "cycle_error": cycle_error.squeeze(-1),
+        }
+
+
+class CorrespondenceGeometryTDirHead(nn.Module):
+    """Experimental ARCH2 head for conservative direction residuals."""
+
+    def __init__(self, feature_dim: int, hidden_dim: int = 128, max_alpha: float = 0.05):
+        super().__init__()
+        self.max_alpha = float(max_alpha)
+        self.backbone = nn.Sequential(
+            nn.LayerNorm(feature_dim),
+            nn.Linear(feature_dim, hidden_dim),
+            nn.GELU(),
+            nn.Linear(hidden_dim, hidden_dim),
+            nn.GELU(),
+        )
+        self.delta_head = nn.Linear(hidden_dim, 3)
+        self.obs_head = nn.Linear(hidden_dim, 1)
+        nn.init.zeros_(self.delta_head.weight)
+        nn.init.zeros_(self.delta_head.bias)
+
+    def forward(self, motion_tokens: torch.Tensor) -> Dict[str, torch.Tensor]:
+        h = self.backbone(motion_tokens.float())
+        delta_tdir = torch.tanh(self.delta_head(h))
+        observability_score = torch.sigmoid(self.obs_head(h)).squeeze(-1)
+        delta_norm = torch.linalg.norm(delta_tdir.float(), dim=-1)
+        return {
+            "delta_tdir": delta_tdir,
+            "delta_tdir_norm": delta_norm,
+            "observability_score": observability_score,
+            "gate_value": observability_score.clamp(0.0, 1.0),
+            "max_alpha": torch.full_like(observability_score, self.max_alpha),
+        }
+
+
+class FineScaleHeadWithS5E15Guard(nn.Module):
+    """Experimental bounded scale residual head with train-prior guard."""
+
+    def __init__(self, feature_dim: int, hidden_dim: int = 64, delta_clip: float = 0.25):
+        super().__init__()
+        self.delta_clip = float(delta_clip)
+        self.net = nn.Sequential(
+            nn.LayerNorm(feature_dim),
+            nn.Linear(feature_dim, hidden_dim),
+            nn.GELU(),
+            nn.Linear(hidden_dim, hidden_dim),
+            nn.GELU(),
+            nn.Linear(hidden_dim, 1),
+        )
+
+    def forward(self, pooled_features: torch.Tensor, base_log_tmag: torch.Tensor) -> Dict[str, torch.Tensor]:
+        delta_log_tmag = torch.tanh(self.net(pooled_features.float()).view(-1)) * self.delta_clip
+        final_log_tmag = base_log_tmag.float().view(-1) + delta_log_tmag
+        final_tmag = torch.exp(final_log_tmag).clamp_min(1.0e-6)
+        return {
+            "delta_log_tmag": delta_log_tmag,
+            "final_log_tmag": final_log_tmag,
+            "final_tmag": final_tmag,
+        }
+
+
 class PanoramaRelPoseModel(nn.Module):
     def __init__(self, cfg: Config, device: torch.device):
         super().__init__()
