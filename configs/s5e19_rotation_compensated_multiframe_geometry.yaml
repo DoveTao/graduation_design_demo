@@ -1,0 +1,103 @@
+experiment: S5E19_rotation_compensated_multiframe_geometry_refinement
+report_language: zh
+
+model:
+  name: S5E19_rotation_compensated_multiframe_geometry
+  preserve_spherical_token_backbone: true
+  use_erp_sampling: true
+  use_coarse_pose_head: true
+  use_fine_residual_refinement: true
+  use_rotation_compensation: true
+  use_fine_scale_residual_head: true
+  use_external_router: false
+
+coarse_pose_head:
+  predict_rotation: true
+  predict_tdir: true
+  predict_log_tmag: true
+  rotation_representation: quaternion_or_so3
+  tdir_normalize: true
+  log_tmag_bounded: true
+
+fine_refinement:
+  num_iterations: 2
+  predict_delta_rotation: true
+  predict_delta_tdir: true
+  predict_delta_log_tmag: true
+  final_tdir_formula: normalize_coarse_plus_delta
+  final_tmag_formula: bounded_train_prior_scale
+
+rotation_compensation:
+  enabled: true
+  use_R_coarse: true
+  compensate_spherical_tokens: true
+  detach_R_coarse_for_stability: true
+  residual_token_mode: rotation_compensated_difference
+
+multiframe:
+  enabled: true
+  k_steps: [1, 2, 3, 5]
+  use_composition_consistency: true
+  use_path_length_consistency: true
+  use_rotation_composition_consistency: true
+  world_direction_blend_alpha: 0.35
+  world_scale_blend_alpha: 0.15
+  anti_parallel_flip_threshold: -0.15
+
+observability_weighting:
+  enabled: true
+  source: S5E12_or_train_feature_statistics
+  high_observability_tdir_weight: 1.0
+  low_observability_tdir_weight: 0.1
+  small_motion_tdir_weight: 0.0
+  keep_rot_loss_all_edges: true
+  keep_tmag_loss_all_edges: true
+
+scale_guard:
+  inherit_s5e15_train_prior: true
+  use_eval_gt_for_scale: false
+  bounded_log_tmag: true
+  target_tmag_median_range: [0.7, 1.5]
+  max_scale_ratio: 1.35
+  min_scale_ratio: 0.85
+
+losses:
+  so3_geodesic: true
+  signed_tdir: true
+  tdir_abs_aux: true
+  anti_parallel_hard_negative: true
+  robust_tmag_log: true
+  tmag_p95_penalty: true
+  path_length_consistency: true
+  multiframe_composition: true
+  rotation_composition: true
+  smoothness: true
+
+training:
+  train_scenes: ["scene01/seq01", "scene01/seq02"]
+  eval_scene: "scene01/seq03"
+  uses_eval_gt_for_training: false
+  uses_orbslam3_teacher: false
+  smoke_mode_allowed: true
+  max_runtime_minutes: null
+  epochs: 1
+
+evaluation:
+  compare_to: ["S5E15", "S5E18", "ORB-SLAM3"]
+  required_metrics:
+    - rot
+    - signed_tdir
+    - tdir_abs
+    - anti_parallel_rate
+    - tmag_median_ratio
+    - tmag_p95_ratio
+    - path_ratio
+    - none_ate
+    - se3_ate
+    - sim3_ate
+
+caveats:
+  - S5E19 是 experimental candidate，不替代 official locked result。
+  - 没有使用 eval GT calibration。
+  - 没有使用 ORB-SLAM3 teacher。
+  - smoke training 不得夸大。
