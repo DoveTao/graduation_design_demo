@@ -27,6 +27,7 @@ def _load_model(path: Path) -> Tuple[Arch2SoftcorrGeometryModel, Dict[str, Any]]
         hidden_dim=int(blob["hidden_dim"]),
         max_alpha=float(blob["max_alpha"]),
         scale_delta_clip=float(blob["scale_delta_clip"]),
+        delta_clip_norm=float(blob.get("delta_clip_norm", 0.02)),
     )
     model.load_state_dict(blob["model_state"])
     model.eval()
@@ -130,7 +131,7 @@ def run(args: argparse.Namespace) -> Dict[str, Any]:
         base_tdir = np.asarray(base["translation_direction"], dtype=np.float32)
         base_tmag = float(base["translation_magnitude"])
         base_log_tmag = float(np.log(max(base_tmag, 1.0e-6)))
-        soft = _edge_softcorr(a, b, R_coarse, max_matches=max_matches)
+        soft = _edge_softcorr(a, b, R_coarse, max_matches=max_matches, temperature=float(blob.get("softcorr_temperature", 0.05)))
         obs = float(soft["observability_score"])
         if obs <= low_thr:
             gate_floor = 0.0

@@ -133,8 +133,9 @@ class EdgeSample:
 
 
 class Arch2SoftcorrGeometryModel(nn.Module):
-    def __init__(self, token_in_dim: int, hidden_dim: int, max_alpha: float, scale_delta_clip: float) -> None:
+    def __init__(self, token_in_dim: int, hidden_dim: int, max_alpha: float, scale_delta_clip: float, delta_clip_norm: float = 0.02) -> None:
         super().__init__()
+        self.delta_clip_norm = float(delta_clip_norm)
         self.token_proj = nn.Linear(token_in_dim, hidden_dim)
         self.motion = RotationCompensatedMotionToken(hidden_dim, hidden_dim)
         self.tdir_head = CorrespondenceGeometryTDirHead(hidden_dim, hidden_dim, max_alpha=max_alpha)
@@ -157,7 +158,10 @@ class Arch2SoftcorrGeometryModel(nn.Module):
         pooled = geom["motion_tokens"].mean(dim=1)
         tdir = self.tdir_head(pooled)
         gate = torch.clamp(gate_floor.float() * tdir["observability_score"], 0.0, 1.0)
-        delta = tdir["delta_tdir"] * gate.unsqueeze(-1) * tdir["max_alpha"].unsqueeze(-1)
+        raw_delta = tdir["delta_tdir"]
+        raw_norm = torch.linalg.norm(raw_delta.float(), dim=-1, keepdim=True).clamp_min(1.0e-8)
+        clipped = raw_delta * torch.clamp(self.delta_clip_norm / raw_norm, max=1.0)
+        delta = clipped * gate.unsqueeze(-1) * tdir["max_alpha"].unsqueeze(-1)
         final_tdir = F.normalize(base_tdir.float() + delta, dim=-1, eps=1e-6)
         scale = self.scale_head(pooled, base_log_tmag)
         final_tmag = scale["final_tmag"]
@@ -167,6 +171,8 @@ class Arch2SoftcorrGeometryModel(nn.Module):
             **tdir,
             **scale,
             "gate_value": gate,
+            "delta_raw": raw_delta,
+            "delta_clipped": clipped,
             "delta_effective": delta,
             "final_tdir": final_tdir,
             "final_tmag": final_tmag,
@@ -184,6 +190,7 @@ def _edge_softcorr(
     frame_j: Any,
     R_coarse: np.ndarray,
     max_matches: int,
+    temperature: float,
 ) -> Dict[str, Any]:
     width, height = 640, 320
     img_i = load_gray(frame_i.image_path, (width, height))
@@ -204,8 +211,8 @@ def _edge_softcorr(
     bearing_b = np.stack([_erp_to_bearing(float(x), float(y), width, height) for x, y in pts_j], axis=0)
     rot_a = (R_coarse @ bearing_a.T).T
     scores = rot_a @ bearing_b.T
-    W_ab = _softmax_rows(scores)
-    W_ba = _softmax_rows(scores.T)
+    W_ab = _softmax_rows(scores, tau=temperature)
+    W_ba = _softmax_rows(scores.T, tau=temperature)
     disp = pts_j - pts_i
     disp_mag = np.linalg.norm(disp, axis=1, keepdims=True)
     disp_xy = disp / np.asarray([[width, height]], dtype=np.float32)
@@ -277,6 +284,7 @@ def _make_rows(cfg: Dict[str, Any]) -> Tuple[List[EdgeSample], Dict[str, Any], L
     rows: List[EdgeSample] = []
     seq_ranges: Dict[str, List[int]] = {}
     max_matches = int(cfg["softcorr_geometry"]["max_matches"])
+    temperature = float(cfg["softcorr_geometry"].get("temperature", 0.05))
     for scene_seq in [str(x) for x in cfg["training"]["train_scenes"]]:
         scene, seq = scene_seq.split("/")
         seq_frames = frames[(scene, seq)]
@@ -291,7 +299,7 @@ def _make_rows(cfg: Dict[str, Any]) -> Tuple[List[EdgeSample], Dict[str, Any], L
             gt_R, gt_t = relative_pose_A_to_B_in_B(a, b)
             gt_tmag = float(np.linalg.norm(gt_t))
             gt_tdir = _norm(gt_t)
-            edge = _edge_softcorr(a, b, R_coarse, max_matches=max_matches)
+            edge = _edge_softcorr(a, b, R_coarse, max_matches=max_matches, temperature=temperature)
             # train-side epipolar residual uses train-split GT direction only
             matched_b = edge["W_ab"] @ edge["bearing_b"]
             matched_b = matched_b / np.clip(np.linalg.norm(matched_b, axis=1, keepdims=True), 1.0e-12, None)
@@ -408,7 +416,7 @@ def run(args: argparse.Namespace) -> Dict[str, Any]:
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     rows, dataset, windows, token_in_dim = _make_rows(cfg)
-    out_dir = Path("checkpoints/ARCH2_mainline_rotation_compensated_softcorr_geometry_candidate")
+    out_dir = Path(args.candidate_dir) if args.candidate_dir else Path("checkpoints/ARCH2_mainline_rotation_compensated_softcorr_geometry_candidate")
     out_dir.mkdir(parents=True, exist_ok=True)
     if not dataset["ready_for_training"]:
         status = {
@@ -436,6 +444,7 @@ def run(args: argparse.Namespace) -> Dict[str, Any]:
         hidden_dim=int(cfg["model"]["hidden_dim"]),
         max_alpha=float(cfg["tdir_head"]["final_tdir"]["max_alpha"]),
         scale_delta_clip=float(cfg["scale_head"]["delta_clip"]),
+        delta_clip_norm=float(cfg["tdir_head"].get("delta_clip_norm", 0.02)),
     ).to(device)
     opt = torch.optim.AdamW(model.parameters(), lr=float(cfg["training"]["lr"]), weight_decay=float(cfg["training"]["weight_decay"]))
     batch_size = int(cfg["training"]["batch_size"])
@@ -529,6 +538,8 @@ def run(args: argparse.Namespace) -> Dict[str, Any]:
         "hidden_dim": int(cfg["model"]["hidden_dim"]),
         "max_alpha": float(cfg["tdir_head"]["final_tdir"]["max_alpha"]),
         "scale_delta_clip": float(cfg["scale_head"]["delta_clip"]),
+        "delta_clip_norm": float(cfg["tdir_head"].get("delta_clip_norm", 0.02)),
+        "softcorr_temperature": float(cfg["softcorr_geometry"].get("temperature", 0.05)),
         "low_threshold": low_thr,
         "high_threshold": high_thr,
         "dataset": dataset,
@@ -559,6 +570,7 @@ def run(args: argparse.Namespace) -> Dict[str, Any]:
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser()
     p.add_argument("--config", required=True)
+    p.add_argument("--candidate-dir", default="")
     return p.parse_args()
 
 
