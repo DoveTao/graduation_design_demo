@@ -1,0 +1,127 @@
+{
+  "experiment": "S5E19B_noop_and_export_path_audit",
+  "file_audit": {
+    "s5e15_trajectory": {
+      "path": "external_baselines/results/s5e15_traceable_dense/scene01_seq03_s5e15_traceable_dense_tum.txt",
+      "sha256": "6a9e4450a00b89ffccb2be151ef0cd14f57075fc8923aa09287f5ed3dc39bda7",
+      "file_size": 47887,
+      "modified_time": 1778511675.4597237,
+      "identical": false,
+      "near_identical": true
+    },
+    "s5e15_metrics": {
+      "path": "external_baselines/results/s5e15_traceable_dense/edge_component_metrics.json",
+      "sha256": "d9df940271f67e92ad36f1d8dbf92cc01c0630ea8bdfd7226e8d3ed24351d16c",
+      "file_size": 196563,
+      "modified_time": 1778511675.4817455,
+      "identical": false,
+      "near_identical": false
+    },
+    "s5e15_checkpoint": {
+      "path": "checkpoints/S5E15_scale_deunderfit_antiparallel_candidate.json",
+      "sha256": "d9ec6969ff64aa5e0d88a757c4cb0282b4545a4221a5ba0edc9f2fd5b9925b4c",
+      "file_size": 9379,
+      "modified_time": 1778511713.6136496,
+      "identical": false,
+      "near_identical": false
+    },
+    "s5e19_trajectory": {
+      "path": "external_baselines/results/s5e19_traceable_dense/scene01_seq03_s5e19_traceable_dense_tum.txt",
+      "sha256": "5eb5831b765286a12cff96409a2e42f7249ee2f09ad17761e98aab4584828ef7",
+      "file_size": 47887,
+      "modified_time": 1778517506.1668293,
+      "identical": false,
+      "near_identical": true
+    },
+    "s5e19_metrics": {
+      "path": "external_baselines/results/s5e19_traceable_dense/edge_component_metrics.json",
+      "sha256": "0ac17cf5a90aeef566f8b796afaa64707842ca012a703674a99d8c7bc11b4703",
+      "file_size": 208321,
+      "modified_time": 1778517506.1828294,
+      "identical": false,
+      "near_identical": false
+    },
+    "s5e19_checkpoint": {
+      "path": "checkpoints/S5E19_rotation_compensated_multiframe_geometry_candidate.json",
+      "sha256": "6951e32b518fa0220ed6e2edf1740e82832b637c9ecb095b735332a1b4a14182",
+      "file_size": 3987,
+      "modified_time": 1778517835.4280083,
+      "identical": false,
+      "near_identical": false
+    },
+    "s5e19_training_status": {
+      "path": "/home/dovetao/graduation_design_demo/checkpoints/S5E19_rotation_compensated_multiframe_geometry_candidate/training_status.json",
+      "sha256": "ef3bbafcfd18a673989926ce9ea9b0693ef319f5ad55389866bcfa46d36bedaf",
+      "file_size": 1268,
+      "modified_time": 1778517411.3120246
+    },
+    "s5e19_smoke_policy": {
+      "path": "/home/dovetao/graduation_design_demo/checkpoints/S5E19_rotation_compensated_multiframe_geometry_candidate/s5e19_smoke_policy.json",
+      "sha256": "f38b81a9ad45dd0dc5a403743ed48fe05765bc85210a43be2a6a4ee5f9b2b8d6",
+      "file_size": 159,
+      "modified_time": 1778517411.3110244
+    }
+  },
+  "trajectory_diff": {
+    "num_common_timestamps": 454,
+    "max_translation_difference": 0.009740779281393427,
+    "mean_translation_difference": 0.005958948542946845,
+    "max_quaternion_angular_difference_deg": 0.006397075879760356,
+    "mean_quaternion_angular_difference_deg": 0.0017373999368403676,
+    "identical_pose_count": 1,
+    "near_identical_pose_count": 1,
+    "trajectory_exact_copy": false,
+    "trajectory_near_noop": false
+  },
+  "edge_metrics_diff": {
+    "mean_abs_diff_rot": 0.0,
+    "mean_abs_diff_tdir": 1.4832873707806563e-14,
+    "anti_parallel_flag_changed_count": 0,
+    "tmag_ratio_mean_abs_diff": 0.006022508578509348,
+    "changed_edge_count": 453,
+    "unchanged_edge_count": 0,
+    "edge_metrics_noop": false
+  },
+  "provenance_delta_audit": {
+    "delta_tdir_zero_count": 453,
+    "delta_tdir_norm_mean": 0.0,
+    "delta_log_tmag_zero_count": 0,
+    "delta_log_tmag_abs_mean": 0.006779431247576175,
+    "sign_score_unique_count": 1,
+    "final_equals_coarse_count": 453,
+    "final_equals_s5e15_count": 0,
+    "refinement_head_effective": false,
+    "scale_head_effective": true,
+    "sign_head_effective": false
+  },
+  "training_path": {
+    "real_training_executed": false,
+    "optimizer_step_present": false,
+    "learned_weights_saved": false,
+    "smoke_policy_only": true,
+    "losses_actually_computed": true
+  },
+  "export_path": {
+    "loads_s5e19_checkpoint": true,
+    "loads_s5e15_checkpoint": true,
+    "fallback_to_s5e15": true,
+    "applies_delta_tdir": true,
+    "applies_delta_log_tmag": true,
+    "applies_sign_score": true,
+    "likely_noop_export": true
+  },
+  "evaluator_path": {
+    "reads_s5e19_trajectory": true,
+    "reads_s5e15_trajectory": true,
+    "hardcoded_s5e15_metrics": true,
+    "likely_old_metrics_reuse": true
+  },
+  "diagnosis": {
+    "s5e19_effectively_noop": false,
+    "smoke_policy_only": true,
+    "export_fallback_to_s5e15": true,
+    "evaluator_reused_old_metrics": true,
+    "true_model_no_improvement": false
+  },
+  "final_classification": "S5E19B_MIXED_NOOP_AND_SMOKE"
+}
