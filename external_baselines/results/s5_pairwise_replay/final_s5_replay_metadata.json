@@ -1,0 +1,23 @@
+{
+  "attempted": true,
+  "reason": "pairwise vectors unavailable or empty",
+  "replay_blocked": true,
+  "variant_results": {
+    "inverse_relative_variant": {
+      "coverage": 0.0,
+      "num_poses": 0
+    },
+    "local_translation_not_rotated": {
+      "coverage": 0.0,
+      "num_poses": 0
+    },
+    "local_translation_rotated_by_current_pose": {
+      "coverage": 0.0,
+      "num_poses": 0
+    },
+    "model_convention_as_declared": {
+      "coverage": 0.0,
+      "num_poses": 0
+    }
+  }
+}

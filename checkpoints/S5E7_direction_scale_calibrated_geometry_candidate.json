@@ -1,0 +1,301 @@
+{
+  "experiment": "S5E7_direction_scale_calibrated_geometry",
+  "status": {
+    "experimental_candidate": true,
+    "official_s5_unchanged": true,
+    "not_official_replacement": true
+  },
+  "s5e1_blocker_recap": {},
+  "dataset": {
+    "adjacent_dataset_ready": null,
+    "split_respected": null,
+    "test_gt_used_for_training": false,
+    "num_train_pairs": null,
+    "num_val_pairs": null
+  },
+  "training": {
+    "attempted": true,
+    "classification": "S5E7_TRAINING_SMOKE_ONLY",
+    "config": "configs/s5e7_direction_scale_calibrated_geometry.yaml",
+    "checkpoint_dir": "checkpoints/S5E7_direction_scale_calibrated_geometry_candidate",
+    "uses_scene01_seq03_for_training": false,
+    "model_type": "direction_scale_calibrated_geometry",
+    "train_magnitude_prior": {
+      "count": 786,
+      "median": 0.011908447102386463,
+      "p90": 0.2523947547524407,
+      "p95": 0.3691697395709953,
+      "max": 0.7818686910217085,
+      "clip_lo": 0.0020031222709819612,
+      "clip_hi": 0.3691697395709953
+    },
+    "bucket_priors": {
+      "small_motion": {
+        "count": 197,
+        "median": 0.0029765752132260696,
+        "p90": 0.004115805934363924,
+        "p95": 0.004452786086953767,
+        "max": 0.004801041553661831,
+        "clip_lo": 0.0013608692870236614,
+        "clip_hi": 0.004452786086953767
+      },
+      "normal_motion": {
+        "count": 392,
+        "median": 0.011908447102386463,
+        "p90": 0.02716551357981745,
+        "p95": 0.03155805742315243,
+        "max": 0.03816320217172562,
+        "clip_lo": 0.005123810287804876,
+        "clip_hi": 0.03155805742315243
+      },
+      "large_motion": {
+        "count": 197,
+        "median": 0.2105054393596516,
+        "p90": 0.4370886400382462,
+        "p95": 0.5229383635602999,
+        "max": 0.7818686910217085,
+        "clip_lo": 0.047578320811733917,
+        "clip_hi": 0.5229383635602999
+      }
+    },
+    "best_checkpoint": "checkpoints/S5E7_direction_scale_calibrated_geometry_candidate/s5e7_direction_scale_best.pt",
+    "losses": {
+      "so3_geodesic": true,
+      "signed_tdir": true,
+      "tdir_abs_aux": true,
+      "anti_parallel_penalty": true,
+      "scale_residual_smooth_l1": true,
+      "robust_tmag_log": true,
+      "tmag_p95_penalty": true,
+      "path_length_consistency": true,
+      "short_window_direction_consistency": true,
+      "smoothness": true
+    },
+    "notes": [
+      "S5E7 以方向学习为主目标，尺度只学习 bounded log-scale residual。",
+      "guard 只作为 fallback，不应被解释为真实几何改善。",
+      "scene01/seq03 GT 未用于训练。"
+    ]
+  },
+  "adjacent_dense_export": {
+    "available": true,
+    "coverage": 1.0,
+    "all_edges_traceable": true,
+    "num_poses": 454,
+    "num_edges": 453,
+    "direct_adjacent_prediction_edges": 453,
+    "trajectory_path": "external_baselines/results/s5e7_traceable_dense/scene01_seq03_s5e7_traceable_dense_tum.txt",
+    "raw_trajectory_path": "external_baselines/results/s5e7_traceable_dense/scene01_seq03_s5e7_traceable_dense_tum_raw.txt",
+    "edge_provenance": "external_baselines/results/s5e7_traceable_dense/edge_provenance.jsonl"
+  },
+  "component_metrics": {
+    "rot_mean_deg": 0.9134395040767528,
+    "rot_median_deg": 0.797895569319923,
+    "rot_p90_deg": 1.3218302317546538,
+    "tdir_mean_deg": 53.62212702240343,
+    "tdir_median_deg": 45.740217831169936,
+    "tdir_p90_deg": 99.89252754388714,
+    "tdir_abs_mean_deg": 48.649060747032244,
+    "tdir_abs_median_deg": 45.56136877956687,
+    "tdir_abs_p90_deg": 80.07196258057124,
+    "tdir_mean_cosine": 0.5346236097269021,
+    "anti_parallel_rate": 0.1545253863134658,
+    "severe_wrong_sign_rate": 0.024282560706401765,
+    "direction_abs_good_but_signed_bad_rate": 0.002207505518763797,
+    "tmag_median_ratio": 0.8315272040683075,
+    "tmag_mean_ratio": 4.629716064443876,
+    "tmag_p90_ratio": 13.432147863947785,
+    "tmag_p95_ratio": 16.590740550562295,
+    "tmag_p99_ratio": 25.26837223664378,
+    "tmag_max_ratio": 74.29763973087576,
+    "path_ratio": 0.3237847877095814,
+    "top20_tmag_path_fraction": 0.07529940377427248,
+    "long_run_path_fraction": 0.015089004833897902
+  },
+  "external_eval": {
+    "none": {
+      "ate": 9.787743578157508,
+      "drift": 0.13164512659644492,
+      "path_ratio": 0.3237847876348187,
+      "status": "ok",
+      "num_matched_poses": 454,
+      "tracking_success_rate": 1.0
+    },
+    "se3": {
+      "ate": 3.7889242467975253,
+      "drift": 0.13150609572822933,
+      "path_ratio": 0.3237847876348187,
+      "status": "ok",
+      "num_matched_poses": 454,
+      "tracking_success_rate": 1.0
+    },
+    "sim3": {
+      "ate": 3.765359444110737,
+      "drift": 0.1308366294241329,
+      "path_ratio": 0.3237847876348187,
+      "status": "ok",
+      "num_matched_poses": 454,
+      "tracking_success_rate": 1.0
+    }
+  },
+  "comparison_to_orbslam3": {
+    "coverage": "S5E7 454/454 vs ORB-SLAM3 273/454",
+    "rot_gap": "unavailable",
+    "tdir_gap": "unavailable",
+    "tmag_gap": "unavailable",
+    "se3_ate_gap": 3.4803798361050435,
+    "sim3_ate_gap": 3.541067278124113,
+    "path_ratio": "S5E7=0.3237847877095814; ORB-SLAM3=0.2998258665660257",
+    "summary": "ORB-SLAM3 没有可比的 edge-level 指标存档，因此这里只比较轨迹层面的覆盖率与 ATE/path_ratio。"
+  },
+  "s5_official_locked_metrics": {
+    "ate": 7.352288,
+    "drift": 1.327343,
+    "path_ratio": 0.932379,
+    "unchanged": true,
+    "not_replaced_by_s5e7": true
+  },
+  "validation": {
+    "verify_final_candidate": "PASS",
+    "project_health_check": "PASS",
+    "s6_eval_only": "PASS",
+    "unittest": "PASS"
+  },
+  "allowed_final_classifications": [
+    "S5E7_DIRECTION_SCALE_IMPROVED",
+    "S5E7_DIRECTION_ONLY_IMPROVED",
+    "S5E7_SCALE_ONLY_IMPROVED",
+    "S5E7_GUARD_DEPENDENT",
+    "S5E7_NO_GEOMETRY_IMPROVEMENT",
+    "S5E7_REGRESSION"
+  ],
+  "final_classification": "S5E7_GUARD_DEPENDENT",
+  "baseline_reference": {
+    "s5e6": {
+      "rot_mean_deg": 0.9134395040767528,
+      "signed_tdir_mean_deg": 51.47429479273258,
+      "tdir_abs_mean_deg": 46.07968707914154,
+      "anti_parallel_rate": 0.1368653421633554,
+      "tmag_median_ratio": 11.352940388835835,
+      "tmag_p95_ratio": 63.490479510847564,
+      "path_ratio": 1.880843438039364,
+      "sim3_ate": 4.012221895981248
+    }
+  },
+  "direction_scale_failure_audit": {
+    "experiment": "S5E7_direction_scale_calibrated_geometry",
+    "small_motion_threshold": 0.0035183388174598765,
+    "small_motion_count": 114,
+    "small_motion_fraction": 0.25165562913907286,
+    "small_motion_tdir_mean": 55.75045354261498,
+    "small_motion_tmag_p95": 95.53695876934692,
+    "small_motion_path_fraction": 0.16030003040148522,
+    "small_motion_amplification": true,
+    "corr_tdir_tmag": -0.1567687004862108,
+    "corr_tdir_abs_tmag": -0.082441603006689,
+    "corr_tdir_gt_step": 0.17431687211134292,
+    "corr_tmag_gt_step": -0.31693855683525296,
+    "summary": "S5E7 需要同时解决方向误差与尺度高分位问题，不能只把路径长度压回去。"
+  },
+  "motion_bucket_audit": {
+    "small_motion_count": 114,
+    "small_motion_fraction": 0.25165562913907286,
+    "small_motion_tdir_mean": 62.10567659359031,
+    "small_motion_tmag_p95": 23.970107657128626,
+    "small_motion_path_fraction": 0.3885490653380592,
+    "small_motion_amplification": true
+  },
+  "raw_prediction_metrics": {
+    "rot_mean_deg": 0.9134395040767528,
+    "rot_median_deg": 0.797895569319923,
+    "rot_p90_deg": 1.3218302317546538,
+    "tdir_mean_deg": 53.62212702240343,
+    "tdir_median_deg": 45.740217831169936,
+    "tdir_p90_deg": 99.89252754388716,
+    "tdir_abs_mean_deg": 48.649060747032244,
+    "tdir_abs_median_deg": 45.56136877956687,
+    "tdir_abs_p90_deg": 80.07196258057124,
+    "tdir_mean_cosine": 0.5346236097269021,
+    "anti_parallel_rate": 0.1545253863134658,
+    "severe_wrong_sign_rate": 0.024282560706401765,
+    "direction_abs_good_but_signed_bad_rate": 0.002207505518763797,
+    "tmag_median_ratio": 11.757181188423342,
+    "tmag_mean_ratio": 72.8050340911994,
+    "tmag_p90_ratio": 46.88244268239341,
+    "tmag_p95_ratio": 94.28468533280407,
+    "tmag_p99_ratio": 2400.3853580354053,
+    "tmag_max_ratio": 7032.979339182292,
+    "path_ratio": 6.690489734209743,
+    "top20_tmag_path_fraction": 0.7273926587159092,
+    "long_run_path_fraction": 0.6882022160309632
+  },
+  "guarded_prediction_metrics": {
+    "rot_mean_deg": 0.9134395040767528,
+    "rot_median_deg": 0.797895569319923,
+    "rot_p90_deg": 1.3218302317546538,
+    "tdir_mean_deg": 53.62212702240343,
+    "tdir_median_deg": 45.740217831169936,
+    "tdir_p90_deg": 99.89252754388714,
+    "tdir_abs_mean_deg": 48.649060747032244,
+    "tdir_abs_median_deg": 45.56136877956687,
+    "tdir_abs_p90_deg": 80.07196258057124,
+    "tdir_mean_cosine": 0.5346236097269021,
+    "anti_parallel_rate": 0.1545253863134658,
+    "severe_wrong_sign_rate": 0.024282560706401765,
+    "direction_abs_good_but_signed_bad_rate": 0.002207505518763797,
+    "tmag_median_ratio": 0.8315272040683075,
+    "tmag_mean_ratio": 4.629716064443876,
+    "tmag_p90_ratio": 13.432147863947785,
+    "tmag_p95_ratio": 16.590740550562295,
+    "tmag_p99_ratio": 25.26837223664378,
+    "tmag_max_ratio": 74.29763973087576,
+    "path_ratio": 0.3237847877095814,
+    "top20_tmag_path_fraction": 0.07529940377427248,
+    "long_run_path_fraction": 0.015089004833897902
+  },
+  "raw_external_eval": {
+    "none": {
+      "ate": 113.32783220988294,
+      "drift": 2.15195982445904,
+      "path_ratio": 6.690489734147967,
+      "status": "ok",
+      "num_matched_poses": 454,
+      "tracking_success_rate": 1.0
+    },
+    "se3": {
+      "ate": 65.70502727498544,
+      "drift": 2.153758401007888,
+      "path_ratio": 6.690489734147967,
+      "status": "ok",
+      "num_matched_poses": 454,
+      "tracking_success_rate": 1.0
+    },
+    "sim3": {
+      "ate": 4.102322193016842,
+      "drift": 0.13159966280274643,
+      "path_ratio": 6.690489734147967,
+      "status": "ok",
+      "num_matched_poses": 454,
+      "tracking_success_rate": 1.0
+    }
+  },
+  "comparison_vs_s5e6": {
+    "rot_preserved": true,
+    "signed_tdir_improved_vs_s5e6": false,
+    "tdir_abs_improved_vs_s5e6": false,
+    "anti_parallel_improved_vs_s5e6": false,
+    "tmag_p95_improved_vs_s5e6": true,
+    "path_ratio_improved_vs_s5e6": true,
+    "sim3_ate_improved_vs_s5e6": true,
+    "raw_vs_guarded": {
+      "raw_vs_guarded_tdir_gap": 0.0,
+      "raw_vs_guarded_tdir_abs_gap": 0.0,
+      "raw_vs_guarded_tmag_p95_gap": 77.69394478224177,
+      "raw_vs_guarded_path_ratio_gap": 6.366704946500162
+    }
+  },
+  "blockers": [
+    "translation direction 仍未形成明确改善。",
+    "主要改善来自 fallback guard，而不是 raw direction/scale 学习质量。"
+  ]
+}

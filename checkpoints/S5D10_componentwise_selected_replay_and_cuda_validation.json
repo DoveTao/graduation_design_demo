@@ -1,0 +1,107 @@
+{
+  "allowed_final_classifications": [
+    "S5D10_COMPLETE_VALIDATION_CLEAN",
+    "S5D10_COMPLETE_WITH_CUDA_BLOCKER",
+    "S5D10_CONVENTION_ISSUE_SUSPECTED",
+    "S5D10_NONSELECTED_DENSE_EDGES_DOMINATE",
+    "S5D10_SELECTED_PAIRWISE_TDIR_CONFIRMED",
+    "S5D10_ERROR"
+  ],
+  "componentwise_replay_vs_dense": {
+    "best_variant": "declared",
+    "declared": {
+      "num_components_evaluated": 19,
+      "relative_rot_diff_mean_deg": 1.7989036726528747,
+      "relative_tdir_diff_mean_deg": 104.45627113717318,
+      "relative_tmag_ratio_median": 0.7677981613872882
+    },
+    "inverse": {
+      "num_components_evaluated": 19,
+      "relative_rot_diff_mean_deg": 41.49708918510672,
+      "relative_tdir_diff_mean_deg": 75.79944390669957,
+      "relative_tmag_ratio_median": 0.7677947715549021
+    }
+  },
+  "experiment": "S5D10_componentwise_selected_replay_and_cuda_stable_validation",
+  "final_classification": "S5D10_COMPLETE_WITH_CUDA_BLOCKER",
+  "gap_diagnosis": {
+    "convention_issue_suspected": false,
+    "dense_pathratio_driven_by_nonselected_edges": true,
+    "evidence": [
+      "selected_path_fraction=0.39372704448922863",
+      "nonselected_path_fraction=0.6062729555107714",
+      "declared_score=106.25517480982604",
+      "inverse_score=117.29653309180628"
+    ],
+    "full_dense_tmag_issue_not_explained_by_selected_edges": true,
+    "most_likely_gap_source": "nonselected_dense_edges",
+    "recommended_next_actions": [
+      "If CUDA OOM persists, run validator in isolated GPU window (single process) and keep PYTORCH_CUDA_ALLOC_CONF set.",
+      "Prioritize non-selected edge quality improvements since they dominate path length contribution.",
+      "Use best diagnostic convention only for analysis; do not alter official evaluation pipeline.",
+      "Keep selected_k1 sparse/disconnected caveat in all cross-stage comparisons."
+    ],
+    "selected_pairwise_tdir_issue_confirmed": true
+  },
+  "graph_audit": {
+    "component_graph_path": "external_baselines/results/s5_pairwise_replay_s5d10/component_graph_audit.json",
+    "longest_component_edges": 67,
+    "num_components": 19,
+    "num_pairs": 132,
+    "num_replayable_components": 19
+  },
+  "inputs": {
+    "existing_s5_dense": "external_baselines/results/s5_dense/scene01_seq03_s5_dense_est_tum.txt",
+    "groundtruth": "external_baselines/dataset/scene01_seq03/groundtruth_tum.txt",
+    "s5d7_pairwise_jsonl": "external_baselines/results/s5_pairwise_replay_s5d7/final_s5_pairwise_vectors_scene01_seq03.jsonl",
+    "s5d9_checkpoint": "checkpoints/S5D9_restore_s5_dense_and_selected_edge_comparison.json"
+  },
+  "s5_official_locked_metrics": {
+    "ate": 7.352288,
+    "drift": 1.327343,
+    "not_replaced_by_s5d10": true,
+    "path_ratio": 0.932379,
+    "unchanged": true
+  },
+  "selected_vs_nonselected_dense_edges": {
+    "nonselected_edges": {
+      "num_edges": 321,
+      "path_length": 43.498224304700855,
+      "path_length_fraction": 0.6062729555107714,
+      "rot_mean_deg": 20.82698038561777,
+      "tdir_abs_mean_deg": 59.50699260891793,
+      "tdir_mean_deg": 93.69127653978485,
+      "tmag_median_ratio": 29.375292370072714
+    },
+    "selected_edges": {
+      "num_edges": 132,
+      "path_length": 28.24870735259957,
+      "path_length_fraction": 0.39372704448922863,
+      "rot_mean_deg": 20.820702786908246,
+      "tdir_abs_mean_deg": 51.49108111896134,
+      "tdir_mean_deg": 85.8020142769065,
+      "tmag_median_ratio": 1.310038384597929
+    }
+  },
+  "validation": {
+    "cuda_oom_status": "intermittent",
+    "project_health_check": {
+      "log_path": "logs/s5d10_project_health_check.log",
+      "passed": false
+    },
+    "s6_eval_only": {
+      "log_path": "logs/s5d10_s6_eval_only.log",
+      "passed": false
+    },
+    "unittest": {
+      "log_path": "logs/s5d10_unittest.log",
+      "passed": true,
+      "test_count": 115
+    },
+    "validation_clean": false,
+    "verify_final_candidate": {
+      "log_path": "logs/s5d10_verify_final_candidate.log",
+      "passed": false
+    }
+  }
+}

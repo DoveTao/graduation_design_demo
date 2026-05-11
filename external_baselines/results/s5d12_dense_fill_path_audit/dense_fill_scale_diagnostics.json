@@ -1,0 +1,110 @@
+{
+  "dominant_run_edges": "72-360",
+  "endpoint_dense_delta_norm_72_361": 18.185937277201607,
+  "endpoint_gt_delta_norm_72_361": 1.467474451778923,
+  "run_est_path": 39.0221651562117,
+  "run_est_path_div_edges": 0.13502479292806815,
+  "run_est_step_cv": 0.06419813865628834,
+  "run_est_step_median": 0.1340332936139236,
+  "run_gt_path": 1.5574073003602866,
+  "run_gt_path_div_edges": 0.005388952596402376,
+  "run_gt_step_cv": 0.7003926536363675,
+  "run_gt_step_median": 0.004207960264888999,
+  "selected_runs": [
+    {
+      "end_edge": 39,
+      "length": 40,
+      "start_edge": 0
+    },
+    {
+      "end_edge": 42,
+      "length": 2,
+      "start_edge": 41
+    },
+    {
+      "end_edge": 44,
+      "length": 1,
+      "start_edge": 44
+    },
+    {
+      "end_edge": 47,
+      "length": 2,
+      "start_edge": 46
+    },
+    {
+      "end_edge": 50,
+      "length": 1,
+      "start_edge": 50
+    },
+    {
+      "end_edge": 52,
+      "length": 1,
+      "start_edge": 52
+    },
+    {
+      "end_edge": 54,
+      "length": 1,
+      "start_edge": 54
+    },
+    {
+      "end_edge": 56,
+      "length": 1,
+      "start_edge": 56
+    },
+    {
+      "end_edge": 59,
+      "length": 1,
+      "start_edge": 59
+    },
+    {
+      "end_edge": 61,
+      "length": 1,
+      "start_edge": 61
+    },
+    {
+      "end_edge": 63,
+      "length": 1,
+      "start_edge": 63
+    },
+    {
+      "end_edge": 66,
+      "length": 2,
+      "start_edge": 65
+    },
+    {
+      "end_edge": 69,
+      "length": 1,
+      "start_edge": 69
+    },
+    {
+      "end_edge": 71,
+      "length": 1,
+      "start_edge": 71
+    },
+    {
+      "end_edge": 427,
+      "length": 67,
+      "start_edge": 361
+    },
+    {
+      "end_edge": 429,
+      "length": 1,
+      "start_edge": 429
+    },
+    {
+      "end_edge": 443,
+      "length": 2,
+      "start_edge": 442
+    },
+    {
+      "end_edge": 445,
+      "length": 1,
+      "start_edge": 445
+    },
+    {
+      "end_edge": 452,
+      "length": 5,
+      "start_edge": 448
+    }
+  ]
+}

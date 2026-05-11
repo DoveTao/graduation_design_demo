@@ -1,0 +1,142 @@
+{
+  "experiment": "S5E2_real_adjacent_dense_candidate",
+  "status": {
+    "experimental_candidate": true,
+    "official_s5_unchanged": true,
+    "not_official_replacement": true
+  },
+  "s5e1_blocker_recap": {
+    "s5e1_classification": "S5E1_ADJACENT_DENSE_EXPORT_BLOCKED",
+    "direct_adjacent_prediction": 0,
+    "selected_prediction": 132,
+    "unavailable": 321,
+    "training_blocked": true,
+    "training_blocker_reason": "No legal adjacent-dense training/inference harness is available in the current final S5 path. Training was not run to avoid changing official policy, train/test split, or using GT to generate predictions.",
+    "blocker_summary": "S5E1 was blocked by missing engineering interfaces: no adjacent-dense dataloader/head/export path existed. The final S5 traceable artifact was selected_k1 only, so 321 adjacent edges remained unavailable.",
+    "blocker_breakdown": {
+      "dataloader_supports_adjacent_pairs": false,
+      "model_head_supports_adjacent_prediction": false,
+      "checkpoint_or_config_missing": true,
+      "train_test_split_or_gt_leakage_risk": true,
+      "engineering_interface_missing": true,
+      "notes": [
+        "No legal adjacent-dense training/inference harness is available in the current final S5 path. Training was not run to avoid changing official policy, train/test split, or using GT to generate predictions.",
+        "SO(3) geodesic / tdir / tmag log / path length consistency / short-window consistency are design targets only in this blocked run."
+      ]
+    }
+  },
+  "dataset": {
+    "adjacent_dataset_ready": true,
+    "split_respected": true,
+    "test_gt_used_for_training": false,
+    "num_train_pairs": 707,
+    "num_val_pairs": 79,
+    "dataset_audit": "checkpoints/S5E2_adjacent_dense_dataset_audit.json",
+    "classification": "S5E2_ADJACENT_DATASET_READY"
+  },
+  "training": {
+    "attempted": true,
+    "classification": "S5E2_TRAINING_SMOKE_ONLY",
+    "checkpoint_dir": "checkpoints/S5E2_adjacent_dense_candidate",
+    "training_status": "checkpoints/S5E2_adjacent_dense_candidate/training_status.json",
+    "weights_path": "checkpoints/S5E2_adjacent_dense_candidate/s5e2_minimal_adjacent_pose_regressor.npz",
+    "num_train_pairs": 707,
+    "num_val_pairs": 79,
+    "train_loss": {
+      "mse": 0.0008348617104115506,
+      "SO(3)_geodesic_proxy_deg": 0.11349599570122647,
+      "tdir_mean_deg": 60.09717746556046,
+      "tmag_log_mean": 1.309885490639413,
+      "path_length_consistency_proxy": 0.19356193216192152,
+      "short_window_consistency_proxy": 0.17911438581757802
+    },
+    "val_loss": {
+      "mse": 0.014185048734308417,
+      "SO(3)_geodesic_proxy_deg": 0.4974826568194875,
+      "tdir_mean_deg": 107.48615572494774,
+      "tmag_log_mean": 2.324205751982508,
+      "path_length_consistency_proxy": 5.888285782944534,
+      "short_window_consistency_proxy": 1.3032553452896443
+    }
+  },
+  "adjacent_dense_export": {
+    "available": true,
+    "trajectory_path": "external_baselines/results/s5e2_traceable_dense/scene01_seq03_s5e2_traceable_dense_tum.txt",
+    "edge_provenance": "external_baselines/results/s5e2_traceable_dense/edge_provenance.jsonl",
+    "num_poses": 454,
+    "num_edges": 453,
+    "direct_adjacent_prediction_edges": 453,
+    "coverage": 1.0,
+    "all_edges_traceable": true,
+    "source_counts": {
+      "direct_adjacent_prediction": 453
+    }
+  },
+  "component_metrics": {
+    "rot_mean_deg": 0.9134395040767528,
+    "tdir_mean_deg": 51.47429479273258,
+    "tdir_abs_mean_deg": 46.07968707914153,
+    "tmag_median_ratio": 32.77577273937451,
+    "tmag_p90_ratio": 70.60597396909188,
+    "path_ratio": 3.5557784814144453,
+    "long_run_overscaling_like_s5d11": true
+  },
+  "external_eval": {
+    "none": {
+      "ate": 51.706643679614736,
+      "drift": 0.25372271542314084,
+      "path_ratio": 3.555778481577791,
+      "status": "ok",
+      "num_matched_poses": 454,
+      "tracking_success_rate": 1.0
+    },
+    "se3": {
+      "ate": 23.713532954995145,
+      "drift": 0.2875116253385571,
+      "path_ratio": 3.555778481577791,
+      "status": "ok",
+      "num_matched_poses": 454,
+      "tracking_success_rate": 1.0
+    },
+    "sim3": {
+      "ate": 4.097680633241629,
+      "drift": 0.1305592533014556,
+      "path_ratio": 3.555778481577791,
+      "status": "ok",
+      "num_matched_poses": 454,
+      "tracking_success_rate": 1.0
+    }
+  },
+  "comparison_to_orbslam3": {
+    "orbslam3_coverage": "273/454",
+    "s5e2_coverage_advantage": true,
+    "aligned_ate_gap_to_orbslam3": 23.404988544302665,
+    "sim3_ate_gap_to_orbslam3": 3.873388467255005,
+    "path_ratio_comparison": "S5E2=3.5557784814144453; ORB-SLAM3=0.2998258665660257",
+    "closer_to_orbslam3_than_restored_s5_dense": false,
+    "summary": "S5E2 已建立 traceable dense pipeline，但 aligned ATE 尚未优于 restored S5 dense diagnostic。 与 ORB-SLAM3 se3 ATE 的差距为 23.404988544302665。 S5E2 path_ratio 为 3.5557784814144453，ORB-SLAM3 path_ratio 为 0.2998258665660257。"
+  },
+  "s5_official_locked_metrics": {
+    "ate": 7.352288,
+    "drift": 1.327343,
+    "path_ratio": 0.932379,
+    "unchanged": true,
+    "not_replaced_by_s5e2": true
+  },
+  "validation": {
+    "verify_final_candidate": "PASS",
+    "project_health_check": "PASS",
+    "s6_eval_only": "PASS",
+    "unittest": "PASS"
+  },
+  "allowed_final_classifications": [
+    "S5E2_TRACEABLE_DENSE_IMPROVED",
+    "S5E2_TRACEABLE_DENSE_EXPORTED_NO_IMPROVEMENT",
+    "S5E2_TRACEABLE_DENSE_EXPORTED_FAILED_METRICS",
+    "S5E2_ADJACENT_DATASET_BLOCKED",
+    "S5E2_TRAINING_BLOCKED",
+    "S5E2_ADJACENT_DENSE_EXPORT_BLOCKED",
+    "S5E2_ERROR"
+  ],
+  "final_classification": "S5E2_TRACEABLE_DENSE_EXPORTED_FAILED_METRICS"
+}

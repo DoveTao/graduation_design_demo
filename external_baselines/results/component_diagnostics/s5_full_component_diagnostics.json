@@ -1,0 +1,49 @@
+{
+  "coverage": 1.0,
+  "groundtruth": "/home/dovetao/graduation_design_demo/external_baselines/dataset/scene01_seq03/groundtruth_tum.txt",
+  "method": "S5",
+  "metrics": {
+    "rotation": {
+      "max_deg": 21.767908303213858,
+      "mean_deg": 20.82515115155671,
+      "median_deg": 20.770591377597693,
+      "p90_deg": 21.356673134422547,
+      "p95_deg": 21.50373753817543
+    },
+    "translation_direction": {
+      "max_deg": 175.7954875823417,
+      "mean_cosine": -0.028522221625837223,
+      "mean_deg": 91.39241866186,
+      "median_cosine": -0.09896995850564418,
+      "median_deg": 95.67985920477633,
+      "p90_deg": 139.55126037861987,
+      "p95_deg": 152.63181330497744
+    },
+    "translation_magnitude": {
+      "max_log_error": 5.815659595548674,
+      "mean_log_error": 2.560972772637296,
+      "mean_ratio": 27.174141849809555,
+      "median_log_error": 2.8566954840570014,
+      "median_ratio": 17.40392027591447,
+      "p90_log_error": 4.1643977559344805,
+      "p90_ratio": 64.35676477052066,
+      "p95_log_error": 4.376509677027969
+    }
+  },
+  "name": "s5_full",
+  "notes": [],
+  "num_gt_poses": 454,
+  "num_pose_pairs": 453,
+  "num_poses": 454,
+  "num_valid_rot_pairs": 453,
+  "num_valid_tdir_pairs": 453,
+  "num_valid_tmag_pairs": 453,
+  "pair_source": "all_adjacent_pairs",
+  "skipped_pairs": {
+    "small_est_translation": 0,
+    "small_gt_translation": 0,
+    "timestamp_missing": 0
+  },
+  "timestamp_match_status": "ok",
+  "trajectory": "/home/dovetao/graduation_design_demo/external_baselines/results/s5_dense/scene01_seq03_s5_dense_est_tum.txt"
+}

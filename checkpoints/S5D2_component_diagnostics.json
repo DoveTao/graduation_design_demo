@@ -1,0 +1,229 @@
+{
+  "component_results": {
+    "orbslam3_on_matched_pairs": {
+      "coverage": 0.6013215859030837,
+      "num_pose_pairs": 272,
+      "num_poses": 273,
+      "output_json": "/home/dovetao/graduation_design_demo/external_baselines/results/component_diagnostics/orbslam3_on_matched_component_diagnostics.json",
+      "rot_mean_deg": 0.625447776717409,
+      "rot_median_deg": 0.6043202083735559,
+      "rot_p90_deg": 0.7904699148643001,
+      "tdir_mean_cosine": -0.09928788786149732,
+      "tdir_mean_deg": 96.08611780709046,
+      "tdir_median_deg": 105.88453703701344,
+      "tdir_p90_deg": 140.23904591763517,
+      "tmag_mean_log_error": 2.0539436454346496,
+      "tmag_mean_ratio": 0.6160846066908139,
+      "tmag_median_log_error": 1.5913616821372432,
+      "tmag_median_ratio": 0.20886034376080787,
+      "tmag_p90_log_error": 4.264499246844778
+    },
+    "orbslam3_tracked": {
+      "coverage": 0.6013215859030837,
+      "num_pose_pairs": 272,
+      "num_poses": 273,
+      "output_json": "/home/dovetao/graduation_design_demo/external_baselines/results/component_diagnostics/orbslam3_tracked_component_diagnostics.json",
+      "rot_mean_deg": 0.625447776717409,
+      "rot_median_deg": 0.6043202083735559,
+      "rot_p90_deg": 0.7904699148643001,
+      "tdir_mean_cosine": -0.09928788786149732,
+      "tdir_mean_deg": 96.08611780709046,
+      "tdir_median_deg": 105.88453703701344,
+      "tdir_p90_deg": 140.23904591763517,
+      "tmag_mean_log_error": 2.0539436454346496,
+      "tmag_mean_ratio": 0.6160846066908139,
+      "tmag_median_log_error": 1.5913616821372432,
+      "tmag_median_ratio": 0.20886034376080787,
+      "tmag_p90_log_error": 4.264499246844778
+    },
+    "s5_full": {
+      "coverage": 1.0,
+      "num_pose_pairs": 453,
+      "num_poses": 454,
+      "output_json": "/home/dovetao/graduation_design_demo/external_baselines/results/component_diagnostics/s5_full_component_diagnostics.json",
+      "rot_mean_deg": 20.82515115155671,
+      "rot_median_deg": 20.770591377597693,
+      "rot_p90_deg": 21.356673134422547,
+      "tdir_mean_cosine": -0.028522221625837223,
+      "tdir_mean_deg": 91.39241866186,
+      "tdir_median_deg": 95.67985920477633,
+      "tdir_p90_deg": 139.55126037861987,
+      "tmag_mean_log_error": 2.560972772637296,
+      "tmag_mean_ratio": 27.174141849809555,
+      "tmag_median_log_error": 2.8566954840570014,
+      "tmag_median_ratio": 17.40392027591447,
+      "tmag_p90_log_error": 4.1643977559344805
+    },
+    "s5_on_orb_matched_pairs": {
+      "coverage": 1.0,
+      "num_pose_pairs": 272,
+      "num_poses": 273,
+      "output_json": "/home/dovetao/graduation_design_demo/external_baselines/results/component_diagnostics/s5_on_orb_matched_component_diagnostics.json",
+      "rot_mean_deg": 20.76274481502537,
+      "rot_median_deg": 20.76296380748966,
+      "rot_p90_deg": 20.8978361427579,
+      "tdir_mean_cosine": -0.09389392391548335,
+      "tdir_mean_deg": 95.81114430040958,
+      "tdir_median_deg": 98.76381467828924,
+      "tdir_p90_deg": 139.16136125337948,
+      "tmag_mean_log_error": 3.439774604439766,
+      "tmag_mean_ratio": 41.645271500067935,
+      "tmag_median_log_error": 3.5376784552825846,
+      "tmag_median_ratio": 34.38699636029955,
+      "tmag_p90_log_error": 4.310918846948364
+    }
+  },
+  "existing_external_trajectory_metrics": {
+    "orbslam3": {
+      "coverage": 0.6013215859030837,
+      "none": {
+        "ate": 11.46685113827757,
+        "drift": 0.03737053832593786,
+        "num_matched_poses": 273,
+        "path_ratio": 0.2998258665660257,
+        "status": "ok"
+      },
+      "num_est_poses": 273,
+      "num_input_frames": 454,
+      "se3": {
+        "ate": 0.30854441069248173,
+        "drift": 0.0374760642069601,
+        "num_matched_poses": 273,
+        "path_ratio": 0.2998258665660257,
+        "status": "ok"
+      },
+      "sim3": {
+        "ate": 0.224292165986624,
+        "drift": 0.06452708470276013,
+        "num_matched_poses": 273,
+        "path_ratio": 0.2998258665660257,
+        "status": "ok"
+      }
+    },
+    "s5": {
+      "coverage": 1.0,
+      "none": {
+        "ate": 21.681522044975264,
+        "drift": 0.21683137477814862,
+        "num_matched_poses": 454,
+        "path_ratio": 2.777267572676944,
+        "status": "ok"
+      },
+      "num_est_poses": 454,
+      "num_input_frames": 454,
+      "se3": {
+        "ate": 8.231468716451547,
+        "drift": 0.23274388321733164,
+        "num_matched_poses": 454,
+        "path_ratio": 2.777267572676944,
+        "status": "ok"
+      },
+      "sim3": {
+        "ate": 4.07912293550008,
+        "drift": 0.13382808429229665,
+        "num_matched_poses": 454,
+        "path_ratio": 2.777267572676944,
+        "status": "ok"
+      }
+    }
+  },
+  "experiment": "S5D2_component_diagnostics_rot_tdir_tmag",
+  "fairness_notes": {
+    "input_protocol_note": "S5 uses project panorama/S5 representation; ORB-SLAM3 uses raw fisheye cam0.",
+    "orbslam3_calibration_caveat": "fitted KB8 compatibility approximation, not native factory KB8",
+    "same_component_metric_definitions": true,
+    "same_gt": true,
+    "same_input_protocol": false
+  },
+  "final_classification": "S5D2_COMPONENT_DIAGNOSTICS_COMPLETE",
+  "inputs": {
+    "groundtruth": "external_baselines/dataset/scene01_seq03/groundtruth_tum.txt",
+    "orbslam3_trajectory": "/home/dovetao/graduation_design_demo/external_baselines/results/orbslam3_fisheye_cam0/scene01_seq03_est_tum.txt",
+    "s5_trajectory": "/home/dovetao/graduation_design_demo/external_baselines/results/s5_dense/scene01_seq03_s5_dense_est_tum.txt",
+    "timestamps": "external_baselines/dataset/scene01_seq03/timestamps.txt"
+  },
+  "interpretation": {
+    "dominant_s5_error_source": "mixed",
+    "evidence": [
+      "On ORB-matched pairs, S5 mean tmag ratio is substantially above 1, which points to local translation magnitude over-scaling.",
+      "S5 translation-direction error on matched pairs is materially elevated, so local tdir quality also contributes.",
+      "S5 rotation error on matched pairs is high enough that local orientation quality cannot be ignored.",
+      "ORB-SLAM3 remains a high-precision partial-tracking baseline: local component quality is measured only on tracked segments."
+    ],
+    "recommendations": [
+      "prioritize translation magnitude calibration under the dense-export / same-evaluator scope",
+      "revisit short-window pose consistency with explicit scale-aware objectives",
+      "add stronger tdir supervision or a direction-focused loss on matched local motions",
+      "consider stronger SO(3) geodesic rotation supervision and short-window rotational consistency",
+      "treat ORB-SLAM3 as a successful-segment teacher or distillation target rather than as a full-coverage replacement"
+    ]
+  },
+  "notes": [
+    "Component diagnostics use raw local relative motions from exported trajectories.",
+    "These diagnostics do not replace the official S5 locked result."
+  ],
+  "pose_input_checks": {
+    "groundtruth": {
+      "duplicate_timestamps": 0,
+      "has_nan_or_inf": false,
+      "name": "groundtruth",
+      "num_poses": 454,
+      "quaternion_norm_close_to_1": true,
+      "quaternion_norm_summary": {
+        "max": 1.0000000006351737,
+        "mean": 0.9999999999970268,
+        "median": 1.0000000000144365,
+        "p90": 1.0000000003659093,
+        "p95": 1.0000000004328409
+      },
+      "timestamps_strictly_increasing": true
+    },
+    "num_input_timestamps": 454,
+    "orb_pair_keys_missing_gt": 0,
+    "orb_source_mode": "git_show:experiment/orbslam3-fisheye-strong-baseline",
+    "orbslam3": {
+      "duplicate_timestamps": 0,
+      "has_nan_or_inf": false,
+      "name": "orbslam3",
+      "num_poses": 273,
+      "quaternion_norm_close_to_1": true,
+      "quaternion_norm_summary": {
+        "max": 1.0000000632438575,
+        "mean": 1.000000019510299,
+        "median": 1.0000000199441443,
+        "p90": 1.0000000484080234,
+        "p95": 1.0000000525100368
+      },
+      "timestamps_strictly_increasing": true
+    },
+    "s5": {
+      "duplicate_timestamps": 0,
+      "has_nan_or_inf": false,
+      "name": "s5",
+      "num_poses": 454,
+      "quaternion_norm_close_to_1": true,
+      "quaternion_norm_summary": {
+        "max": 1.0000000007635996,
+        "mean": 1.0000000000018272,
+        "median": 1.0000000000041398,
+        "p90": 1.0000000003384986,
+        "p95": 1.0000000004089722
+      },
+      "timestamps_strictly_increasing": true
+    },
+    "s5_source_mode": "git_show:experiment/orbslam3-fisheye-strong-baseline"
+  },
+  "protocol": {
+    "min_translation_norm": 1e-08,
+    "relative_transform_definition": "inverse(T_i) @ T_j",
+    "timestamp_tolerance": 1e-06,
+    "tum_pose_convention": "T_wc with translation as world-frame camera position and quaternion qx qy qz qw"
+  },
+  "s5_official_locked_metrics": {
+    "ate": 7.352288,
+    "drift": 1.327343,
+    "not_replaced_by_component_diagnostics": true,
+    "path_ratio": 0.932379,
+    "unchanged": true
+  }
+}

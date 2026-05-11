@@ -1,0 +1,362 @@
+{
+  "allowed_final_classifications": [
+    "S5D5_PAIRWISE_DENSE_GAP_EXPLAINED",
+    "S5D5_PAIRWISE_DENSE_GAP_PARTIAL",
+    "S5D5_FINAL_S5_PAIRWISE_ARTIFACT_UNAVAILABLE",
+    "S5D5_DIFFERENT_CANDIDATE_OR_SEQUENCE",
+    "S5D5_ERROR"
+  ],
+  "bridge_metrics": {
+    "dense_relative": {
+      "k1": {
+        "num_pairs": 453,
+        "num_valid_pairs": 453,
+        "tdir_mean_deg": 91.39241866186,
+        "tdir_median_deg": 95.67985920477633,
+        "tdir_p90_deg": 139.55126037861987,
+        "tmag_mean_ratio": 27.174141849809555
+      },
+      "k10": {
+        "num_pairs": 444,
+        "num_valid_pairs": 444,
+        "tdir_mean_deg": 90.99395977826636,
+        "tdir_median_deg": 91.70821737702843,
+        "tdir_p90_deg": 142.03294291751206,
+        "tmag_mean_ratio": 17.495879602629508
+      },
+      "k2": {
+        "num_pairs": 452,
+        "num_valid_pairs": 452,
+        "tdir_mean_deg": 91.55914446916339,
+        "tdir_median_deg": 95.16242519374079,
+        "tdir_p90_deg": 141.19612184971794,
+        "tmag_mean_ratio": 25.261488640708137
+      },
+      "k20": {
+        "num_pairs": 434,
+        "num_valid_pairs": 434,
+        "tdir_mean_deg": 92.79939024525902,
+        "tdir_median_deg": 90.28257285315706,
+        "tdir_p90_deg": 127.29212497795513,
+        "tmag_mean_ratio": 12.36826794068604
+      },
+      "k5": {
+        "num_pairs": 449,
+        "num_valid_pairs": 449,
+        "tdir_mean_deg": 90.97930803125395,
+        "tdir_median_deg": 94.55024607998017,
+        "tdir_p90_deg": 141.03854705068608,
+        "tmag_mean_ratio": 23.085056095778462
+      }
+    },
+    "dense_relative_abs": {
+      "k1": {
+        "num_pairs": 453,
+        "num_valid_pairs": 453,
+        "tdir_mean_deg": 57.17123032045375,
+        "tdir_median_deg": 60.61637277070892,
+        "tdir_p90_deg": 83.40551252427645,
+        "tmag_mean_ratio": 27.174141849809555
+      },
+      "k10": {
+        "num_pairs": 444,
+        "num_valid_pairs": 444,
+        "tdir_mean_deg": 61.305979005137445,
+        "tdir_median_deg": 66.84688491228397,
+        "tdir_p90_deg": 85.36390322692763,
+        "tmag_mean_ratio": 17.495879602629508
+      },
+      "k2": {
+        "num_pairs": 452,
+        "num_valid_pairs": 452,
+        "tdir_mean_deg": 57.757803479892274,
+        "tdir_median_deg": 60.96689214999793,
+        "tdir_p90_deg": 83.99344740586534,
+        "tmag_mean_ratio": 25.261488640708137
+      },
+      "k20": {
+        "num_pairs": 434,
+        "num_valid_pairs": 434,
+        "tdir_mean_deg": 69.16913726743009,
+        "tdir_median_deg": 73.21052326924675,
+        "tdir_p90_deg": 86.61589769653759,
+        "tmag_mean_ratio": 12.36826794068604
+      },
+      "k5": {
+        "num_pairs": 449,
+        "num_valid_pairs": 449,
+        "tdir_mean_deg": 58.35207940256609,
+        "tdir_median_deg": 62.20731442301529,
+        "tdir_p90_deg": 83.29552074240203,
+        "tmag_mean_ratio": 23.085056095778462
+      }
+    },
+    "k_step": {
+      "k=1": {
+        "num_pairs": 453,
+        "num_valid_pairs": 453,
+        "tdir_mean_deg": 91.39241866186,
+        "tdir_median_deg": 95.67985920477633,
+        "tdir_p90_deg": 139.55126037861987,
+        "tmag_mean_ratio": 27.174141849809555
+      },
+      "k=10": {
+        "num_pairs": 444,
+        "num_valid_pairs": 444,
+        "tdir_mean_deg": 90.99395977826636,
+        "tdir_median_deg": 91.70821737702843,
+        "tdir_p90_deg": 142.03294291751206,
+        "tmag_mean_ratio": 17.495879602629508
+      },
+      "k=2": {
+        "num_pairs": 452,
+        "num_valid_pairs": 452,
+        "tdir_mean_deg": 91.55914446916339,
+        "tdir_median_deg": 95.16242519374079,
+        "tdir_p90_deg": 141.19612184971794,
+        "tmag_mean_ratio": 25.261488640708137
+      },
+      "k=20": {
+        "num_pairs": 434,
+        "num_valid_pairs": 434,
+        "tdir_mean_deg": 92.79939024525902,
+        "tdir_median_deg": 90.28257285315706,
+        "tdir_p90_deg": 127.29212497795513,
+        "tmag_mean_ratio": 12.36826794068604
+      },
+      "k=5": {
+        "num_pairs": 449,
+        "num_valid_pairs": 449,
+        "tdir_mean_deg": 90.97930803125395,
+        "tdir_median_deg": 94.55024607998017,
+        "tdir_p90_deg": 141.03854705068608,
+        "tmag_mean_ratio": 23.085056095778462
+      }
+    },
+    "thresholded": {
+      "every_2nd_pair": {
+        "num_pairs": 227,
+        "num_valid_pairs": 227,
+        "tdir_mean_deg": 92.04163658060574,
+        "tdir_median_deg": 96.41882139519305,
+        "tdir_p90_deg": 139.50288399726406,
+        "tmag_mean_ratio": 26.20117060611419
+      },
+      "every_5th_pair": {
+        "num_pairs": 91,
+        "num_valid_pairs": 91,
+        "tdir_mean_deg": 91.31777300487447,
+        "tdir_median_deg": 98.1863899786247,
+        "tdir_p90_deg": 133.81719515148973,
+        "tmag_mean_ratio": 25.13940086174295
+      },
+      "median_gt_step_0p05": {
+        "num_pairs": 453,
+        "num_valid_pairs": 453,
+        "tdir_mean_deg": 91.39241866186,
+        "tdir_median_deg": 95.67985920477633,
+        "tdir_p90_deg": 139.55126037861987,
+        "tmag_mean_ratio": 27.174141849809555
+      },
+      "median_gt_step_0p10": {
+        "num_pairs": 453,
+        "num_valid_pairs": 452,
+        "tdir_mean_deg": 91.40147895585116,
+        "tdir_median_deg": 96.02873207056558,
+        "tdir_p90_deg": 139.56335447395884,
+        "tmag_mean_ratio": 26.49197705706998
+      }
+    },
+    "world_delta": {
+      "k1": {
+        "num_pairs": 453,
+        "num_valid_pairs": 453,
+        "tdir_mean_deg": 85.63331890482517,
+        "tdir_median_deg": 85.32171669386678,
+        "tdir_p90_deg": 137.98472601483408,
+        "tmag_mean_ratio": 27.174141849809555
+      },
+      "k10": {
+        "num_pairs": 444,
+        "num_valid_pairs": 444,
+        "tdir_mean_deg": 83.16171110119575,
+        "tdir_median_deg": 80.38688660832621,
+        "tdir_p90_deg": 128.92684609363167,
+        "tmag_mean_ratio": 17.495879602629508
+      },
+      "k2": {
+        "num_pairs": 452,
+        "num_valid_pairs": 452,
+        "tdir_mean_deg": 85.21106583712769,
+        "tdir_median_deg": 84.18026495849469,
+        "tdir_p90_deg": 137.77613889975527,
+        "tmag_mean_ratio": 25.261488640708134
+      },
+      "k20": {
+        "num_pairs": 434,
+        "num_valid_pairs": 434,
+        "tdir_mean_deg": 82.2901115455112,
+        "tdir_median_deg": 76.92322439476426,
+        "tdir_p90_deg": 119.13818850768078,
+        "tmag_mean_ratio": 12.36826794068604
+      },
+      "k5": {
+        "num_pairs": 449,
+        "num_valid_pairs": 449,
+        "tdir_mean_deg": 84.70724401246541,
+        "tdir_median_deg": 83.37142668656968,
+        "tdir_p90_deg": 134.21028250838236,
+        "tmag_mean_ratio": 23.085056095778462
+      }
+    },
+    "world_delta_abs": {
+      "k1": {
+        "num_pairs": 453,
+        "num_valid_pairs": 453,
+        "tdir_mean_deg": 56.87800291046734,
+        "tdir_median_deg": 58.8645777631273,
+        "tdir_p90_deg": 84.39159802875092,
+        "tmag_mean_ratio": 27.174141849809555
+      },
+      "k10": {
+        "num_pairs": 444,
+        "num_valid_pairs": 444,
+        "tdir_mean_deg": 60.44292384694194,
+        "tdir_median_deg": 64.25783872504994,
+        "tdir_p90_deg": 84.78940730968988,
+        "tmag_mean_ratio": 17.495879602629508
+      },
+      "k2": {
+        "num_pairs": 452,
+        "num_valid_pairs": 452,
+        "tdir_mean_deg": 57.02036260435081,
+        "tdir_median_deg": 59.10594159051021,
+        "tdir_p90_deg": 84.37180716035874,
+        "tmag_mean_ratio": 25.261488640708134
+      },
+      "k20": {
+        "num_pairs": 434,
+        "num_valid_pairs": 434,
+        "tdir_mean_deg": 68.76435124117613,
+        "tdir_median_deg": 72.04360529358382,
+        "tdir_p90_deg": 85.84523603327818,
+        "tmag_mean_ratio": 12.36826794068604
+      },
+      "k5": {
+        "num_pairs": 449,
+        "num_valid_pairs": 449,
+        "tdir_mean_deg": 57.68668445571279,
+        "tdir_median_deg": 59.47193482090258,
+        "tdir_p90_deg": 83.76192569892126,
+        "tmag_mean_ratio": 23.085056095778462
+      }
+    }
+  },
+  "experiment": "S5D5_pairwise_to_dense_tdir_gap_audit",
+  "final_classification": "S5D5_FINAL_S5_PAIRWISE_ARTIFACT_UNAVAILABLE",
+  "final_s5_pairwise_artifacts": {
+    "available": false,
+    "notes": [
+      "final_s5_pairwise_predictions_available = false"
+    ],
+    "paths": [],
+    "tdir_metrics": {}
+  },
+  "historical_pairwise_sources": {
+    "old_tdir_20_confirmed_as_historical_pairwise": true,
+    "old_tdir_20_found_for_final_s5_dense": false,
+    "search_log": "logs/s5d5_pairwise_tdir_pipeline_search.log",
+    "sources": [
+      {
+        "classification": "OLD_TDIR_PAIRWISE_LOCAL_FRAME",
+        "file": "checkpoints/S11_tmag_scale_consistency_runs/S11_B_dt_aware_affine_calib_heldout_scene01_seq01/eval_history.json",
+        "frame": "local frame",
+        "generating_script": "tools/s11_tmag_scale_consistency_training.py",
+        "id": "S11_B",
+        "is_final_s5_locked_candidate": false,
+        "metrics": {
+          "tdir": 38.42739820480347,
+          "tdir_abs": 38.42739820480347
+        },
+        "notes": [
+          "historical candidate run"
+        ],
+        "pair_selection": "heldout subset / bucketed",
+        "sequence": "scene01_seq01"
+      },
+      {
+        "classification": "OLD_TDIR_PAIRWISE_LOCAL_FRAME",
+        "file": "checkpoints/S11_tmag_scale_consistency_runs/S11_C_loss_only_consistency_heldout_scene01_seq01_u100/eval_history.json",
+        "frame": "local frame",
+        "generating_script": "tools/s11_tmag_scale_consistency_training.py",
+        "id": "S11_C",
+        "is_final_s5_locked_candidate": false,
+        "metrics": {
+          "tdir": 37.726716288547806,
+          "tdir_abs": 19.357324309034116
+        },
+        "notes": [
+          "historical candidate run"
+        ],
+        "pair_selection": "heldout subset / bucketed",
+        "sequence": "scene01_seq01"
+      },
+      {
+        "classification": "OLD_TDIR_PAIRWISE_LOCAL_FRAME",
+        "file": "checkpoints/S16_stronger_visual_backbone_feasibility_candidates.json",
+        "frame": "local frame",
+        "generating_script": "tools/s16_stronger_visual_backbone_feasibility.py",
+        "id": "S16",
+        "is_final_s5_locked_candidate": false,
+        "metrics": {
+          "current_model_mean_tdir_err": 31.54245074814257
+        },
+        "notes": [
+          "not final S5 locked candidate"
+        ],
+        "pair_selection": "feasibility eval rows",
+        "sequence": "mixed/feasibility"
+      }
+    ]
+  },
+  "inputs": {
+    "groundtruth": "external_baselines/dataset/scene01_seq03/groundtruth_tum.txt",
+    "s5_dense_trajectory": "external_baselines/results/s5_dense/scene01_seq03_s5_dense_est_tum.txt",
+    "s5d2_checkpoint": "checkpoints/S5D2_component_diagnostics.json",
+    "s5d3_checkpoint": "checkpoints/S5D3_validation_and_alignment_aware_component_audit.json",
+    "s5d4_checkpoint": "checkpoints/S5D4_reconcile_old_tdir_with_dense_tdir.json",
+    "timestamps": "external_baselines/dataset/scene01_seq03/timestamps.txt"
+  },
+  "interpretation": {
+    "evidence": [
+      "dense_relative k1 mean=91.392419",
+      "dense_relative_abs k1 mean=57.171230",
+      "world_delta k1 mean=85.633319",
+      "world_delta_abs k1 mean=56.878003"
+    ],
+    "most_likely_explanation": "different candidate / different sequence / different pair selection / different frame protocol",
+    "recommended_next_actions": [
+      "Preserve/export final S5 pairwise local vectors alongside dense export.",
+      "Implement pairwise-vector-to-dense-chain replay for exact gap attribution.",
+      "Compare official evaluator selected pairs vs dense adjacent pairs explicitly.",
+      "Add metric provenance registry (frame/pair/alignment/mask metadata).",
+      "Avoid tdir-loss conclusions until final S5 pairwise artifact is pinned."
+    ]
+  },
+  "pairwise_to_dense_gap": {
+    "dense_abs_tdir_explains_old_20deg": false,
+    "different_frame_protocol": true,
+    "different_pair_selection": true,
+    "different_sequence_or_candidate": true,
+    "gap_explanation": "Historical ~20deg tdir is real but comes from S11/S16 pairwise/local-frame heldout diagnostics (different candidate/sequence/protocol). Dense S5 export on scene01_seq03 remains ~91deg even with abs/sign-invariant, k-step, and thresholded variants; direct final-S5 pairwise-to-dense replay is blocked by missing explicit final pairwise vectors.",
+    "integration_gap_confirmed": null,
+    "pairwise_prediction_bridge_available": false
+  },
+  "s5_official_locked_metrics": {
+    "ate": 7.352288,
+    "drift": 1.327343,
+    "not_replaced_by_s5d5": true,
+    "path_ratio": 0.932379,
+    "unchanged": true
+  }
+}

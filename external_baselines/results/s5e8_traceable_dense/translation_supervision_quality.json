@@ -1,0 +1,241 @@
+{
+  "experiment": "S5E8_translation_geometry_diagnostic_ablation",
+  "gt_tmag_median": 0.011908447102386463,
+  "gt_tmag_p90": 0.2523947547524407,
+  "gt_tmag_p95": 0.3691697395709953,
+  "gt_tmag_p99": 0.526654362281555,
+  "gt_tmag_max": 0.7818686910217085,
+  "small_motion_count": 197,
+  "small_motion_fraction": 0.2506361323155216,
+  "gt_direction_stability_by_bucket": {
+    "small_motion": 23.770468100458597,
+    "normal_motion": 9.267920702671626,
+    "large_motion": 5.830404360611699
+  },
+  "small_motion_tdir_label_reliability_proxy": 23.770468100458597,
+  "repeated_or_near_static_edge_count": 0,
+  "low_parallax_or_low_displacement_edge_count": 79,
+  "label_outlier_candidates": [
+    {
+      "edge_index": 7,
+      "scene": "scene01",
+      "seq": "seq01",
+      "timestamp_i": 1745407063.195752,
+      "timestamp_j": 1745407063.245809,
+      "gt_magnitude": 0.7818686910217085,
+      "bucket": "large_motion"
+    },
+    {
+      "edge_index": 337,
+      "scene": "scene01",
+      "seq": "seq02",
+      "timestamp_i": 1745407312.075018,
+      "timestamp_j": 1745407312.125864,
+      "gt_magnitude": 0.6093105447963293,
+      "bucket": "large_motion"
+    },
+    {
+      "edge_index": 14,
+      "scene": "scene01",
+      "seq": "seq01",
+      "timestamp_i": 1745407063.549247,
+      "timestamp_j": 1745407063.600308,
+      "gt_magnitude": 0.5861008616270751,
+      "bucket": "large_motion"
+    },
+    {
+      "edge_index": 16,
+      "scene": "scene01",
+      "seq": "seq01",
+      "timestamp_i": 1745407063.651762,
+      "timestamp_j": 1745407063.70178,
+      "gt_magnitude": 0.5602347632912476,
+      "bucket": "large_motion"
+    },
+    {
+      "edge_index": 12,
+      "scene": "scene01",
+      "seq": "seq01",
+      "timestamp_i": 1745407063.448187,
+      "timestamp_j": 1745407063.49876,
+      "gt_magnitude": 0.5528725531259441,
+      "bucket": "large_motion"
+    },
+    {
+      "edge_index": 335,
+      "scene": "scene01",
+      "seq": "seq02",
+      "timestamp_i": 1745407311.974144,
+      "timestamp_j": 1745407312.024865,
+      "gt_magnitude": 0.5464205980744138,
+      "bucket": "large_motion"
+    },
+    {
+      "edge_index": 5,
+      "scene": "scene01",
+      "seq": "seq01",
+      "timestamp_i": 1745407063.09305,
+      "timestamp_j": 1745407063.143924,
+      "gt_magnitude": 0.5447546970885153,
+      "bucket": "large_motion"
+    },
+    {
+      "edge_index": 20,
+      "scene": "scene01",
+      "seq": "seq01",
+      "timestamp_i": 1745407063.85258,
+      "timestamp_j": 1745407063.904356,
+      "gt_magnitude": 0.5286940703280115,
+      "bucket": "large_motion"
+    },
+    {
+      "edge_index": 328,
+      "scene": "scene01",
+      "seq": "seq02",
+      "timestamp_i": 1745407311.62161,
+      "timestamp_j": 1745407311.671798,
+      "gt_magnitude": 0.5262944138027686,
+      "bucket": "large_motion"
+    },
+    {
+      "edge_index": 339,
+      "scene": "scene01",
+      "seq": "seq02",
+      "timestamp_i": 1745407312.175915,
+      "timestamp_j": 1745407312.226073,
+      "gt_magnitude": 0.5239179897655741,
+      "bucket": "large_motion"
+    },
+    {
+      "edge_index": 15,
+      "scene": "scene01",
+      "seq": "seq01",
+      "timestamp_i": 1745407063.600308,
+      "timestamp_j": 1745407063.651762,
+      "gt_magnitude": 0.5226934570089813,
+      "bucket": "large_motion"
+    },
+    {
+      "edge_index": 331,
+      "scene": "scene01",
+      "seq": "seq02",
+      "timestamp_i": 1745407311.772979,
+      "timestamp_j": 1745407311.823179,
+      "gt_magnitude": 0.5215655759346084,
+      "bucket": "large_motion"
+    },
+    {
+      "edge_index": 344,
+      "scene": "scene01",
+      "seq": "seq02",
+      "timestamp_i": 1745407312.427207,
+      "timestamp_j": 1745407312.477667,
+      "gt_magnitude": 0.5108854568296106,
+      "bucket": "large_motion"
+    },
+    {
+      "edge_index": 208,
+      "scene": "scene01",
+      "seq": "seq01",
+      "timestamp_i": 1745407073.351587,
+      "timestamp_j": 1745407073.402596,
+      "gt_magnitude": 0.5015245158514183,
+      "bucket": "large_motion"
+    },
+    {
+      "edge_index": 10,
+      "scene": "scene01",
+      "seq": "seq01",
+      "timestamp_i": 1745407063.346555,
+      "timestamp_j": 1745407063.397378,
+      "gt_magnitude": 0.4934998784194381,
+      "bucket": "large_motion"
+    },
+    {
+      "edge_index": 329,
+      "scene": "scene01",
+      "seq": "seq02",
+      "timestamp_i": 1745407311.671798,
+      "timestamp_j": 1745407311.722259,
+      "gt_magnitude": 0.4930568729872854,
+      "bucket": "large_motion"
+    },
+    {
+      "edge_index": 333,
+      "scene": "scene01",
+      "seq": "seq02",
+      "timestamp_i": 1745407311.873396,
+      "timestamp_j": 1745407311.923502,
+      "gt_magnitude": 0.47153855621783464,
+      "bucket": "large_motion"
+    },
+    {
+      "edge_index": 342,
+      "scene": "scene01",
+      "seq": "seq02",
+      "timestamp_i": 1745407312.326339,
+      "timestamp_j": 1745407312.376969,
+      "gt_magnitude": 0.45423591887916553,
+      "bucket": "large_motion"
+    },
+    {
+      "edge_index": 8,
+      "scene": "scene01",
+      "seq": "seq01",
+      "timestamp_i": 1745407063.245809,
+      "timestamp_j": 1745407063.295809,
+      "gt_magnitude": 0.44620781033056794,
+      "bucket": "large_motion"
+    },
+    {
+      "edge_index": 4,
+      "scene": "scene01",
+      "seq": "seq01",
+      "timestamp_i": 1745407063.0427,
+      "timestamp_j": 1745407063.09305,
+      "gt_magnitude": 0.4419987443421078,
+      "bucket": "large_motion"
+    }
+  ],
+  "train_bucket_stats": {
+    "small_threshold": 0.004816819815947844,
+    "large_threshold": 0.03859069296958209,
+    "global": {
+      "count": 786,
+      "median": 0.011908447102386463,
+      "p90": 0.2523947547524407,
+      "p95": 0.3691697395709953,
+      "max": 0.7818686910217085,
+      "clip_lo": 0.0020031222709819612,
+      "clip_hi": 0.3691697395709953
+    },
+    "small_motion": {
+      "count": 197,
+      "median": 0.0029765752132260696,
+      "p90": 0.004115805934363924,
+      "p95": 0.004452786086953767,
+      "max": 0.004801041553661831,
+      "clip_lo": 0.0013608692870236614,
+      "clip_hi": 0.004452786086953767
+    },
+    "normal_motion": {
+      "count": 392,
+      "median": 0.011908447102386463,
+      "p90": 0.02716551357981745,
+      "p95": 0.03155805742315243,
+      "max": 0.03816320217172562,
+      "clip_lo": 0.005123810287804876,
+      "clip_hi": 0.03155805742315243
+    },
+    "large_motion": {
+      "count": 197,
+      "median": 0.2105054393596516,
+      "p90": 0.4370886400382462,
+      "p95": 0.5229383635602999,
+      "max": 0.7818686910217085,
+      "clip_lo": 0.047578320811733917,
+      "clip_hi": 0.5229383635602999
+    }
+  },
+  "summary": "S5E8 先检查监督本身是否已经对小位移和平移方向学习构成不利条件。"
+}

@@ -1,0 +1,46 @@
+{
+  "strategy": "s5e2_signed_direction_prior_plus_s5e3_magnitude",
+  "split_summary": {
+    "split_by": "scene_seq",
+    "train_ratio": 0.8,
+    "split_seed": 3407,
+    "train_sequence_keys": [
+      [
+        "scene01",
+        "seq01"
+      ],
+      [
+        "scene01",
+        "seq02"
+      ]
+    ],
+    "test_sequence_keys": [
+      [
+        "scene01",
+        "seq03"
+      ]
+    ],
+    "all_sequence_keys": [
+      [
+        "scene01",
+        "seq01"
+      ],
+      [
+        "scene01",
+        "seq02"
+      ],
+      [
+        "scene01",
+        "seq03"
+      ]
+    ]
+  },
+  "train_rates": {
+    "anti_parallel_rate": 0.2927864214992928,
+    "signed_tdir_mean_deg": 60.09717746556044
+  },
+  "val_rates": {
+    "anti_parallel_rate": 0.620253164556962,
+    "signed_tdir_mean_deg": 107.48615572494771
+  }
+}

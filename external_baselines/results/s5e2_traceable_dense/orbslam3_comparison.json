@@ -1,0 +1,77 @@
+{
+  "experiment": "S5E2_real_adjacent_dense_candidate",
+  "s5e2_checkpoint": "checkpoints/S5E2_adjacent_dense_candidate.json",
+  "orbslam3_eval_dir": "external_baselines/results/orbslam3_fisheye_cam0",
+  "s5e2": {
+    "coverage": 1.0,
+    "num_poses": 454,
+    "num_edges": 453,
+    "none": {
+      "ate": 51.706643679614736,
+      "drift": 0.25372271542314084,
+      "path_ratio": 3.555778481577791,
+      "status": "ok",
+      "num_matched_poses": 454,
+      "tracking_success_rate": 1.0
+    },
+    "se3": {
+      "ate": 23.713532954995145,
+      "drift": 0.2875116253385571,
+      "path_ratio": 3.555778481577791,
+      "status": "ok",
+      "num_matched_poses": 454,
+      "tracking_success_rate": 1.0
+    },
+    "sim3": {
+      "ate": 4.097680633241629,
+      "drift": 0.1305592533014556,
+      "path_ratio": 3.555778481577791,
+      "status": "ok",
+      "num_matched_poses": 454,
+      "tracking_success_rate": 1.0
+    },
+    "component_metrics": {
+      "rot_mean_deg": 0.9134395040767528,
+      "tdir_mean_deg": 51.47429479273258,
+      "tdir_abs_mean_deg": 46.07968707914153,
+      "tmag_median_ratio": 32.77577273937451,
+      "tmag_p90_ratio": 70.60597396909188,
+      "path_ratio": 3.5557784814144453,
+      "long_run_overscaling_like_s5d11": true
+    }
+  },
+  "orbslam3": {
+    "coverage": "273/454",
+    "tracking_success_rate": 0.6013215859030837,
+    "none": {
+      "ate": 11.46685113827757,
+      "drift": 0.03737053832593786,
+      "path_ratio": 0.2998258665660257
+    },
+    "se3": {
+      "ate": 0.30854441069248173,
+      "drift": 0.0374760642069601,
+      "path_ratio": 0.2998258665660257
+    },
+    "sim3": {
+      "ate": 0.224292165986624,
+      "drift": 0.06452708470276013,
+      "path_ratio": 0.2998258665660257
+    }
+  },
+  "restored_s5_dense_reference": {
+    "se3_ate": 8.231468716451547,
+    "sim3_ate": 4.07912293550008,
+    "path_ratio": 2.777267572676944
+  },
+  "comparison_to_orbslam3": {
+    "orbslam3_coverage": "273/454",
+    "s5e2_coverage_advantage": true,
+    "aligned_ate_gap_to_orbslam3": 23.404988544302665,
+    "sim3_ate_gap_to_orbslam3": 3.873388467255005,
+    "path_ratio_comparison": "S5E2=3.5557784814144453; ORB-SLAM3=0.2998258665660257",
+    "closer_to_orbslam3_than_restored_s5_dense": false,
+    "summary": "S5E2 已建立 traceable dense pipeline，但 aligned ATE 尚未优于 restored S5 dense diagnostic。 与 ORB-SLAM3 se3 ATE 的差距为 23.404988544302665。 S5E2 path_ratio 为 3.5557784814144453，ORB-SLAM3 path_ratio 为 0.2998258665660257。"
+  },
+  "final_classification": "S5E2_TRACEABLE_DENSE_EXPORTED_FAILED_METRICS"
+}

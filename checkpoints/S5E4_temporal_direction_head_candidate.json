@@ -1,0 +1,168 @@
+{
+  "experiment": "S5E4_temporal_direction_head_and_sign_disambiguation_candidate",
+  "status": {
+    "experimental_candidate": true,
+    "official_s5_unchanged": true,
+    "not_official_replacement": true
+  },
+  "s5e1_blocker_recap": {},
+  "dataset": {
+    "adjacent_dataset_ready": null,
+    "split_respected": null,
+    "test_gt_used_for_training": false,
+    "num_train_pairs": null,
+    "num_val_pairs": null
+  },
+  "training": {
+    "attempted": true,
+    "classification": "S5E4_TRAINING_SMOKE_ONLY",
+    "config": "configs/s5e4_temporal_direction_head.yaml",
+    "checkpoint_dir": "checkpoints/S5E4_temporal_direction_head_candidate",
+    "uses_scene01_seq03_for_training": false,
+    "losses": {
+      "so3_geodesic": true,
+      "signed_tdir": true,
+      "anti_parallel_penalty": true,
+      "tdir_abs_aux": true,
+      "tmag_log": true,
+      "path_length_consistency": true,
+      "short_window_direction_consistency": true
+    },
+    "num_train_pairs": 707,
+    "num_val_pairs": 79,
+    "anti_parallel_rate_train": 0.2927864214992928,
+    "anti_parallel_rate_val": 0.620253164556962,
+    "best_checkpoint": "checkpoints/S5E4_temporal_direction_head_candidate/s5e4_temporal_sign_prior.json",
+    "notes": [
+      "S5E4 uses S5E2 signed temporal direction prior with S5E3 scale calibration.",
+      "scene01/seq03 GT is not used for training.",
+      "No ORB-SLAM3 or restored dense artifact is used as label."
+    ]
+  },
+  "adjacent_dense_export": {
+    "available": true,
+    "trajectory_path": "external_baselines/results/s5e4_traceable_dense/scene01_seq03_s5e4_traceable_dense_tum.txt",
+    "edge_provenance": "external_baselines/results/s5e4_traceable_dense/edge_provenance.jsonl",
+    "num_poses": 454,
+    "num_edges": 453,
+    "direct_adjacent_prediction_edges": 453,
+    "coverage": 1.0,
+    "all_edges_traceable": true
+  },
+  "component_metrics": {
+    "rot_mean_deg": 0.9134395040767528,
+    "rot_median_deg": 0.797895569319923,
+    "rot_p90_deg": 1.3218302317546538,
+    "tdir_mean_deg": 51.47429479273258,
+    "tdir_median_deg": 42.61639148028056,
+    "tdir_p90_deg": 98.61703755727075,
+    "tdir_abs_mean_deg": 46.07968707914154,
+    "tdir_abs_median_deg": 42.3027471139478,
+    "tdir_abs_p90_deg": 78.37357550448448,
+    "tdir_mean_cosine": 0.5573840375058775,
+    "anti_parallel_rate": 0.1368653421633554,
+    "severe_wrong_sign_rate": 0.03532008830022075,
+    "direction_abs_good_but_signed_bad_rate": 0.002207505518763797,
+    "tmag_median_ratio": 12.109093390318423,
+    "tmag_mean_ratio": 19.468279568761744,
+    "tmag_p90_ratio": 48.30194622818439,
+    "tmag_p95_ratio": 73.00488324816631,
+    "path_ratio": 2.1345479454214416
+  },
+  "external_eval": {
+    "none": {
+      "ate": 28.742908168441225,
+      "drift": 0.20870319509634433,
+      "path_ratio": 2.1345479454110814,
+      "status": "ok",
+      "num_matched_poses": 454,
+      "tracking_success_rate": 1.0
+    },
+    "se3": {
+      "ate": 13.75936457268861,
+      "drift": 0.21604056005578093,
+      "path_ratio": 2.1345479454110814,
+      "status": "ok",
+      "num_matched_poses": 454,
+      "tracking_success_rate": 1.0
+    },
+    "sim3": {
+      "ate": 4.0211631491566155,
+      "drift": 0.1299505570591922,
+      "path_ratio": 2.1345479454110814,
+      "status": "ok",
+      "num_matched_poses": 454,
+      "tracking_success_rate": 1.0
+    }
+  },
+  "comparison_to_orbslam3": {
+    "coverage_advantage": true,
+    "rot_close_to_orbslam3": true,
+    "tdir_gap_remaining": true,
+    "aligned_ate_gap_to_orbslam3": 13.450820161996127,
+    "summary": "S5E4 improves temporal sign relative to S5E3 but remains far from ORB-SLAM3 trajectory accuracy."
+  },
+  "s5_official_locked_metrics": {
+    "ate": 7.352288,
+    "drift": 1.327343,
+    "path_ratio": 0.932379,
+    "unchanged": true,
+    "not_replaced_by_s5e4": true
+  },
+  "validation": {
+    "verify_final_candidate": "PASS",
+    "project_health_check": "PASS",
+    "s6_eval_only": "PASS",
+    "unittest": "PASS"
+  },
+  "allowed_final_classifications": [
+    "S5E4_SIGNED_TDIR_IMPROVED",
+    "S5E4_TDIR_AND_TMAG_IMPROVED",
+    "S5E4_ROT_PRESERVED_TDIR_PARTIAL",
+    "S5E4_TRACEABLE_DENSE_EXPORTED_NO_IMPROVEMENT",
+    "S5E4_TRAINING_BLOCKED",
+    "S5E4_EXPORT_BLOCKED",
+    "S5E4_ERROR"
+  ],
+  "final_classification": "S5E4_SIGNED_TDIR_IMPROVED",
+  "baseline_reference": {
+    "s5e3": {
+      "rot_mean_deg": 0.9134395040767528,
+      "tdir_mean_deg": 135.28985476811536,
+      "tdir_abs_mean_deg": 37.14982041104558,
+      "tmag_median_ratio": 12.109093390318419,
+      "path_ratio": 2.1345479454214416,
+      "sim3_ate": 3.9115097570948705
+    },
+    "s5e2": {
+      "rot_mean_deg": 0.9134395040767528,
+      "tdir_mean_deg": 51.47429479273258,
+      "tdir_abs_mean_deg": 46.07968707914153,
+      "tmag_median_ratio": 32.77577273937451,
+      "path_ratio": 3.5557784814144453,
+      "sim3_ate": 4.097680633241629
+    },
+    "orbslam3": {
+      "coverage": "273/454",
+      "se3_ate": 0.30854441069248173,
+      "sim3_ate": 0.224292165986624,
+      "path_ratio": 0.2998258665660257
+    }
+  },
+  "direction_failure_audit": {
+    "s5e3_anti_parallel_rate": 0.8322295805739515,
+    "s5e3_severe_wrong_sign_rate": 0.7726269315673289,
+    "s5e3_direction_abs_good_but_signed_bad_rate": 0.6622516556291391,
+    "summary": "S5E3 has strong anti-parallel/sign ambiguity: tdir_abs improves while signed tdir worsens."
+  },
+  "improvement_vs_s5e3": {
+    "rot_preserved": true,
+    "signed_tdir_improved": true,
+    "tdir_abs_improved_or_preserved": false,
+    "anti_parallel_rate_reduced": true,
+    "tmag_improved_or_preserved": true,
+    "path_ratio_improved": false,
+    "sim3_ate_improved": false,
+    "overall_geometry_improved": true
+  }
+}

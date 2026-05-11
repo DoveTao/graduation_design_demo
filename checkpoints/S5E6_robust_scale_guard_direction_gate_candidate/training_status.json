@@ -1,0 +1,68 @@
+{
+  "attempted": true,
+  "classification": "S5E6_TRAINING_SMOKE_ONLY",
+  "num_train_pairs": 707,
+  "num_val_pairs": 79,
+  "uses_scene01_seq03_for_training": false,
+  "model_type": "robust_scale_guard_direction_gate",
+  "train_magnitude_prior": {
+    "median": 0.011908447102386463,
+    "p90": 0.2523947547524407,
+    "p95": 0.3691697395709953,
+    "max": 0.7818686910217085,
+    "alpha": 0.9497516241198531,
+    "clip_hi": 0.3691697395709953,
+    "clip_lo": 0.0020031222709819612
+  },
+  "losses": {
+    "so3_geodesic": true,
+    "signed_tdir": true,
+    "tdir_abs_aux": true,
+    "anti_parallel_penalty": true,
+    "robust_tmag_log": true,
+    "tmag_p95_penalty": true,
+    "path_length_consistency": true,
+    "short_window_direction_consistency": true,
+    "smoothness": true
+  },
+  "best_checkpoint": "checkpoints/S5E6_robust_scale_guard_direction_gate_candidate/s5e6_robust_scale_guard.json",
+  "notes": [
+    "S5E6 uses S5E4 direction prior and S5E5 raw magnitude with train-split alpha correction + p95 clamp.",
+    "scene01/seq03 GT is not used for training."
+  ],
+  "split_summary": {
+    "split_by": "scene_seq",
+    "train_ratio": 0.8,
+    "split_seed": 3407,
+    "train_sequence_keys": [
+      [
+        "scene01",
+        "seq01"
+      ],
+      [
+        "scene01",
+        "seq02"
+      ]
+    ],
+    "test_sequence_keys": [
+      [
+        "scene01",
+        "seq03"
+      ]
+    ],
+    "all_sequence_keys": [
+      [
+        "scene01",
+        "seq01"
+      ],
+      [
+        "scene01",
+        "seq02"
+      ],
+      [
+        "scene01",
+        "seq03"
+      ]
+    ]
+  }
+}

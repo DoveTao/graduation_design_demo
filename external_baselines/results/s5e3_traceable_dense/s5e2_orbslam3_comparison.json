@@ -1,0 +1,65 @@
+{
+  "experiment": "S5E3_scale_calibrated_adjacent_dense_candidate",
+  "comparison_table": [
+    {
+      "method": "S5 official locked result",
+      "coverage": "official evaluator",
+      "rot_mean_deg": null,
+      "tdir_mean_deg": null,
+      "tdir_abs_mean_deg": null,
+      "tmag_median_ratio": null,
+      "none_ate": 7.352288,
+      "se3_ate": null,
+      "sim3_ate": null,
+      "path_ratio": 0.932379,
+      "caveat": "official locked result; not external dense"
+    },
+    {
+      "method": "S5E2 traceable dense",
+      "coverage": "454/454",
+      "rot_mean_deg": 0.9134395040767528,
+      "tdir_mean_deg": 51.47429479273258,
+      "tdir_abs_mean_deg": 46.07968707914153,
+      "tmag_median_ratio": 32.77577273937451,
+      "none_ate": 51.706643679614736,
+      "se3_ate": 23.713532954995145,
+      "sim3_ate": 4.097680633241629,
+      "path_ratio": 3.5557784814144453,
+      "caveat": "experimental minimal ridge; failed metrics"
+    },
+    {
+      "method": "S5E3 traceable dense",
+      "coverage": "454/454",
+      "rot_mean_deg": 0.9134395040767528,
+      "tdir_mean_deg": 135.28985476811536,
+      "tdir_abs_mean_deg": 37.14982041104558,
+      "tmag_median_ratio": 12.109093390318419,
+      "none_ate": 30.682466118163305,
+      "se3_ate": 10.774498124607831,
+      "sim3_ate": 3.9115097570948705,
+      "path_ratio": 2.1345479454214416,
+      "caveat": "experimental scale calibrated candidate"
+    },
+    {
+      "method": "ORB-SLAM3 external baseline",
+      "coverage": "273/454",
+      "rot_mean_deg": null,
+      "tdir_mean_deg": null,
+      "tdir_abs_mean_deg": null,
+      "tmag_median_ratio": null,
+      "none_ate": 11.46685113827757,
+      "se3_ate": 0.30854441069248173,
+      "sim3_ate": 0.224292165986624,
+      "path_ratio": 0.2998258665660257,
+      "caveat": "partial coverage; external strong baseline"
+    }
+  ],
+  "comparison_to_orbslam3": {
+    "coverage": "S5E3 454/454 vs ORB-SLAM3 273/454",
+    "se3_ate_gap": 10.465953713915349,
+    "sim3_ate_gap": 3.6872175911082463,
+    "path_ratio": "S5E3=2.1345479454214416; ORB-SLAM3=0.2998258665660257"
+  },
+  "interpretation": "S5E3 相对 S5E2 的 improvement flags 为 {'rot_improved_or_preserved': True, 'tdir_improved': False, 'tdir_abs_improved': True, 'tmag_improved': True, 'path_ratio_improved': True, 'sim3_ate_improved': True, 'overall_geometry_improved': True}. S5E3 对 ORB-SLAM3 的 se3 ATE gap=10.465953713915349, sim3 ATE gap=3.6872175911082463. full coverage 仍是 S5E3 相对 ORB-SLAM3 的优势，但不得声称替代 official S5。",
+  "final_classification": "S5E3_TMAG_IMPROVED_TDIR_STILL_BAD"
+}

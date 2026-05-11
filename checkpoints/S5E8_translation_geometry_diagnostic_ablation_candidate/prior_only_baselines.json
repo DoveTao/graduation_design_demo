@@ -1,0 +1,52 @@
+{
+  "experiment": "S5E8_translation_geometry_diagnostic_ablation",
+  "numeric_only_checkpoint": "checkpoints/S5E8_translation_geometry_diagnostic_ablation_candidate/s5e8_numeric_only_best.pt",
+  "prior_only_baselines": {
+    "train_median_tmag_previous_direction": {
+      "signed_tdir_mean": 51.47429479273258,
+      "tdir_abs_mean": 46.07968707914155,
+      "tdir_abs_p90": 78.37357550448448,
+      "anti_parallel_rate": 0.1368653421633554,
+      "tmag_median": 1.586387398396897,
+      "tmag_p95": 6.555793475763014,
+      "path_ratio": 0.20881790030792516
+    },
+    "motion_bucket_tmag_prior": {
+      "signed_tdir_mean": 51.47429479273258,
+      "tdir_abs_mean": 46.07968707914155,
+      "tdir_abs_p90": 78.37357550448448,
+      "anti_parallel_rate": 0.1368653421633554,
+      "tmag_median": 1.586387398396897,
+      "tmag_p95": 6.555793475763014,
+      "path_ratio": 0.20881790030792516
+    },
+    "constant_conservative_tmag_prior": {
+      "signed_tdir_mean": 51.47429479273257,
+      "tdir_abs_mean": 46.07968707914153,
+      "tdir_abs_p90": 78.37357550448448,
+      "anti_parallel_rate": 0.1368653421633554,
+      "tmag_median": 0.2668465418549105,
+      "tmag_p95": 1.10275133292799,
+      "path_ratio": 0.035125300812955756
+    },
+    "numeric_prior_only_model": {
+      "signed_tdir_mean": 53.50213792933246,
+      "tdir_abs_mean": 48.73135137240244,
+      "tdir_abs_p90": 79.28880512600801,
+      "anti_parallel_rate": 0.1434878587196468,
+      "tmag_median": 1.5863874340382071,
+      "tmag_p95": 6.555793623051797,
+      "path_ratio": 0.20881790424236352
+    }
+  },
+  "notes": [
+    "prior-only baseline 用于检查 learned model 是否真的超越数值先验。",
+    "numeric-only control 用于检查图像特征是否提供了额外几何信息。"
+  ],
+  "validation_snapshot": {
+    "verify_final_candidate": "PASS",
+    "project_health_check": "PASS",
+    "s6_eval_only": "PASS",
+    "unittest": "PASS"
+  }
+}

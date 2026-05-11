@@ -1,0 +1,82 @@
+{
+  "attempted": true,
+  "classification": "S5E9_SCALE_TRAINING_SMOKE",
+  "checkpoint": "checkpoints/S5E9_scale_unit_small_motion_signed_direction_fix_candidate/s5e9_scale_best.pt",
+  "num_train_pairs": 707,
+  "num_val_pairs": 79,
+  "uses_scene01_seq03_for_training": false,
+  "history": [
+    {
+      "epoch": 0,
+      "train_stats": {
+        "scale_loss": 0.020062705501914024,
+        "overscale_rate": 0.0,
+        "small_motion_weight": 1.0
+      },
+      "val_p95_ratio": 0.9204014241695404
+    },
+    {
+      "epoch": 1,
+      "train_stats": {
+        "scale_loss": 0.012424352578818798,
+        "overscale_rate": 0.0,
+        "small_motion_weight": 1.0
+      },
+      "val_p95_ratio": 1.018950378894806
+    },
+    {
+      "epoch": 2,
+      "train_stats": {
+        "scale_loss": 0.01533674169331789,
+        "overscale_rate": 0.0,
+        "small_motion_weight": 1.0
+      },
+      "val_p95_ratio": 0.967458164691925
+    }
+  ],
+  "split_summary": {
+    "split_by": "scene_seq",
+    "train_ratio": 0.8,
+    "split_seed": 3407,
+    "train_sequence_keys": [
+      [
+        "scene01",
+        "seq01"
+      ],
+      [
+        "scene01",
+        "seq02"
+      ]
+    ],
+    "test_sequence_keys": [
+      [
+        "scene01",
+        "seq03"
+      ]
+    ],
+    "all_sequence_keys": [
+      [
+        "scene01",
+        "seq01"
+      ],
+      [
+        "scene01",
+        "seq02"
+      ],
+      [
+        "scene01",
+        "seq03"
+      ]
+    ]
+  },
+  "notes": [
+    "S5E9 scale candidate 使用 tight bounded log-scale residual。",
+    "small-motion 使用更低权重。"
+  ],
+  "validation_snapshot": {
+    "verify_final_candidate": "PASS",
+    "project_health_check": "PASS",
+    "s6_eval_only": "PASS",
+    "unittest": "PASS"
+  }
+}

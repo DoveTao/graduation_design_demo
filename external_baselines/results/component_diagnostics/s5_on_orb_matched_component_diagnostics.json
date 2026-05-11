@@ -1,0 +1,49 @@
+{
+  "coverage": 1.0,
+  "groundtruth": "/home/dovetao/graduation_design_demo/external_baselines/dataset/scene01_seq03/groundtruth_tum.txt",
+  "method": "S5",
+  "metrics": {
+    "rotation": {
+      "max_deg": 21.038960327334404,
+      "mean_deg": 20.76274481502537,
+      "median_deg": 20.76296380748966,
+      "p90_deg": 20.8978361427579,
+      "p95_deg": 20.92345822631228
+    },
+    "translation_direction": {
+      "max_deg": 167.5671828419876,
+      "mean_cosine": -0.09389392391548335,
+      "mean_deg": 95.81114430040958,
+      "median_cosine": -0.15236152214968873,
+      "median_deg": 98.76381467828924,
+      "p90_deg": 139.16136125337948,
+      "p95_deg": 152.4893016350523
+    },
+    "translation_magnitude": {
+      "max_log_error": 5.815659595548674,
+      "mean_log_error": 3.439774604439766,
+      "mean_ratio": 41.645271500067935,
+      "median_log_error": 3.5376784552825846,
+      "median_ratio": 34.38699636029955,
+      "p90_log_error": 4.310918846948364,
+      "p90_ratio": 74.50901167074856,
+      "p95_log_error": 4.5141822509324525
+    }
+  },
+  "name": "s5_on_orb_matched_pairs",
+  "notes": [],
+  "num_gt_poses": 454,
+  "num_pose_pairs": 272,
+  "num_poses": 273,
+  "num_valid_rot_pairs": 272,
+  "num_valid_tdir_pairs": 272,
+  "num_valid_tmag_pairs": 272,
+  "pair_source": "orbslam3_tracked_adjacent_pairs",
+  "skipped_pairs": {
+    "small_est_translation": 0,
+    "small_gt_translation": 0,
+    "timestamp_missing": 0
+  },
+  "timestamp_match_status": "ok",
+  "trajectory": "/home/dovetao/graduation_design_demo/external_baselines/results/s5_dense/scene01_seq03_s5_dense_est_tum.txt"
+}

@@ -1,0 +1,173 @@
+{
+  "allowed_final_classifications": [
+    "S5D12_DENSE_FILL_BUG_IDENTIFIED",
+    "S5D12_DENSE_FILL_PROTOCOL_MISMATCH_IDENTIFIED",
+    "S5D12_NONSELECTED_SOURCE_UNKNOWN",
+    "S5D12_AUDIT_COMPLETE_NO_FIX",
+    "S5D12_ERROR"
+  ],
+  "code_path_audit": {
+    "candidate_scripts": [
+      "tools/export_s5_trajectory_for_external_eval.py",
+      "tools/restore_or_regenerate_s5_dense_tum.py",
+      "tools/replay_s5_pairwise_dense_chain.py"
+    ],
+    "code_search_log": "logs/s5d12_dense_fill_code_search.log",
+    "dense_export_script": "tools/restore_or_regenerate_s5_dense_tum.py",
+    "fill_logic_found": false,
+    "fill_logic_location": null,
+    "nonselected_source_type": "unknown",
+    "pre_materialization_available": false,
+    "restore_from_branch_artifact_found": true,
+    "searched_locations": [
+      "tools/export_s5_trajectory_for_external_eval.py:21:chain",
+      "tools/export_s5_trajectory_for_external_eval.py:21:compose",
+      "tools/export_s5_trajectory_for_external_eval.py:106:chain",
+      "tools/export_s5_trajectory_for_external_eval.py:106:chain",
+      "tools/export_s5_trajectory_for_external_eval.py:107:chain",
+      "tools/export_s5_trajectory_for_external_eval.py:107:chain",
+      "tools/export_s5_trajectory_for_external_eval.py:108:chain",
+      "tools/export_s5_trajectory_for_external_eval.py:109:chain",
+      "tools/export_s5_trajectory_for_external_eval.py:111:chain",
+      "tools/export_s5_trajectory_for_external_eval.py:111:chain",
+      "tools/export_s5_trajectory_for_external_eval.py:115:chain",
+      "tools/export_s5_trajectory_for_external_eval.py:119:chain",
+      "tools/export_s5_trajectory_for_external_eval.py:138:compose",
+      "tools/export_s5_trajectory_for_external_eval.py:152:chain",
+      "tools/export_s5_trajectory_for_external_eval.py:153:chain",
+      "tools/restore_or_regenerate_s5_dense_tum.py:14:restore",
+      "tools/restore_or_regenerate_s5_dense_tum.py:15:restore",
+      "tools/restore_or_regenerate_s5_dense_tum.py:125:restore",
+      "tools/restore_or_regenerate_s5_dense_tum.py:130:restore",
+      "tools/restore_or_regenerate_s5_dense_tum.py:134:restore",
+      "tools/restore_or_regenerate_s5_dense_tum.py:139:restore",
+      "tools/restore_or_regenerate_s5_dense_tum.py:143:restore",
+      "tools/restore_or_regenerate_s5_dense_tum.py:147:restore",
+      "tools/restore_or_regenerate_s5_dense_tum.py:150:restore",
+      "tools/restore_or_regenerate_s5_dense_tum.py:155:restore",
+      "tools/restore_or_regenerate_s5_dense_tum.py:155:restore"
+    ]
+  },
+  "diagnosis": {
+    "dense_fill_bug_suspected": null,
+    "nonselected_over_scaling_source": "protocol_mismatch",
+    "recommended_fix": [
+      "Recover or instrument the original dense fill/materialization code path and log source_type per adjacent edge.",
+      "For any gap fill, log endpoint delta, number of adjacent steps, emitted per-step delta, and dt units.",
+      "Keep selected_k1 official pairwise metrics separate from external dense trajectory materialization metrics.",
+      "Do not change S5 locked policy, manifest, evaluator defaults, or official metrics as part of S5D12."
+    ],
+    "requires_code_change": false
+  },
+  "dominant_run_72_360": {
+    "est_step_cv": 0.06419813865628834,
+    "est_step_median": 0.1340332936139236,
+    "estimated_path": 39.0221651562117,
+    "gt_path": 1.5574073003602866,
+    "hypothesis_summary": {
+      "endpoint_displacement_not_normalized": null,
+      "missing_division_by_gap_length": null,
+      "nonselected_edges_not_direct_predictions": true,
+      "selected_nonselected_protocol_mismatch": true,
+      "timestamp_unit_bug": false,
+      "total_gap_translation_repeated_per_edge": null
+    },
+    "length": 289,
+    "median_tmag_ratio": 32.22831211327435,
+    "source_type": "unknown",
+    "trace_path": "external_baselines/results/s5d12_dense_fill_path_audit/nonselected_run_72_360_trace.json"
+  },
+  "experiment": "S5D12_dense_fill_path_audit_for_nonselected_edges",
+  "final_classification": "S5D12_DENSE_FILL_PROTOCOL_MISMATCH_IDENTIFIED",
+  "hypotheses": {
+    "endpoint_displacement_not_normalized": {
+      "affected_edges": "72-360",
+      "evidence": [
+        "Endpoint displacement cannot be compared to the missing pre-materialization vector.",
+        "post_materialized_est_step_cv=0.06419813865628834"
+      ],
+      "recommended_fix": "Log endpoint displacement, normalized per-step displacement, and emitted edge displacement.",
+      "supported": null
+    },
+    "missing_division_by_gap_length": {
+      "affected_edges": "72-360",
+      "evidence": [
+        "Long-run behavior is consistent with gap-level materialization trouble, but the fill code/intermediate is unavailable.",
+        "run_length=289, run_tmag_ratio_median=32.22831211327435"
+      ],
+      "recommended_fix": "When fill code is recovered, verify endpoint delta is divided by number of adjacent steps.",
+      "supported": null
+    },
+    "nonselected_edges_not_direct_predictions": {
+      "affected_edges": "321 non-selected edges",
+      "evidence": [
+        "S5D7 pairwise artifact contains 132 selected_k1 adjacent predictions, not all 453 adjacent edges.",
+        "Edges 72-360 are absent from the selected pairwise artifact except the boundary selected edge 71->72 and later selected run 361->427.",
+        "Current dense TUM was restored as an existing artifact, not generated from direct dense predictions in this audit."
+      ],
+      "recommended_fix": "Expose direct_dense_prediction vs fill/materialization provenance in future exports.",
+      "supported": true
+    },
+    "selected_nonselected_protocol_mismatch": {
+      "affected_edges": "all non-selected edges, especially 72-360",
+      "evidence": [
+        "selected_tmag_median=1.310038384597929",
+        "nonselected_tmag_median=29.375292370072714",
+        "dominant_run_tmag_median=32.22831211327435"
+      ],
+      "recommended_fix": "Keep selected_k1 predictions and dense-fill/materialized edges separately reported.",
+      "supported": true
+    },
+    "timestamp_unit_bug": {
+      "affected_edges": "72-360",
+      "evidence": [
+        "No timestamp-unit conversion logic was found on the restored dense artifact path.",
+        "run_tmag_ratio_median=32.22831211327435 is not a canonical ms/us factor."
+      ],
+      "recommended_fix": "Add diagnostic dt logging if dense fill code is recovered.",
+      "supported": false
+    },
+    "total_gap_translation_repeated_per_edge": {
+      "affected_edges": "72-360",
+      "evidence": [
+        "No verified pre-materialization gap translation vector is available.",
+        "run_est_step_median=0.1340332936139236",
+        "endpoint_dense_delta_norm_72_361=18.185937277201607"
+      ],
+      "recommended_fix": "Instrument dense fill source to log gap endpoint displacement and per-edge divided displacement.",
+      "supported": null
+    }
+  },
+  "inputs": {
+    "groundtruth": "external_baselines/dataset/scene01_seq03/groundtruth_tum.txt",
+    "s5_dense_tum": "external_baselines/results/s5_dense/scene01_seq03_s5_dense_est_tum.txt",
+    "s5d11_checkpoint": "checkpoints/S5D11_serial_validation_and_nonselected_edge_audit.json",
+    "s5d7_pairwise_jsonl": "external_baselines/results/s5_pairwise_replay_s5d7/final_s5_pairwise_vectors_scene01_seq03.jsonl",
+    "timestamps": "external_baselines/dataset/scene01_seq03/timestamps.txt"
+  },
+  "pre_vs_post": {
+    "over_scaling_stage": "unknown",
+    "post_metrics_path": "external_baselines/results/s5d12_dense_fill_path_audit/post_materialization_edge_metrics.json",
+    "pre_materialization_available": false,
+    "pre_metrics_path": "external_baselines/results/s5d12_dense_fill_path_audit/pre_materialization_edge_metrics.json",
+    "scale_diagnostics_path": "external_baselines/results/s5d12_dense_fill_path_audit/dense_fill_scale_diagnostics.json"
+  },
+  "s5_official_locked_metrics": {
+    "ate": 7.352288,
+    "drift": 1.327343,
+    "not_replaced_by_s5d12": true,
+    "path_ratio": 0.932379,
+    "unchanged": true
+  },
+  "source_map": {
+    "num_edges": 453,
+    "num_nonselected_edges": 321,
+    "num_selected_edges": 132,
+    "path": "external_baselines/results/s5d12_dense_fill_path_audit/dense_fill_source_map.json"
+  },
+  "validation": {
+    "project_health_check": "PASS",
+    "unittest": "PASS",
+    "verify_final_candidate": "PASS"
+  }
+}

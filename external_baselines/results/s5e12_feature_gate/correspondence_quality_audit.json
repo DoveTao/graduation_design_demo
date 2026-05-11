@@ -1,0 +1,19 @@
+{
+  "experiment": "S5E12_real_correspondence_feature_gate",
+  "edge_count": 453,
+  "correspondence_success_count": 453,
+  "correspondence_success_fraction": 1.0,
+  "filtered_match_count_median": 950.0,
+  "inlier_match_count_median": 936.0,
+  "inlier_ratio_median": 1.0,
+  "parallax_proxy_median": 0.2406748538215955,
+  "low_parallax_fraction": 0.37527593818984545,
+  "near_static_fraction": 0.7019867549668874,
+  "parallax_gt_tmag_correlation": 0.4137399575713244,
+  "inlier_ratio_observability_correlation": -0.38221286193326093,
+  "matched_keypoint_count_observability_correlation": -0.27259358677478623,
+  "low_parallax_flag_vs_small_motion": 0.09492273730684327,
+  "near_static_flag_vs_small_motion": 0.24061810154525387,
+  "flow_magnitude_vs_gt_tmag_correlation": 0.44193559995616183,
+  "correspondence_too_sparse": false
+}

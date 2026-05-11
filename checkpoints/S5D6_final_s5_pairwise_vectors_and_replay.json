@@ -1,0 +1,132 @@
+{
+  "allowed_final_classifications": [
+    "S5D6_PAIRWISE_REPLAY_COMPLETE",
+    "S5D6_INTEGRATION_GAP_CONFIRMED",
+    "S5D6_PAIRWISE_PREDICTION_ISSUE_CONFIRMED",
+    "S5D6_SELECTED_SPARSE_ONLY",
+    "S5D6_FINAL_S5_PAIRWISE_EXPORT_UNAVAILABLE",
+    "S5D6_REPLAY_BLOCKED",
+    "S5D6_ERROR"
+  ],
+  "experiment": "S5D6_export_final_s5_pairwise_vectors_and_replay_dense_chain",
+  "final_classification": "S5D6_FINAL_S5_PAIRWISE_EXPORT_UNAVAILABLE",
+  "final_s5_source": {
+    "candidate": "S5_clean_tmag_calibration_policy",
+    "checkpoint_path": "checkpoints/S5_clean_tmag_calibration_policy.json",
+    "config_path": "checkpoints/S5_clean_tmag_calibration_policy.json",
+    "manifest_path": "checkpoints/final_clean_candidate_manifest.json",
+    "notes": [
+      "selected_k=1 chain metrics are visible, but explicit final per-pair vectors are not exported."
+    ],
+    "official_evaluator_entry": "tools/s6_final_clean_candidate_lockdown_audit.py",
+    "pairwise_prediction_source_found": false
+  },
+  "gap_diagnosis": {
+    "dense_replay_possible": false,
+    "evidence": [
+      "Final S5 explicit pairwise vectors are not available in current exported artifacts.",
+      "S5D5 already shows dense-derived tdir near 91 deg and historical pairwise metrics around 20 deg in non-final runs."
+    ],
+    "final_s5_pairwise_artifact_available": false,
+    "integration_gap_confirmed": null,
+    "most_likely_gap_source": "unavailable_artifact",
+    "pairwise_prediction_issue_confirmed": null,
+    "pairwise_tdir_bad": null,
+    "pairwise_tdir_good": null,
+    "recommended_next_actions": [
+      "Export final S5 per-pair vectors in official diagnostic path.",
+      "Add deterministic pairwise-to-dense replay test for final candidate.",
+      "Compare selected_k=1 protocol with dense adjacent protocol side-by-side.",
+      "Attach provenance metadata to every tdir reported metric."
+    ],
+    "selected_sparse_only": false
+  },
+  "inputs": {
+    "existing_s5_dense_trajectory": "external_baselines/results/s5_dense/scene01_seq03_s5_dense_est_tum.txt",
+    "groundtruth": "external_baselines/dataset/scene01_seq03/groundtruth_tum.txt",
+    "s5d5_checkpoint": "checkpoints/S5D5_pairwise_to_dense_tdir_gap_audit.json",
+    "scene": "scene01",
+    "seq": "seq03",
+    "timestamps": "external_baselines/dataset/scene01_seq03/timestamps.txt"
+  },
+  "pairwise_diagnostics": {
+    "comparison_to_dense_tdir_91": "dense diagnostics available from S5D2/S5D5; pairwise unavailable",
+    "comparison_to_historical_tdir_20": "unavailable (no final pairwise vectors)",
+    "rot_mean_deg": null,
+    "rot_median_deg": null,
+    "rot_p90_deg": null,
+    "tdir_abs_mean_deg": null,
+    "tdir_abs_median_deg": null,
+    "tdir_abs_p90_deg": null,
+    "tdir_mean_cosine": null,
+    "tdir_mean_deg": null,
+    "tdir_median_deg": null,
+    "tdir_p90_deg": null,
+    "tmag_mean_log_error": null,
+    "tmag_mean_ratio": null,
+    "tmag_median_log_error": null,
+    "tmag_median_ratio": null,
+    "tmag_p90_log_error": null
+  },
+  "pairwise_export": {
+    "available": false,
+    "coverage_vs_adjacent_453": 0.0,
+    "gt_used_to_generate_predictions": false,
+    "jsonl_path": "external_baselines/results/s5_pairwise_replay/final_s5_pairwise_vectors_scene01_seq03.jsonl",
+    "npz_path": "external_baselines/results/s5_pairwise_replay/final_s5_pairwise_vectors_scene01_seq03.npz",
+    "num_pairs": 0,
+    "pair_selection": "unavailable",
+    "rotation_convention": "unknown",
+    "translation_frame": "unknown"
+  },
+  "replay": {
+    "attempted": true,
+    "best_supported_variant": "none",
+    "variants": {
+      "inverse_relative_variant": {
+        "coverage": 0.0,
+        "num_poses": 0,
+        "trajectory_path": null
+      },
+      "local_translation_not_rotated": {
+        "coverage": 0.0,
+        "num_poses": 0,
+        "trajectory_path": null
+      },
+      "local_translation_rotated_by_current_pose": {
+        "coverage": 0.0,
+        "num_poses": 0,
+        "trajectory_path": null
+      },
+      "model_convention_as_declared": {
+        "component_diagnostics_path": "external_baselines/results/s5_pairwise_replay/final_s5_replayed_dense_component_diagnostics.json",
+        "coverage": 0.0,
+        "external_eval": {
+          "none": "external_baselines/results/s5_pairwise_replay/eval_replayed_alignment_none.json",
+          "se3": "external_baselines/results/s5_pairwise_replay/eval_replayed_alignment_se3.json",
+          "sim3": "external_baselines/results/s5_pairwise_replay/eval_replayed_alignment_sim3.json"
+        },
+        "num_poses": 0,
+        "trajectory_path": "external_baselines/results/s5_pairwise_replay/final_s5_replayed_dense_tum.txt"
+      }
+    }
+  },
+  "replay_vs_existing_dense": {
+    "compared": false,
+    "dense_export_consistent_with_pairwise_replay": null,
+    "dense_export_pipeline_mismatch_suspected": null,
+    "num_common_poses": 0,
+    "path_length_ratio_replay_over_existing": null,
+    "relative_rot_diff_mean_deg": null,
+    "relative_tdir_diff_mean_deg": null,
+    "relative_tmag_ratio_median": null,
+    "timestamp_alignment": "unavailable"
+  },
+  "s5_official_locked_metrics": {
+    "ate": 7.352288,
+    "drift": 1.327343,
+    "not_replaced_by_s5d6": true,
+    "path_ratio": 0.932379,
+    "unchanged": true
+  }
+}

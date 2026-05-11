@@ -1,0 +1,85 @@
+{
+  "experiment": "S5E2_real_adjacent_dense_candidate",
+  "attempted": true,
+  "classification": "S5E2_TRAINING_SMOKE_ONLY",
+  "checkpoint_dir": "checkpoints/S5E2_adjacent_dense_candidate",
+  "weights_path": "checkpoints/S5E2_adjacent_dense_candidate/s5e2_minimal_adjacent_pose_regressor.npz",
+  "model": {
+    "backbone": "minimal_image_statistics",
+    "head": "adjacent_dense_pose_head",
+    "candidate_type": "minimal adjacent pose regressor baseline"
+  },
+  "losses": {
+    "SO(3) geodesic": true,
+    "tdir": true,
+    "tmag log": true,
+    "path length consistency": true,
+    "short-window consistency": true,
+    "small_translation_mask": 0.001
+  },
+  "split_summary": {
+    "split_by": "scene_seq",
+    "train_ratio": 0.8,
+    "split_seed": 3407,
+    "train_sequence_keys": [
+      [
+        "scene01",
+        "seq01"
+      ],
+      [
+        "scene01",
+        "seq02"
+      ]
+    ],
+    "test_sequence_keys": [
+      [
+        "scene01",
+        "seq03"
+      ]
+    ],
+    "all_sequence_keys": [
+      [
+        "scene01",
+        "seq01"
+      ],
+      [
+        "scene01",
+        "seq02"
+      ],
+      [
+        "scene01",
+        "seq03"
+      ]
+    ]
+  },
+  "num_train_pairs": 707,
+  "num_val_pairs": 79,
+  "test_gt_used_for_training": false,
+  "no_gt_leakage": true,
+  "train_loss": {
+    "mse": 0.0008348617104115506,
+    "SO(3)_geodesic_proxy_deg": 0.11349599570122647,
+    "tdir_mean_deg": 60.09717746556046,
+    "tmag_log_mean": 1.309885490639413,
+    "path_length_consistency_proxy": 0.19356193216192152,
+    "short_window_consistency_proxy": 0.17911438581757802
+  },
+  "val_loss": {
+    "mse": 0.014185048734308417,
+    "SO(3)_geodesic_proxy_deg": 0.4974826568194875,
+    "tdir_mean_deg": 107.48615572494774,
+    "tmag_log_mean": 2.324205751982508,
+    "path_length_consistency_proxy": 5.888285782944534,
+    "short_window_consistency_proxy": 1.3032553452896443
+  },
+  "notes": [
+    "Closed-form ridge smoke training completed on scene01/seq01 and scene01/seq02 only.",
+    "scene01/seq03 GT was not used for training."
+  ],
+  "allowed_training_classifications": [
+    "S5E2_TRAINING_COMPLETE",
+    "S5E2_TRAINING_SMOKE_ONLY",
+    "S5E2_TRAINING_BLOCKED",
+    "S5E2_TRAINING_ERROR"
+  ]
+}

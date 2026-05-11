@@ -1,0 +1,45 @@
+{
+  "attempted": true,
+  "classification": "S5E3_TRAINING_SMOKE_ONLY",
+  "num_train_pairs": 707,
+  "num_val_pairs": 79,
+  "uses_scene01_seq03_for_training": false,
+  "losses": {
+    "so3_geodesic": true,
+    "tdir": true,
+    "tmag_log": true,
+    "path_length_consistency": true,
+    "short_window_consistency": true
+  },
+  "best_checkpoint": "checkpoints/S5E3_scale_calibrated_adjacent_dense_candidate/s5e3_scale_calibrated_heads.npz",
+  "train_metrics": {
+    "tdir_mean_deg": 16.447913915383186,
+    "tdir_abs_mean_deg": 14.80803887430758,
+    "tmag_median_ratio": 1.0155985274176973,
+    "tmag_p90_ratio": 2.2338528596573046,
+    "path_ratio": 0.8266711413037522,
+    "path_length_consistency": 0.1733288586962478,
+    "short_window_consistency": 0.12624701646648517
+  },
+  "val_metrics": {
+    "tdir_mean_deg": 102.39360077270062,
+    "tdir_abs_mean_deg": 28.184317677065856,
+    "tmag_median_ratio": 6.1890181012717305,
+    "tmag_p90_ratio": 27.64498100653308,
+    "path_ratio": 9.86506154146854,
+    "path_length_consistency": 8.86506154146854,
+    "short_window_consistency": 1.8314318957702609
+  },
+  "allowed_training_classifications": [
+    "S5E3_TRAINING_COMPLETE",
+    "S5E3_TRAINING_SMOKE_ONLY",
+    "S5E3_TRAINING_NO_IMPROVEMENT",
+    "S5E3_TRAINING_BLOCKED",
+    "S5E3_TRAINING_ERROR"
+  ],
+  "notes": [
+    "S5E3 inherits S5E2 rotation and trains separate train-split direction/log-magnitude heads.",
+    "scene01/seq03 GT is not used for training.",
+    "No restored dense artifact or ORB-SLAM3 trajectory is used as label."
+  ]
+}

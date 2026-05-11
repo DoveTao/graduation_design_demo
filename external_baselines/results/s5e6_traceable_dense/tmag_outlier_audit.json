@@ -1,0 +1,21 @@
+{
+  "experiment": "S5E6_robust_scale_guard_and_direction_metric_gate_candidate",
+  "top10_tmag_path_fraction": 0.6566711958597958,
+  "top20_tmag_path_fraction": 0.7207316749796695,
+  "top50_tmag_path_fraction": 0.7602983486767192,
+  "tmag_ratio_p90": 48.023883417026354,
+  "tmag_ratio_p95": 95.44378091660477,
+  "tmag_ratio_p99": 2338.4565043777293,
+  "tmag_ratio_max": 6869.16668913065,
+  "corr_tmag_gt_step": -0.06865734800555673,
+  "corr_tmag_signed_tdir": -0.10804135675993931,
+  "corr_tmag_tdir_abs": -0.12180872265214915,
+  "longest_run_over_p95": 13,
+  "long_run_path_fraction": 0.6817449643122911,
+  "small_motion_high_tmag_rate": 0.04194260485651214,
+  "outlier_dominated": true,
+  "long_run_dominated": true,
+  "small_motion_amplification": true,
+  "tmag_head_unbounded": true,
+  "recommended_guard": "train_split_p95_clamp_with_median_logmag_correction"
+}

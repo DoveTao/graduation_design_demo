@@ -1,0 +1,107 @@
+{
+  "allowed_final_classifications": [
+    "S5D13_TRACEABLE_DENSE_EXPORT_COMPLETE",
+    "S5D13_TRACEABLE_DENSE_UNAVAILABLE_SELECTED_ONLY",
+    "S5D13_DENSE_FILL_BUG_CONFIRMED",
+    "S5D13_PROVENANCE_UNAVAILABLE",
+    "S5D13_ERROR"
+  ],
+  "comparison_to_restored_dense": {
+    "compared": false,
+    "matches_restored_dense": false,
+    "notes": [
+      "No full traceable dense TUM was generated; selected-only provenance cannot reproduce restored dense trajectory."
+    ],
+    "path_length_ratio_traceable_over_restored": null
+  },
+  "coverage": {
+    "coverage_vs_453_edges": 0.2913907284768212,
+    "coverage_vs_454": 0.0,
+    "num_edges": 453,
+    "num_poses": 0
+  },
+  "diagnosis": {
+    "dense_fill_bug_confirmed": null,
+    "dense_fill_protocol_verified": false,
+    "most_likely_status": "selected_only",
+    "recommended_next_actions": [
+      "Do not use selected-only provenance as a 454-pose dense trajectory.",
+      "Recover or add diagnostic-only final-S5 adjacent dense inference if a traceable dense export is required.",
+      "Expose source_type per edge in any future dense materialization path.",
+      "Keep this diagnostic export separate from official S5 locked metrics."
+    ],
+    "selected_only_blocker": true,
+    "traceable_dense_available": false
+  },
+  "dominant_run_72_360": {
+    "available": false,
+    "gap_normalization_verified": null,
+    "near_constant_0p134m_steps_detected": null,
+    "trace_path": "external_baselines/results/s5_traceable_dense_s5d13/dominant_run_72_360_trace.json"
+  },
+  "experiment": "S5D13_traceable_dense_export_with_edge_provenance",
+  "external_eval": {
+    "attempted": false,
+    "none": {},
+    "se3": {},
+    "sim3": {}
+  },
+  "final_classification": "S5D13_TRACEABLE_DENSE_UNAVAILABLE_SELECTED_ONLY",
+  "inputs": {
+    "groundtruth": "external_baselines/dataset/scene01_seq03/groundtruth_tum.txt",
+    "restored_dense_tum": "external_baselines/results/s5_dense/scene01_seq03_s5_dense_est_tum.txt",
+    "s5d12_checkpoint": "checkpoints/S5D12_dense_fill_path_audit.json",
+    "selected_pairwise_jsonl": "external_baselines/results/s5_pairwise_replay_s5d7/final_s5_pairwise_vectors_scene01_seq03.jsonl",
+    "timestamps": "external_baselines/dataset/scene01_seq03/timestamps.txt"
+  },
+  "metrics_by_source_type": {
+    "selected_prediction": {
+      "num_edges": 132,
+      "path_length": 18.789319270944194,
+      "rot_mean": null,
+      "tdir_mean": 99.54956140857578,
+      "tmag_max": 7.2821664762474825,
+      "tmag_median": 0.9819414718338607,
+      "tmag_p90": 5.680931529985728
+    },
+    "unavailable": {
+      "num_edges": 0,
+      "path_length": 0.0,
+      "rot_mean": null,
+      "tdir_mean": null,
+      "tmag_max": null,
+      "tmag_median": null,
+      "tmag_p90": null
+    }
+  },
+  "outputs": {
+    "edge_metrics": "external_baselines/results/s5_traceable_dense_s5d13/edge_metrics.json",
+    "edge_provenance": "external_baselines/results/s5_traceable_dense_s5d13/edge_provenance.jsonl",
+    "tum": "external_baselines/results/s5_traceable_dense_s5d13/scene01_seq03_traceable_dense_tum.txt"
+  },
+  "provenance_summary": {
+    "num_composed_fill": 0,
+    "num_direct_adjacent_prediction": 0,
+    "num_interpolated_fill": 0,
+    "num_selected_prediction": 132,
+    "num_unavailable": 321
+  },
+  "s5_official_locked_metrics": {
+    "ate": 7.352288,
+    "drift": 1.327343,
+    "not_replaced_by_s5d13": true,
+    "path_ratio": 0.932379,
+    "unchanged": true
+  },
+  "traceable_export_source": {
+    "can_generate_453_adjacent_edges": false,
+    "notes": [
+      "Only S5D7 selected_k1 pairwise predictions are available in the provided final-S5 artifacts.",
+      "No GT pose or GT scale is used to generate predictions."
+    ],
+    "source_found": true,
+    "source_location": "external_baselines/results/s5_pairwise_replay_s5d7/final_s5_pairwise_vectors_scene01_seq03.jsonl",
+    "source_search_log": "logs/s5d13_traceable_export_source_search.log",
+    "source_type": "selected_only"
+  }
+}

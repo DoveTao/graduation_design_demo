@@ -1,0 +1,648 @@
+{
+  "experiment": "S5E8_translation_geometry_diagnostic_ablation",
+  "status": {
+    "experimental_candidate": true,
+    "official_s5_unchanged": true,
+    "not_official_replacement": true
+  },
+  "s5e1_blocker_recap": {},
+  "dataset": {
+    "adjacent_dataset_ready": null,
+    "split_respected": null,
+    "test_gt_used_for_training": false,
+    "num_train_pairs": null,
+    "num_val_pairs": null
+  },
+  "training": {
+    "attempted": true,
+    "classification": "S5E8_DIRECTION_ONLY_TRAINING_SMOKE",
+    "config": "configs/s5e8_translation_geometry_diagnostic_ablation.yaml",
+    "checkpoint_dir": "checkpoints/S5E8_translation_geometry_diagnostic_ablation_candidate",
+    "uses_scene01_seq03_for_training": false,
+    "direction_only_checkpoint": "checkpoints/S5E8_translation_geometry_diagnostic_ablation_candidate/s5e8_direction_only_best.pt",
+    "notes": [
+      "S5E8 direction-only candidate 不学习 raw tmag，只优化 direction。",
+      "此实验用于检查 scale 学习是否干扰 direction 学习。"
+    ]
+  },
+  "adjacent_dense_export": {
+    "available": true,
+    "coverage": 1.0,
+    "all_edges_traceable": true,
+    "num_poses": 454,
+    "num_edges": 453,
+    "direct_adjacent_prediction_edges": 453,
+    "trajectory_path": "external_baselines/results/s5e8_traceable_dense/scene01_seq03_s5e8_traceable_dense_tum.txt",
+    "raw_trajectory_path": "external_baselines/results/s5e8_traceable_dense/scene01_seq03_s5e8_traceable_dense_tum_raw.txt",
+    "edge_provenance": "external_baselines/results/s5e8_traceable_dense/edge_provenance.jsonl"
+  },
+  "component_metrics": {
+    "rot_mean_deg": 0.9134395040767528,
+    "rot_median_deg": 0.797895569319923,
+    "rot_p90_deg": 1.3218302317546538,
+    "tdir_mean_deg": 51.347036463311674,
+    "tdir_median_deg": 42.45751808170871,
+    "tdir_p90_deg": 99.64649566050451,
+    "tdir_abs_mean_deg": 46.17838838504556,
+    "tdir_abs_median_deg": 42.426976057741335,
+    "tdir_abs_p90_deg": 78.8113366954383,
+    "tdir_mean_cosine": 0.5597696238250928,
+    "anti_parallel_rate": 0.1368653421633554,
+    "severe_wrong_sign_rate": 0.02869757174392936,
+    "direction_abs_good_but_signed_bad_rate": 0.004415011037527594,
+    "tmag_median_ratio": 0.5931792320636043,
+    "tmag_mean_ratio": 0.8652433243231499,
+    "tmag_p90_ratio": 2.029568628568859,
+    "tmag_p95_ratio": 2.45133085173767,
+    "tmag_p99_ratio": 3.5826460072969617,
+    "tmag_max_ratio": 10.483265219201309,
+    "path_ratio": 0.0775154844936706,
+    "top20_tmag_path_fraction": 0.0444721105610813,
+    "long_run_path_fraction": 0.008894422065708433
+  },
+  "external_eval": {
+    "none": {
+      "ate": 9.631744851949584,
+      "drift": 0.12921960045643183,
+      "path_ratio": 0.07751548486632133
+    },
+    "se3": {
+      "ate": 4.035864010686822,
+      "drift": 0.1298422948526273,
+      "path_ratio": 0.07751548486632133
+    },
+    "sim3": {
+      "ate": 3.953719160901748,
+      "drift": 0.1306292800617903,
+      "path_ratio": 0.07751548486632133
+    }
+  },
+  "comparison_to_orbslam3": {
+    "coverage": "S5E8 454/454 vs ORB-SLAM3 273/454",
+    "edge_level_gap": "unavailable",
+    "se3_ate_gap": 3.7273195999943405,
+    "sim3_ate_gap": 3.7294269949151237,
+    "path_ratio": "S5E8=0.0775154844936706; ORB-SLAM3=0.2998258665660257"
+  },
+  "s5_official_locked_metrics": {
+    "ate": 7.352288,
+    "drift": 1.327343,
+    "path_ratio": 0.932379,
+    "unchanged": true,
+    "not_replaced_by_s5e8": true
+  },
+  "validation": {
+    "verify_final_candidate": "PASS",
+    "project_health_check": "PASS",
+    "s6_eval_only": "PASS",
+    "unittest": "PASS"
+  },
+  "allowed_final_classifications": [
+    "S5E8_DIRECTION_SUPERVISION_LIMITED",
+    "S5E8_SCALE_SUPERVISION_LIMITED",
+    "S5E8_INPUT_GEOMETRY_INSUFFICIENT",
+    "S5E8_SMALL_MOTION_DOMINATED",
+    "S5E8_DIRECTION_ONLY_IMPROVED",
+    "S5E8_RAW_GEOMETRY_IMPROVED",
+    "S5E8_GUARD_DEPENDENT",
+    "S5E8_NO_IMPROVEMENT",
+    "S5E8_REGRESSION"
+  ],
+  "final_classification": "S5E8_SMALL_MOTION_DOMINATED",
+  "direction_only_candidate": {
+    "attempted": true,
+    "classification": "S5E8_DIRECTION_ONLY_TRAINING_SMOKE",
+    "direction_only_checkpoint": "checkpoints/S5E8_translation_geometry_diagnostic_ablation_candidate/s5e8_direction_only_best.pt",
+    "num_train_pairs": 707,
+    "num_val_pairs": 79,
+    "uses_scene01_seq03_for_training": false,
+    "history": [
+      {
+        "epoch": 0,
+        "val_metrics": {
+          "signed_tdir_mean": 100.57182101961932,
+          "signed_tdir_median": 129.18878173828125,
+          "signed_tdir_p90": 139.8962829589844,
+          "tdir_abs_mean": 45.7971167986906,
+          "tdir_abs_median": 46.28784942626953,
+          "tdir_abs_p90": 54.407264709472656,
+          "tdir_mean_cosine": -0.1735816435817047,
+          "anti_parallel_rate": 0.6329113924050633,
+          "severe_wrong_sign_rate": 0.620253164556962,
+          "direction_abs_good_but_signed_bad_rate": 0.20253164556962025
+        }
+      },
+      {
+        "epoch": 1,
+        "val_metrics": {
+          "signed_tdir_mean": 90.7919871897637,
+          "signed_tdir_median": 111.37293243408203,
+          "signed_tdir_p90": 141.51526794433593,
+          "tdir_abs_mean": 47.41329383850098,
+          "tdir_abs_median": 50.006004333496094,
+          "tdir_abs_p90": 69.16688537597656,
+          "tdir_mean_cosine": -0.050122015893320424,
+          "anti_parallel_rate": 0.6329113924050633,
+          "severe_wrong_sign_rate": 0.35443037974683544,
+          "direction_abs_good_but_signed_bad_rate": 0.12658227848101267
+        }
+      },
+      {
+        "epoch": 2,
+        "val_metrics": {
+          "signed_tdir_mean": 101.07754080808616,
+          "signed_tdir_median": 136.94215393066406,
+          "signed_tdir_p90": 153.95064086914064,
+          "tdir_abs_mean": 32.34453711932218,
+          "tdir_abs_median": 32.280582427978516,
+          "tdir_abs_p90": 45.91183166503907,
+          "tdir_mean_cosine": -0.18413427430774715,
+          "anti_parallel_rate": 0.620253164556962,
+          "severe_wrong_sign_rate": 0.6075949367088608,
+          "direction_abs_good_but_signed_bad_rate": 0.5443037974683544
+        }
+      }
+    ],
+    "split_summary": {
+      "split_by": "scene_seq",
+      "train_ratio": 0.8,
+      "split_seed": 3407,
+      "train_sequence_keys": [
+        [
+          "scene01",
+          "seq01"
+        ],
+        [
+          "scene01",
+          "seq02"
+        ]
+      ],
+      "test_sequence_keys": [
+        [
+          "scene01",
+          "seq03"
+        ]
+      ],
+      "all_sequence_keys": [
+        [
+          "scene01",
+          "seq01"
+        ],
+        [
+          "scene01",
+          "seq02"
+        ],
+        [
+          "scene01",
+          "seq03"
+        ]
+      ]
+    },
+    "notes": [
+      "S5E8 direction-only candidate 不学习 raw tmag，只优化 direction。",
+      "此实验用于检查 scale 学习是否干扰 direction 学习。"
+    ],
+    "validation_snapshot": {
+      "verify_final_candidate": "PASS",
+      "project_health_check": "PASS",
+      "s6_eval_only": "PASS",
+      "unittest": "PASS"
+    }
+  },
+  "prior_only_baselines": {
+    "train_median_tmag_previous_direction": {
+      "signed_tdir_mean": 51.47429479273258,
+      "tdir_abs_mean": 46.07968707914155,
+      "tdir_abs_p90": 78.37357550448448,
+      "anti_parallel_rate": 0.1368653421633554,
+      "tmag_median": 1.586387398396897,
+      "tmag_p95": 6.555793475763014,
+      "path_ratio": 0.20881790030792516
+    },
+    "motion_bucket_tmag_prior": {
+      "signed_tdir_mean": 51.47429479273258,
+      "tdir_abs_mean": 46.07968707914155,
+      "tdir_abs_p90": 78.37357550448448,
+      "anti_parallel_rate": 0.1368653421633554,
+      "tmag_median": 1.586387398396897,
+      "tmag_p95": 6.555793475763014,
+      "path_ratio": 0.20881790030792516
+    },
+    "constant_conservative_tmag_prior": {
+      "signed_tdir_mean": 51.47429479273257,
+      "tdir_abs_mean": 46.07968707914153,
+      "tdir_abs_p90": 78.37357550448448,
+      "anti_parallel_rate": 0.1368653421633554,
+      "tmag_median": 0.2668465418549105,
+      "tmag_p95": 1.10275133292799,
+      "path_ratio": 0.035125300812955756
+    },
+    "numeric_prior_only_model": {
+      "signed_tdir_mean": 53.50213792933246,
+      "tdir_abs_mean": 48.73135137240244,
+      "tdir_abs_p90": 79.28880512600801,
+      "anti_parallel_rate": 0.1434878587196468,
+      "tmag_median": 1.5863874340382071,
+      "tmag_p95": 6.555793623051797,
+      "path_ratio": 0.20881790424236352
+    }
+  },
+  "numeric_only_control": {
+    "signed_tdir_mean": 53.50213792933246,
+    "tdir_abs_mean": 48.73135137240244,
+    "tdir_abs_p90": 79.28880512600801,
+    "anti_parallel_rate": 0.1434878587196468,
+    "tmag_median": 1.5863874340382071,
+    "tmag_p95": 6.555793623051797,
+    "path_ratio": 0.20881790424236352
+  },
+  "translation_supervision_quality": {
+    "experiment": "S5E8_translation_geometry_diagnostic_ablation",
+    "gt_tmag_median": 0.011908447102386463,
+    "gt_tmag_p90": 0.2523947547524407,
+    "gt_tmag_p95": 0.3691697395709953,
+    "gt_tmag_p99": 0.526654362281555,
+    "gt_tmag_max": 0.7818686910217085,
+    "small_motion_count": 197,
+    "small_motion_fraction": 0.2506361323155216,
+    "gt_direction_stability_by_bucket": {
+      "small_motion": 23.770468100458597,
+      "normal_motion": 9.267920702671626,
+      "large_motion": 5.830404360611699
+    },
+    "small_motion_tdir_label_reliability_proxy": 23.770468100458597,
+    "repeated_or_near_static_edge_count": 0,
+    "low_parallax_or_low_displacement_edge_count": 79,
+    "label_outlier_candidates": [
+      {
+        "edge_index": 7,
+        "scene": "scene01",
+        "seq": "seq01",
+        "timestamp_i": 1745407063.195752,
+        "timestamp_j": 1745407063.245809,
+        "gt_magnitude": 0.7818686910217085,
+        "bucket": "large_motion"
+      },
+      {
+        "edge_index": 337,
+        "scene": "scene01",
+        "seq": "seq02",
+        "timestamp_i": 1745407312.075018,
+        "timestamp_j": 1745407312.125864,
+        "gt_magnitude": 0.6093105447963293,
+        "bucket": "large_motion"
+      },
+      {
+        "edge_index": 14,
+        "scene": "scene01",
+        "seq": "seq01",
+        "timestamp_i": 1745407063.549247,
+        "timestamp_j": 1745407063.600308,
+        "gt_magnitude": 0.5861008616270751,
+        "bucket": "large_motion"
+      },
+      {
+        "edge_index": 16,
+        "scene": "scene01",
+        "seq": "seq01",
+        "timestamp_i": 1745407063.651762,
+        "timestamp_j": 1745407063.70178,
+        "gt_magnitude": 0.5602347632912476,
+        "bucket": "large_motion"
+      },
+      {
+        "edge_index": 12,
+        "scene": "scene01",
+        "seq": "seq01",
+        "timestamp_i": 1745407063.448187,
+        "timestamp_j": 1745407063.49876,
+        "gt_magnitude": 0.5528725531259441,
+        "bucket": "large_motion"
+      },
+      {
+        "edge_index": 335,
+        "scene": "scene01",
+        "seq": "seq02",
+        "timestamp_i": 1745407311.974144,
+        "timestamp_j": 1745407312.024865,
+        "gt_magnitude": 0.5464205980744138,
+        "bucket": "large_motion"
+      },
+      {
+        "edge_index": 5,
+        "scene": "scene01",
+        "seq": "seq01",
+        "timestamp_i": 1745407063.09305,
+        "timestamp_j": 1745407063.143924,
+        "gt_magnitude": 0.5447546970885153,
+        "bucket": "large_motion"
+      },
+      {
+        "edge_index": 20,
+        "scene": "scene01",
+        "seq": "seq01",
+        "timestamp_i": 1745407063.85258,
+        "timestamp_j": 1745407063.904356,
+        "gt_magnitude": 0.5286940703280115,
+        "bucket": "large_motion"
+      },
+      {
+        "edge_index": 328,
+        "scene": "scene01",
+        "seq": "seq02",
+        "timestamp_i": 1745407311.62161,
+        "timestamp_j": 1745407311.671798,
+        "gt_magnitude": 0.5262944138027686,
+        "bucket": "large_motion"
+      },
+      {
+        "edge_index": 339,
+        "scene": "scene01",
+        "seq": "seq02",
+        "timestamp_i": 1745407312.175915,
+        "timestamp_j": 1745407312.226073,
+        "gt_magnitude": 0.5239179897655741,
+        "bucket": "large_motion"
+      },
+      {
+        "edge_index": 15,
+        "scene": "scene01",
+        "seq": "seq01",
+        "timestamp_i": 1745407063.600308,
+        "timestamp_j": 1745407063.651762,
+        "gt_magnitude": 0.5226934570089813,
+        "bucket": "large_motion"
+      },
+      {
+        "edge_index": 331,
+        "scene": "scene01",
+        "seq": "seq02",
+        "timestamp_i": 1745407311.772979,
+        "timestamp_j": 1745407311.823179,
+        "gt_magnitude": 0.5215655759346084,
+        "bucket": "large_motion"
+      },
+      {
+        "edge_index": 344,
+        "scene": "scene01",
+        "seq": "seq02",
+        "timestamp_i": 1745407312.427207,
+        "timestamp_j": 1745407312.477667,
+        "gt_magnitude": 0.5108854568296106,
+        "bucket": "large_motion"
+      },
+      {
+        "edge_index": 208,
+        "scene": "scene01",
+        "seq": "seq01",
+        "timestamp_i": 1745407073.351587,
+        "timestamp_j": 1745407073.402596,
+        "gt_magnitude": 0.5015245158514183,
+        "bucket": "large_motion"
+      },
+      {
+        "edge_index": 10,
+        "scene": "scene01",
+        "seq": "seq01",
+        "timestamp_i": 1745407063.346555,
+        "timestamp_j": 1745407063.397378,
+        "gt_magnitude": 0.4934998784194381,
+        "bucket": "large_motion"
+      },
+      {
+        "edge_index": 329,
+        "scene": "scene01",
+        "seq": "seq02",
+        "timestamp_i": 1745407311.671798,
+        "timestamp_j": 1745407311.722259,
+        "gt_magnitude": 0.4930568729872854,
+        "bucket": "large_motion"
+      },
+      {
+        "edge_index": 333,
+        "scene": "scene01",
+        "seq": "seq02",
+        "timestamp_i": 1745407311.873396,
+        "timestamp_j": 1745407311.923502,
+        "gt_magnitude": 0.47153855621783464,
+        "bucket": "large_motion"
+      },
+      {
+        "edge_index": 342,
+        "scene": "scene01",
+        "seq": "seq02",
+        "timestamp_i": 1745407312.326339,
+        "timestamp_j": 1745407312.376969,
+        "gt_magnitude": 0.45423591887916553,
+        "bucket": "large_motion"
+      },
+      {
+        "edge_index": 8,
+        "scene": "scene01",
+        "seq": "seq01",
+        "timestamp_i": 1745407063.245809,
+        "timestamp_j": 1745407063.295809,
+        "gt_magnitude": 0.44620781033056794,
+        "bucket": "large_motion"
+      },
+      {
+        "edge_index": 4,
+        "scene": "scene01",
+        "seq": "seq01",
+        "timestamp_i": 1745407063.0427,
+        "timestamp_j": 1745407063.09305,
+        "gt_magnitude": 0.4419987443421078,
+        "bucket": "large_motion"
+      }
+    ],
+    "train_bucket_stats": {
+      "small_threshold": 0.004816819815947844,
+      "large_threshold": 0.03859069296958209,
+      "global": {
+        "count": 786,
+        "median": 0.011908447102386463,
+        "p90": 0.2523947547524407,
+        "p95": 0.3691697395709953,
+        "max": 0.7818686910217085,
+        "clip_lo": 0.0020031222709819612,
+        "clip_hi": 0.3691697395709953
+      },
+      "small_motion": {
+        "count": 197,
+        "median": 0.0029765752132260696,
+        "p90": 0.004115805934363924,
+        "p95": 0.004452786086953767,
+        "max": 0.004801041553661831,
+        "clip_lo": 0.0013608692870236614,
+        "clip_hi": 0.004452786086953767
+      },
+      "normal_motion": {
+        "count": 392,
+        "median": 0.011908447102386463,
+        "p90": 0.02716551357981745,
+        "p95": 0.03155805742315243,
+        "max": 0.03816320217172562,
+        "clip_lo": 0.005123810287804876,
+        "clip_hi": 0.03155805742315243
+      },
+      "large_motion": {
+        "count": 197,
+        "median": 0.2105054393596516,
+        "p90": 0.4370886400382462,
+        "p95": 0.5229383635602999,
+        "max": 0.7818686910217085,
+        "clip_lo": 0.047578320811733917,
+        "clip_hi": 0.5229383635602999
+      }
+    },
+    "summary": "S5E8 先检查监督本身是否已经对小位移和平移方向学习构成不利条件。"
+  },
+  "motion_bucket_audit": {
+    "small_motion_count": 114,
+    "small_motion_fraction": 0.25165562913907286,
+    "small_motion_tdir_mean": 56.51611217934221,
+    "small_motion_tdir_p90": 88.31605027766128,
+    "small_motion_tmag_p95": 3.4778048816523532,
+    "small_motion_path_fraction": 0.25349102910522947,
+    "small_motion_amplification": true,
+    "small_motion_error_contribution": 1.1006694070791003
+  },
+  "raw_prediction_metrics": {
+    "rot_mean_deg": 0.9134395040767528,
+    "rot_median_deg": 0.797895569319923,
+    "rot_p90_deg": 1.3218302317546538,
+    "tdir_mean_deg": 51.34703679338266,
+    "tdir_median_deg": 42.45751952615847,
+    "tdir_p90_deg": 99.64649579949521,
+    "tdir_abs_mean_deg": 46.17838867792688,
+    "tdir_abs_median_deg": 42.42698078761184,
+    "tdir_abs_p90_deg": 78.8113384075635,
+    "tdir_mean_cosine": 0.5597696224008921,
+    "anti_parallel_rate": 0.1368653421633554,
+    "severe_wrong_sign_rate": 0.02869757174392936,
+    "direction_abs_good_but_signed_bad_rate": 0.004415011037527594,
+    "tmag_median_ratio": 12.109093084282897,
+    "tmag_mean_ratio": 70.14650621158935,
+    "tmag_p90_ratio": 48.50275033925438,
+    "tmag_p95_ratio": 95.93377590609806,
+    "tmag_p99_ratio": 2271.555450435781,
+    "tmag_max_ratio": 6641.969199824539,
+    "path_ratio": 6.465477764096885,
+    "top20_tmag_path_fraction": 0.7137348968082938,
+    "long_run_path_fraction": 0.6745090480293836
+  },
+  "guarded_prediction_metrics": {
+    "rot_mean_deg": 0.9134395040767528,
+    "rot_median_deg": 0.797895569319923,
+    "rot_p90_deg": 1.3218302317546538,
+    "tdir_mean_deg": 51.347036463311674,
+    "tdir_median_deg": 42.45751808170871,
+    "tdir_p90_deg": 99.64649566050451,
+    "tdir_abs_mean_deg": 46.17838838504556,
+    "tdir_abs_median_deg": 42.426976057741335,
+    "tdir_abs_p90_deg": 78.8113366954383,
+    "tdir_mean_cosine": 0.5597696238250928,
+    "anti_parallel_rate": 0.1368653421633554,
+    "severe_wrong_sign_rate": 0.02869757174392936,
+    "direction_abs_good_but_signed_bad_rate": 0.004415011037527594,
+    "tmag_median_ratio": 0.5931792320636043,
+    "tmag_mean_ratio": 0.8652433243231499,
+    "tmag_p90_ratio": 2.029568628568859,
+    "tmag_p95_ratio": 2.45133085173767,
+    "tmag_p99_ratio": 3.5826460072969617,
+    "tmag_max_ratio": 10.483265219201309,
+    "path_ratio": 0.0775154844936706,
+    "top20_tmag_path_fraction": 0.0444721105610813,
+    "long_run_path_fraction": 0.008894422065708433
+  },
+  "raw_vs_guarded_gap": {
+    "tdir_gap": 3.3007098210191543e-07,
+    "tdir_abs_gap": 2.928813245262063e-07,
+    "tmag_p95_gap": 93.4824450543604,
+    "tmag_max_gap": 6631.485934605337,
+    "path_ratio_gap": 6.387962279603214,
+    "sim3_ATE_gap": 0.14527006023797595
+  },
+  "raw_external_eval": {
+    "none": {
+      "ate": 108.64664577986633,
+      "drift": 2.0362055067426144,
+      "path_ratio": 6.465477731523984
+    },
+    "se3": {
+      "ate": 62.76277372328293,
+      "drift": 2.03780404820422,
+      "path_ratio": 6.465477731523984
+    },
+    "sim3": {
+      "ate": 4.098989221139724,
+      "drift": 0.13161456013036285,
+      "path_ratio": 6.465477731523984
+    }
+  },
+  "oracle_ablation": {
+    "oracle_direction": {
+      "trajectory": "external_baselines/results/s5e8_traceable_dense/scene01_seq03_s5e8_oracle_direction_tum.txt",
+      "none": {
+        "ate": 108.45863609326165,
+        "drift": 2.0356923033687497,
+        "path_ratio": 6.465477921804081
+      },
+      "se3": {
+        "ate": 63.83650015537507,
+        "drift": 2.0370425169060535,
+        "path_ratio": 6.465477921804081
+      },
+      "sim3": {
+        "ate": 4.104738862966863,
+        "drift": 0.1312447808458153,
+        "path_ratio": 6.465477921804081
+      }
+    },
+    "oracle_scale": {
+      "trajectory": "external_baselines/results/s5e8_traceable_dense/scene01_seq03_s5e8_oracle_scale_tum.txt",
+      "none": {
+        "ate": 10.98012342166947,
+        "drift": 0.15281473270219187,
+        "path_ratio": 1.0000000004277492
+      },
+      "se3": {
+        "ate": 3.7690350174722007,
+        "drift": 0.19356524809989686,
+        "path_ratio": 1.0000000004277492
+      },
+      "sim3": {
+        "ate": 3.6563351408091713,
+        "drift": 0.1652800637993812,
+        "path_ratio": 1.0000000004277492
+      }
+    }
+  },
+  "comparison_summary": {
+    "raw_tdir_abs_mean_improved_vs_s5e7": true,
+    "raw_tdir_abs_p90_improved_vs_s5e7": true,
+    "raw_anti_parallel_improved_vs_s5e7": true,
+    "raw_tmag_p95_improved_vs_s5e7": false,
+    "raw_path_ratio_improved_vs_s5e7": true,
+    "guard_dependency": true
+  },
+  "bucketed_evaluation": {
+    "small_motion": {
+      "count": 453,
+      "fraction": 1.0,
+      "signed_tdir_mean": 51.347036463311674,
+      "tdir_abs_mean": 46.17838838504556,
+      "tdir_abs_p90": 78.8113366954383,
+      "anti_parallel_rate": 0.1368653421633554,
+      "tmag_median": 0.5931792320636043,
+      "tmag_p95": 2.45133085173767,
+      "path_fraction": 1.0
+    },
+    "normal_motion": {},
+    "large_motion": {}
+  },
+  "blockers": [
+    "guarded 指标明显优于 raw 指标，仍然存在 guard dependency。",
+    "small-motion amplification 仍然存在。"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "prior": {
+    "median": 0.011908447102386463,
+    "p90": 0.2523947547524407,
+    "p95": 0.3691697395709953,
+    "max": 0.7818686910217085,
+    "alpha": 0.9497516241198531,
+    "clip_hi": 0.3691697395709953,
+    "clip_lo": 0.0020031222709819612
+  },
+  "direction_source": "s5e4_signed_direction_prior",
+  "magnitude_source": "s5e5_temporal_visual_raw_logmag"
+}

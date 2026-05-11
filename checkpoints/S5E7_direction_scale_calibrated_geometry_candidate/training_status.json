@@ -1,0 +1,151 @@
+{
+  "attempted": true,
+  "classification": "S5E7_TRAINING_SMOKE_ONLY",
+  "num_train_pairs": 707,
+  "num_val_pairs": 79,
+  "uses_scene01_seq03_for_training": false,
+  "model_type": "direction_scale_calibrated_geometry",
+  "architecture_summary": "S5E7 使用 ordered image pair CNN 与 numeric prior，分别输出 pred_dir_unit 与 bounded log-scale residual。",
+  "train_magnitude_prior": {
+    "count": 786,
+    "median": 0.011908447102386463,
+    "p90": 0.2523947547524407,
+    "p95": 0.3691697395709953,
+    "max": 0.7818686910217085,
+    "clip_lo": 0.0020031222709819612,
+    "clip_hi": 0.3691697395709953
+  },
+  "bucket_priors": {
+    "small_motion": {
+      "count": 197,
+      "median": 0.0029765752132260696,
+      "p90": 0.004115805934363924,
+      "p95": 0.004452786086953767,
+      "max": 0.004801041553661831,
+      "clip_lo": 0.0013608692870236614,
+      "clip_hi": 0.004452786086953767
+    },
+    "normal_motion": {
+      "count": 392,
+      "median": 0.011908447102386463,
+      "p90": 0.02716551357981745,
+      "p95": 0.03155805742315243,
+      "max": 0.03816320217172562,
+      "clip_lo": 0.005123810287804876,
+      "clip_hi": 0.03155805742315243
+    },
+    "large_motion": {
+      "count": 197,
+      "median": 0.2105054393596516,
+      "p90": 0.4370886400382462,
+      "p95": 0.5229383635602999,
+      "max": 0.7818686910217085,
+      "clip_lo": 0.047578320811733917,
+      "clip_hi": 0.5229383635602999
+    }
+  },
+  "losses": {
+    "so3_geodesic": true,
+    "signed_tdir": true,
+    "tdir_abs_aux": true,
+    "anti_parallel_penalty": true,
+    "scale_residual_smooth_l1": true,
+    "robust_tmag_log": true,
+    "tmag_p95_penalty": true,
+    "path_length_consistency": true,
+    "short_window_direction_consistency": true,
+    "smoothness": true
+  },
+  "best_checkpoint": "checkpoints/S5E7_direction_scale_calibrated_geometry_candidate/s5e7_direction_scale_best.pt",
+  "best_epoch": 2,
+  "history": [
+    {
+      "epoch": 0,
+      "val_metrics": {
+        "signed_tdir_mean_deg": 99.39848317979258,
+        "signed_tdir_median_deg": 121.4039077758789,
+        "signed_tdir_p90_deg": 131.70360107421877,
+        "tdir_abs_mean_deg": 53.94047449812104,
+        "tdir_abs_median_deg": 54.776737213134766,
+        "tdir_abs_p90_deg": 62.53248748779297,
+        "anti_parallel_rate": 0.6329113924050633,
+        "severe_wrong_sign_rate": 0.5443037974683544,
+        "tmag_median_ratio": 6.0974626541137695,
+        "tmag_p95_ratio": 41.61612663269041,
+        "path_ratio": 9.670385259044156
+      }
+    },
+    {
+      "epoch": 1,
+      "val_metrics": {
+        "signed_tdir_mean_deg": 97.60712065877793,
+        "signed_tdir_median_deg": 119.58399200439453,
+        "signed_tdir_p90_deg": 134.79603271484376,
+        "tdir_abs_mean_deg": 51.75927176656602,
+        "tdir_abs_median_deg": 53.65840530395508,
+        "tdir_abs_p90_deg": 63.496534729003905,
+        "anti_parallel_rate": 0.6329113924050633,
+        "severe_wrong_sign_rate": 0.4936708860759494,
+        "tmag_median_ratio": 6.264121055603027,
+        "tmag_p95_ratio": 42.78110885620115,
+        "path_ratio": 9.935612655726418
+      }
+    },
+    {
+      "epoch": 2,
+      "val_metrics": {
+        "signed_tdir_mean_deg": 91.58224698561656,
+        "signed_tdir_median_deg": 117.24668884277344,
+        "signed_tdir_p90_deg": 139.18269958496094,
+        "tdir_abs_mean_deg": 45.035666803770425,
+        "tdir_abs_median_deg": 49.884254455566406,
+        "tdir_abs_p90_deg": 64.27092742919922,
+        "anti_parallel_rate": 0.620253164556962,
+        "severe_wrong_sign_rate": 0.4810126582278481,
+        "tmag_median_ratio": 6.614313125610352,
+        "tmag_p95_ratio": 41.867002487182596,
+        "path_ratio": 10.24372810147645
+      }
+    }
+  ],
+  "notes": [
+    "S5E7 以方向学习为主目标，尺度只学习 bounded log-scale residual。",
+    "guard 只作为 fallback，不应被解释为真实几何改善。",
+    "scene01/seq03 GT 未用于训练。"
+  ],
+  "split_summary": {
+    "split_by": "scene_seq",
+    "train_ratio": 0.8,
+    "split_seed": 3407,
+    "train_sequence_keys": [
+      [
+        "scene01",
+        "seq01"
+      ],
+      [
+        "scene01",
+        "seq02"
+      ]
+    ],
+    "test_sequence_keys": [
+      [
+        "scene01",
+        "seq03"
+      ]
+    ],
+    "all_sequence_keys": [
+      [
+        "scene01",
+        "seq01"
+      ],
+      [
+        "scene01",
+        "seq02"
+      ],
+      [
+        "scene01",
+        "seq03"
+      ]
+    ]
+  }
+}

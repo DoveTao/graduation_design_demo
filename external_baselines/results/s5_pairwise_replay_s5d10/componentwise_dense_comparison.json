@@ -1,0 +1,15 @@
+{
+  "best_variant": "declared",
+  "declared": {
+    "num_components_evaluated": 19,
+    "relative_rot_diff_mean_deg": 1.7989036726528747,
+    "relative_tdir_diff_mean_deg": 104.45627113717318,
+    "relative_tmag_ratio_median": 0.7677981613872882
+  },
+  "inverse": {
+    "num_components_evaluated": 19,
+    "relative_rot_diff_mean_deg": 41.49708918510672,
+    "relative_tdir_diff_mean_deg": 75.79944390669957,
+    "relative_tmag_ratio_median": 0.7677947715549021
+  }
+}
