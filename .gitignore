@@ -119,3 +119,9 @@ external_baselines/results/**/*_tum_*.txt
 external_baselines/results/**/*_tum_raw.txt
 external_baselines/results/**/*_tum_*_raw.txt
 external_baselines/results/**/*_tum_*_only.txt
+
+# ---- Raw pairwise replay exports kept local for reproduction ----
+external_baselines/results/s5_pairwise_replay*/final_s5_pairwise_vectors_scene01_seq03.jsonl
+external_baselines/results/s5_pairwise_replay*/final_s5_pairwise_vectors_scene01_seq03.npz
+external_baselines/results/s5_pairwise_replay_s5d10/componentwise_replay_declared/
+external_baselines/results/s5_pairwise_replay_s5d10/componentwise_replay_inverse/
