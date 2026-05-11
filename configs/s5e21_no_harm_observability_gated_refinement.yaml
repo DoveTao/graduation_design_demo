@@ -1,0 +1,71 @@
+model:
+  name: S5E21_no_harm_observability_gated_refinement
+  base_candidate: S5E15_scale_deunderfit_antiparallel_candidate
+  preserve_spherical_token_backbone: true
+  use_coarse_to_fine: true
+  use_no_harm_gate: true
+  use_observability_gate: true
+  use_external_router: false
+  use_direction_residual: true
+  use_scale_residual: false
+  protect_s5e15_base_direction: true
+  hidden_dim: 96
+
+no_harm_gate:
+  enabled: true
+  gate_source: train_split_observability
+  forbid_eval_gt_gate_tuning: true
+  low_signal_gate_value: 0.0
+  max_gate_value: 1.0
+  require_gate_provenance: true
+  no_harm_required: true
+
+delta_tdir:
+  enabled: true
+  max_alpha: 0.05
+  target_delta_norm_mean: 0.05
+  hard_clip_norm: 0.10
+  l2_regularization: strong
+  protect_s5e15_base_direction: true
+  low_signal_delta_zero: true
+
+gate_thresholds:
+  high_confidence_quantile: 0.75
+  low_signal_quantile: 0.35
+  fallback_high_confidence_threshold: 0.70
+  fallback_low_signal_threshold: 0.45
+
+losses:
+  signed_tdir_high_confidence_only: true
+  anti_parallel_high_confidence_only: true
+  tdir_abs_aux: true
+  no_harm_margin_loss: true
+  delta_tdir_l2_regularization: true
+  path_ratio_preservation: true
+  tmag_preservation: true
+  w_signed_tdir: 1.0
+  w_anti_parallel: 0.4
+  w_tdir_abs_aux: 0.15
+  w_no_harm_margin: 0.8
+  w_delta_tdir_l2_regularization: 2.0
+  w_path_ratio_preservation: 0.3
+  w_tmag_preservation: 0.35
+
+training:
+  real_training_required: true
+  smoke_policy_allowed: false
+  train_scenes: ["scene01/seq01", "scene01/seq02"]
+  eval_scene: "scene01/seq03"
+  uses_eval_gt_for_training: false
+  uses_eval_gt_for_gate: false
+  uses_orbslam3_teacher: false
+  save_learned_weights: true
+  batch_size: 32
+  max_steps: 120
+  lr: 0.0008
+  weight_decay: 0.00001
+  seed: 3407
+
+evaluation:
+  compare_to: ["S5E15", "S5E20", "ORB-SLAM3"]
+  required_metrics: [signed_tdir, anti_parallel_rate, tmag_median_ratio, path_ratio, sim3_ate, high_confidence_subset_tdir, low_signal_subset_tdir, modified_edge_count, worsened_edge_count, improved_edge_count, no_harm_pass_rate]
