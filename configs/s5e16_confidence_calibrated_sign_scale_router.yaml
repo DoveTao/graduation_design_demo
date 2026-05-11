@@ -1,0 +1,29 @@
+experiment: S5E16_confidence_calibrated_sign_scale_router
+report_language: zh
+scene: scene01
+eval_seq: seq03
+timestamps: external_baselines/dataset/scene01_seq03/timestamps.txt
+groundtruth: external_baselines/dataset/scene01_seq03/groundtruth_tum.txt
+s5e12_feature_dir: external_baselines/results/s5e12_feature_gate
+s5e15_dir: external_baselines/results/s5e15_traceable_dense
+output_dir: external_baselines/results/s5e16_traceable_dense
+candidate_checkpoint_json: checkpoints/S5E16_confidence_calibrated_sign_scale_router.json
+training_status_json: checkpoints/S5E16_confidence_calibrated_sign_scale_router/training_status.json
+report_md: reports/s5e16_confidence_calibrated_sign_scale_router_report.md
+comparison_md: reports/s5e16_s5e15_s5e14_s5e13_s5e9_orbslam3_comparison.md
+
+router:
+  router_type: rule_based
+  high_confidence_min: 0.75
+  low_confidence_max: 0.45
+  anti_parallel_risk_min: 0.60
+  train_prior_scale_base: 2.8
+  conservative_scale_base: 2.2
+  scale_factor_max: 5.0
+  threshold_source: config
+
+caveats:
+  - S5E16 是 experimental candidate，不替代 official S5 locked result。
+  - S5 locked metrics/policy unchanged。
+  - 没有使用 eval GT 做 router/scale/sign calibration。
+  - strict essential geometry 仍受 intrinsics 限制。
