@@ -111,3 +111,11 @@ reports/drafts/
 
 # ---- Local ORB-SLAM3 runner binaries ----
 external_baselines/runners/orbslam3_mono_fisheye_runner
+
+# ---- Reproducible raw trajectory / provenance exports ----
+external_baselines/results/**/edge_provenance.jsonl
+external_baselines/results/**/*_tum.txt
+external_baselines/results/**/*_tum_*.txt
+external_baselines/results/**/*_tum_raw.txt
+external_baselines/results/**/*_tum_*_raw.txt
+external_baselines/results/**/*_tum_*_only.txt
