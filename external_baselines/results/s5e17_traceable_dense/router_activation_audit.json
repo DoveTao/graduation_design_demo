@@ -1,0 +1,69 @@
+{
+  "s5e16_activation": {
+    "high_confidence_edges": 3,
+    "low_confidence_edges": 0,
+    "sign_guarded_edges": 0,
+    "fallback_direction_edges": 318,
+    "train_prior_scale_edges": 0
+  },
+  "score_distributions": {
+    "router_confidence": {
+      "min": 0.507861230754474,
+      "max": 0.7749374424596628,
+      "mean": 0.6246392461353939,
+      "median": 0.6439285714285714,
+      "p10": 0.5510161145941098,
+      "p25": 0.5803492523243916,
+      "p50": 0.6439285714285714,
+      "p75": 0.6593961572131011,
+      "p90": 0.6881632936907509
+    },
+    "correspondence_confidence": {
+      "min": 0.6190754655995118,
+      "max": 1.0,
+      "mean": 0.7490460075115941,
+      "median": 0.719080738723278,
+      "p10": 0.65,
+      "p25": 0.65,
+      "p50": 0.719080738723278,
+      "p75": 0.8463308165271078,
+      "p90": 0.9051118721461187
+    },
+    "anti_parallel_risk_score": {
+      "min": 0.12492952151287659,
+      "max": 0.5970077532412561,
+      "mean": 0.39228864234534255,
+      "median": 0.42625255259053857,
+      "p10": 0.175,
+      "p25": 0.34991223017374673,
+      "p50": 0.42625255259053857,
+      "p75": 0.47579188665151223,
+      "p90": 0.5110524328526649
+    },
+    "scale_confidence": {
+      "min": 0.282326369282891,
+      "max": 0.4201680672268908,
+      "mean": 0.3390141754159979,
+      "median": 0.3571428571428572,
+      "p10": 0.2823263692828911,
+      "p25": 0.3571428571428571,
+      "p50": 0.3571428571428572,
+      "p75": 0.3571428571428572,
+      "p90": 0.3571428571428572
+    }
+  },
+  "threshold_diagnosis": {
+    "thresholds_outside_distribution": true,
+    "if_else_short_circuit_suspected": true,
+    "field_name_mismatch_suspected": true,
+    "default_fallback_overwrites_route": true,
+    "main_activation_failure_source": "field_mismatch"
+  },
+  "repair_recommendation": {
+    "use_quantile_bins": true,
+    "recommended_high_conf_quantile": 0.75,
+    "recommended_low_conf_quantile": 0.25,
+    "recommended_sign_guard_quantile": 0.85,
+    "recommended_scale_route_rule": "scale_confidence < q35 => train_prior_scale_route"
+  }
+}
