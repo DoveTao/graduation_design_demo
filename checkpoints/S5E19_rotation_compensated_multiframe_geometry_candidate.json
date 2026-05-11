@@ -1,0 +1,112 @@
+{
+  "experiment": "S5E19_rotation_compensated_multiframe_geometry_refinement",
+  "status": {
+    "experimental_candidate": true,
+    "official_s5_unchanged": true,
+    "not_official_replacement": true,
+    "preserves_spherical_token_coarse_to_fine_geometry_mainline": true
+  },
+  "architecture": {
+    "uses_spherical_erp_token_encoder": true,
+    "uses_coarse_pose_head": true,
+    "uses_fine_residual_refinement": true,
+    "uses_rotation_compensated_direction_head": true,
+    "uses_fine_scale_residual_head": true,
+    "uses_multiframe_geometry_loss": true,
+    "uses_observability_weighted_loss": true,
+    "uses_anti_parallel_hard_negative_loss": true,
+    "uses_external_router": false
+  },
+  "training": {
+    "attempted": true,
+    "classification": "S5E19_TRAINING_SMOKE_ONLY",
+    "uses_eval_gt_for_training": false,
+    "uses_eval_gt_for_scale": false,
+    "uses_orbslam3_teacher": false,
+    "best_checkpoint": "checkpoints/S5E19_rotation_compensated_multiframe_geometry_candidate/s5e19_smoke_policy.json"
+  },
+  "adjacent_dense_export": {
+    "available": true,
+    "trajectory_path": "external_baselines/results/s5e19_traceable_dense/scene01_seq03_s5e19_traceable_dense_tum.txt",
+    "edge_provenance": "external_baselines/results/s5e19_traceable_dense/edge_provenance.jsonl",
+    "num_poses": 454,
+    "num_edges": 453,
+    "coverage": 1.0,
+    "all_edges_traceable": true
+  },
+  "component_metrics": {
+    "rot_mean_deg": 0.9134395040767528,
+    "tdir_mean_deg": 50.353041365033235,
+    "tdir_abs_mean_deg": 43.16064629037026,
+    "tdir_mean_cosine": 0.5591010842073055,
+    "anti_parallel_rate": 0.1479028697571744,
+    "tmag_median_ratio": 1.26853220360632,
+    "tmag_p95_ratio": 4.668572667067984,
+    "path_ratio": 0.15674640990008198
+  },
+  "multiframe_metrics": {
+    "k1_tdir": 50.35304148245505,
+    "composition_error_mean": 50.35304148245505,
+    "path_length_consistency_error": 0.05318809915997954,
+    "rotation_composition_error": 0.9134395044083475,
+    "k2_tdir": 48.066943689366354,
+    "k3_tdir": 47.774063258873134,
+    "k5_tdir": 47.298629760079265
+  },
+  "external_eval": {
+    "none": {
+      "ate": 9.328785504501196,
+      "drift": 0.12857538356234996,
+      "path_ratio": 0.15674641015640298
+    },
+    "se3": {
+      "ate": 3.9809703358574935,
+      "drift": 0.12989184276204593,
+      "path_ratio": 0.15674641015640298
+    },
+    "sim3": {
+      "ate": 3.9682105001578156,
+      "drift": 0.13014348493234643,
+      "path_ratio": 0.15674641015640298
+    }
+  },
+  "improvement_vs_s5e15": {
+    "rot_preserved": true,
+    "tdir_improved": false,
+    "anti_parallel_reduced": false,
+    "tmag_median_in_range": true,
+    "path_ratio_improved_without_explosion": false,
+    "sim3_ate_improved": false,
+    "overall_geometry_improved": false
+  },
+  "comparison_to_orbslam3": {
+    "coverage_advantage": true,
+    "tdir_gap_remaining": true,
+    "scale_path_gap_remaining": true,
+    "ate_gap_remaining": true
+  },
+  "diagnosis": {
+    "can_continue_to_s5e20": false,
+    "main_remaining_blocker": "tdir_signal_insufficient",
+    "recommended_next_stage": "stop_or_revisit_mainline_training_capacity"
+  },
+  "s5_official_locked_metrics": {
+    "ate": 7.352288,
+    "drift": 1.327343,
+    "path_ratio": 0.932379,
+    "unchanged": true
+  },
+  "validation": {
+    "verify_final_candidate": "PASS",
+    "project_health_check": "PASS",
+    "s6_eval_only": "PASS",
+    "unittest": "PASS"
+  },
+  "git": {
+    "commits_created": [],
+    "pushed_to_remote": false,
+    "tag_created": false,
+    "working_tree_clean": false
+  },
+  "final_classification": "S5E19_TRAINING_SMOKE_ONLY"
+}
