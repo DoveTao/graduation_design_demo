@@ -29,7 +29,7 @@
 - remote: `origin	git@github.com:DoveTao/graduation_design_demo.git (fetch)`
 - ahead/behind status: no upstream configured yet for `maintenance/env-git-cleanup`.
 - uncommitted files before cleanup: captured in `reports/MAINT1_git_inventory.md` and included TRAIN360, BASE360, RESULTS360, env exports, and maintenance reports.
-- committed files in this task: pending until maintenance commit is created.
+- committed files in this task: `.gitignore`, `tools/base360c_official_python`, `envs/*.yml`, `envs/*.txt`, and the `reports/MAINT1*` maintenance reports in commit `0f00dfd`.
 - ignored files: generated smoke images, official resized inputs, training logs, `logs/`, checkpoints, and prior heavy artifact patterns remain local.
 - large artifacts intentionally not committed: TRAIN360C weights and the 1.3G `external_baselines/results/base360_hkust_360dvo_official` directory.
 
@@ -38,13 +38,13 @@
 - TRAIN360C checkpoint retained locally: true
 - checkpoint committed: false
 - BASE360 results retained locally: true
-- reports committed: pending until maintenance commit is created
+- reports committed: true, for `reports/MAINT1*` only
 
 ## 5. Push Status
 
 - branch pushed: false
 - remote branch: none yet
-- latest commit hash: `ba882f7`
+- latest commit hash: `0f00dfd`
 - tags pushed if any: none in this task
 
 ## 6. Next Recommendation
