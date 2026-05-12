@@ -481,6 +481,261 @@ class FineScaleHeadWithS5E15Guard(nn.Module):
         }
 
 
+class SphericalGeometryTokenBackbone(nn.Module):
+    """STRUCT1 token encoder with optional spherical geometry channels."""
+
+    def __init__(
+        self,
+        appearance_dim: int,
+        hidden_dim: int,
+        *,
+        use_local_tangent_coords: bool = True,
+        use_bearing_xyz_channels: bool = True,
+        use_latlon_sincos_channels: bool = True,
+        token_encoder_layers: int = 2,
+        n_heads: int = 4,
+        dropout: float = 0.0,
+    ) -> None:
+        super().__init__()
+        self.use_local_tangent_coords = bool(use_local_tangent_coords)
+        self.use_bearing_xyz_channels = bool(use_bearing_xyz_channels)
+        self.use_latlon_sincos_channels = bool(use_latlon_sincos_channels)
+        extra_dim = 0
+        if self.use_local_tangent_coords:
+            extra_dim += 2
+        if self.use_bearing_xyz_channels:
+            extra_dim += 3
+        if self.use_latlon_sincos_channels:
+            extra_dim += 4
+        in_dim = int(appearance_dim) + extra_dim
+        self.input_proj = nn.Sequential(
+            nn.LayerNorm(in_dim),
+            nn.Linear(in_dim, hidden_dim),
+            nn.GELU(),
+            nn.Linear(hidden_dim, hidden_dim),
+        )
+        self.pos_enc = BearingPosEnc(hidden_dim)
+        self.encoder = TokenEncoder(
+            hidden_dim,
+            n_layers=max(1, int(token_encoder_layers)),
+            n_heads=max(1, int(n_heads)),
+            mlp_ratio=2.0,
+            dropout=float(dropout),
+        )
+
+    @staticmethod
+    def _bearing_to_geometry_channels(bearing: torch.Tensor) -> Dict[str, torch.Tensor]:
+        bearing = nn.functional.normalize(bearing.float(), dim=-1, eps=1e-6)
+        x, y, z = bearing.unbind(dim=-1)
+        lon = torch.atan2(x, z.clamp(min=-1.0, max=1.0))
+        lat = torch.asin(y.clamp(-1.0, 1.0))
+        tangent_x = x / z.abs().clamp_min(1.0e-3)
+        tangent_y = y / z.abs().clamp_min(1.0e-3)
+        return {
+            "bearing_xyz": torch.stack([x, y, z], dim=-1),
+            "local_tangent_coords": torch.stack([tangent_x, tangent_y], dim=-1),
+            "latlon_sincos": torch.stack([torch.sin(lon), torch.cos(lon), torch.sin(lat), torch.cos(lat)], dim=-1),
+        }
+
+    def forward(self, appearance_tokens: torch.Tensor, bearing: torch.Tensor) -> Dict[str, torch.Tensor]:
+        geom = self._bearing_to_geometry_channels(bearing)
+        pieces = [appearance_tokens.float()]
+        if self.use_local_tangent_coords:
+            pieces.append(geom["local_tangent_coords"])
+        if self.use_bearing_xyz_channels:
+            pieces.append(geom["bearing_xyz"])
+        if self.use_latlon_sincos_channels:
+            pieces.append(geom["latlon_sincos"])
+        x = torch.cat(pieces, dim=-1)
+        feat = self.input_proj(x)
+        feat = feat + self.pos_enc(nn.functional.normalize(bearing.float(), dim=-1, eps=1e-6))
+        feat = self.encoder(feat)
+        return {
+            "token_features": feat,
+            "bearing": nn.functional.normalize(bearing.float(), dim=-1, eps=1e-6),
+            "local_tangent_coords": geom["local_tangent_coords"],
+            "bearing_xyz_channels": geom["bearing_xyz"],
+            "latlon_sincos_channels": geom["latlon_sincos"],
+        }
+
+
+class SoftCorrespondenceGeometryLayer(nn.Module):
+    """STRUCT1 soft correspondence layer that emits geometry tokens."""
+
+    def __init__(self, feature_dim: int, hidden_dim: int = 128, temperature: float = 0.05) -> None:
+        super().__init__()
+        self.temperature = float(temperature)
+        self.proj = nn.Linear(feature_dim, hidden_dim)
+        self.out_proj = nn.Sequential(
+            nn.LayerNorm(hidden_dim + 3 + 3 + 3 + 1 + 1 + 1 + 1),
+            nn.Linear(hidden_dim + 3 + 3 + 3 + 1 + 1 + 1 + 1, hidden_dim),
+            nn.GELU(),
+            nn.Linear(hidden_dim, hidden_dim),
+            nn.GELU(),
+        )
+
+    def forward(
+        self,
+        tokens_a: torch.Tensor,
+        tokens_b: torch.Tensor,
+        bearing_a: torch.Tensor,
+        bearing_b: torch.Tensor,
+        *,
+        interaction_feature: Optional[torch.Tensor] = None,
+        precomputed_W_ab: Optional[torch.Tensor] = None,
+        precomputed_W_ba: Optional[torch.Tensor] = None,
+        coarse_pose_R: Optional[torch.Tensor] = None,
+        coarse_pose_tdir: Optional[torch.Tensor] = None,
+    ) -> Dict[str, torch.Tensor]:
+        ta = nn.functional.normalize(self.proj(tokens_a.float()), dim=-1, eps=1e-6)
+        tb = nn.functional.normalize(self.proj(tokens_b.float()), dim=-1, eps=1e-6)
+        sim = torch.matmul(ta, tb.transpose(1, 2))
+        if precomputed_W_ab is None:
+            W_ab = torch.softmax(sim / max(self.temperature, 1.0e-6), dim=-1)
+        else:
+            W_ab = precomputed_W_ab.float()
+        if precomputed_W_ba is None:
+            W_ba = torch.softmax(sim.transpose(1, 2) / max(self.temperature, 1.0e-6), dim=-1)
+        else:
+            W_ba = precomputed_W_ba.float()
+        ba = nn.functional.normalize(bearing_a.float(), dim=-1, eps=1e-6)
+        bb = nn.functional.normalize(bearing_b.float(), dim=-1, eps=1e-6)
+        matched_bearing_b = torch.matmul(W_ab, bb)
+        matched_bearing_b = nn.functional.normalize(matched_bearing_b, dim=-1, eps=1e-6)
+        matched_bearing_a = torch.matmul(W_ba, ba)
+        matched_bearing_a = nn.functional.normalize(matched_bearing_a, dim=-1, eps=1e-6)
+        residual_flow = matched_bearing_b - ba
+        probs = W_ab.clamp_min(1.0e-9)
+        entropy = -(probs * probs.log()).sum(dim=-1, keepdim=True)
+        entropy_norm = entropy / max(float(torch.log(torch.tensor(float(W_ab.shape[-1]))).item()), 1.0e-6)
+        confidence = (1.0 - entropy_norm).clamp(0.0, 1.0)
+        cyc = torch.matmul(W_ab, W_ba)
+        eye = torch.eye(cyc.shape[-1], device=cyc.device, dtype=cyc.dtype).view(1, cyc.shape[-2], cyc.shape[-1])
+        cycle_error = torch.mean(torch.abs(cyc - eye), dim=-1, keepdim=True)
+        if coarse_pose_R is None or coarse_pose_tdir is None:
+            epipolar_residual = torch.zeros_like(confidence)
+        else:
+            bA_rot = torch.matmul(coarse_pose_R.float(), ba.transpose(1, 2)).transpose(1, 2)
+            tdir = nn.functional.normalize(coarse_pose_tdir.float(), dim=-1, eps=1e-6)
+            cross = torch.cross(
+                tdir[:, None, :].expand_as(matched_bearing_b),
+                matched_bearing_b,
+                dim=-1,
+            )
+            epipolar_residual = torch.abs(torch.sum(cross * bA_rot, dim=-1, keepdim=True))
+        if interaction_feature is None:
+            interaction_feature = 0.5 * (tokens_a.float() + torch.matmul(W_ab, tokens_b.float()))
+        fused = torch.cat(
+            [
+                ba,
+                matched_bearing_b,
+                residual_flow,
+                confidence,
+                entropy,
+                cycle_error,
+                epipolar_residual,
+                interaction_feature.float(),
+            ],
+            dim=-1,
+        )
+        geometry_tokens = self.out_proj(fused)
+        return {
+            "W_ab": W_ab,
+            "W_ba": W_ba,
+            "matched_bearing_b": matched_bearing_b,
+            "matched_bearing_a": matched_bearing_a,
+            "residual_flow": residual_flow,
+            "confidence": confidence.squeeze(-1),
+            "entropy": entropy.squeeze(-1),
+            "cycle_error": cycle_error.squeeze(-1),
+            "epipolar_residual": epipolar_residual.squeeze(-1),
+            "interaction_feature": interaction_feature.float(),
+            "geometry_tokens": geometry_tokens,
+            "bearing_a": ba,
+            "bearing_b": bb,
+        }
+
+
+class GeometryTokenPoseSolver(nn.Module):
+    """STRUCT1 geometry-aware decoder with coarse-to-fine aggregation."""
+
+    def __init__(
+        self,
+        token_dim: int,
+        hidden_dim: int = 128,
+        *,
+        topk: int = 16,
+        scale_delta_clip: float = 0.25,
+        rotation_refine_scale: float = 0.05,
+    ) -> None:
+        super().__init__()
+        self.topk = int(max(1, topk))
+        self.rotation_refine_scale = float(rotation_refine_scale)
+        self.summary_net = nn.Sequential(
+            nn.LayerNorm(token_dim * 3),
+            nn.Linear(token_dim * 3, hidden_dim),
+            nn.GELU(),
+            nn.Linear(hidden_dim, hidden_dim),
+            nn.GELU(),
+        )
+        self.rotation_refine = nn.Linear(hidden_dim, 3)
+        self.tdir_head = nn.Linear(hidden_dim, 3)
+        self.scale_head = FineScaleHeadWithS5E15Guard(hidden_dim, hidden_dim=hidden_dim, delta_clip=scale_delta_clip)
+        nn.init.zeros_(self.rotation_refine.weight)
+        nn.init.zeros_(self.rotation_refine.bias)
+
+    def _aggregate(self, geometry_tokens: torch.Tensor, confidence: torch.Tensor) -> Dict[str, torch.Tensor]:
+        conf = confidence.float().clamp_min(1.0e-6)
+        conf_sum = conf.sum(dim=-1, keepdim=True).clamp_min(1.0e-6)
+        mean = torch.sum(geometry_tokens.float() * conf.unsqueeze(-1), dim=1) / conf_sum
+        topk = min(self.topk, geometry_tokens.shape[1])
+        topk_val, topk_idx = torch.topk(conf, k=topk, dim=-1)
+        gather_idx = topk_idx.unsqueeze(-1).expand(-1, -1, geometry_tokens.shape[-1])
+        topk_tokens = torch.gather(geometry_tokens.float(), 1, gather_idx)
+        topk_conf = topk_val / topk_val.sum(dim=-1, keepdim=True).clamp_min(1.0e-6)
+        topk_pool = torch.sum(topk_tokens * topk_conf.unsqueeze(-1), dim=1)
+        centered = geometry_tokens.float() - mean[:, None, :]
+        second_moment = torch.sum(centered.abs() * conf.unsqueeze(-1), dim=1) / conf_sum
+        summary = torch.cat([mean, topk_pool, second_moment], dim=-1)
+        return {
+            "summary": summary,
+            "confidence_weighted_mean": mean,
+            "robust_topk_pool": topk_pool,
+            "histogram_or_moments": second_moment,
+            "topk_indices": topk_idx,
+        }
+
+    def forward(
+        self,
+        geometry_tokens: torch.Tensor,
+        confidence: torch.Tensor,
+        *,
+        coarse_rotation: torch.Tensor,
+        coarse_tdir: torch.Tensor,
+        base_log_tmag: torch.Tensor,
+    ) -> Dict[str, torch.Tensor]:
+        agg = self._aggregate(geometry_tokens, confidence)
+        h = self.summary_net(agg["summary"])
+        rot_update = torch.tanh(self.rotation_refine(h)) * self.rotation_refine_scale
+        R_update = _so3_exp_map(rot_update)
+        R_BA = torch.matmul(R_update, coarse_rotation.float())
+        delta_tdir = torch.tanh(self.tdir_head(h))
+        tdir_B = nn.functional.normalize(delta_tdir, dim=-1, eps=1e-6)
+        scale = self.scale_head(h, base_log_tmag)
+        return {
+            **agg,
+            **scale,
+            "rotation_update_vec": rot_update,
+            "R_BA": R_BA,
+            "tdir_B": tdir_B,
+            "tmag": scale["final_tmag"],
+            "final_tmag": scale["final_tmag"],
+            "final_log_tmag": scale["final_log_tmag"],
+            "tdir_from_geometry_tokens": True,
+            "W_ab_used_in_pose_solver": True,
+        }
+
+
 class PanoramaRelPoseModel(nn.Module):
     def __init__(self, cfg: Config, device: torch.device):
         super().__init__()
