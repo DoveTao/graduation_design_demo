@@ -1,0 +1,33 @@
+{
+  "sequence": "ridge_to_lake",
+  "split": "test",
+  "image_dir": "/home/dovetao/graduation_design_demo/data/360DVO/Sequences/ridge_to_lake",
+  "official_demo_image_dir": "/home/dovetao/graduation_design_demo/external_baselines/results/base360_hkust_360dvo_official/test/ridge_to_lake/official_demo_input_x0p5",
+  "official_demo_input_scale": 0.5,
+  "image_list": "/home/dovetao/graduation_design_demo/external_baselines/results/base360_hkust_360dvo_official/test/ridge_to_lake/image_list.txt",
+  "gt_tum": "/home/dovetao/graduation_design_demo/external_baselines/results/base360_hkust_360dvo_official/test/ridge_to_lake/gt_tum.txt",
+  "gt_pose_file": "/home/dovetao/graduation_design_demo/data/360DVO/GroundTruth/ridge_to_lake.txt",
+  "gt_timestamp_file": "/home/dovetao/graduation_design_demo/data/360DVO/Timestamps/ridge_to_lake_timestamps.txt",
+  "pred_tum": "/home/dovetao/graduation_design_demo/external_baselines/results/base360_hkust_360dvo_official/test/ridge_to_lake/pred_tum.txt",
+  "frame_count": 552,
+  "pair_count": 2197,
+  "adjacent_pair_count": 551,
+  "official_sequence_level_input": true,
+  "official_pair_level_input": false,
+  "camera_model": "ERP spherical intrinsics inferred by official demo.compute_intrinsics(H, W)",
+  "calibration_source": "official demo intrinsics from image size; no dataset-specific legacy scene01 calibration used",
+  "official_timeout_seconds": 900,
+  "run_status": "success",
+  "failure_reason": null,
+  "command": [
+    "/home/dovetao/graduation_design_demo/tools/base360c_official_python",
+    "/tmp/360DVO_official/demo.py",
+    "--imagedir",
+    "/home/dovetao/graduation_design_demo/external_baselines/results/base360_hkust_360dvo_official/test/ridge_to_lake/official_demo_input_x0p5",
+    "--config",
+    "/tmp/360DVO_official/config/360.yaml",
+    "--save_trajectory",
+    "--name",
+    "test_ridge_to_lake"
+  ]
+}
