@@ -1,0 +1,56 @@
+{
+  "dataset": "360DVO",
+  "local_root": "data/360DVO",
+  "selected_sequences": [
+    "bridge_night",
+    "field",
+    "wingsuit"
+  ],
+  "num_sequences": 3,
+  "split": {
+    "train": [
+      "bridge_night"
+    ],
+    "val": [
+      "field"
+    ],
+    "test": [
+      "wingsuit"
+    ]
+  },
+  "split_by_sequence": true,
+  "forbid_random_pair_split": true,
+  "num_pairs_all": 767,
+  "num_pairs_train": 309,
+  "num_pairs_val": 309,
+  "num_pairs_test": 149,
+  "sequence_summaries": [
+    {
+      "seq_id": "bridge_night",
+      "split": "train",
+      "num_images": 80,
+      "num_pose_rows": 80,
+      "pairs_built": 309
+    },
+    {
+      "seq_id": "field",
+      "split": "val",
+      "num_images": 178,
+      "num_pose_rows": 80,
+      "pairs_built": 309
+    },
+    {
+      "seq_id": "wingsuit",
+      "split": "test",
+      "num_images": 47,
+      "num_pose_rows": 40,
+      "pairs_built": 149
+    }
+  ],
+  "output_convention": {
+    "R_BA": true,
+    "t_BA_B": true,
+    "tdir_frame": "B"
+  },
+  "insufficient_sequences": false
+}
