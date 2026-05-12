@@ -13,10 +13,11 @@ from pose_head import matrix_geodesic_distance
 def _float_stats(vals: Iterable[float]) -> Dict[str, Optional[float]]:
     arr = np.asarray([float(v) for v in vals if math.isfinite(float(v))], dtype=np.float64)
     if arr.size == 0:
-        return {"mean": None, "median": None, "p90": None}
+        return {"mean": None, "median": None, "p10": None, "p90": None}
     return {
         "mean": float(np.mean(arr)),
         "median": float(np.percentile(arr, 50)),
+        "p10": float(np.percentile(arr, 10)),
         "p90": float(np.percentile(arr, 90)),
     }
 
@@ -53,7 +54,8 @@ def evaluate_train360_pose(
     anti_parallel_flags: List[float] = []
     pred_lengths: List[float] = []
     gt_lengths: List[float] = []
-    lossless_nan_inf = 0
+    nan_count = 0
+    inf_count = 0
     num_pairs = 0
 
     for batch_idx, batch in enumerate(loader):
@@ -83,8 +85,9 @@ def evaluate_train360_pose(
                 raise KeyError("Model output missing both t_mag and log_t_mag.")
             tmag_pred = torch.exp(log_tmag.float())
 
-        nan_inf_tensors = [R_pred, tdir_pred, tmag_pred, R_gt, t_gt_vec]
-        lossless_nan_inf += sum(int((~torch.isfinite(t)).sum().item()) for t in nan_inf_tensors)
+        check_tensors = [R_pred, tdir_pred, tmag_pred, R_gt, t_gt_vec]
+        nan_count += sum(int(torch.isnan(t).sum().item()) for t in check_tensors)
+        inf_count += sum(int(torch.isinf(t).sum().item()) for t in check_tensors)
 
         rot_deg = (
             matrix_geodesic_distance(R_pred.float(), R_gt.float()).detach().cpu().numpy() * (180.0 / math.pi)
@@ -115,6 +118,16 @@ def evaluate_train360_pose(
     signed_stats = _float_stats(signed_tdir_vals)
     unsigned_stats = _float_stats(unsigned_tdir_vals)
     tmag_ratio_stats = _float_stats(tmag_ratio_vals)
+    scale_collapse_rate = (
+        float(np.mean(np.asarray([1.0 if float(v) < 0.1 else 0.0 for v in tmag_ratio_vals], dtype=np.float64)))
+        if tmag_ratio_vals
+        else None
+    )
+    scale_explosion_rate = (
+        float(np.mean(np.asarray([1.0 if float(v) > 10.0 else 0.0 for v in tmag_ratio_vals], dtype=np.float64)))
+        if tmag_ratio_vals
+        else None
+    )
 
     return {
         "count": int(num_pairs),
@@ -133,14 +146,19 @@ def evaluate_train360_pose(
             if anti_parallel_flags
             else None
         ),
+        "tmag_ratio_p10": tmag_ratio_stats["p10"],
         "tmag_median_ratio": tmag_ratio_stats["median"],
+        "tmag_ratio_p50": tmag_ratio_stats["median"],
         "tmag_mean_ratio": tmag_ratio_stats["mean"],
+        "tmag_ratio_p90": tmag_ratio_stats["p90"],
         "tmag_p90_ratio": tmag_ratio_stats["p90"],
         "log_tmag_mae": (
             float(np.mean(np.asarray(log_tmag_mae_vals, dtype=np.float64)))
             if log_tmag_mae_vals
             else None
         ),
+        "scale_collapse_rate": scale_collapse_rate,
+        "scale_explosion_rate": scale_explosion_rate,
         "path_ratio": (
             float(sum(pred_lengths) / max(sum(gt_lengths), 1.0e-12))
             if gt_lengths
@@ -148,7 +166,9 @@ def evaluate_train360_pose(
         ),
         "path_length_pred": float(sum(pred_lengths)) if pred_lengths else None,
         "path_length_gt": float(sum(gt_lengths)) if gt_lengths else None,
-        "nan_inf_count": int(lossless_nan_inf),
+        "nan_inf_count": int(nan_count + inf_count),
+        "nan_count": int(nan_count),
+        "inf_count": int(inf_count),
         "ate_none": None,
         "ate_se3": None,
         "ate_sim3": None,
