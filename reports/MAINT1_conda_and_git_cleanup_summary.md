@@ -27,9 +27,9 @@
 - cleanup started from branch: `experiment/dset2c-360dvo-dataset-hygiene`
 - current branch: `maintenance/env-git-cleanup`
 - remote: `origin	git@github.com:DoveTao/graduation_design_demo.git (fetch)`
-- ahead/behind status: no upstream configured yet for `maintenance/env-git-cleanup`.
+- ahead/behind status: tracking `origin/maintenance/env-git-cleanup`.
 - uncommitted files before cleanup: captured in `reports/MAINT1_git_inventory.md` and included TRAIN360, BASE360, RESULTS360, env exports, and maintenance reports.
-- committed files in this task: `.gitignore`, `tools/base360c_official_python`, `envs/*.yml`, `envs/*.txt`, and the `reports/MAINT1*` maintenance reports in commit `0f00dfd`.
+- committed files in this task: `.gitignore`, `tools/base360c_official_python`, `envs/*.yml`, `envs/*.txt`, and the `reports/MAINT1*` maintenance reports in commits `0f00dfd` and `3b1fbd9`.
 - ignored files: generated smoke images, official resized inputs, training logs, `logs/`, checkpoints, and prior heavy artifact patterns remain local.
 - large artifacts intentionally not committed: TRAIN360C weights and the 1.3G `external_baselines/results/base360_hkust_360dvo_official` directory.
 
@@ -42,9 +42,9 @@
 
 ## 5. Push Status
 
-- branch pushed: false
-- remote branch: none yet
-- latest commit hash: `0f00dfd`
+- branch pushed: true
+- remote branch: `origin/maintenance/env-git-cleanup`
+- latest commit hash: `3b1fbd9`
 - tags pushed if any: none in this task
 
 ## 6. Next Recommendation
