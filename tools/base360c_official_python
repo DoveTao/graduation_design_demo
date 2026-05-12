@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+ENV_ROOT="${BASE360C_OFFICIAL_ENV_ROOT:-/home/dovetao/miniconda3/envs/base360dvo_rebuild}"
+SHIM="${BASE360C_ITTNOTIFY_SHIM:-${REPO_ROOT}/logs/base360c_cuda_ba/libittnotify_shim.so}"
+
+if [[ -n "${LD_PRELOAD:-}" ]]; then
+  export LD_PRELOAD="${SHIM} ${LD_PRELOAD}"
+else
+  export LD_PRELOAD="${SHIM}"
+fi
+
+export LD_LIBRARY_PATH="${ENV_ROOT}/lib/python3.11/site-packages/torch/lib:${ENV_ROOT}/lib:${LD_LIBRARY_PATH:-}"
+
+exec "${ENV_ROOT}/bin/python" "$@"
