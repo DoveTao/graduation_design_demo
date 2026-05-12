@@ -1,0 +1,37 @@
+dataset:
+  name: 360DVO
+  local_root: /home/dovetao/datasets/360DVO
+  do_not_commit_raw_data: true
+  image_type: ERP
+  expected_image_resolution: configurable
+  resize_policy:
+    enabled: true
+    target_width: null
+    target_height: null
+    preserve_aspect: true
+
+pose:
+  source_pose_convention: unknown_until_inspected
+  target_pose_convention: T_w_c
+  relative_pose_target:
+    R_BA: true
+    t_BA_B: true
+    tdir_frame: B
+  quaternion_order: unknown_until_inspected
+  scale_unit: meters_or_unknown
+  timestamp_unit: seconds_or_unknown
+
+pair_manifest:
+  pair_types:
+    - adjacent
+    - kstep
+  k_values: [1, 2, 3, 5]
+  max_smoke_pairs: 100
+  split_by_sequence: true
+  forbid_random_pair_split: true
+
+evaluation:
+  compute_motion_stats: true
+  compute_component_metrics_if_prediction_available: true
+  export_tum_if_possible: true
+  no_training: true
