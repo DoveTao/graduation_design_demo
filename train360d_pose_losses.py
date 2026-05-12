@@ -15,8 +15,29 @@ def build_k_step_weights(
     weight_k2: float = 1.0,
     weight_k3: float = 0.9,
     weight_k5: float = 0.8,
+    mode: str = "explicit",
+    adjacent_weight: Optional[float] = None,
+    non_adjacent_weight: Optional[float] = None,
+    decay: str = "none",
+    min_weight: float = 0.1,
 ) -> torch.Tensor:
     k = k_tensor.view(-1).to(dtype=torch.int64)
+    if str(mode).lower() == "adjacent_vs_nonadjacent":
+        adj = 1.0 if adjacent_weight is None else float(adjacent_weight)
+        nonadj = 1.0 if non_adjacent_weight is None else float(non_adjacent_weight)
+        out = torch.where(k == 1, torch.full_like(k, adj, dtype=torch.float32), torch.full_like(k, nonadj, dtype=torch.float32))
+        decay_key = str(decay).lower()
+        kf = k.to(dtype=torch.float32)
+        if decay_key == "sqrt":
+            factor = torch.where(k == 1, torch.ones_like(kf), 1.0 / torch.sqrt(kf))
+            out = torch.where(k == 1, out, out * factor)
+        elif decay_key == "log":
+            factor = torch.where(k == 1, torch.ones_like(kf), 1.0 / torch.log2(kf + 1.0))
+            out = torch.where(k == 1, out, out * factor)
+        elif decay_key == "clipped_linear":
+            factor = torch.where(k == 1, torch.ones_like(kf), torch.clamp(1.25 - 0.1 * (kf - 1.0), min=float(min_weight), max=1.0))
+            out = torch.where(k == 1, out, out * factor)
+        return out.clamp_min(float(min_weight))
     out = torch.ones_like(k, dtype=torch.float32)
     out = torch.where(k == 1, torch.full_like(out, float(weight_k1)), out)
     out = torch.where(k == 2, torch.full_like(out, float(weight_k2)), out)
@@ -51,16 +72,21 @@ def build_observability_weight(
     high_thresh = float(config.get("high_tmag", 0.4))
     min_weight = float(config.get("min_weight", 0.2))
     max_weight = float(config.get("max_weight", 2.0))
+    near_zero_weight = float(config.get("near_zero_weight", min_weight))
+    low_weight = float(config.get("low_weight", max(min_weight, 0.55)))
+    medium_weight = float(config.get("medium_weight", config.get("moderate_baseline_boost", 1.15)))
+    high_weight = float(config.get("high_weight", max(float(config.get("moderate_baseline_boost", 1.15)), 1.35)))
+    very_high_weight = float(config.get("very_high_weight", 1.05))
 
     tmag = tmag_gt.float().view(-1).clamp_min(eps)
     k = k_tensor.view(-1).to(dtype=torch.int64, device=tmag.device)
     w = torch.ones_like(tmag, dtype=torch.float32)
 
-    w = torch.where(tmag <= near_zero_thresh, torch.full_like(w, 0.2), w)
-    w = torch.where((tmag > near_zero_thresh) & (tmag <= low_thresh), torch.full_like(w, 0.55), w)
-    w = torch.where((tmag > low_thresh) & (tmag <= medium_thresh), torch.full_like(w, 1.15), w)
-    w = torch.where((tmag > medium_thresh) & (tmag <= high_thresh), torch.full_like(w, 1.35), w)
-    w = torch.where(tmag > high_thresh, torch.full_like(w, 1.05), w)
+    w = torch.where(tmag <= near_zero_thresh, torch.full_like(w, near_zero_weight), w)
+    w = torch.where((tmag > near_zero_thresh) & (tmag <= low_thresh), torch.full_like(w, low_weight), w)
+    w = torch.where((tmag > low_thresh) & (tmag <= medium_thresh), torch.full_like(w, medium_weight), w)
+    w = torch.where((tmag > medium_thresh) & (tmag <= high_thresh), torch.full_like(w, high_weight), w)
+    w = torch.where(tmag > high_thresh, torch.full_like(w, very_high_weight), w)
 
     k_decay = {
         1: float(config.get("k1_factor", 1.05)),
@@ -120,6 +146,9 @@ def train360d_pose_loss(
     scale_stability_weight: float = 0.1,
     tmag_loss_type: str = "log_smooth_l1",
     tmag_epsilon: float = 1.0e-6,
+    enable_observability: bool = True,
+    enable_k_step_balancing: bool = True,
+    enable_scale_stabilization: bool = True,
 ) -> Dict[str, torch.Tensor]:
     k_weights = build_k_step_weights(
         k_tensor,
@@ -127,12 +156,21 @@ def train360d_pose_loss(
         weight_k2=float(k_step_config.get("weight_k2", 1.0)),
         weight_k3=float(k_step_config.get("weight_k3", 0.9)),
         weight_k5=float(k_step_config.get("weight_k5", 0.8)),
+        mode=str(k_step_config.get("mode", "explicit")),
+        adjacent_weight=k_step_config.get("adjacent_weight"),
+        non_adjacent_weight=k_step_config.get("non_adjacent_weight"),
+        decay=str(k_step_config.get("decay", "none")),
+        min_weight=float(k_step_config.get("min_weight", 0.1)),
     ).to(R_pred.device)
     obs_weight = build_observability_weight(
         tmag_gt=tmag_gt,
         k_tensor=k_tensor,
         config=observability_config,
     ).to(R_pred.device)
+    if not bool(enable_k_step_balancing):
+        k_weights = torch.ones_like(k_weights)
+    if not bool(enable_observability):
+        obs_weight = torch.ones_like(obs_weight)
     pose_weight = k_weights
     translation_weight = k_weights * obs_weight
 
@@ -166,6 +204,8 @@ def train360d_pose_loss(
         explosion_ratio=float(scale_config.get("explosion_ratio", 10.0)),
         mean_log_bias_weight=float(scale_config.get("mean_log_bias_weight", 1.0)),
     )
+    if not bool(enable_scale_stabilization):
+        loss_scale_stability = loss_scale_stability * 0.0
     total = (
         float(rot_weight) * loss_rot
         + float(tdir_weight) * loss_tdir

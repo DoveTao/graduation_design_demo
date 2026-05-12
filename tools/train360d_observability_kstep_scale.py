@@ -27,7 +27,6 @@ from tools.eval_train360_pose import evaluate_train360_pose
 from train360d_pose_losses import train360d_pose_loss
 
 
-TASK_NAME = "TRAIN360D_observability_kstep_scale_stabilization"
 EXPECTED_BRANCH = "experiment/train360d-observability-kstep-scale"
 T57B_REFERENCE = {
     "signed_tdir_mean_deg": 111.96493221327962,
@@ -240,12 +239,25 @@ def _extract_base360_metrics(payload: Mapping[str, Any]) -> Dict[str, Any]:
     }
 
 
-def _compute_val_score(metrics: Mapping[str, Any], eps: float = 1.0e-6) -> float:
+def _compute_val_score(metrics: Mapping[str, Any], score_cfg: Optional[Mapping[str, Any]] = None, eps: float = 1.0e-6) -> float:
+    score_cfg = score_cfg or {}
+    a = float(score_cfg.get("signed_tdir_weight", 1.0))
+    b = float(score_cfg.get("anti_parallel_weight", 50.0))
+    c = float(score_cfg.get("tmag_ratio_weight", 20.0))
+    d = float(score_cfg.get("path_ratio_weight", 0.0))
+    e = float(score_cfg.get("rot_weight", 0.1))
     signed = float(metrics.get("signed_tdir_mean_deg") or float("inf"))
     anti = float(metrics.get("anti_parallel_rate") or 1.0)
     tmag_ratio = float(metrics.get("tmag_median_ratio") or eps)
+    path_ratio = float(metrics.get("path_ratio") or eps)
     rot = float(metrics.get("rot_mean_deg") or 0.0)
-    return signed + 50.0 * anti + 20.0 * abs(math.log(max(tmag_ratio, eps))) + 0.1 * rot
+    return (
+        a * signed
+        + b * anti
+        + c * abs(math.log(max(tmag_ratio, eps)))
+        + d * abs(math.log(max(path_ratio, eps)))
+        + e * rot
+    )
 
 
 def _success_classification(
@@ -396,6 +408,7 @@ def _run_prechecks(cfg: Mapping[str, Any], cfg_path: Path) -> Dict[str, Any]:
 
 def _write_blocker_artifacts(cfg: Mapping[str, Any], blocker_lines: List[str], precheck: Mapping[str, Any]) -> None:
     outputs = cfg["outputs"]
+    task_name = str(cfg.get("task_name", "TRAIN360D_observability_kstep_scale_stabilization"))
     report_path = REPO_ROOT / outputs["report_path"]
     report_path.parent.mkdir(parents=True, exist_ok=True)
     body = [
@@ -406,7 +419,7 @@ def _write_blocker_artifacts(cfg: Mapping[str, Any], blocker_lines: List[str], p
     body.extend([f"- {line}" for line in blocker_lines])
     report_path.write_text("\n".join(body) + "\n", encoding="utf-8")
     blocker_payload = {
-        "task_name": TASK_NAME,
+        "task_name": task_name,
         "training_executed": False,
         "checkpoint_saved": False,
         "blockers": blocker_lines,
@@ -445,6 +458,7 @@ def _write_comparison_summary(
 def train() -> None:
     cfg_path = Path(sys.argv[1]) if len(sys.argv) > 1 else (REPO_ROOT / "configs" / "train360d_observability_kstep_scale.yaml")
     cfg = load_yaml_like(cfg_path)
+    task_name = str(cfg.get("task_name", "TRAIN360D_observability_kstep_scale_stabilization"))
     start_time = time.time()
 
     precheck = _run_prechecks(cfg, cfg_path)
@@ -524,11 +538,18 @@ def train() -> None:
         weight_decay=float(train_cfg["weight_decay"]),
     )
     scheduler: Optional[torch.optim.lr_scheduler._LRScheduler]
-    if str(train_cfg["scheduler"]).lower() == "cosine":
+    scheduler_key = str(train_cfg["scheduler"]).lower()
+    if scheduler_key == "cosine":
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
             optimizer,
             T_max=max(int(train_cfg["epochs"]), 1),
             eta_min=float(train_cfg["min_lr"]),
+        )
+    elif scheduler_key == "step":
+        scheduler = torch.optim.lr_scheduler.StepLR(
+            optimizer,
+            step_size=int(train_cfg.get("step_size", max(1, int(train_cfg["epochs"]) // 2))),
+            gamma=float(train_cfg.get("step_gamma", 0.5)),
         )
     else:
         scheduler = None
@@ -551,7 +572,7 @@ def train() -> None:
     best_checkpoint_path = checkpoint_dir / "best_val.pt"
 
     metadata_common = {
-        "task_name": TASK_NAME,
+        "task_name": task_name,
         "init_checkpoint": str(init_ckpt_path),
         "train_manifest_path": str(REPO_ROOT / inputs["train_manifest"]),
         "val_manifest_path": str(REPO_ROOT / inputs["val_manifest"]),
@@ -573,8 +594,12 @@ def train() -> None:
             "direct_glob_data_360dvo_sequences": False,
             "random_pair_split_used": False,
             "s5e15_external_inference_model_claimed": False,
+            "test_used_for_hparam_selection": False,
         },
     }
+
+    component_cfg = loss_cfg.get("components", {})
+    run_test_during_train = bool(eval_cfg.get("run_test", True))
 
     for epoch in range(1, int(train_cfg["epochs"]) + 1):
         model.train()
@@ -635,6 +660,9 @@ def train() -> None:
                     scale_stability_weight=float(loss_cfg["scale_stability_weight"]),
                     tmag_loss_type=str(loss_cfg["tmag_loss_type"]),
                     tmag_epsilon=float(data_cfg["tmag_epsilon"]),
+                    enable_observability=bool(component_cfg.get("enable_observability", True)),
+                    enable_k_step_balancing=bool(component_cfg.get("enable_k_step_balancing", True)),
+                    enable_scale_stabilization=bool(component_cfg.get("enable_scale_stabilization", True)),
                 )
 
             if scaler is not None:
@@ -672,7 +700,11 @@ def train() -> None:
             tmag_epsilon=float(data_cfg["tmag_epsilon"]),
             max_batches=eval_cfg.get("max_val_batches"),
         )
-        val_score = _compute_val_score(val_metrics, eps=float(data_cfg["tmag_epsilon"]))
+        val_score = _compute_val_score(
+            val_metrics,
+            score_cfg=eval_cfg.get("selection_score"),
+            eps=float(data_cfg["tmag_epsilon"]),
+        )
 
         epoch_log = {
             "epoch": int(epoch),
@@ -696,6 +728,11 @@ def train() -> None:
                 "min": float(np.min(k_weights_all)) if k_weights_all else None,
                 "median": float(np.percentile(np.asarray(k_weights_all, dtype=np.float64), 50)) if k_weights_all else None,
                 "max": float(np.max(k_weights_all)) if k_weights_all else None,
+            },
+            "component_flags": {
+                "enable_observability": bool(component_cfg.get("enable_observability", True)),
+                "enable_k_step_balancing": bool(component_cfg.get("enable_k_step_balancing", True)),
+                "enable_scale_stabilization": bool(component_cfg.get("enable_scale_stabilization", True)),
             },
         }
         _append_jsonl(train_log_path, epoch_log)
@@ -741,25 +778,32 @@ def train() -> None:
         tmag_epsilon=float(data_cfg["tmag_epsilon"]),
         max_batches=eval_cfg.get("max_val_batches"),
     )
-    test_metrics = evaluate_train360_pose(
-        selected_model,
-        test_loader,
-        device,
-        enable_depth_fusion=bool(model_cfg["enable_depth_fusion"]),
-        tmag_epsilon=float(data_cfg["tmag_epsilon"]),
-        max_batches=eval_cfg.get("max_test_batches"),
+    if run_test_during_train:
+        test_metrics = evaluate_train360_pose(
+            selected_model,
+            test_loader,
+            device,
+            enable_depth_fusion=bool(model_cfg["enable_depth_fusion"]),
+            tmag_epsilon=float(data_cfg["tmag_epsilon"]),
+            max_batches=eval_cfg.get("max_test_batches"),
+        )
+    else:
+        test_metrics = {"skipped": True, "selection_policy": "val_only"}
+    val_score = _compute_val_score(
+        val_metrics,
+        score_cfg=eval_cfg.get("selection_score"),
+        eps=float(data_cfg["tmag_epsilon"]),
     )
-    val_score = _compute_val_score(val_metrics, eps=float(data_cfg["tmag_epsilon"]))
 
     val_payload = {
-        "task_name": TASK_NAME,
+        "task_name": task_name,
         "checkpoint_used": str(selected_checkpoint_path),
         "best_epoch": int(best_epoch),
         "val_score": float(val_score),
         "metrics": val_metrics,
     }
     test_payload = {
-        "task_name": TASK_NAME,
+        "task_name": task_name,
         "checkpoint_used": str(selected_checkpoint_path),
         "best_epoch": int(best_epoch),
         "val_score_of_selected_checkpoint": float(val_score),
@@ -767,13 +811,35 @@ def train() -> None:
     }
     _json_dump(REPO_ROOT / outputs["val_metrics_path"], val_payload)
     _json_dump(REPO_ROOT / outputs["test_metrics_path"], test_payload)
+    metadata_payload = {
+        "task_name": task_name,
+        "selected_checkpoint_path": str(selected_checkpoint_path),
+        "best_epoch": int(best_epoch),
+        "best_val_score": float(best_val_score),
+        "runtime_sec": float(time.time() - start_time),
+        "branch": precheck["branch"],
+        "git_commit": precheck["git_commit"],
+        "component_flags": {
+            "enable_observability": bool(component_cfg.get("enable_observability", True)),
+            "enable_k_step_balancing": bool(component_cfg.get("enable_k_step_balancing", True)),
+            "enable_scale_stabilization": bool(component_cfg.get("enable_scale_stabilization", True)),
+        },
+        "selection_score": dict(eval_cfg.get("selection_score", {})),
+        "subset_info": subset_info,
+        "run_test": bool(run_test_during_train),
+    }
+    _json_dump(checkpoint_dir / "metadata.json", metadata_payload)
 
     train360c_val = precheck["train360c_val_metrics"]
     train360c_test = precheck["train360c_test_metrics"]
     base360d_test = precheck["base360d_test_metrics"]
-    success_classification = _success_classification(train360c_val, train360c_test, val_metrics, test_metrics)
     runtime_sec = float(time.time() - start_time)
-    discrepancy = abs(float(val_metrics["signed_tdir_mean_deg"]) - float(test_metrics["signed_tdir_mean_deg"]))
+    if run_test_during_train and isinstance(test_metrics, Mapping) and test_metrics.get("signed_tdir_mean_deg") is not None:
+        success_classification = _success_classification(train360c_val, train360c_test, val_metrics, test_metrics)
+        discrepancy = abs(float(val_metrics["signed_tdir_mean_deg"]) - float(test_metrics["signed_tdir_mean_deg"]))
+    else:
+        success_classification = "val_only"
+        discrepancy = None
 
     report_lines = [
         "# TRAIN360D observability / k-step / scale stabilization",
@@ -783,7 +849,7 @@ def train() -> None:
         "- checkpoint saved true/false: `true`",
         f"- best checkpoint path: `{selected_checkpoint_path}`",
         "- whether TRAIN360C was preserved: `true`",
-        f"- main improvement / regression: `val signed_tdir={val_metrics['signed_tdir_mean_deg']}, test anti_parallel={test_metrics['anti_parallel_rate']}, test path_ratio={test_metrics['path_ratio']}`",
+        f"- main improvement / regression: `val signed_tdir={val_metrics.get('signed_tdir_mean_deg')}, test anti_parallel={test_metrics.get('anti_parallel_rate')}, test path_ratio={test_metrics.get('path_ratio')}`",
         f"- success classification: `{success_classification}`",
         "",
         "## 2. Baseline recap",
@@ -850,15 +916,15 @@ def train() -> None:
         "## 9. Test results",
         f"- selected checkpoint: `{selected_checkpoint_path}`",
         f"- all component metrics: `{test_metrics}`",
-        f"- comparison to TRAIN360C test: `signed_tdir {train360c_test.get('signed_tdir_mean_deg')} -> {test_metrics.get('signed_tdir_mean_deg')}, anti_parallel {train360c_test.get('anti_parallel_rate')} -> {test_metrics.get('anti_parallel_rate')}, tmag_median_ratio {train360c_test.get('tmag_median_ratio')} -> {test_metrics.get('tmag_median_ratio')}, path_ratio {train360c_test.get('path_ratio')} -> {test_metrics.get('path_ratio')}`",
-        f"- comparison to T57b: `signed_tdir {T57B_REFERENCE['signed_tdir_mean_deg']} vs {test_metrics.get('signed_tdir_mean_deg')}, anti_parallel {T57B_REFERENCE['anti_parallel_rate']} vs {test_metrics.get('anti_parallel_rate')}, path_ratio {T57B_REFERENCE['path_ratio']} vs {test_metrics.get('path_ratio')}`",
-        f"- comparison to BASE360D: `signed_tdir {base360d_test.get('signed_tdir_mean_deg')} vs {test_metrics.get('signed_tdir_mean_deg')}, anti_parallel {base360d_test.get('anti_parallel_rate')} vs {test_metrics.get('anti_parallel_rate')}, pair_component_path_ratio {base360d_test.get('pair_component_path_ratio')} vs {test_metrics.get('path_ratio')}`",
+        f"- comparison to TRAIN360C test: `signed_tdir {train360c_test.get('signed_tdir_mean_deg')} -> {test_metrics.get('signed_tdir_mean_deg')}, anti_parallel {train360c_test.get('anti_parallel_rate')} -> {test_metrics.get('anti_parallel_rate')}, tmag_median_ratio {train360c_test.get('tmag_median_ratio')} -> {test_metrics.get('tmag_median_ratio')}, path_ratio {train360c_test.get('path_ratio')} -> {test_metrics.get('path_ratio')}`" if run_test_during_train else "- comparison to TRAIN360C test: `skipped during val-only run`",
+        f"- comparison to T57b: `signed_tdir {T57B_REFERENCE['signed_tdir_mean_deg']} vs {test_metrics.get('signed_tdir_mean_deg')}, anti_parallel {T57B_REFERENCE['anti_parallel_rate']} vs {test_metrics.get('anti_parallel_rate')}, path_ratio {T57B_REFERENCE['path_ratio']} vs {test_metrics.get('path_ratio')}`" if run_test_during_train else "- comparison to T57b: `skipped during val-only run`",
+        f"- comparison to BASE360D: `signed_tdir {base360d_test.get('signed_tdir_mean_deg')} vs {test_metrics.get('signed_tdir_mean_deg')}, anti_parallel {base360d_test.get('anti_parallel_rate')} vs {test_metrics.get('anti_parallel_rate')}, pair_component_path_ratio {base360d_test.get('pair_component_path_ratio')} vs {test_metrics.get('path_ratio')}`" if run_test_during_train else "- comparison to BASE360D: `skipped during val-only run`",
         "",
         "## 10. Analysis",
         f"- Did observability weighting help? `obs weights tracked every epoch in {train_log_path}; best final read is indirect via signed_tdir / anti_parallel changes.`",
         "- Did k-step balancing help? `the train/val/test k distributions are matched, and balancing stayed mild to reduce overfitting to adjacent pairs.`",
         "- Did scale stabilization help? `judge from tmag_ratio_p10/p50/p90, log_tmag_mae, collapse/explosion rates.`",
-        f"- Did val/test discrepancy shrink? `TRAIN360C gap={abs(float(train360c_val.get('signed_tdir_mean_deg')) - float(train360c_test.get('signed_tdir_mean_deg')))}, TRAIN360D gap={discrepancy}`",
+        f"- Did val/test discrepancy shrink? `TRAIN360C gap={abs(float(train360c_val.get('signed_tdir_mean_deg')) - float(train360c_test.get('signed_tdir_mean_deg')))}, current gap={discrepancy}`",
         "- Any metric regression? `see comparison sections above.`",
         f"- Which sequences remain difficult? `current report keeps split-level metrics only; hardest residual behavior is concentrated in whatever pairs still drive signed direction and anti-parallel errors on the held-out splits.`",
         "",
@@ -884,37 +950,33 @@ def train() -> None:
         "- `s5e15_external_inference_model_claimed = false`",
     ]
     (REPO_ROOT / outputs["report_path"]).write_text("\n".join(report_lines) + "\n", encoding="utf-8")
-    _write_comparison_summary(
-        REPO_ROOT / outputs["comparison_summary_path"],
-        val_metrics,
-        test_metrics,
-        train360c_val,
-        train360c_test,
-        base360d_test,
-        success_classification,
-    )
+    if outputs.get("comparison_summary_path"):
+        _write_comparison_summary(
+            REPO_ROOT / outputs["comparison_summary_path"],
+            val_metrics,
+            test_metrics if run_test_during_train else {},
+            train360c_val,
+            train360c_test,
+            base360d_test,
+            success_classification,
+        )
 
     print(f"- TRAIN360D training executed: true")
     print(f"- checkpoint saved: true")
     print(f"- best checkpoint: {selected_checkpoint_path}")
     print(f"- val signed_tdir_mean: {val_metrics['signed_tdir_mean_deg']}")
-    print(f"- test signed_tdir_mean: {test_metrics['signed_tdir_mean_deg']}")
-    print(f"- test anti_parallel_rate: {test_metrics['anti_parallel_rate']}")
-    print(f"- test tmag_median_ratio: {test_metrics['tmag_median_ratio']}")
-    print(f"- test path_ratio: {test_metrics['path_ratio']}")
+    print(f"- test signed_tdir_mean: {test_metrics.get('signed_tdir_mean_deg')}")
+    print(f"- test anti_parallel_rate: {test_metrics.get('anti_parallel_rate')}")
+    print(f"- test tmag_median_ratio: {test_metrics.get('tmag_median_ratio')}")
+    print(f"- test path_ratio: {test_metrics.get('path_ratio')}")
     print(f"- val/test discrepancy: {discrepancy}")
-    print(
-        "- improves over TRAIN360C: "
-        + ("yes" if success_classification == "success" else "partial" if success_classification == "partial" else "no")
-    )
-    print(
-        "- improves over T57b: "
-        + ("yes" if float(test_metrics["signed_tdir_mean_deg"]) < float(T57B_REFERENCE["signed_tdir_mean_deg"]) and float(test_metrics["path_ratio"]) > float(T57B_REFERENCE["path_ratio"]) else "partial")
-    )
-    print(
-        "- improves over BASE360D: "
-        + ("yes" if float(test_metrics["signed_tdir_mean_deg"]) < float(base360d_test["signed_tdir_mean_deg"]) else "partial")
-    )
+    print("- improves over TRAIN360C: " + ("yes" if success_classification == "success" else "partial" if success_classification == "partial" else "no"))
+    if run_test_during_train and test_metrics.get("signed_tdir_mean_deg") is not None and test_metrics.get("path_ratio") is not None:
+        print("- improves over T57b: " + ("yes" if float(test_metrics["signed_tdir_mean_deg"]) < float(T57B_REFERENCE["signed_tdir_mean_deg"]) and float(test_metrics["path_ratio"]) > float(T57B_REFERENCE["path_ratio"]) else "partial"))
+        print("- improves over BASE360D: " + ("yes" if float(test_metrics["signed_tdir_mean_deg"]) < float(base360d_test["signed_tdir_mean_deg"]) else "partial"))
+    else:
+        print("- improves over T57b: val_only")
+        print("- improves over BASE360D: val_only")
     print(f"- success classification: {success_classification}")
     print(f"- TRAIN360C checkpoint preserved: true")
     print(f"- committed to git: false")
