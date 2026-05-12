@@ -1,0 +1,170 @@
+{
+  "split": "val",
+  "sequence_count": 2,
+  "pair_count": 5342,
+  "adjacent_pair_count": 1339,
+  "coverage": 1.0,
+  "ate_none": 80.79315873612273,
+  "ate_se3": 57.72624401567722,
+  "ate_sim3": 1.7286490099174232,
+  "path_ratio": 0.16615468536912034,
+  "predicted_path_length": 92.45032261700172,
+  "gt_path_length": 556.4111683737298,
+  "rot_mean_deg": null,
+  "rot_median_deg": null,
+  "signed_tdir_mean_deg": null,
+  "signed_tdir_median_deg": null,
+  "unsigned_tdir_mean_deg": null,
+  "anti_parallel_rate": null,
+  "tmag_median_ratio": null,
+  "tmag_mean_ratio": null,
+  "log_tmag_mae": null,
+  "nan_inf_count": null,
+  "execution_status": "success",
+  "per_sequence": {
+    "mountains": {
+      "frame_count": 765,
+      "pair_count": 3049,
+      "adjacent_pair_count": 764,
+      "image_dir": "/home/dovetao/graduation_design_demo/data/360DVO/Sequences/mountains",
+      "official_demo_image_dir": "/home/dovetao/graduation_design_demo/external_baselines/results/base360_hkust_360dvo_official/val/mountains/official_demo_input_x0p5",
+      "gt_tum": "/home/dovetao/graduation_design_demo/external_baselines/results/base360_hkust_360dvo_official/val/mountains/gt_tum.txt",
+      "pred_tum": "/home/dovetao/graduation_design_demo/external_baselines/results/base360_hkust_360dvo_official/val/mountains/pred_tum.txt",
+      "run_metadata": "/home/dovetao/graduation_design_demo/external_baselines/results/base360_hkust_360dvo_official/val/mountains/run_metadata.json",
+      "metrics": {
+        "available": true,
+        "coverage": 1.0,
+        "failed_frames": 0,
+        "trajectory_eval": {
+          "none": {
+            "status": "ok",
+            "alignment_mode": "none",
+            "ATE": 38.332161436793974,
+            "drift": 0.1870320194215602,
+            "path_ratio": 0.40954519761441277,
+            "num_est_poses": 765,
+            "num_gt_poses": 765,
+            "num_matched_poses": 765,
+            "tracking_success_rate": 1.0,
+            "gt_path_length": 103.72469700950349,
+            "est_path_length_raw": 42.479951534252194,
+            "metric_notes": {
+              "ATE": "RMSE position error after requested alignment.",
+              "drift": "RPE-like translation RMSE on consecutive matched steps after requested alignment.",
+              "path_ratio": "Raw estimated path length divided by GT path length; scale-sensitive and not Sim(3)-normalized."
+            }
+          },
+          "se3": {
+            "status": "ok",
+            "alignment_mode": "se3",
+            "ATE": 14.909264956667995,
+            "drift": 0.08761829784439161,
+            "path_ratio": 0.40954519761441277,
+            "num_est_poses": 765,
+            "num_gt_poses": 765,
+            "num_matched_poses": 765,
+            "tracking_success_rate": 1.0,
+            "gt_path_length": 103.72469700950349,
+            "est_path_length_raw": 42.479951534252194,
+            "metric_notes": {
+              "ATE": "RMSE position error after requested alignment.",
+              "drift": "RPE-like translation RMSE on consecutive matched steps after requested alignment.",
+              "path_ratio": "Raw estimated path length divided by GT path length; scale-sensitive and not Sim(3)-normalized."
+            }
+          },
+          "sim3": {
+            "status": "ok",
+            "alignment_mode": "sim3",
+            "ATE": 0.5223771032630427,
+            "drift": 0.006439144947425822,
+            "path_ratio": 0.40954519761441277,
+            "num_est_poses": 765,
+            "num_gt_poses": 765,
+            "num_matched_poses": 765,
+            "tracking_success_rate": 1.0,
+            "gt_path_length": 103.72469700950349,
+            "est_path_length_raw": 42.479951534252194,
+            "metric_notes": {
+              "ATE": "RMSE position error after requested alignment.",
+              "drift": "RPE-like translation RMSE on consecutive matched steps after requested alignment.",
+              "path_ratio": "Raw estimated path length divided by GT path length; scale-sensitive and not Sim(3)-normalized."
+            }
+          }
+        },
+        "relative_metrics": {}
+      }
+    },
+    "downhill_biking": {
+      "frame_count": 576,
+      "pair_count": 2293,
+      "adjacent_pair_count": 575,
+      "image_dir": "/home/dovetao/graduation_design_demo/data/360DVO/Sequences/downhill_biking",
+      "official_demo_image_dir": "/home/dovetao/graduation_design_demo/external_baselines/results/base360_hkust_360dvo_official/val/downhill_biking/official_demo_input_x0p5",
+      "gt_tum": "/home/dovetao/graduation_design_demo/external_baselines/results/base360_hkust_360dvo_official/val/downhill_biking/gt_tum.txt",
+      "pred_tum": "/home/dovetao/graduation_design_demo/external_baselines/results/base360_hkust_360dvo_official/val/downhill_biking/pred_tum.txt",
+      "run_metadata": "/home/dovetao/graduation_design_demo/external_baselines/results/base360_hkust_360dvo_official/val/downhill_biking/run_metadata.json",
+      "metrics": {
+        "available": true,
+        "coverage": 1.0,
+        "failed_frames": 0,
+        "trajectory_eval": {
+          "none": {
+            "status": "ok",
+            "alignment_mode": "none",
+            "ATE": 137.18667077429373,
+            "drift": 0.8982236448197489,
+            "path_ratio": 0.11038627006492525,
+            "num_est_poses": 576,
+            "num_gt_poses": 576,
+            "num_matched_poses": 576,
+            "tracking_success_rate": 1.0,
+            "gt_path_length": 452.68647136422624,
+            "est_path_length_raw": 49.97037108274953,
+            "metric_notes": {
+              "ATE": "RMSE position error after requested alignment.",
+              "drift": "RPE-like translation RMSE on consecutive matched steps after requested alignment.",
+              "path_ratio": "Raw estimated path length divided by GT path length; scale-sensitive and not Sim(3)-normalized."
+            }
+          },
+          "se3": {
+            "status": "ok",
+            "alignment_mode": "se3",
+            "ATE": 114.59254432842383,
+            "drift": 0.7730539649179539,
+            "path_ratio": 0.11038627006492525,
+            "num_est_poses": 576,
+            "num_gt_poses": 576,
+            "num_matched_poses": 576,
+            "tracking_success_rate": 1.0,
+            "gt_path_length": 452.68647136422624,
+            "est_path_length_raw": 49.97037108274953,
+            "metric_notes": {
+              "ATE": "RMSE position error after requested alignment.",
+              "drift": "RPE-like translation RMSE on consecutive matched steps after requested alignment.",
+              "path_ratio": "Raw estimated path length divided by GT path length; scale-sensitive and not Sim(3)-normalized."
+            }
+          },
+          "sim3": {
+            "status": "ok",
+            "alignment_mode": "sim3",
+            "ATE": 3.3307288859427726,
+            "drift": 0.06217040365446354,
+            "path_ratio": 0.11038627006492525,
+            "num_est_poses": 576,
+            "num_gt_poses": 576,
+            "num_matched_poses": 576,
+            "tracking_success_rate": 1.0,
+            "gt_path_length": 452.68647136422624,
+            "est_path_length_raw": 49.97037108274953,
+            "metric_notes": {
+              "ATE": "RMSE position error after requested alignment.",
+              "drift": "RPE-like translation RMSE on consecutive matched steps after requested alignment.",
+              "path_ratio": "Raw estimated path length divided by GT path length; scale-sensitive and not Sim(3)-normalized."
+            }
+          }
+        },
+        "relative_metrics": {}
+      }
+    }
+  }
+}

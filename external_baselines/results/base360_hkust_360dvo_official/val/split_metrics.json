@@ -1,0 +1,58 @@
+{
+  "split": "val",
+  "sequence_count": 2,
+  "pair_count": 5342,
+  "adjacent_pair_count": 1339,
+  "coverage": 0.0,
+  "ate_none": null,
+  "ate_se3": null,
+  "ate_sim3": null,
+  "path_ratio": null,
+  "predicted_path_length": null,
+  "gt_path_length": null,
+  "rot_mean_deg": null,
+  "rot_median_deg": null,
+  "signed_tdir_mean_deg": null,
+  "signed_tdir_median_deg": null,
+  "unsigned_tdir_mean_deg": null,
+  "anti_parallel_rate": null,
+  "tmag_median_ratio": null,
+  "tmag_mean_ratio": null,
+  "log_tmag_mae": null,
+  "nan_inf_count": null,
+  "execution_status": "blocked",
+  "per_sequence": {
+    "downhill_biking": {
+      "frame_count": 576,
+      "pair_count": 2293,
+      "adjacent_pair_count": 575,
+      "image_dir": "/home/dovetao/graduation_design_demo/data/360DVO/Sequences/downhill_biking",
+      "gt_tum": "/home/dovetao/graduation_design_demo/external_baselines/results/base360_hkust_360dvo_official/val/downhill_biking/gt_tum.txt",
+      "pred_tum": null,
+      "run_metadata": "/home/dovetao/graduation_design_demo/external_baselines/results/base360_hkust_360dvo_official/val/downhill_biking/run_metadata.json",
+      "metrics": {
+        "available": false,
+        "coverage": 0.0,
+        "failed_frames": 576,
+        "trajectory_eval": {},
+        "relative_metrics": {}
+      }
+    },
+    "mountains": {
+      "frame_count": 765,
+      "pair_count": 3049,
+      "adjacent_pair_count": 764,
+      "image_dir": "/home/dovetao/graduation_design_demo/data/360DVO/Sequences/mountains",
+      "gt_tum": "/home/dovetao/graduation_design_demo/external_baselines/results/base360_hkust_360dvo_official/val/mountains/gt_tum.txt",
+      "pred_tum": null,
+      "run_metadata": "/home/dovetao/graduation_design_demo/external_baselines/results/base360_hkust_360dvo_official/val/mountains/run_metadata.json",
+      "metrics": {
+        "available": false,
+        "coverage": 0.0,
+        "failed_frames": 765,
+        "trajectory_eval": {},
+        "relative_metrics": {}
+      }
+    }
+  }
+}

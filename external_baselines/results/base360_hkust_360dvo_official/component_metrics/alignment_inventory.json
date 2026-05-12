@@ -1,0 +1,248 @@
+{
+  "splits": {
+    "val": {
+      "downhill_biking": {
+        "sequence": "downhill_biking",
+        "split": "val",
+        "sequence_dir": "external_baselines/results/base360_hkust_360dvo_official/val/downhill_biking",
+        "pred_tum": "external_baselines/results/base360_hkust_360dvo_official/val/downhill_biking/pred_tum.txt",
+        "gt_tum": "external_baselines/results/base360_hkust_360dvo_official/val/downhill_biking/gt_tum.txt",
+        "image_list": "external_baselines/results/base360_hkust_360dvo_official/val/downhill_biking/image_list.txt",
+        "run_metadata": "external_baselines/results/base360_hkust_360dvo_official/val/downhill_biking/run_metadata.json",
+        "stdout_log": "external_baselines/results/base360_hkust_360dvo_official/val/downhill_biking/stdout.log",
+        "stderr_log": "external_baselines/results/base360_hkust_360dvo_official/val/downhill_biking/stderr.log",
+        "trajectory_metrics_json": "external_baselines/results/base360_hkust_360dvo_official/val/downhill_biking/per_sequence_metrics.json",
+        "pred_pose_count": 576,
+        "gt_pose_count": 576,
+        "image_count": 576,
+        "manifest_unique_ts_count": 576,
+        "pred_timestamp_format": "frame_index_remapped_to_gt_timestamp",
+        "gt_timestamp_format": "canonical_timestamp",
+        "pred_gt_timestamp_alignable": true,
+        "pred_gt_timestamp_exact_match": true,
+        "pred_gt_timestamp_intersection_count": 576,
+        "pred_missing_vs_gt_count": 0,
+        "pred_missing_vs_gt_examples": {
+          "head": [],
+          "tail": []
+        },
+        "pred_extra_vs_gt_count": 0,
+        "pred_extra_vs_gt_examples": {
+          "head": [],
+          "tail": []
+        },
+        "pred_missing_vs_manifest_count": 0,
+        "pred_missing_vs_manifest_examples": {
+          "head": [],
+          "tail": []
+        },
+        "pred_timestamp_duplicates": 0,
+        "gt_timestamp_duplicates": 0,
+        "pred_nan_inf_rows": 0,
+        "gt_nan_inf_rows": 0,
+        "pred_timestamp_range": [
+          0.0,
+          57.5
+        ],
+        "gt_timestamp_range": [
+          0.0,
+          57.5
+        ],
+        "image_range": [
+          "data/360DVO/Sequences/downhill_biking/0001.jpg",
+          "data/360DVO/Sequences/downhill_biking/0576.jpg"
+        ],
+        "pred_path_length_raw": 49.97037108274953,
+        "gt_path_length_raw": 452.68647136422624,
+        "0.5x_image_adapter_used": true,
+        "official_demo_input_scale": 0.5,
+        "official_demo_image_dir": "/home/dovetao/graduation_design_demo/external_baselines/results/base360_hkust_360dvo_official/val/downhill_biking/official_demo_input_x0p5"
+      },
+      "mountains": {
+        "sequence": "mountains",
+        "split": "val",
+        "sequence_dir": "external_baselines/results/base360_hkust_360dvo_official/val/mountains",
+        "pred_tum": "external_baselines/results/base360_hkust_360dvo_official/val/mountains/pred_tum.txt",
+        "gt_tum": "external_baselines/results/base360_hkust_360dvo_official/val/mountains/gt_tum.txt",
+        "image_list": "external_baselines/results/base360_hkust_360dvo_official/val/mountains/image_list.txt",
+        "run_metadata": "external_baselines/results/base360_hkust_360dvo_official/val/mountains/run_metadata.json",
+        "stdout_log": "external_baselines/results/base360_hkust_360dvo_official/val/mountains/stdout.log",
+        "stderr_log": "external_baselines/results/base360_hkust_360dvo_official/val/mountains/stderr.log",
+        "trajectory_metrics_json": "external_baselines/results/base360_hkust_360dvo_official/val/mountains/per_sequence_metrics.json",
+        "pred_pose_count": 765,
+        "gt_pose_count": 765,
+        "image_count": 765,
+        "manifest_unique_ts_count": 765,
+        "pred_timestamp_format": "frame_index_remapped_to_gt_timestamp",
+        "gt_timestamp_format": "canonical_timestamp",
+        "pred_gt_timestamp_alignable": true,
+        "pred_gt_timestamp_exact_match": true,
+        "pred_gt_timestamp_intersection_count": 765,
+        "pred_missing_vs_gt_count": 0,
+        "pred_missing_vs_gt_examples": {
+          "head": [],
+          "tail": []
+        },
+        "pred_extra_vs_gt_count": 0,
+        "pred_extra_vs_gt_examples": {
+          "head": [],
+          "tail": []
+        },
+        "pred_missing_vs_manifest_count": 0,
+        "pred_missing_vs_manifest_examples": {
+          "head": [],
+          "tail": []
+        },
+        "pred_timestamp_duplicates": 0,
+        "gt_timestamp_duplicates": 0,
+        "pred_nan_inf_rows": 0,
+        "gt_nan_inf_rows": 0,
+        "pred_timestamp_range": [
+          0.0,
+          76.4
+        ],
+        "gt_timestamp_range": [
+          0.0,
+          76.4
+        ],
+        "image_range": [
+          "data/360DVO/Sequences/mountains/0001.jpg",
+          "data/360DVO/Sequences/mountains/0765.jpg"
+        ],
+        "pred_path_length_raw": 42.479951534252194,
+        "gt_path_length_raw": 103.72469700950349,
+        "0.5x_image_adapter_used": true,
+        "official_demo_input_scale": 0.5,
+        "official_demo_image_dir": "/home/dovetao/graduation_design_demo/external_baselines/results/base360_hkust_360dvo_official/val/mountains/official_demo_input_x0p5"
+      }
+    },
+    "test": {
+      "ridge_to_lake": {
+        "sequence": "ridge_to_lake",
+        "split": "test",
+        "sequence_dir": "external_baselines/results/base360_hkust_360dvo_official/test/ridge_to_lake",
+        "pred_tum": "external_baselines/results/base360_hkust_360dvo_official/test/ridge_to_lake/pred_tum.txt",
+        "gt_tum": "external_baselines/results/base360_hkust_360dvo_official/test/ridge_to_lake/gt_tum.txt",
+        "image_list": "external_baselines/results/base360_hkust_360dvo_official/test/ridge_to_lake/image_list.txt",
+        "run_metadata": "external_baselines/results/base360_hkust_360dvo_official/test/ridge_to_lake/run_metadata.json",
+        "stdout_log": "external_baselines/results/base360_hkust_360dvo_official/test/ridge_to_lake/stdout.log",
+        "stderr_log": "external_baselines/results/base360_hkust_360dvo_official/test/ridge_to_lake/stderr.log",
+        "trajectory_metrics_json": "external_baselines/results/base360_hkust_360dvo_official/test/ridge_to_lake/per_sequence_metrics.json",
+        "pred_pose_count": 552,
+        "gt_pose_count": 552,
+        "image_count": 552,
+        "manifest_unique_ts_count": 552,
+        "pred_timestamp_format": "frame_index_remapped_to_gt_timestamp",
+        "gt_timestamp_format": "canonical_timestamp",
+        "pred_gt_timestamp_alignable": true,
+        "pred_gt_timestamp_exact_match": true,
+        "pred_gt_timestamp_intersection_count": 552,
+        "pred_missing_vs_gt_count": 0,
+        "pred_missing_vs_gt_examples": {
+          "head": [],
+          "tail": []
+        },
+        "pred_extra_vs_gt_count": 0,
+        "pred_extra_vs_gt_examples": {
+          "head": [],
+          "tail": []
+        },
+        "pred_missing_vs_manifest_count": 0,
+        "pred_missing_vs_manifest_examples": {
+          "head": [],
+          "tail": []
+        },
+        "pred_timestamp_duplicates": 0,
+        "gt_timestamp_duplicates": 0,
+        "pred_nan_inf_rows": 0,
+        "gt_nan_inf_rows": 0,
+        "pred_timestamp_range": [
+          0.0,
+          55.1
+        ],
+        "gt_timestamp_range": [
+          0.0,
+          55.1
+        ],
+        "image_range": [
+          "data/360DVO/Sequences/ridge_to_lake/0001.jpg",
+          "data/360DVO/Sequences/ridge_to_lake/0552.jpg"
+        ],
+        "pred_path_length_raw": 21.149423020932403,
+        "gt_path_length_raw": 419.6629060909803,
+        "0.5x_image_adapter_used": true,
+        "official_demo_input_scale": 0.5,
+        "official_demo_image_dir": "/home/dovetao/graduation_design_demo/external_baselines/results/base360_hkust_360dvo_official/test/ridge_to_lake/official_demo_input_x0p5"
+      },
+      "snowmobile": {
+        "sequence": "snowmobile",
+        "split": "test",
+        "sequence_dir": "external_baselines/results/base360_hkust_360dvo_official/test/snowmobile",
+        "pred_tum": "external_baselines/results/base360_hkust_360dvo_official/test/snowmobile/pred_tum.txt",
+        "gt_tum": "external_baselines/results/base360_hkust_360dvo_official/test/snowmobile/gt_tum.txt",
+        "image_list": "external_baselines/results/base360_hkust_360dvo_official/test/snowmobile/image_list.txt",
+        "run_metadata": "external_baselines/results/base360_hkust_360dvo_official/test/snowmobile/run_metadata.json",
+        "stdout_log": "external_baselines/results/base360_hkust_360dvo_official/test/snowmobile/stdout.log",
+        "stderr_log": "external_baselines/results/base360_hkust_360dvo_official/test/snowmobile/stderr.log",
+        "trajectory_metrics_json": "external_baselines/results/base360_hkust_360dvo_official/test/snowmobile/per_sequence_metrics.json",
+        "pred_pose_count": 719,
+        "gt_pose_count": 830,
+        "image_count": 719,
+        "manifest_unique_ts_count": 719,
+        "pred_timestamp_format": "frame_index_remapped_to_gt_timestamp",
+        "gt_timestamp_format": "canonical_timestamp",
+        "pred_gt_timestamp_alignable": true,
+        "pred_gt_timestamp_exact_match": false,
+        "pred_gt_timestamp_intersection_count": 719,
+        "pred_missing_vs_gt_count": 111,
+        "pred_missing_vs_gt_examples": {
+          "head": [
+            71.9,
+            72.0,
+            72.1,
+            72.2,
+            72.3
+          ],
+          "tail": [
+            82.5,
+            82.6,
+            82.7,
+            82.8,
+            82.9
+          ]
+        },
+        "pred_extra_vs_gt_count": 0,
+        "pred_extra_vs_gt_examples": {
+          "head": [],
+          "tail": []
+        },
+        "pred_missing_vs_manifest_count": 0,
+        "pred_missing_vs_manifest_examples": {
+          "head": [],
+          "tail": []
+        },
+        "pred_timestamp_duplicates": 0,
+        "gt_timestamp_duplicates": 0,
+        "pred_nan_inf_rows": 0,
+        "gt_nan_inf_rows": 0,
+        "pred_timestamp_range": [
+          0.0,
+          71.8
+        ],
+        "gt_timestamp_range": [
+          0.0,
+          82.9
+        ],
+        "image_range": [
+          "data/360DVO/Sequences/snowmobile/0001.jpg",
+          "data/360DVO/Sequences/snowmobile/0719.jpg"
+        ],
+        "pred_path_length_raw": 11.34793042143187,
+        "gt_path_length_raw": 365.357206271089,
+        "0.5x_image_adapter_used": true,
+        "official_demo_input_scale": 0.5,
+        "official_demo_image_dir": "/home/dovetao/graduation_design_demo/external_baselines/results/base360_hkust_360dvo_official/test/snowmobile/official_demo_input_x0p5"
+      }
+    }
+  }
+}
