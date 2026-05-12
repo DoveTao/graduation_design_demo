@@ -1,0 +1,96 @@
+{
+  "experiment": "GEN4_true_image_pair_inference_recovery",
+  "goal": "audit and recover a true reusable image-pair inference path without training or GT calibration",
+  "s5e15_audit": {
+    "candidate_json_found": true,
+    "training_status_found": true,
+    "dedicated_model_weights_found": false,
+    "derived_export_tool_found": true,
+    "depends_on_scene01_artifacts": true,
+    "uses_eval_gt_for_prediction": false,
+    "can_predict_R_tdir_tmag": true,
+    "conclusion": "S5E15 is a valid derived export candidate but not fully reusable external inference model."
+  },
+  "generic_recovery": {
+    "generic_model_code_found": true,
+    "train_mvp_checkpoint_load_path_found": true,
+    "model_py_forward_found": true,
+    "dataset_py_found": false,
+    "candidate_inventory": {
+      "s5e2_npz": "/home/dovetao/graduation_design_demo/checkpoints/S5E2_adjacent_dense_candidate/s5e2_minimal_adjacent_pose_regressor.npz",
+      "s5e3_npz": "/home/dovetao/graduation_design_demo/checkpoints/S5E3_scale_calibrated_adjacent_dense_candidate/s5e3_scale_calibrated_heads.npz",
+      "s5e5_pt": "/home/dovetao/graduation_design_demo/checkpoints/S5E5_temporal_visual_backbone_geometry_candidate/s5e5_temporal_visual_best.pt",
+      "s5e13_pt": "/home/dovetao/graduation_design_demo/checkpoints/S5E13_real_correspondence_signed_direction_candidate/s5e13_best.pt",
+      "s5e15_candidate_json": "/home/dovetao/graduation_design_demo/checkpoints/S5E15_scale_deunderfit_antiparallel_candidate.json",
+      "s5e15_candidate_dir": "/home/dovetao/graduation_design_demo/checkpoints/S5E15_scale_deunderfit_antiparallel_candidate",
+      "t57b_final_pt": "/home/dovetao/graduation_design_demo/checkpoints/T57b_no_dt_multiscale_tmag_head_400/final.pt"
+    },
+    "selected_recovered_candidate": "T57b_no_dt_multiscale_tmag_head_400/final.pt",
+    "t57b_forward_probe": {
+      "checkpoint_path": "/home/dovetao/graduation_design_demo/checkpoints/T57b_no_dt_multiscale_tmag_head_400/final.pt",
+      "cfg_H": 1024,
+      "cfg_W": 2048,
+      "cfg_in_ch": 3,
+      "load_missing_keys": 14,
+      "load_unexpected_keys": 0,
+      "forward_success": true,
+      "output_has_R": true,
+      "output_has_tdir": true,
+      "output_has_tmag": true,
+      "output_has_tvec": true,
+      "translation_local_frame": "A",
+      "translation_output_frame": "B",
+      "stage": "coarse_only",
+      "sample_R_pred_BA": [
+        [
+          0.9998498558998108,
+          -0.01713799312710762,
+          0.002159301657229662
+        ],
+        [
+          0.017193851992487907,
+          0.9994333386421204,
+          -0.028899317607283592
+        ],
+        [
+          -0.0016627887962386012,
+          0.028932157903909683,
+          0.9995779395103455
+        ]
+      ],
+      "sample_tdir_pred": [
+        0.5801939964294434,
+        0.6550771594047546,
+        -0.48399266600608826
+      ],
+      "sample_tmag_pred": 0.12955550849437714,
+      "sample_tvec_pred": [
+        0.07356623560190201,
+        0.08792537450790405,
+        -0.0603470616042614
+      ],
+      "uses_gt_for_prediction": false,
+      "uses_360dvo_gt_for_calibration": false
+    }
+  },
+  "export_summary": {
+    "available": true,
+    "blocked": false,
+    "checkpoint_path": "/home/dovetao/graduation_design_demo/checkpoints/T57b_no_dt_multiscale_tmag_head_400/final.pt",
+    "device": "cuda",
+    "num_pairs_predicted": 100,
+    "num_pairs_total": 100,
+    "pair_coverage": 1.0,
+    "prediction_fabricated": false,
+    "uses_gt_for_prediction": false,
+    "uses_gt_scale_calibration": false
+  },
+  "blockers": [],
+  "recommendation": {
+    "do_gen5_360dvo_true_external_eval": true,
+    "keep_s5e15_as_best_candidate": true,
+    "main_next_step": "GEN5_360DVO_true_external_eval"
+  },
+  "s5_locked_metrics_policy_unchanged": true,
+  "final_classification": "GEN4_TRUE_IMAGE_PAIR_INFERENCE_READY"
+}

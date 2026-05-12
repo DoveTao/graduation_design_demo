@@ -1,0 +1,12 @@
+{
+  "available": true,
+  "blocked": false,
+  "checkpoint_path": "/home/dovetao/graduation_design_demo/checkpoints/T57b_no_dt_multiscale_tmag_head_400/final.pt",
+  "device": "cuda",
+  "num_pairs_predicted": 100,
+  "num_pairs_total": 100,
+  "pair_coverage": 1.0,
+  "prediction_fabricated": false,
+  "uses_gt_for_prediction": false,
+  "uses_gt_scale_calibration": false
+}
