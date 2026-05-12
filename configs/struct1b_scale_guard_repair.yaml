@@ -1,0 +1,76 @@
+model:
+  name: STRUCT1B_scale_guard_repair
+  base_architecture: STRUCT1_mainline_rebuild_with_geometry_tokens
+  preserve_geometry_token_pose_solver: true
+  redesign_tdir_head: false
+  use_external_router: false
+  hidden_dim: 96
+  backbone_heads: 4
+  topk_pool: 16
+
+spherical_backbone:
+  local_tangent_coords: true
+  bearing_xyz_channels: true
+  latlon_sincos_channels: true
+  token_encoder_layers: 2
+  coarse_tokens: 64
+  fine_tokens: 24
+
+soft_correspondence_geometry_layer:
+  temperature: 0.05
+  max_matches: 64
+
+observability:
+  low_threshold_quantile: 0.35
+  high_threshold_quantile: 0.70
+
+kstep_geometry:
+  k_values: [1, 2, 3, 5]
+
+pose_solver:
+  scale_delta_clip: 0.22
+  rotation_refine_scale: 0.03
+
+scale_guard:
+  hard_scale_guard_enabled: true
+  prior_min_ratio: 0.35
+  prior_max_ratio: 2.50
+  raw_delta_log_limit: 2.50
+  record_raw_log_tmag: true
+  record_bounded_log_tmag: true
+  record_final_tmag: true
+
+training:
+  real_training_required: true
+  uses_eval_gt_for_training: false
+  uses_orbslam3_teacher: false
+  train_scenes: ["scene01/seq01", "scene01/seq02"]
+  eval_scene: "scene01/seq03"
+  seed: 3407
+  lr: 0.0001
+  weight_decay: 0.0001
+  batch_size: 8
+  steps_per_run: 80
+  kstep_batch_size: 4
+  w_path_candidates: [1.0, 5.0, 10.0]
+  w_tmag_candidates: [1.0, 5.0, 10.0]
+
+losses:
+  w_rot: 0.35
+  w_tdir_signed: 1.00
+  w_tdir_abs_aux: 0.25
+  w_antiparallel: 0.60
+  w_softcorr_cycle: 0.10
+  w_epipolar_residual: 0.15
+  w_inverse_consistency: 0.10
+  w_kstep_composition: 0.30
+  w_confidence_entropy_regularization: 0.05
+
+evaluation:
+  scale_success_tmag_median_lt: 3.0
+  scale_success_path_ratio_lt: 1.0
+  scale_success_tmag_p95_lt: 20.0
+  strong_success_tmag_median_low: 0.7
+  strong_success_tmag_median_high: 1.5
+  strong_success_path_ratio_ge: 0.1572
+  strong_success_sim3_ate_le: 3.9682
