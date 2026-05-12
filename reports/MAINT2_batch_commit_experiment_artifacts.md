@@ -3,7 +3,7 @@
 ## 1. Executive Summary
 
 - commits created: 3 experiment commits so far plus this pending MAINT2 report commit
-- pushed to remote: false at report generation time; push is the next step
+- pushed to remote: true
 - large artifacts excluded: true
 - checkpoints preserved: true
 - working tree status after experiment commits: only MAINT2 documentation plus local-only BASE360 provenance files remain untracked
@@ -50,6 +50,6 @@
 
 ## 5. Next Recommendation
 
-- finish push for this branch
-- then create a clean follow-up plan for `TRAIN360D`
+- working tree still contains local-only BASE360 provenance files, so do not create `TRAIN360D` branch yet
+- clean or explicitly ignore those local-only files before branching for `TRAIN360D`
 - recommended next task: `proceed_to_TRAIN360D_observability_kstep_scale_stabilization`
