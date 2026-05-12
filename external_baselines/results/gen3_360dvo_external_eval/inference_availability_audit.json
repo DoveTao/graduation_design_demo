@@ -1,0 +1,26 @@
+{
+  "s5e15_checkpoint_found": true,
+  "s5e15_model_weights_found": false,
+  "image_pair_forward_available": false,
+  "external_erp_input_supported": false,
+  "depends_on_scene01_artifacts": true,
+  "uses_eval_gt_for_prediction": false,
+  "can_predict_R_tdir_tmag": true,
+  "inference_bridge_ready": false,
+  "bridge_classification": "SCENE_SPECIFIC_EXPORT_ONLY",
+  "evidence": {
+    "source_candidate": "S5E15_scale_deunderfit_antiparallel_candidate",
+    "candidate_json": "checkpoints/S5E15_scale_deunderfit_antiparallel_candidate.json",
+    "candidate_dir": "checkpoints/S5E15_scale_deunderfit_antiparallel_candidate",
+    "training_status_exists": true,
+    "export_tool": "tools/export_s5e15_adjacent_dense_predictions.py",
+    "adjacent_dense_export_available": true,
+    "training_status_classification": "S5E15_TRAIN_PRIOR_SCALE_ONLY"
+  },
+  "blockers": [
+    "MODEL_WEIGHTS_MISSING",
+    "SCENE_SPECIFIC_EXPORT_ONLY",
+    "IMAGE_PAIR_FORWARD_MISSING",
+    "INPUT_PROTOCOL_UNSUPPORTED"
+  ]
+}

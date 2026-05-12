@@ -1,0 +1,19 @@
+{
+  "component_metrics_available": false,
+  "metrics_rows": [],
+  "component_metrics": {},
+  "coverage": {
+    "model_eval_available": false,
+    "num_pairs_total": 100,
+    "num_pairs_predicted": 0,
+    "pair_coverage": 0.0,
+    "adjacent_pair_coverage": 0.0,
+    "kstep_pair_coverage": 0.0,
+    "blocked": true,
+    "eval_blocker": "SCENE_SPECIFIC_EXPORT_ONLY",
+    "prediction_fabricated": false,
+    "uses_gt_for_prediction": false,
+    "uses_gt_scale_calibration": false,
+    "uses_orbslam3_teacher": false
+  }
+}
