@@ -1,0 +1,84 @@
+{
+  "repo_id": "chris1004336379/360DVO",
+  "local_root": "data/360DVO",
+  "existing_sequences": [
+    "bridge_night",
+    "canyon_line",
+    "city_driving",
+    "dragon_boat",
+    "field",
+    "hongkong_central",
+    "mountains",
+    "wingsuit"
+  ],
+  "new_sequences_selected": [
+    "downhill_biking",
+    "drone_racetrack",
+    "ridge_to_lake",
+    "shanghai_street",
+    "snowmobile"
+  ],
+  "new_sequences_downloaded": [
+    "downhill_biking",
+    "drone_racetrack",
+    "ridge_to_lake",
+    "shanghai_street",
+    "snowmobile"
+  ],
+  "selected_sequences_total": [
+    "bridge_night",
+    "canyon_line",
+    "city_driving",
+    "downhill_biking",
+    "dragon_boat",
+    "drone_racetrack",
+    "field",
+    "hongkong_central",
+    "mountains",
+    "ridge_to_lake",
+    "shanghai_street",
+    "snowmobile",
+    "wingsuit"
+  ],
+  "num_sequences_total": 13,
+  "download_attempted": true,
+  "download_complete": true,
+  "total_bytes_downloaded": 3463378995,
+  "max_download_bytes_respected": true,
+  "access_blocked": false,
+  "dependency_blocked": false,
+  "blockers": [],
+  "oversized_sequences_skipped_for_full_sync": [
+    "city_driving",
+    "dragon_boat",
+    "hongkong_central",
+    "london_bridge"
+  ],
+  "snapshot_allow_patterns_used": [],
+  "repaired_existing_sequences": [
+    "bridge_night",
+    "canyon_line",
+    "field",
+    "mountains",
+    "wingsuit"
+  ],
+  "synthetic_timestamps_written": [
+    "bridge_night",
+    "canyon_line",
+    "city_driving",
+    "downhill_biking",
+    "dragon_boat",
+    "drone_racetrack",
+    "field",
+    "hongkong_central",
+    "london_bridge",
+    "mountains",
+    "ridge_to_lake",
+    "shanghai_street",
+    "snowmobile",
+    "snowy_mountain_road",
+    "tokyo_citywalk",
+    "wingsuit"
+  ],
+  "remote_timestamps_missing_for_all_selected": true
+}
