@@ -1,0 +1,66 @@
+task_name: TRAIN360C_spherical_pose_baseline
+
+inputs:
+  train360a_report: reports/TRAIN360A_architecture_inventory_and_reusable_module_audit.md
+  train360a_matrix: reports/TRAIN360A_reusable_module_matrix.json
+  train360b_report: reports/TRAIN360B_manifest_native_dataloader_adapter_and_forward_sanity.md
+  train360b_sanity_json: reports/TRAIN360B_forward_sanity.json
+  hygiene_json: checkpoints/DSET2C_360DVO_dataset_hygiene.json
+  train_manifest: external_baselines/results/dset2c_360dvo_canonical/pair_manifest_train.jsonl
+  val_manifest: external_baselines/results/dset2c_360dvo_canonical/pair_manifest_val.jsonl
+  test_manifest: external_baselines/results/dset2c_360dvo_canonical/pair_manifest_test.jsonl
+  init_checkpoint: checkpoints/T57b_no_dt_multiscale_tmag_head_400/final.pt
+
+outputs:
+  checkpoint_dir: checkpoints/TRAIN360C_spherical_pose_baseline
+  report_path: reports/TRAIN360C_spherical_pose_baseline.md
+  val_metrics_path: reports/TRAIN360C_metrics_val.json
+  test_metrics_path: reports/TRAIN360C_metrics_test.json
+
+data:
+  image_hw: [384, 768]
+  tmag_epsilon: 1.0e-6
+  train_batch_size: 2
+  eval_batch_size: 8
+  num_workers: 4
+  train_subset_max: 512
+  shuffle_train: true
+  require_paths: true
+  skip_invalid: true
+
+model:
+  init_from_t57b: true
+  strict_load_attempt: true
+  enable_fine_stage: false
+  enable_coupled_pose_head: false
+  enable_observability_weighting: false
+  enable_depth_fusion: false
+  use_cuda_if_available: true
+
+loss:
+  rot_weight: 1.0
+  tdir_weight: 1.0
+  tmag_weight: 0.5
+  tmag_loss_type: log_smooth_l1
+  k_weight_k1: 1.0
+  k_weight_k2: 1.0
+  k_weight_k3: 0.9
+  k_weight_k5: 0.8
+
+training:
+  epochs: 1
+  optimizer: AdamW
+  lr: 1.0e-4
+  weight_decay: 1.0e-2
+  grad_clip_norm: 1.0
+  amp: false
+  seed: 3407
+  resume_checkpoint: ""
+  scheduler: cosine
+  min_lr: 1.0e-6
+  val_selection_metric: signed_tdir_mean_deg
+
+evaluation:
+  run_test_on_best_only: true
+  max_val_batches: null
+  max_test_batches: null
