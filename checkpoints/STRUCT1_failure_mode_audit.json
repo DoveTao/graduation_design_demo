@@ -1,0 +1,78 @@
+{
+  "final_classification": "STRUCT1A_DIRECTION_AND_SCALE_BOTH_FAILED",
+  "scale_failure_audit": {
+    "tmag_median_ratio": 23.345353231395972,
+    "tmag_p90_ratio": 91.81163193194263,
+    "tmag_p95_ratio": 188.60878004568698,
+    "tmag_p99_ratio": 4300.918144723965,
+    "tmag_max_ratio": 12453.050845828273,
+    "path_ratio": 12.970194691802757,
+    "scale_explosion_global": true,
+    "outlier_dominated": false,
+    "bounded_prior_effective": false,
+    "export_used_guarded_tmag": true,
+    "path_loss_entered_total": true,
+    "path_loss_weight": 0.2,
+    "frac_tmag_ratio_gt_10": 0.6688741721854304,
+    "frac_tmag_ratio_gt_20": 0.5496688741721855,
+    "top10_path_contribution": 0.6368224301738846,
+    "high_conf_tmag_median_ratio": 13.992569385743396,
+    "low_conf_tmag_median_ratio": 28.862169306733605,
+    "main_scale_failure_source": "全局 scale 系统性放大；outlier 进一步推高 path_ratio，但不是唯一来源。"
+  },
+  "direction_failure_audit": {
+    "tdir_mean_deg": 76.64506725187314,
+    "anti_parallel_rate": 0.33774834437086093,
+    "geometry_token_tdir_failed": true,
+    "confidence_correlates_with_tdir": false,
+    "high_conf_tdir_mean_deg": 77.1949789145519,
+    "low_conf_tdir_mean_deg": 76.09272235174892,
+    "high_conf_anti_parallel_rate": 0.3656387665198238,
+    "low_conf_anti_parallel_rate": 0.30973451327433627,
+    "confidence_vs_tdir_spearman": 0.022756558294849797,
+    "confidence_vs_tmag_spearman": -0.26713402857149504,
+    "entropy_vs_tdir_spearman": -0.022756558294849797,
+    "entropy_vs_tmag_spearman": 0.26713402857149504,
+    "main_direction_failure_source": "geometry token solver 确实接入了 tdir，但高低 confidence 的 tdir 均较差，说明 token signal 没有形成可靠方向约束；同时高 confidence 边的 anti-parallel rate 反而更高，表明 confidence 不能有效筛掉错误方向。"
+  },
+  "export_scale_guard_suspicion": {
+    "bounded_train_prior_terms_present": true,
+    "final_tmag_uses_exp_log": true,
+    "final_tmag_has_upper_clamp": false,
+    "export_used_guarded_tmag": true,
+    "export_used_raw_tmag": false,
+    "froze_geometry_backbone_during_training": true
+  },
+  "git_status": {
+    "branch": "experiment/struct1-geometry-token-pose-solver",
+    "status_short": [
+      "M checkpoints/S5D11_serial_validation_and_nonselected_edge_audit.json",
+      " M checkpoints/S5D11_validation_concurrency_audit.json",
+      " M model.py",
+      " M reports/s5d11_serial_validation_and_nonselected_edge_audit.md",
+      "?? checkpoints/STRUCT1_failure_mode_audit.json",
+      "?? checkpoints/STRUCT1_mainline_rebuild_with_geometry_tokens_candidate.json",
+      "?? checkpoints/STRUCT1_mainline_rebuild_with_geometry_tokens_candidate/",
+      "?? configs/struct1_mainline_rebuild_with_geometry_tokens.yaml",
+      "?? external_baselines/results/struct1_traceable_dense/",
+      "?? reports/struct1_arch2p_arch2_s5e15_orbslam3_comparison.md",
+      "?? reports/struct1_failure_mode_audit.md",
+      "?? reports/struct1_mainline_rebuild_with_geometry_tokens_report.md",
+      "?? tests/test_struct1_failure_mode_audit_static.py",
+      "?? tests/test_struct1_mainline_rebuild_with_geometry_tokens_static.py",
+      "?? tools/audit_struct1_failure_modes.py",
+      "?? tools/audit_struct1_geometry_token_integrity.py",
+      "?? tools/compare_struct1_arch2p_arch2_s5e15_orbslam3.py",
+      "?? tools/evaluate_struct1_traceable_dense.py",
+      "?? tools/export_struct1_adjacent_dense_predictions.py",
+      "?? tools/train_struct1_geometry_token_pose_solver.py"
+    ]
+  },
+  "recommendation": {
+    "promote_struct1": false,
+    "keep_s5e15_as_best_candidate": true,
+    "continue_to_struct2": false,
+    "recommended_next_stage": "stop_model_development_and_close_with_negative_result"
+  },
+  "s5_locked_metrics_policy_unchanged": true
+}
