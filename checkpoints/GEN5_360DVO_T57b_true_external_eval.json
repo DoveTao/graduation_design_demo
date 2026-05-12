@@ -1,0 +1,384 @@
+{
+  "experiment": "GEN5_360DVO_T57b_true_external_eval",
+  "dataset": "360DVO",
+  "source_model": "T57b_no_dt_multiscale_tmag_head_400/final.pt",
+  "training": {
+    "train_new_model": false,
+    "fine_tune": false,
+    "uses_360dvo_gt_for_calibration": false,
+    "uses_orbslam3_teacher": false
+  },
+  "export": {
+    "model_eval_available": true,
+    "num_pairs_predicted": 458,
+    "num_pairs_total": 458,
+    "pair_coverage": 1.0,
+    "predictions_path_local_only": "external_baselines/results/gen5_360dvo_t57b_external_eval/predictions.jsonl",
+    "load_summary": {
+      "missing": [
+        "coarse.mag_head.ridge_calib_raw_center",
+        "fine.mag_head.ridge_calib_raw_center",
+        "coupled_pose_head.backbone.0.weight",
+        "coupled_pose_head.backbone.0.bias",
+        "coupled_pose_head.backbone.1.weight",
+        "coupled_pose_head.backbone.1.bias",
+        "coupled_pose_head.backbone.4.weight",
+        "coupled_pose_head.backbone.4.bias",
+        "coupled_pose_head.rot_head.weight",
+        "coupled_pose_head.rot_head.bias",
+        "coupled_pose_head.tdir_head.weight",
+        "coupled_pose_head.tdir_head.bias",
+        "coupled_pose_head.gate_head.weight",
+        "coupled_pose_head.gate_head.bias"
+      ],
+      "unexpected": []
+    },
+    "num_pairs_skipped": 0,
+    "uses_gt_for_prediction": false,
+    "uses_gt_scale_calibration": false,
+    "uses_orbslam3_teacher": false
+  },
+  "component_metrics": {
+    "overall": {
+      "count": 458,
+      "rot_mean_deg": 2.12066772555611,
+      "rot_median_deg": 2.017433483482318,
+      "rot_p90_deg": 3.4703363386024124,
+      "signed_tdir_mean_deg": 111.96493221327962,
+      "signed_tdir_median_deg": 130.56997736655143,
+      "signed_tdir_p90_deg": 135.97269968596686,
+      "tdir_abs_mean_deg": 55.259924606724304,
+      "tdir_abs_median_deg": 49.34403674269708,
+      "tdir_abs_p90_deg": 77.1197345090873,
+      "anti_parallel_rate": 0.6746724890829694,
+      "tmag_median_ratio": 0.1751560082454769,
+      "tmag_p90_ratio": 0.8297256772039318,
+      "tmag_p95_ratio": 2.059570009421458,
+      "path_ratio": 0.14878731297064046
+    },
+    "by_sequence": {
+      "field": {
+        "count": 309,
+        "rot_mean_deg": 2.599723262975918,
+        "rot_median_deg": 2.2012121690137234,
+        "rot_p90_deg": 3.806676003766705,
+        "signed_tdir_mean_deg": 132.02409948835327,
+        "signed_tdir_median_deg": 133.1747582056007,
+        "signed_tdir_p90_deg": 136.63322314065556,
+        "tdir_abs_mean_deg": 47.97590051164671,
+        "tdir_abs_median_deg": 46.82524179439928,
+        "tdir_abs_p90_deg": 54.22124340803045,
+        "anti_parallel_rate": 1.0,
+        "tmag_median_ratio": 0.14202707430208703,
+        "tmag_p90_ratio": 0.37788962498398904,
+        "tmag_p95_ratio": 0.41325775892152056,
+        "path_ratio": 0.13227632296035996
+      },
+      "wingsuit": {
+        "count": 149,
+        "rot_mean_deg": 1.1271901345311393,
+        "rot_median_deg": 0.7220522278762179,
+        "rot_p90_deg": 1.7382003548506568,
+        "signed_tdir_mean_deg": 70.3657195421537,
+        "signed_tdir_median_deg": 70.98752433148094,
+        "signed_tdir_p90_deg": 81.46695356147843,
+        "tdir_abs_mean_deg": 70.3657195421537,
+        "tdir_abs_median_deg": 70.98752433148094,
+        "tdir_abs_p90_deg": 81.46695356147843,
+        "anti_parallel_rate": 0.0,
+        "tmag_median_ratio": 0.31714163433608045,
+        "tmag_p90_ratio": 2.9349897144079344,
+        "tmag_p95_ratio": 4.336253683796387,
+        "path_ratio": 0.2043849896781982
+      }
+    },
+    "by_k": {
+      "1": {
+        "count": 118,
+        "rot_mean_deg": 1.696379323524696,
+        "rot_median_deg": 1.8941571504929233,
+        "rot_p90_deg": 2.43427650205319,
+        "signed_tdir_mean_deg": 111.47542982834872,
+        "signed_tdir_median_deg": 130.87667136359354,
+        "signed_tdir_p90_deg": 136.0172846849372,
+        "tdir_abs_mean_deg": 55.10190092122449,
+        "tdir_abs_median_deg": 49.07394903634371,
+        "tdir_abs_p90_deg": 75.64314753843713,
+        "anti_parallel_rate": 0.6694915254237288,
+        "tmag_median_ratio": 0.37308555963600554,
+        "tmag_p90_ratio": 2.0840429617928753,
+        "tmag_p95_ratio": 5.129794045451703,
+        "path_ratio": 0.40330913315641204
+      },
+      "2": {
+        "count": 116,
+        "rot_mean_deg": 1.930362246904471,
+        "rot_median_deg": 1.994415538289078,
+        "rot_p90_deg": 3.1335431878367523,
+        "signed_tdir_mean_deg": 111.86500102583278,
+        "signed_tdir_median_deg": 130.58861425491153,
+        "signed_tdir_p90_deg": 136.05732932973007,
+        "tdir_abs_mean_deg": 55.306852989666275,
+        "tdir_abs_median_deg": 49.28054090629422,
+        "tdir_abs_p90_deg": 76.64484925146941,
+        "anti_parallel_rate": 0.6724137931034483,
+        "tmag_median_ratio": 0.18713307547426297,
+        "tmag_p90_ratio": 0.992940329230627,
+        "tmag_p95_ratio": 2.4374973960336863,
+        "path_ratio": 0.20172061549369394
+      },
+      "3": {
+        "count": 114,
+        "rot_mean_deg": 2.1669298137202655,
+        "rot_median_deg": 2.1834780049303877,
+        "rot_p90_deg": 3.976830265838475,
+        "signed_tdir_mean_deg": 112.11311868981467,
+        "signed_tdir_median_deg": 130.33708426933748,
+        "signed_tdir_p90_deg": 136.07705434299487,
+        "tdir_abs_mean_deg": 55.35588969360917,
+        "tdir_abs_median_deg": 49.66291573066253,
+        "tdir_abs_p90_deg": 76.25074557266137,
+        "anti_parallel_rate": 0.6754385964912281,
+        "tmag_median_ratio": 0.12402972015325123,
+        "tmag_p90_ratio": 0.6140518888757242,
+        "tmag_p95_ratio": 1.5659869878520327,
+        "path_ratio": 0.13448909139449833
+      },
+      "5": {
+        "count": 110,
+        "rot_mean_deg": 2.728554897488685,
+        "rot_median_deg": 2.70726292395563,
+        "rot_p90_deg": 5.549947560617526,
+        "signed_tdir_mean_deg": 112.4418416754677,
+        "signed_tdir_median_deg": 130.2510686616826,
+        "signed_tdir_p90_deg": 135.94468385629844,
+        "tdir_abs_mean_deg": 55.28049808456828,
+        "tdir_abs_median_deg": 49.748931338317384,
+        "tdir_abs_p90_deg": 77.09793484359436,
+        "anti_parallel_rate": 0.6818181818181818,
+        "tmag_median_ratio": 0.074650344219682,
+        "tmag_p90_ratio": 0.31068318224184505,
+        "tmag_p95_ratio": 0.8541319421294075,
+        "path_ratio": 0.08071952753814385
+      }
+    },
+    "by_split": {
+      "test": {
+        "count": 149,
+        "rot_mean_deg": 1.1271901345311393,
+        "rot_median_deg": 0.7220522278762179,
+        "rot_p90_deg": 1.7382003548506568,
+        "signed_tdir_mean_deg": 70.3657195421537,
+        "signed_tdir_median_deg": 70.98752433148094,
+        "signed_tdir_p90_deg": 81.46695356147843,
+        "tdir_abs_mean_deg": 70.3657195421537,
+        "tdir_abs_median_deg": 70.98752433148094,
+        "tdir_abs_p90_deg": 81.46695356147843,
+        "anti_parallel_rate": 0.0,
+        "tmag_median_ratio": 0.31714163433608045,
+        "tmag_p90_ratio": 2.9349897144079344,
+        "tmag_p95_ratio": 4.336253683796387,
+        "path_ratio": 0.2043849896781982
+      },
+      "val": {
+        "count": 309,
+        "rot_mean_deg": 2.599723262975918,
+        "rot_median_deg": 2.2012121690137234,
+        "rot_p90_deg": 3.806676003766705,
+        "signed_tdir_mean_deg": 132.02409948835327,
+        "signed_tdir_median_deg": 133.1747582056007,
+        "signed_tdir_p90_deg": 136.63322314065556,
+        "tdir_abs_mean_deg": 47.97590051164671,
+        "tdir_abs_median_deg": 46.82524179439928,
+        "tdir_abs_p90_deg": 54.22124340803045,
+        "anti_parallel_rate": 1.0,
+        "tmag_median_ratio": 0.14202707430208703,
+        "tmag_p90_ratio": 0.37788962498398904,
+        "tmag_p95_ratio": 0.41325775892152056,
+        "path_ratio": 0.13227632296035996
+      }
+    }
+  },
+  "trajectory_eval": {
+    "by_sequence": {
+      "field": {
+        "available": true,
+        "coverage": 1.0,
+        "num_adjacent_pairs_total": 79,
+        "num_adjacent_pairs_predicted": 79,
+        "tum_local_only": {
+          "gt": "external_baselines/results/gen5_360dvo_t57b_external_eval/field_gt_tum.txt",
+          "est": "external_baselines/results/gen5_360dvo_t57b_external_eval/field_pred_tum.txt"
+        },
+        "trajectory_eval": {
+          "none": {
+            "status": "ok",
+            "alignment_mode": "none",
+            "ATE": 15.922610343572318,
+            "drift": 0.45440108588858774,
+            "path_ratio": 0.3603470750808509,
+            "num_est_poses": 80,
+            "num_gt_poses": 80,
+            "num_matched_poses": 80,
+            "tracking_success_rate": 1.0,
+            "gt_path_length": 28.569896596371848,
+            "est_path_length_raw": 10.295078673864953,
+            "metric_notes": {
+              "ATE": "RMSE position error after requested alignment.",
+              "drift": "RPE-like translation RMSE on consecutive matched steps after requested alignment.",
+              "path_ratio": "Raw estimated path length divided by GT path length; scale-sensitive and not Sim(3)-normalized."
+            }
+          },
+          "se3": {
+            "status": "ok",
+            "alignment_mode": "se3",
+            "ATE": 5.795666199560302,
+            "drift": 0.2786611435781427,
+            "path_ratio": 0.3603470750808509,
+            "num_est_poses": 80,
+            "num_gt_poses": 80,
+            "num_matched_poses": 80,
+            "tracking_success_rate": 1.0,
+            "gt_path_length": 28.569896596371848,
+            "est_path_length_raw": 10.295078673864953,
+            "metric_notes": {
+              "ATE": "RMSE position error after requested alignment.",
+              "drift": "RPE-like translation RMSE on consecutive matched steps after requested alignment.",
+              "path_ratio": "Raw estimated path length divided by GT path length; scale-sensitive and not Sim(3)-normalized."
+            }
+          },
+          "sim3": {
+            "status": "ok",
+            "alignment_mode": "sim3",
+            "ATE": 2.5702771020388333,
+            "drift": 0.24876804291131788,
+            "path_ratio": 0.3603470750808509,
+            "num_est_poses": 80,
+            "num_gt_poses": 80,
+            "num_matched_poses": 80,
+            "tracking_success_rate": 1.0,
+            "gt_path_length": 28.569896596371848,
+            "est_path_length_raw": 10.295078673864953,
+            "metric_notes": {
+              "ATE": "RMSE position error after requested alignment.",
+              "drift": "RPE-like translation RMSE on consecutive matched steps after requested alignment.",
+              "path_ratio": "Raw estimated path length divided by GT path length; scale-sensitive and not Sim(3)-normalized."
+            }
+          }
+        }
+      },
+      "wingsuit": {
+        "available": true,
+        "coverage": 1.0,
+        "num_adjacent_pairs_total": 39,
+        "num_adjacent_pairs_predicted": 39,
+        "tum_local_only": {
+          "gt": "external_baselines/results/gen5_360dvo_t57b_external_eval/wingsuit_gt_tum.txt",
+          "est": "external_baselines/results/gen5_360dvo_t57b_external_eval/wingsuit_pred_tum.txt"
+        },
+        "trajectory_eval": {
+          "none": {
+            "status": "ok",
+            "alignment_mode": "none",
+            "ATE": 53.08045377233348,
+            "drift": 0.31166741532633285,
+            "path_ratio": 0.5399853103505438,
+            "num_est_poses": 40,
+            "num_gt_poses": 40,
+            "num_matched_poses": 40,
+            "tracking_success_rate": 1.0,
+            "gt_path_length": 8.975471288777138,
+            "est_path_length_raw": 4.846622649412717,
+            "metric_notes": {
+              "ATE": "RMSE position error after requested alignment.",
+              "drift": "RPE-like translation RMSE on consecutive matched steps after requested alignment.",
+              "path_ratio": "Raw estimated path length divided by GT path length; scale-sensitive and not Sim(3)-normalized."
+            }
+          },
+          "se3": {
+            "status": "ok",
+            "alignment_mode": "se3",
+            "ATE": 1.4685894692185821,
+            "drift": 0.21876576099190229,
+            "path_ratio": 0.5399853103505438,
+            "num_est_poses": 40,
+            "num_gt_poses": 40,
+            "num_matched_poses": 40,
+            "tracking_success_rate": 1.0,
+            "gt_path_length": 8.975471288777138,
+            "est_path_length_raw": 4.846622649412717,
+            "metric_notes": {
+              "ATE": "RMSE position error after requested alignment.",
+              "drift": "RPE-like translation RMSE on consecutive matched steps after requested alignment.",
+              "path_ratio": "Raw estimated path length divided by GT path length; scale-sensitive and not Sim(3)-normalized."
+            }
+          },
+          "sim3": {
+            "status": "ok",
+            "alignment_mode": "sim3",
+            "ATE": 1.0552392170296885,
+            "drift": 0.19397503948660966,
+            "path_ratio": 0.5399853103505438,
+            "num_est_poses": 40,
+            "num_gt_poses": 40,
+            "num_matched_poses": 40,
+            "tracking_success_rate": 1.0,
+            "gt_path_length": 8.975471288777138,
+            "est_path_length_raw": 4.846622649412717,
+            "metric_notes": {
+              "ATE": "RMSE position error after requested alignment.",
+              "drift": "RPE-like translation RMSE on consecutive matched steps after requested alignment.",
+              "path_ratio": "Raw estimated path length divided by GT path length; scale-sensitive and not Sim(3)-normalized."
+            }
+          }
+        }
+      }
+    },
+    "weighted_summary": {
+      "none_ate": 28.30855815315937,
+      "se3_ate": 4.353307289446395,
+      "sim3_ate": 2.0652644737024515
+    },
+    "path_ratio_adjacent_component": 0.14878731297064046
+  },
+  "comparison_to_legacy": {
+    "data2_distribution_shift": {
+      "gt_step_median_ratio_eval_over_train": 0.6303086823480436,
+      "small_motion_fraction_delta": 0.12770672193856053,
+      "path_length_ratio_eval_over_train": 0.49415517458410535,
+      "distribution_shift_suspected": true
+    },
+    "legacy_quality_risk": "DATA3_LEGACY_IMAGE_QUALITY_RISK_CONFIRMED",
+    "s5e15_legacy_overall": {
+      "count": 453,
+      "rot_mean_deg": 0.9134395040767528,
+      "rot_median_deg": 0.797895569319923,
+      "rot_p90_deg": 1.3218302317546538,
+      "signed_tdir_mean_deg": 50.353041365033235,
+      "signed_tdir_median_deg": 41.2294804093569,
+      "signed_tdir_p90_deg": 101.804771450087,
+      "tdir_abs_mean_deg": 43.16064629037026,
+      "tdir_abs_median_deg": 39.87455596995841,
+      "tdir_abs_p90_deg": 78.632504335116,
+      "tdir_mean_cosine": 0.5591010842073055,
+      "anti_parallel_rate": 0.1479028697571744,
+      "severe_wrong_sign_rate": 0.05518763796909492,
+      "direction_abs_good_but_signed_bad_rate": 0.024282560706401765,
+      "tmag_median_ratio": 1.268517401538299,
+      "tmag_mean_ratio": 1.6886134029934055,
+      "tmag_p90_ratio": 3.852362321212163,
+      "tmag_p95_ratio": 4.66860108610276,
+      "tmag_p99_ratio": 6.775825973441673,
+      "tmag_max_ratio": 19.819619392350763,
+      "path_ratio": 0.1571668166639846
+    },
+    "caveat": "GEN5 uses 360DVO external multi-sequence data and is not directly substitutable for scene01/seq03 official legacy metrics."
+  },
+  "recommendation": {
+    "keep_s5e15_as_legacy_best_candidate": true,
+    "use_gen5_as_external_generalization_evidence": true,
+    "do_train360_baseline": true
+  },
+  "s5_locked_metrics_policy_unchanged": true,
+  "final_classification": "GEN5_360DVO_T57B_EXTERNAL_WEAK_GENERALIZATION"
+}
