@@ -1,0 +1,16 @@
+{
+  "real_training_executed": true,
+  "optimizer_step_count": 297,
+  "learned_weights_saved": true,
+  "smoke_policy_only": false,
+  "uses_eval_gt_for_training": false,
+  "uses_orbslam3_teacher": false,
+  "uses_geometry_tokens": true,
+  "W_ab_used_in_pose_solver": true,
+  "tdir_from_geometry_tokens": true,
+  "fine_stage_used": true,
+  "coarse_token_count": 64,
+  "fine_token_count": 24,
+  "softcorr_temperature": 0.05,
+  "classification": "STRUCT1_SHORT_REAL_TRAINING"
+}

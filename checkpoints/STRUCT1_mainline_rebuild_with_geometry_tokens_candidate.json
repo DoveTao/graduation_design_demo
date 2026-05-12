@@ -1,0 +1,117 @@
+{
+  "experiment": "STRUCT1_mainline_rebuild_with_geometry_tokens",
+  "architecture": {
+    "uses_spherical_tokens": true,
+    "uses_soft_correspondence_geometry_layer": true,
+    "uses_geometry_tokens": true,
+    "W_ab_used_in_pose_solver": true,
+    "tdir_from_geometry_tokens": true,
+    "fine_stage_used": true,
+    "uses_external_router": false
+  },
+  "training": {
+    "real_training_executed": true,
+    "optimizer_step_count": 297,
+    "learned_weights_saved": true,
+    "smoke_policy_only": false,
+    "uses_eval_gt_for_training": false,
+    "uses_orbslam3_teacher": false,
+    "uses_geometry_tokens": true,
+    "W_ab_used_in_pose_solver": true,
+    "tdir_from_geometry_tokens": true,
+    "fine_stage_used": true,
+    "coarse_token_count": 64,
+    "fine_token_count": 24,
+    "softcorr_temperature": 0.05,
+    "classification": "STRUCT1_SHORT_REAL_TRAINING"
+  },
+  "integrity_audit": {
+    "experiment": "STRUCT1_mainline_rebuild_with_geometry_tokens",
+    "spherical_token_backbone_used": true,
+    "tangent_geometric_channels_used": true,
+    "W_ab_W_ba_produced": true,
+    "W_ab_used_in_pose_solver": true,
+    "geometry_tokens_nonzero": true,
+    "tdir_from_geometry_tokens": true,
+    "no_fallback_to_S5E15": true,
+    "no_old_metrics_reuse": true,
+    "pose_convention_B_frame_consistent": true,
+    "fine_stage_used": true,
+    "eval_GT_not_used_for_prediction": true,
+    "ORB_teacher_not_used": true,
+    "audit_details": {
+      "confidence_mean": 0.6398040622012241,
+      "softcorr_entropy_mean": 1.1447220895990367,
+      "cycle_error_mean": 0.050072431243610695,
+      "coverage": {
+        "num_poses": 454,
+        "num_edges": 453,
+        "all_edges_traceable": true,
+        "coverage": 1.0
+      }
+    },
+    "integrity_pass": true
+  },
+  "component_metrics": {
+    "rot_mean_deg": 0.9314774626005936,
+    "rot_median_deg": 0.8000763487741889,
+    "rot_p90_deg": 1.3749724459172628,
+    "signed_tdir_mean_deg": 76.64506725187314,
+    "signed_tdir_median_deg": 73.84564500230695,
+    "signed_tdir_p90_deg": 116.61011699246903,
+    "tdir_abs_mean_deg": 62.17215430000165,
+    "tdir_abs_median_deg": 64.35891353139347,
+    "tdir_abs_p90_deg": 85.16363498686458,
+    "anti_parallel_rate": 0.33774834437086093,
+    "tmag_median_ratio": 23.345353231395972,
+    "tmag_p95_ratio": 188.60878004568698,
+    "path_ratio": 12.970194691802755,
+    "geometry_token_confidence_mean": 0.6398040622012241,
+    "softcorr_entropy_mean": 1.1447220895990367,
+    "cycle_consistency_mean": 0.050072431243610695,
+    "epipolar_residual_mean": 0.03245164000246238
+  },
+  "external_eval": {
+    "none": {
+      "ate": 168.78684542237974,
+      "drift": 3.8572867188824542,
+      "path_ratio": 12.97020608133707
+    },
+    "se3": {
+      "ate": 108.893584987358,
+      "drift": 3.857733482014568,
+      "path_ratio": 12.97020608133707
+    },
+    "sim3": {
+      "ate": 4.125350624694253,
+      "drift": 0.13106401982646956,
+      "path_ratio": 12.97020608133707
+    }
+  },
+  "kstep_metrics": {
+    "k1_tdir": 76.64506725187314,
+    "k1_rot": 0.9314774626005936,
+    "k2_tdir": 77.88905184479466,
+    "k2_rot": 1.840420390307755,
+    "k3_tdir": 77.75169564205179,
+    "k3_rot": 2.75432250317755,
+    "k5_tdir": 77.47921771610312,
+    "k5_rot": 4.577936038789363,
+    "path_length_consistency_error": 3.536063885518494
+  },
+  "improvement_vs_s5e15": {
+    "signed_tdir_improved": false,
+    "anti_parallel_reduced": false,
+    "path_ratio_improved": true,
+    "sim3_ate_improved": false,
+    "high_confidence_subset_tdir_improved": false
+  },
+  "recommendation": {
+    "keep_s5e15_as_best_candidate": true,
+    "promote_struct1": false,
+    "continue_model_development": true,
+    "recommended_next_stage": "final_thesis_closure"
+  },
+  "s5_locked_metrics_policy_unchanged": true,
+  "final_classification": "STRUCT1_REAL_TRAINING_NO_IMPROVEMENT"
+}
