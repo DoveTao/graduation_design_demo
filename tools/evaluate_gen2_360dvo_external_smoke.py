@@ -59,10 +59,7 @@ def run(args: argparse.Namespace) -> Dict[str, Any]:
         eval_blocker = "PAIR_MANIFEST_NOT_READY"
     else:
         model_eval_attempted = True
-        eval_blocker = (
-            "S5E15-like external forward path is not wired for 360DVO ERP input in this repo, "
-            "and no committed external inference weights/adapter bridge are available for smoke prediction."
-        )
+        eval_blocker = "ADAPTER_NOT_MODEL_READY"
 
     smoke_payload = {
         "model_eval_attempted": bool(model_eval_attempted),

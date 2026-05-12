@@ -1,6 +1,6 @@
 dataset:
   name: 360DVO
-  local_root: /home/dovetao/datasets/360DVO
+  local_root: data/360DVO
   do_not_commit_raw_data: true
   image_type: ERP
   expected_image_resolution: configurable

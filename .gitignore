@@ -18,6 +18,7 @@ env/
 
 # ---- Data & large local assets ----
 data/
+data/360DVO/
 PanoramaView/
 FisheyeView/
 *.zip

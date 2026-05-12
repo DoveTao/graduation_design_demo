@@ -91,6 +91,14 @@ def run(args: argparse.Namespace) -> Dict[str, Any]:
         "rotation_step_mean": float(np.mean(rots)),
         "rotation_step_p90": float(np.percentile(rots, 90)),
         "train_eval_sequence_split_feasibility": bool(len(seq_ids) >= 2),
+        "compared_to_data2_seq03": {
+            "data2_seq03_gt_step_median": float(seq03["gt_step_median"]),
+            "data2_seq03_small_motion_fraction": float(seq03["small_motion_fraction"]),
+            "data2_seq03_path_length": float(seq03["path_length"]),
+            "gt_step_median_ratio_over_data2_seq03": float(gt_step_median / max(float(seq03["gt_step_median"]), 1.0e-12)),
+            "small_motion_fraction_delta_vs_data2_seq03": float(small_motion_fraction - float(seq03["small_motion_fraction"])),
+            "path_length_ratio_over_data2_seq03": float(path_length / max(float(seq03["path_length"]), 1.0e-12)),
+        },
         "vs_data2_seq03": {
             "data2_seq03_gt_step_median": float(seq03["gt_step_median"]),
             "data2_seq03_small_motion_fraction": float(seq03["small_motion_fraction"]),

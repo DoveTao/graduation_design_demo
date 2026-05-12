@@ -36,13 +36,22 @@ def _collect_images(seq_root: Path) -> List[Path]:
 
 
 def _guess_pose_file(seq_root: Path) -> Optional[Path]:
+    search_root = seq_root.parents[1] if len(seq_root.parents) >= 2 else seq_root.parent
     candidates = sorted(
         [
             p
-            for p in seq_root.parent.rglob("*")
-            if p.is_file() and p.suffix.lower() in {".txt", ".csv", ".tum", ".log"} and any(h in p.name.lower() for h in ("pose", "traj", "trajectory", "gt"))
+            for p in search_root.rglob("*")
+            if p.is_file()
+            and p.suffix.lower() in {".txt", ".csv", ".tum", ".log"}
+            and (
+                any(h in p.name.lower() for h in ("pose", "traj", "trajectory", "gt"))
+                or p.parent.name.lower() == "groundtruth"
+            )
         ]
     )
+    for cand in candidates:
+        if cand.parent.name.lower() == "groundtruth" and cand.stem.lower() == seq_root.name.lower():
+            return cand
     for cand in candidates:
         if seq_root.name.lower() in cand.as_posix().lower():
             return cand
@@ -50,13 +59,19 @@ def _guess_pose_file(seq_root: Path) -> Optional[Path]:
 
 
 def _guess_time_file(seq_root: Path) -> Optional[Path]:
+    search_root = seq_root.parents[1] if len(seq_root.parents) >= 2 else seq_root.parent
     candidates = sorted(
         [
             p
-            for p in seq_root.parent.rglob("*")
-            if p.is_file() and p.suffix.lower() in {".txt", ".csv", ".json"} and any(h in p.name.lower() for h in ("time", "timestamp"))
+            for p in search_root.rglob("*")
+            if p.is_file()
+            and p.suffix.lower() in {".txt", ".csv", ".json"}
+            and (any(h in p.name.lower() for h in ("time", "timestamp")) or p.parent.name.lower() == "timestamps")
         ]
     )
+    for cand in candidates:
+        if seq_root.name.lower() in cand.stem.lower():
+            return cand
     for cand in candidates:
         if seq_root.name.lower() in cand.as_posix().lower():
             return cand
@@ -82,16 +97,21 @@ def _load_timestamps(path: Optional[Path], images: Sequence[Path]) -> List[float
     return out
 
 
-def _load_tum_poses(path: Path) -> List[Dict[str, Any]]:
+def _load_tum_poses(path: Path, fallback_timestamps: Sequence[float] | None = None) -> List[Dict[str, Any]]:
     rows: List[Dict[str, Any]] = []
     lines = [ln.strip() for ln in path.read_text(encoding="utf-8", errors="ignore").splitlines() if ln.strip() and not ln.strip().startswith("#")]
-    for ln in lines:
+    for idx, ln in enumerate(lines):
         cols = _numeric_columns(ln)
-        if len(cols) < 8:
+        if len(cols) >= 8:
+            ts = float(cols[0])
+            tx, ty, tz = cols[1:4]
+            qx, qy, qz, qw = cols[4:8]
+        elif len(cols) == 7:
+            ts = float(fallback_timestamps[idx]) if fallback_timestamps is not None and idx < len(fallback_timestamps) else float(idx) * 0.1
+            tx, ty, tz = cols[0:3]
+            qx, qy, qz, qw = cols[3:7]
+        else:
             continue
-        ts = float(cols[0])
-        tx, ty, tz = cols[1:4]
-        qx, qy, qz, qw = cols[4:8]
         rows.append(
             {
                 "timestamp": ts,
@@ -158,12 +178,15 @@ def run(args: argparse.Namespace) -> Dict[str, Any]:
             images = _collect_images(seq_root)
             pose_file = _guess_pose_file(seq_root)
             time_file = _guess_time_file(seq_root)
-            pose_rows = _load_tum_poses(pose_file) if pose_file and inspection.get("pose_format_detected", "").startswith("tum_like") else []
             timestamps = _load_timestamps(time_file, images)
+            pose_rows = _load_tum_poses(pose_file, timestamps) if pose_file and inspection.get("pose_format_detected", "").startswith("tum_like") else []
             matched = _match_pose_rows(images, timestamps, pose_rows)
             built_for_seq = 0
-            for k in k_values:
-                for i in range(0, max(0, len(images) - k)):
+            max_span = max(0, len(images) - 1)
+            for i in range(max_span):
+                for k in k_values:
+                    if i + k >= len(images):
+                        continue
                     if len(rows) >= max_pairs:
                         break
                     pose_a = matched[i]

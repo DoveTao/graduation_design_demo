@@ -48,6 +48,18 @@ def _find_sequence_dirs(root: Path) -> List[Path]:
     return [p for _, p in seq_dirs]
 
 
+def _is_pose_candidate(path: Path) -> bool:
+    name_l = path.name.lower()
+    parent_l = path.parent.name.lower()
+    return any(h in name_l for h in POSE_HINTS) or "groundtruth" in parent_l
+
+
+def _is_timestamp_candidate(path: Path) -> bool:
+    name_l = path.name.lower()
+    parent_l = path.parent.name.lower()
+    return any(h in name_l for h in TIME_HINTS) or "timestamps" in parent_l
+
+
 def _sample_resolution(images: List[Path]) -> Optional[List[int]]:
     for img_path in images[:3]:
         try:
@@ -75,7 +87,7 @@ def _detect_pose_format(path: Path) -> Tuple[str, str, str]:
     if 8 in widths:
         return "tum_like_timestamp_tx_ty_tz_qx_qy_qz_qw", "xyzw", "T_w_c_or_T_c_w_unknown_until_verified"
     if 7 in widths:
-        return "seven_column_pose_or_quaternion_unknown", "unknown", "unknown"
+        return "tum_like_tx_ty_tz_qx_qy_qz_qw_no_timestamp", "xyzw", "T_w_c_assumed_from_tum_without_timestamp"
     if 12 in widths:
         return "3x4_matrix_rows_flattened", "not_applicable", "unknown"
     if 16 in widths:
@@ -122,9 +134,9 @@ def run(args: argparse.Namespace) -> Dict[str, Any]:
             name_l = path.name.lower()
             if suffix in IMAGE_EXTS:
                 continue
-            if suffix in {".txt", ".csv", ".json", ".tum", ".log"} and any(h in name_l for h in POSE_HINTS):
+            if suffix in {".txt", ".csv", ".json", ".tum", ".log"} and _is_pose_candidate(path):
                 pose_files.append(path)
-            if suffix in {".txt", ".csv", ".json"} and any(h in name_l for h in TIME_HINTS):
+            if suffix in {".txt", ".csv", ".json"} and _is_timestamp_candidate(path):
                 time_files.append(path)
 
     for seq_dir in seq_dirs:
@@ -149,15 +161,15 @@ def run(args: argparse.Namespace) -> Dict[str, Any]:
     payload["source_pose_convention_detected"] = pose_conv
 
     if not payload["sequences_found"]:
-        payload["blockers"].append("NO_SEQUENCE_WITH_IMAGES")
+        payload["blockers"].append("IMAGE_FILES_NOT_FOUND")
     if payload["sample_image_resolution"] is None:
-        payload["blockers"].append("IMAGE_RESOLUTION_NOT_DETECTED")
+        payload["blockers"].append("IMAGE_FILES_NOT_FOUND")
     if not pose_files:
-        payload["blockers"].append("POSE_FILE_NOT_FOUND")
+        payload["blockers"].append("POSE_FILES_NOT_FOUND")
     if pose_fmt == "unknown":
-        payload["blockers"].append(POSE_CONVENTION_UNKNOWN)
+        payload["blockers"].append("POSE_FORMAT_UNKNOWN")
     if not time_files:
-        payload["blockers"].append("TIMESTAMP_FILE_NOT_FOUND")
+        payload["blockers"].append("TIMESTAMPS_NOT_FOUND")
 
     payload["inspection_ready"] = bool(
         payload["dataset_found"]
