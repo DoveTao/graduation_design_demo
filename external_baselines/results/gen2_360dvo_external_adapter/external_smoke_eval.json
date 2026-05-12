@@ -1,0 +1,14 @@
+{
+  "model_eval_attempted": false,
+  "model_eval_available": false,
+  "eval_blocker": "DATASET_NOT_FOUND_LOCALLY",
+  "num_pairs": 0,
+  "component_metrics_available": false,
+  "rot_mean_deg": null,
+  "tdir_mean_deg": null,
+  "tmag_median_ratio": null,
+  "path_ratio": null,
+  "ate_available": false,
+  "dataset_only_feasibility": false,
+  "no_training": true
+}

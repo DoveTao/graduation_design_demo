@@ -1,0 +1,98 @@
+{
+  "experiment": "GEN2_360DVO_external_adapter_smoke_eval",
+  "dataset": "360DVO",
+  "inspection": {
+    "dataset": "360DVO",
+    "dataset_found": false,
+    "local_root": "/home/dovetao/datasets/360DVO",
+    "sequences_found": [],
+    "image_count_by_sequence": {},
+    "pose_files_found": [],
+    "timestamp_files_found": [],
+    "sample_image_resolution": null,
+    "pose_format_detected": "unknown",
+    "quaternion_order_detected": "unknown",
+    "inspection_ready": false,
+    "blockers": [
+      "DATA_NOT_FOUND",
+      "DOWNLOAD_REQUIRED"
+    ]
+  },
+  "pair_manifest": {
+    "dataset": "360DVO",
+    "manifest_ready": false,
+    "pose_convention_ready": false,
+    "split_by_sequence": true,
+    "forbid_random_pair_split": true,
+    "max_smoke_pairs": 100,
+    "num_pairs": 0,
+    "num_adjacent_pairs": 0,
+    "num_kstep_pairs": 0,
+    "valid_pose_fraction": 0.0,
+    "k_values": [
+      1,
+      2,
+      3,
+      5
+    ],
+    "sequence_summaries": [],
+    "blockers": [
+      "DATA_NOT_FOUND",
+      "INSPECTION_NOT_READY"
+    ],
+    "target_schema_terms": [
+      "R_BA",
+      "t_BA_B",
+      "tdir_B",
+      "T_w_c",
+      "adjacent",
+      "kstep"
+    ]
+  },
+  "motion_distribution": {
+    "num_pairs": 0,
+    "gt_step_median": null,
+    "gt_step_mean": null,
+    "gt_step_p10": null,
+    "gt_step_p25": null,
+    "gt_step_p50": null,
+    "gt_step_p75": null,
+    "gt_step_p90": null,
+    "gt_step_p95": null,
+    "small_motion_fraction": null,
+    "very_small_motion_fraction": null,
+    "path_length": null,
+    "rotation_step_mean": null,
+    "rotation_step_p90": null,
+    "train_eval_sequence_split_feasibility": false,
+    "vs_data2_seq03": {},
+    "larger_or_more_stable_than_data2_seq03": false,
+    "suitable_for_tdir_generalization_eval": false,
+    "small_motion_risk_like_data2": null,
+    "blockers": [
+      "EMPTY_MANIFEST"
+    ]
+  },
+  "external_smoke_eval": {
+    "model_eval_attempted": false,
+    "model_eval_available": false,
+    "eval_blocker": "DATASET_NOT_FOUND_LOCALLY",
+    "num_pairs": 0,
+    "component_metrics_available": false,
+    "rot_mean_deg": null,
+    "tdir_mean_deg": null,
+    "tmag_median_ratio": null,
+    "path_ratio": null,
+    "ate_available": false,
+    "dataset_only_feasibility": false,
+    "no_training": true
+  },
+  "recommendation": {
+    "do_gen3_external_eval": false,
+    "do_external_training": false,
+    "keep_s5e15_as_best_candidate": true,
+    "main_next_step": "download_or_mount_360dvo_then_rerun_gen2"
+  },
+  "s5_locked_metrics_policy_unchanged": true,
+  "final_classification": "GEN2_360DVO_DATA_NOT_AVAILABLE"
+}

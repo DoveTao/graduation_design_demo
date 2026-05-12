@@ -1,0 +1,24 @@
+{
+  "num_pairs": 0,
+  "gt_step_median": null,
+  "gt_step_mean": null,
+  "gt_step_p10": null,
+  "gt_step_p25": null,
+  "gt_step_p50": null,
+  "gt_step_p75": null,
+  "gt_step_p90": null,
+  "gt_step_p95": null,
+  "small_motion_fraction": null,
+  "very_small_motion_fraction": null,
+  "path_length": null,
+  "rotation_step_mean": null,
+  "rotation_step_p90": null,
+  "train_eval_sequence_split_feasibility": false,
+  "vs_data2_seq03": {},
+  "larger_or_more_stable_than_data2_seq03": false,
+  "suitable_for_tdir_generalization_eval": false,
+  "small_motion_risk_like_data2": null,
+  "blockers": [
+    "EMPTY_MANIFEST"
+  ]
+}

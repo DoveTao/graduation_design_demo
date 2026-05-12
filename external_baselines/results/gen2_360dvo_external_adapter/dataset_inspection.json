@@ -1,0 +1,17 @@
+{
+  "dataset": "360DVO",
+  "dataset_found": false,
+  "local_root": "/home/dovetao/datasets/360DVO",
+  "sequences_found": [],
+  "image_count_by_sequence": {},
+  "pose_files_found": [],
+  "timestamp_files_found": [],
+  "sample_image_resolution": null,
+  "pose_format_detected": "unknown",
+  "quaternion_order_detected": "unknown",
+  "inspection_ready": false,
+  "blockers": [
+    "DATA_NOT_FOUND",
+    "DOWNLOAD_REQUIRED"
+  ]
+}
