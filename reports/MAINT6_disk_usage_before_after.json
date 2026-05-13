@@ -1,0 +1,49 @@
+{
+  "task": "MAINT6_checkpoint_pruning_after_user_approval",
+  "disk_free_before": "6.5G",
+  "disk_free_after": "9.0G",
+  "space_freed_bytes": 2747489949,
+  "space_freed_human_estimate": "2.56G",
+  "before": {
+    "checkpoints": "3.3G",
+    "train360h_sweep": "2.8G"
+  },
+  "after": {
+    "checkpoints": "663M",
+    "train360h_sweep": "176M"
+  },
+  "deleted_checkpoint_count": 30,
+  "deleted_checkpoint_bytes": 2747489949,
+  "preserved_checkpoints": {
+    "checkpoints/T57b_no_dt_multiscale_tmag_head_400/final.pt": true,
+    "checkpoints/TRAIN360C_spherical_pose_baseline/best_val.pt": true,
+    "checkpoints/TRAIN360C_spherical_pose_baseline/final.pt": true,
+    "checkpoints/TRAIN360D_observability_kstep_scale/best_val.pt": true,
+    "checkpoints/TRAIN360D_observability_kstep_scale/final.pt": true,
+    "checkpoints/TRAIN360H_sweep/TRAIN360H_F01_TRAIN360H_S1_best_seed1/best_val.pt": true,
+    "checkpoints/TRAIN360H_sweep/TRAIN360H_F01_TRAIN360H_S1_best_seed1/final.pt": true
+  },
+  "sanity": {
+    "pytorch_cuda_sanity_passed": true,
+    "torch": "2.9.1+cu128",
+    "cuda_available": true
+  },
+  "compliance": {
+    "training_executed": false,
+    "fine_tune_executed": false,
+    "packages_uninstalled": false,
+    "pytorch_env_removed": false,
+    "base360dvo_rebuild_removed": false,
+    "torch_cuda_stack_modified": false,
+    "train360c_checkpoints_preserved": true,
+    "train360d_checkpoints_preserved": true,
+    "train360h_best_checkpoint_preserved": true,
+    "t57b_checkpoint_preserved": true,
+    "reports_deleted": false,
+    "data_deleted": false,
+    "base360_outputs_deleted": false,
+    "git_reset_hard_used": false,
+    "git_clean_fdx_used": false
+  },
+  "next_recommendation": "no_more_cleanup_needed"
+}
