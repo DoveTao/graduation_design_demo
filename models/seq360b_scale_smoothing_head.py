@@ -81,8 +81,13 @@ def seq360b_scale_losses(
     corrected_log_tmag: torch.Tensor,
     gt_tmag: torch.Tensor,
     *,
+    delta_log_tmag: Optional[torch.Tensor] = None,
     valid_mask: Optional[torch.Tensor] = None,
     eps: float = 1.0e-6,
+    log_weight: float = 1.0,
+    path_weight: float = 0.5,
+    smooth_weight: float = 0.1,
+    delta_weight: float = 0.05,
 ) -> Dict[str, torch.Tensor]:
     mask = torch.ones_like(corrected_log_tmag, dtype=torch.bool) if valid_mask is None else valid_mask.bool()
     pred_tmag = torch.exp(corrected_log_tmag.clamp(-6.0, 6.0)).clamp_min(eps)
@@ -92,14 +97,20 @@ def seq360b_scale_losses(
     pred_path = (pred_tmag * mask.float()).sum(dim=1)
     gt_path = (gt_tmag * mask.float()).sum(dim=1)
     path_ratio_loss = torch.abs(torch.log((pred_path + eps) / (gt_path + eps))).mean()
+    if delta_log_tmag is None:
+        delta_log_tmag = corrected_log_tmag.sum() * 0.0 + torch.zeros_like(corrected_log_tmag)
     if corrected_log_tmag.shape[1] > 1:
-        pred_step_err = (corrected_log_tmag - log_gt) * mask.float()
-        smooth_loss = torch.abs(pred_step_err[:, 1:] - pred_step_err[:, :-1]).mean()
+        smooth_loss = torch.abs(delta_log_tmag[:, 1:] - delta_log_tmag[:, :-1]).mean()
     else:
         smooth_loss = corrected_log_tmag.sum() * 0.0
+    delta_loss = torch.abs(delta_log_tmag[mask]).mean() if mask.any() else corrected_log_tmag.sum() * 0.0
     return {
         "log_tmag_loss": per_pair,
         "path_ratio_loss": path_ratio_loss,
         "scale_smoothness_loss": smooth_loss,
-        "total": per_pair + path_ratio_loss + 0.25 * smooth_loss,
+        "delta_regularization_loss": delta_loss,
+        "total": float(log_weight) * per_pair
+        + float(path_weight) * path_ratio_loss
+        + float(smooth_weight) * smooth_loss
+        + float(delta_weight) * delta_loss,
     }

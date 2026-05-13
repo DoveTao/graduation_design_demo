@@ -1,11 +1,18 @@
 task_name: SEQ360B_lightweight_scale_smoothing_head
-dry_run: true
+dry_run: false
 
 inputs:
   init_checkpoint: checkpoints/FINAL360I_struct360b_final/seed0/best_val.pt
+  hygiene_json: checkpoints/DSET2C_360DVO_dataset_hygiene.json
   train_manifest: external_baselines/results/dset2c_360dvo_canonical/pair_manifest_train.jsonl
   val_manifest: external_baselines/results/dset2c_360dvo_canonical/pair_manifest_val.jsonl
   test_manifest: external_baselines/results/dset2c_360dvo_canonical/pair_manifest_test.jsonl
+  final360i_val_metrics: reports/FINAL360I_metrics_val.json
+  final360i_test_metrics: reports/FINAL360I_metrics_test.json
+  train360e_val_metrics: reports/TRAIN360E_metrics_val.json
+  train360e_test_metrics: reports/TRAIN360E_metrics_test.json
+  base360d_val_metrics: reports/BASE360_metrics_val.json
+  base360d_test_metrics: reports/BASE360_metrics_test.json
 
 data:
   image_hw: [384, 768]
@@ -13,7 +20,10 @@ data:
   max_frame_gap: 1
   max_timestamp_gap_factor: 1.75
   tmag_epsilon: 1.0e-6
-  train_batch_size: 1
+  train_batch_size: 4
+  eval_batch_size: 8
+  train_subset_max: 256
+  num_workers: 0
   require_paths: true
   skip_invalid: true
 
@@ -36,8 +46,26 @@ model:
     beta: 0.25
 
 train:
-  enabled: false
+  enabled: true
+  epochs: 1
+  lr: 1.0e-4
+  weight_decay: 1.0e-4
+  grad_clip_norm: 1.0
+  seed: 3407
+  base_model_frozen: true
 
 loss:
-  path_ratio_weight: 1.0
-  scale_smoothness_weight: 0.25
+  log_tmag_weight: 1.0
+  path_ratio_weight: 0.5
+  scale_smoothness_weight: 0.1
+  delta_regularization_weight: 0.05
+
+outputs:
+  checkpoint_dir: checkpoints/SEQ360B_lightweight_scale_smoothing
+  trajectory_dir: external_baselines/results/seq360b_scale_smoothing_trajectory
+  report_path: reports/SEQ360B_train_lightweight_scale_smoothing_head.md
+  val_metrics_path: reports/SEQ360B_metrics_val.json
+  test_metrics_path: reports/SEQ360B_metrics_test.json
+  trajectory_val_metrics_path: reports/SEQ360B_trajectory_metrics_val.json
+  trajectory_test_metrics_path: reports/SEQ360B_trajectory_metrics_test.json
+  comparison_summary_path: reports/SEQ360B_vs_FINAL360I_TRAIN360E_BASE360D_summary.md

@@ -1,0 +1,15 @@
+{
+  "metrics": {
+    "count": 1339,
+    "coverage": 1.0,
+    "rot_mean_deg": 0.9819342331976553,
+    "signed_tdir_mean_deg": 104.52596244804725,
+    "anti_parallel_rate": 0.6594473487677371,
+    "tmag_median_ratio": 2.199424098126921,
+    "path_ratio": 1.1770705298793382,
+    "path_length_pred": 654.9351881891489,
+    "path_length_gt": 556.4111678645853,
+    "nan_inf_count": 0,
+    "note": "SEQ360B pair metrics are adjacent trajectory rows with scale-smoothed tmag; R/tdir come from frozen FINAL360I."
+  }
+}
