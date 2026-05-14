@@ -1,0 +1,179 @@
+{
+  "task_name": "THESIS361_integrate_tables_and_paragraphs_into_final_thesis_template",
+  "inputs": [
+    {
+      "input_file": "thesis/THESIS360_experiment_section.md",
+      "sections_used": [
+        "experimental protocol",
+        "compared methods",
+        "pair-level metrics",
+        "trajectory-level metrics",
+        "main results",
+        "analysis",
+        "summary"
+      ],
+      "metrics_used": [
+        "FINAL360I pair-level metrics",
+        "TRAIN360E trajectory metrics",
+        "SEQ360B trajectory summary"
+      ],
+      "values_copied_unchanged": true,
+      "output_file_target": [
+        "thesis/THESIS361_final_experiment_chapter_zh.md",
+        "thesis/THESIS361_final_experiment_chapter_en.md"
+      ]
+    },
+    {
+      "input_file": "thesis/THESIS360_results_tables.md",
+      "sections_used": [
+        "pair-level table",
+        "trajectory-level table",
+        "ablation table"
+      ],
+      "metrics_used": [
+        "T57b metrics",
+        "BASE360D component metrics",
+        "FINAL360I pair-level metrics",
+        "SEQ360B pair and trajectory metrics"
+      ],
+      "values_copied_unchanged": true,
+      "output_file_target": [
+        "thesis/THESIS361_final_results_tables.md",
+        "thesis/THESIS361_final_insert_pack.md",
+        "thesis/THESIS361_table_caption_pack.md"
+      ]
+    },
+    {
+      "input_file": "thesis/THESIS360_ablation_analysis.md",
+      "sections_used": [
+        "FINAL360I vs T57b",
+        "FINAL360I vs BASE360D",
+        "TRAIN360E drift",
+        "SEQ360B analysis",
+        "SEQ360A summary",
+        "STRUCT360C summary"
+      ],
+      "metrics_used": [
+        "trajectory_path_ratio change",
+        "ATE SE3 change",
+        "ATE Sim3 unchanged observation"
+      ],
+      "values_copied_unchanged": true,
+      "output_file_target": [
+        "thesis/THESIS361_final_ablation_and_limitations.md",
+        "thesis/THESIS361_final_experiment_chapter_zh.md",
+        "thesis/THESIS361_final_experiment_chapter_en.md"
+      ]
+    },
+    {
+      "input_file": "thesis/THESIS360_limitations.md",
+      "sections_used": [
+        "limitations",
+        "future work"
+      ],
+      "metrics_used": [],
+      "values_copied_unchanged": true,
+      "output_file_target": [
+        "thesis/THESIS361_final_ablation_and_limitations.md",
+        "thesis/THESIS361_final_insert_pack.md"
+      ]
+    },
+    {
+      "input_file": "thesis/THESIS360_method_result_narrative.md",
+      "sections_used": [
+        "method bridge paragraph",
+        "result bridge paragraph"
+      ],
+      "metrics_used": [
+        "FINAL360I pair-level summary",
+        "TRAIN360E and SEQ360B interpretation"
+      ],
+      "values_copied_unchanged": true,
+      "output_file_target": [
+        "thesis/THESIS361_final_experiment_chapter_zh.md",
+        "thesis/THESIS361_final_insert_pack.md"
+      ]
+    },
+    {
+      "input_file": "thesis/THESIS360_chinese_experiment_section.md",
+      "sections_used": [
+        "Chinese narrative structure",
+        "Chinese result wording",
+        "Chinese caveat phrasing"
+      ],
+      "metrics_used": [
+        "all retained Chinese result values"
+      ],
+      "values_copied_unchanged": true,
+      "output_file_target": [
+        "thesis/THESIS361_final_experiment_chapter_zh.md",
+        "thesis/THESIS361_final_insert_pack.md"
+      ]
+    },
+    {
+      "input_file": "thesis/THESIS360_english_experiment_section.md",
+      "sections_used": [
+        "English academic narrative",
+        "English caveat phrasing"
+      ],
+      "metrics_used": [
+        "all retained English result values"
+      ],
+      "values_copied_unchanged": true,
+      "output_file_target": [
+        "thesis/THESIS361_final_experiment_chapter_en.md"
+      ]
+    },
+    {
+      "input_file": "thesis/THESIS360_defense_talking_points.md",
+      "sections_used": [
+        "defense answers",
+        "innovation explanation",
+        "ATE explanation"
+      ],
+      "metrics_used": [
+        "FINAL360I main result",
+        "TRAIN360E drift explanation",
+        "SEQ360B partial effect"
+      ],
+      "values_copied_unchanged": true,
+      "output_file_target": [
+        "thesis/THESIS361_defense_experiment_script.md"
+      ]
+    },
+    {
+      "input_file": "reports/THESIS360_source_metrics_manifest.json",
+      "sections_used": [
+        "metric provenance",
+        "value verification"
+      ],
+      "metrics_used": [
+        "FINAL360I",
+        "TRAIN360E",
+        "SEQ360B",
+        "BASE360D",
+        "T57b",
+        "SEQ360A status",
+        "STRUCT360C status"
+      ],
+      "values_copied_unchanged": true,
+      "output_file_target": [
+        "reports/THESIS361_source_file_manifest.json",
+        "reports/THESIS361_integration_report.md"
+      ]
+    },
+    {
+      "input_file": "reports/THESIS360_experiment_section_and_result_narrative.md",
+      "sections_used": [
+        "main conclusion",
+        "caveats",
+        "compliance framing"
+      ],
+      "metrics_used": [],
+      "values_copied_unchanged": true,
+      "output_file_target": [
+        "reports/THESIS361_integration_report.md"
+      ]
+    }
+  ]
+}
