@@ -1,9 +1,0 @@
-# TRAIN360 vs BASE360 vs T57b summary
-
-| model | source | split | rot_mean_deg | signed_tdir_mean_deg | anti_parallel_rate | tmag_median_ratio | path_ratio | ate_none | ate_se3 | ate_sim3 | coverage | notes |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| T57b recovered legacy image-pair baseline | GEN5 external eval artifact | external_ref_only | 2.120668 | 111.964932 | 0.674672 | 0.175156 | 0.148787 | 28.308558 | 4.353307 | 2.065264 | 100.00% | Recovered legacy arbitrary ERP image-pair forward baseline; not DSET2C canonical val/test; kept only as external reference. |
-| TRAIN360C self-developed hybrid spherical pose baseline | reports/TRAIN360C_metrics_val.json | val | 1.620782 | 111.861396 | 0.713216 | 1.050027 | 0.586027 | N/A | N/A | N/A | 100.00% | Real training on DSET2C canonical train split; clear val/test discrepancy remains on signed translation direction. |
-| TRAIN360C self-developed hybrid spherical pose baseline | reports/TRAIN360C_metrics_test.json | test | 3.101081 | 54.956992 | 0.215725 | 0.769285 | 0.588866 | N/A | N/A | N/A | 100.00% | Stronger translation generalization than T57b on test component metrics; locked learned baseline. |
-| BASE360D HKUST official 360DVO baseline (trajectory-derived component metrics) | reports/BASE360D_metrics_val.json | val | 0.766392 | 106.332225 | 0.598390 | 0.390480 | 0.166456 | 80.793159 | 57.726244 | 1.728649 | 100.00% | Trajectory-derived component metrics from official BASE360C outputs; pair mapping is manifest-aligned, but the public demo still required a `0.5x` adapter. |
-| BASE360D HKUST official 360DVO baseline (trajectory-derived component metrics) | reports/BASE360D_metrics_test.json | test | 0.856182 | 128.402578 | 0.814895 | 0.039910 | 0.043542 | 101.616185 | 78.585742 | 2.931001 | 100.00% | Partial comparability remains because metrics are trajectory-derived and official input required the `0.5x` adapter. |

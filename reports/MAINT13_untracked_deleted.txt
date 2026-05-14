@@ -1,0 +1,9 @@
+backup_patches/
+external_baselines/results/seq360a_sequence_consistency_trajectory/
+external_baselines/results/seq360b_scale_smoothing_trajectory/
+external_baselines/results/train360e_final360i_trajectory/
+reports/STRUCT360C_code_preparation_no_training.md
+.maint13_tracked_delete_paths.txt
+__pycache__/
+logs/
+outputs/

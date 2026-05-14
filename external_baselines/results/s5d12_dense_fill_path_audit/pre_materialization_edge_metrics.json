@@ -1,7 +1,0 @@
-{
-  "dominant_run_72_360": null,
-  "nonselected_edges": null,
-  "pre_materialization_available": false,
-  "reason": "No verified pre-materialization dense fill intermediate was found in the current working tree or provided inputs.",
-  "selected_edges": null
-}

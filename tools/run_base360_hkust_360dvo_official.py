@@ -20,9 +20,6 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 sys.path.insert(0, str(REPO_ROOT / "tools"))
 
-from evaluate_external_baseline_trajectory import evaluate_external_baseline_trajectory
-
-
 RESULTS_ROOT = REPO_ROOT / "external_baselines" / "results" / "base360_hkust_360dvo_official"
 REPORT_PATH = REPO_ROOT / "reports" / "BASE360_HKUST_360DVO_official_baseline_eval.md"
 VAL_JSON_PATH = REPO_ROOT / "reports" / "BASE360_metrics_val.json"
@@ -193,6 +190,12 @@ def _check_modules() -> Dict[str, Any]:
         except Exception as exc:
             payload[name] = {"available": False, "detail": f"{type(exc).__name__}: {exc}"}
     return payload
+
+
+def _evaluate_external_baseline_trajectory_lazy(*args: Any, **kwargs: Any) -> Any:
+    from evaluate_external_baseline_trajectory import evaluate_external_baseline_trajectory
+
+    return evaluate_external_baseline_trajectory(*args, **kwargs)
 
 
 def _inventory_official_repo(official_repo: Path) -> Dict[str, Any]:
@@ -379,7 +382,7 @@ def _prepare_split(
         }
         if pred_tum.exists():
             for mode in ("none", "se3", "sim3"):
-                metrics["trajectory_eval"][mode] = evaluate_external_baseline_trajectory(
+                metrics["trajectory_eval"][mode] = _evaluate_external_baseline_trajectory_lazy(
                     gt_path=gt_tum,
                     est_path=pred_tum,
                     alignment=mode,
