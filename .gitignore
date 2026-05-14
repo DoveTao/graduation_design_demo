@@ -17,6 +17,10 @@ venv/
 env/
 
 # ---- Data & large local assets ----
+checkpoints/
+*.pt
+*.pth
+*.ckpt
 data/
 data/360DVO/
 data/raw/
@@ -41,6 +45,7 @@ logs/
 *.pickle
 
 # ---- Logs / temporary ----
+backup_patches/
 *.log
 *.out
 *.err
@@ -111,6 +116,11 @@ checkpoints/**/final_summary.json
 # ---- Generated report policy ----
 reports/tmp/
 reports/drafts/
+
+# ---- Local trajectory/debug exports ----
+**/pred_tum.txt
+**/adjacent_pair_predictions.jsonl
+**/train_log.jsonl
 
 # ---- Local ORB-SLAM3 runner binaries ----
 external_baselines/runners/orbslam3_mono_fisheye_runner

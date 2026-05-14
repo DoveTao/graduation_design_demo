@@ -1,7 +1,0 @@
-{
-  "experiment": "S5E15_scale_deunderfit_and_antiparallel_joint_refinement",
-  "scale_factor": 2.8,
-  "scale_factor_source": "train_split_prior",
-  "anti_parallel_guard_source": "correspondence_feature_confidence_gate",
-  "oracle_scale_only_for_diagnostic": true
-}
