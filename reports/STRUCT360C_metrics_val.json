@@ -1,0 +1,59 @@
+{
+  "task_name": "STRUCT360C_train_rotation_aware_fine_refinement",
+  "training_executed": true,
+  "selected_epoch": 1,
+  "best_checkpoint": "/home/dovetao/graduation_design_demo/checkpoints/STRUCT360C_rotation_aware_fine_refinement/best_val.pt",
+  "pair_metrics": {
+    "count": 5342,
+    "coverage": 1.0,
+    "rot_mean_deg": 1.3044976745413086,
+    "rot_median_deg": 1.0903805494308472,
+    "rot_p90_deg": 2.7736392736434943,
+    "signed_tdir_mean_deg": 105.138765615312,
+    "signed_tdir_median_deg": 117.11144011875797,
+    "signed_tdir_p90_deg": 146.9936745944493,
+    "unsigned_tdir_mean_deg": 53.97376438482147,
+    "unsigned_tdir_median_deg": 52.74270375837135,
+    "unsigned_tdir_p90_deg": 81.10707346742221,
+    "anti_parallel_rate": 0.6695994009734182,
+    "tmag_ratio_p10": 0.2691349621630504,
+    "tmag_median_ratio": 1.0034856308119506,
+    "tmag_ratio_p50": 1.0034856308119506,
+    "tmag_mean_ratio": 1.476341932809384,
+    "tmag_ratio_p90": 3.983267687891274,
+    "tmag_p90_ratio": 3.983267687891274,
+    "log_tmag_mae": 0.7428025147760814,
+    "scale_collapse_rate": 0.0,
+    "scale_explosion_rate": 0.0,
+    "path_ratio": 0.5629363941249144,
+    "path_length_pred": 3420.209930151701,
+    "path_length_gt": 6075.659640852362,
+    "nan_inf_count": 0,
+    "nan_count": 0,
+    "inf_count": 0
+  },
+  "diagnostics": {
+    "fine_gate_stats": {
+      "mean": 0.039118158662059206,
+      "median": 0.039117392152547836,
+      "min": 0.03911544010043144,
+      "max": 0.03912162408232689
+    },
+    "delta_rot_mean_deg": 0.041369106232818705,
+    "delta_tdir_norm_mean": 2.6737776166856713e-05,
+    "delta_log_tmag_abs_mean": 7.815955942563342e-06,
+    "attention_bias_mean": -1.5707554033773388,
+    "attention_bias_min": -3.14035626407155,
+    "attention_bias_max": -0.0009120791363822642,
+    "attention_entropy_mean": 6.427700396069509,
+    "explicit_matching_used": false,
+    "match_list_output": false,
+    "correspondence_list_output": false,
+    "topk_matching_used": false
+  },
+  "evaluation_completed": false,
+  "notes": [
+    "Validation metrics were recovered from the training log because the end-to-end evaluation tail did not complete.",
+    "Epoch 1 remained the best finite checkpoint."
+  ]
+}

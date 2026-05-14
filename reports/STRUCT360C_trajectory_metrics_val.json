@@ -1,0 +1,7 @@
+{
+  "task_name": "STRUCT360C_train_rotation_aware_fine_refinement",
+  "training_executed": true,
+  "trajectory_evaluation_completed": false,
+  "checkpoint_used": "/home/dovetao/graduation_design_demo/checkpoints/STRUCT360C_rotation_aware_fine_refinement/best_val.pt",
+  "blocker": "Validation trajectory export and ATE evaluation did not complete in this environment."
+}
