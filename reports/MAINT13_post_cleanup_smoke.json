@@ -1,0 +1,15 @@
+{
+  "destructive_cleanup_executed": true,
+  "backup_tag": "backup/pre-maint13-destructive-cleanup-20260514-174819",
+  "show_mainline_pass": true,
+  "check_current_artifacts_pass": true,
+  "py_compile_pass": true,
+  "import_smoke_pass": true,
+  "optional_final360i_forward_smoke_pass": true,
+  "current_mainline_preserved": true,
+  "tracked_files_deleted_count": 1027,
+  "untracked_files_deleted_count": 9,
+  "files_deleted_count": 1036,
+  "checkpoints_deleted": false,
+  "raw_data_deleted": false
+}

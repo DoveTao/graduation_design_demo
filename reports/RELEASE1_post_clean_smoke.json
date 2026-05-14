@@ -1,0 +1,39 @@
+{
+  "py_compile": {
+    "returncode": 0,
+    "pass": true,
+    "stdout": "",
+    "stderr": ""
+  },
+  "import_smoke": {
+    "returncode": 0,
+    "pass": true,
+    "stdout": "",
+    "stderr": ""
+  },
+  "show_mainline": {
+    "returncode": 0,
+    "pass": true,
+    "stdout": "Current thesis pair-level mainline:\n  model: FINAL360I_struct360b_final_selected\n  structure lineage: STRUCT360B_match_free_coarse_to_fine\n  config: configs/final360i_struct360b_final.yaml\n  trainer: tools/final360i_retrain_and_select.py\n  base model: models/struct360b_match_free_coarse_to_fine.py\n  dataset: datasets/dset2c_manifest_dataset.py\nTrajectory evaluation path:\n  tool: tools/train360e_sequence_trajectory_export_and_ate_eval.py\nRetained variant:\n  SEQ360B: tools/train_seq360b_lightweight_scale_smoothing.py\n  head: models/seq360b_scale_smoothing_head.py\nExternal baselines:\n  BASE360D: HKUST official 360DVO trajectory/component baseline\n  T57b: legacy recovered ERP pair baseline reference\nArchived status summaries:\n  SEQ360A: reports/SEQ360A_status_summary.md\n  STRUCT360C: reports/STRUCT360C_status_summary.md\nCore package:\n  train360/core/\nQuick docs:\n  README.md\n  CURRENT_MAINLINE.md\n  PROJECT_STRUCTURE.md\n\n",
+    "stderr": ""
+  },
+  "artifact_check": {
+    "returncode": 0,
+    "pass": true,
+    "stdout": "{\n  \"readme\": {\n    \"path\": \"README.md\",\n    \"exists\": true\n  },\n  \"current_mainline_doc\": {\n    \"path\": \"CURRENT_MAINLINE.md\",\n    \"exists\": true\n  },\n  \"pair_main_config\": {\n    \"path\": \"configs/final360i_struct360b_final.yaml\",\n    \"exists\": true\n  },\n  \"pair_base_config\": {\n    \"path\": \"configs/struct360b_match_free_coarse_to_fine.yaml\",\n    \"exists\": true\n  },\n  \"seq360b_config\": {\n    \"path\": \"configs/seq360b_lightweight_scale_smoothing.yaml\",\n    \"exists\": true\n  },\n  \"pair_main_tool\": {\n    \"path\": \"tools/final360i_retrain_and_select.py\",\n    \"exists\": true\n  },\n  \"trajectory_eval_tool\": {\n    \"path\": \"tools/train360e_sequence_trajectory_export_and_ate_eval.py\",\n    \"exists\": true\n  },\n  \"struct360b_tool\": {\n    \"path\": \"tools/train_struct360b_match_free_coarse_to_fine.py\",\n    \"exists\": true\n  },\n  \"seq360b_tool\": {\n    \"path\": \"tools/train_seq360b_lightweight_scale_smoothing.py\",\n    \"exists\": true\n  },\n  \"pair_main_model\": {\n    \"path\": \"models/struct360b_match_free_coarse_to_fine.py\",\n    \"exists\": true\n  },\n  \"seq360b_model\": {\n    \"path\": \"models/seq360b_scale_smoothing_head.py\",\n    \"exists\": true\n  },\n  \"core_model\": {\n    \"path\": \"train360/core/model.py\",\n    \"exists\": true\n  },\n  \"manifest_dataset\": {\n    \"path\": \"datasets/dset2c_manifest_dataset.py\",\n    \"exists\": true\n  },\n  \"sequence_dataset\": {\n    \"path\": \"datasets/dset2c_sequence_clip_dataset.py\",\n    \"exists\": true\n  },\n  \"final360i_report\": {\n    \"path\": \"reports/FINAL360I_metrics_test.json\",\n    \"exists\": true\n  },\n  \"train360e_report\": {\n    \"path\": \"reports/TRAIN360E_metrics_test.json\",\n    \"exists\": true\n  },\n  \"seq360b_report\": {\n    \"path\": \"reports/SEQ360B_metrics_test.json\",\n    \"exists\": true\n  },\n  \"base360d_report\": {\n    \"path\": \"reports/BASE360D_component_metric_alignment.md\",\n    \"exists\": true\n  },\n  \"canonical_manifest\": {\n    \"path\": \"external_baselines/results/dset2c_360dvo_canonical/pair_manifest_test.jsonl\",\n    \"exists\": true\n  },\n  \"all_present\": true,\n  \"optional\": {\n    \"seq360a_status_summary\": {\n      \"path\": \"reports/SEQ360A_status_summary.md\",\n      \"exists\": true\n    },\n    \"struct360c_status_summary\": {\n      \"path\": \"reports/STRUCT360C_status_summary.md\",\n      \"exists\": true\n    }\n  },\n  \"intentionally_omitted_after_cleanup\": {\n    \"base360d_val_metrics\": {\n      \"path\": \"reports/BASE360D_metrics_val.json\",\n      \"exists\": false,\n      \"status\": \"intentionally_omitted_after_cleanup\"\n    },\n    \"final360i_previous_summary\": {\n      \"path\": \"reports/FINAL360I_vs_all_baselines_summary.md\",\n      \"exists\": false,\n      \"status\": \"intentionally_omitted_after_cleanup\"\n    },\n    \"seq360b_trajectory_dir\": {\n      \"path\": \"external_baselines/results/seq360b_scale_smoothing_trajectory\",\n      \"exists\": false,\n      \"status\": \"intentionally_omitted_after_cleanup\"\n    },\n    \"seq360b_previous_val_metrics\": {\n      \"path\": \"reports/SEQ360B_metrics_val.json\",\n      \"exists\": false,\n      \"status\": \"intentionally_omitted_after_cleanup\"\n    },\n    \"seq360b_previous_trajectory_val_metrics\": {\n      \"path\": \"reports/SEQ360B_trajectory_metrics_val.json\",\n      \"exists\": false,\n      \"status\": \"intentionally_omitted_after_cleanup\"\n    },\n    \"seq360b_previous_summary\": {\n      \"path\": \"reports/SEQ360B_vs_FINAL360I_TRAIN360E_BASE360D_summary.md\",\n      \"exists\": false,\n      \"status\": \"intentionally_omitted_after_cleanup\"\n    }\n  }\n}\n\n",
+    "stderr": ""
+  },
+  "dependency_health": {
+    "returncode": 0,
+    "pass": true,
+    "stdout": "{\n  \"scanned_files\": 27,\n  \"total_references\": 107,\n  \"current_required_missing\": 0,\n  \"current_optional_missing\": 12,\n  \"intentional_omission_count\": 12,\n  \"deleted_reference_count\": 0,\n  \"health_status\": \"pass_with_intentional_omissions\"\n}\n\n",
+    "stderr": ""
+  },
+  "dependency_health_summary": {
+    "current_required_missing": null,
+    "current_optional_missing": null,
+    "intentional_omission_count": null,
+    "deleted_reference_count": null,
+    "health_status": null
+  }
+}

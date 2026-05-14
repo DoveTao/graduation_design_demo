@@ -1,0 +1,56 @@
+{
+  "ready_to_merge_main": false,
+  "blocking_issues_count": 2,
+  "warnings_count": 2,
+  "recommended_action": "do_not_merge_blocking_issues",
+  "branch_status": {
+    "current_branch": "integration/mainline-clean-thesis-final",
+    "latest_commit": "ae5e9a1",
+    "compared_against": "main"
+  },
+  "required_file_check": {
+    "result": "pass",
+    "all_present": true,
+    "source": "reports/MAIN361_required_files_check.json"
+  },
+  "current_entrypoint_check": {
+    "show_mainline": "pass",
+    "check_current_artifacts": "pass",
+    "current_required_missing": 0,
+    "source": "reports/MAIN361_current_entrypoint_check.txt"
+  },
+  "static_validation": {
+    "py_compile": "pass",
+    "import_smoke": "pass",
+    "dependency_health": "pass_with_intentional_omissions",
+    "deleted_artifact_still_required": false
+  },
+  "forbidden_file_check": {
+    "tracked_checkpoint_weight_files_detected": false,
+    "tracked_raw_data_detected": false,
+    "tracked_large_trajectory_outputs_detected": false,
+    "tracked_checkpoints_paths_in_diff_vs_main": 245,
+    "tracked_forbidden_path_scan_entries": 501,
+    "blocking": true,
+    "source": "reports/MAIN361_large_forbidden_file_check.txt"
+  },
+  "thesis_material_check": {
+    "thesis361_files_present": true,
+    "claims_and_caveats_present": true,
+    "overclaim_detected": false,
+    "source": "reports/MAIN361_thesis_tree.txt"
+  },
+  "legacy_noise_check": {
+    "acceptable": false,
+    "reason": "diff vs main still includes many historical checkpoints, legacy reports, and extra historical tools",
+    "source": "reports/MAIN361_legacy_label_scan.txt"
+  },
+  "blocking_issues": [
+    "Large tracked checkpoints/ artifact tree still appears in the integration diff vs main.",
+    "Legacy historical reports/tools remain in the diff and would dilute the cleaned deliverable mainline."
+  ],
+  "warnings": [
+    "Local untracked checkpoint directories are still present in the working tree but were not staged.",
+    "Dependency health is pass_with_intentional_omissions rather than fully clean."
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "task_name": "MAINT15_reduce_legacy_comparison_labels_inside_final360i_reports_and_configs",
+  "training_executed": false,
+  "metrics_modified": false,
+  "old_files_restored": false,
+  "py_compile": "pass",
+  "import_smoke": {
+    "status": "pass",
+    "dataset_class": "Dset2CCanonicalPairDataset"
+  },
+  "current_artifact_check": {
+    "status": "pass",
+    "current_required_missing": 0
+  },
+  "dependency_health_check": {
+    "status": "pass_with_intentional_omissions",
+    "current_required_missing": 0,
+    "current_optional_missing": 12,
+    "intentional_omission_count": 12,
+    "deleted_reference_count": 0
+  },
+  "checkpoints_modified": false,
+  "raw_data_modified": false
+}

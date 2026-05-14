@@ -1,0 +1,118 @@
+ .gitignore                                         |    42 +
+ CURRENT_MAINLINE.md                                |    50 +
+ PROJECT_STRUCTURE.md                               |    72 +
+ README.md                                          |    33 +
+ configs/final360i_struct360b_final.yaml            |    63 +
+ configs/seq360b_lightweight_scale_smoothing.yaml   |    71 +
+ configs/struct360b_match_free_coarse_to_fine.yaml  |   127 +
+ datasets/__init__.py                               |     1 +
+ datasets/dset2c_manifest_dataset.py                |   294 +
+ datasets/dset2c_sequence_clip_dataset.py           |   316 +
+ .../pair_manifest_test.jsonl                       |  5062 ++++++++
+ .../pair_manifest_train.jsonl                      | 12154 +++++++++++++++++++
+ .../pair_manifest_val.jsonl                        |  5342 ++++++++
+ models/seq360b_scale_smoothing_head.py             |   116 +
+ models/struct360b_match_free_coarse_to_fine.py     |   398 +
+ reports/BASE360D_component_metric_alignment.md     |    44 +
+ reports/BASE360D_metrics_test.json                 |   572 +
+ .../FINAL360I_final_retrain_and_model_selection.md |    42 +
+ reports/FINAL360I_metrics_test.json                |    81 +
+ reports/FINAL360I_metrics_val.json                 |    79 +
+ reports/FINAL360I_model_selection_table.json       |   270 +
+ reports/FINAL360I_thesis_ready_result_paragraph.md |    13 +
+ reports/MAIN360_mainline_merge_finalization.md     |    68 +
+ reports/MAIN361_compile_import_smoke.json          |    14 +
+ reports/MAIN361_current_entrypoint_check.txt       |   148 +
+ reports/MAIN361_dependency_health_review.md        |     9 +
+ reports/MAIN361_diff_name_status.txt               |   438 +
+ reports/MAIN361_final_pre_main_merge_review.json   |    56 +
+ reports/MAIN361_final_pre_main_merge_review.md     |   122 +
+ reports/MAIN361_large_forbidden_file_check.txt     |   506 +
+ reports/MAIN361_legacy_label_scan.txt              |   489 +
+ reports/MAIN361_required_files_check.json          |   111 +
+ reports/MAIN361_thesis_tree.txt                    |    17 +
+ reports/MAINT13_delete_candidates.json             |  7259 +++++++++++
+ reports/MAINT13_delete_candidates.txt              |  1055 ++
+ reports/MAINT13_deleted_files_manifest.json        |  7233 +++++++++++
+ ...tive_repo_cleanup_keep_current_mainline_only.md |    30 +
+ reports/MAINT13_keep_list.txt                      |    55 +
+ reports/MAINT13_post_cleanup_smoke.json            |    15 +
+ reports/MAINT13_post_cleanup_tree.txt              |   494 +
+ reports/MAINT13_pre_cleanup_head.txt               |     1 +
+ reports/MAINT13_untracked_deleted.txt              |     9 +
+ reports/MAINT14_dependency_health_check.json       |  1021 ++
+ reports/MAINT14_dependency_health_check.md         |   150 +
+ reports/MAINT14_post_fix_smoke.json                |    32 +
+ reports/MAINT14_restored_files.txt                 |     1 +
+ ...14_trim_remaining_config_report_dependencies.md |    73 +
+ ...MAINT15_dependency_health_after_label_trim.json |   870 ++
+ .../MAINT15_dependency_health_after_label_trim.md  |   141 +
+ reports/MAINT15_legacy_label_scan.json             |   156 +
+ reports/MAINT15_legacy_label_scan.md               |    39 +
+ reports/MAINT15_post_trim_smoke.json               |    24 +
+ reports/MAINT15_reduce_legacy_comparison_labels.md |    54 +
+ reports/RELEASE1_forbidden_diff_paths_after.txt    |     0
+ reports/RELEASE1_forbidden_diff_paths_before.txt   |   245 +
+ reports/RELEASE1_legacy_noise_paths_after.txt      |     0
+ reports/RELEASE1_legacy_noise_paths_before.txt     |    28 +
+ reports/RELEASE1_post_clean_diff_name_status.txt   |   106 +
+ reports/RELEASE1_post_clean_diff_stat.txt          |   107 +
+ reports/RELEASE1_post_clean_smoke.json             |    39 +
+ reports/RELEASE1_pre_clean_diff_name_status.txt    |   448 +
+ reports/RELEASE1_pre_clean_diff_stat.txt           |   449 +
+ reports/RELEASE1_pre_main_merge_diff_cleanup.md    |    98 +
+ .../RELEASE1_required_files_post_clean_check.json  |    67 +
+ reports/RESULTS360_experiment_narrative.md         |    16 +
+ reports/RESULTS360_main_results_table.json         |   201 +
+ reports/RESULTS360_main_results_table.md           |    41 +
+ reports/SEQ360A_status_summary.md                  |     8 +
+ reports/SEQ360B_metrics_test.json                  |    15 +
+ ...Q360B_train_lightweight_scale_smoothing_head.md |    82 +
+ reports/SEQ360B_trajectory_metrics_test.json       |   283 +
+ reports/STRUCT360C_status_summary.md               |     6 +
+ ...S360_experiment_section_and_result_narrative.md |    38 +
+ reports/THESIS360_source_metrics_manifest.json     |   256 +
+ reports/THESIS361_integration_report.md            |    50 +
+ reports/THESIS361_source_file_manifest.json        |   179 +
+ reports/TRAIN360E_metrics_test.json                |  5722 +++++++++
+ reports/TRAIN360E_metrics_val.json                 |  5932 +++++++++
+ ...360E_sequence_trajectory_export_and_ATE_eval.md |   108 +
+ ...60E_vs_FINAL360I_BASE360D_trajectory_summary.md |    16 +
+ thesis/THESIS360_ablation_analysis.md              |    20 +
+ thesis/THESIS360_chinese_experiment_section.md     |    32 +
+ thesis/THESIS360_defense_talking_points.md         |    29 +
+ thesis/THESIS360_english_experiment_section.md     |    24 +
+ thesis/THESIS360_experiment_section.md             |    45 +
+ thesis/THESIS360_limitations.md                    |    23 +
+ thesis/THESIS360_method_result_narrative.md        |    14 +
+ thesis/THESIS360_results_tables.md                 |    30 +
+ thesis/THESIS361_claims_and_caveats_checklist.md   |    17 +
+ thesis/THESIS361_defense_experiment_script.md      |    31 +
+ thesis/THESIS361_final_ablation_and_limitations.md |    25 +
+ thesis/THESIS361_final_experiment_chapter_en.md    |    42 +
+ thesis/THESIS361_final_experiment_chapter_zh.md    |    46 +
+ thesis/THESIS361_final_insert_pack.md              |    51 +
+ thesis/THESIS361_final_results_tables.md           |    31 +
+ thesis/THESIS361_table_caption_pack.md             |    22 +
+ tools/current/README.md                            |    13 +
+ tools/current/check_current_artifacts.py           |    69 +
+ tools/current/show_mainline.py                     |    36 +
+ tools/final360i_retrain_and_select.py              |   716 ++
+ tools/mainline_dependency_utils.py                 |    46 +
+ tools/maint14_dependency_health_check.py           |   290 +
+ ...360e_sequence_trajectory_export_and_ate_eval.py |  1249 ++
+ tools/train_seq360b_lightweight_scale_smoothing.py |   758 ++
+ .../train_struct360b_match_free_coarse_to_fine.py  |  1261 ++
+ train360/core/__init__.py                          |     2 +
+ config.py => train360/core/config.py               |    71 +
+ depth_branch.py => train360/core/depth_branch.py   |     0
+ erp_sampling.py => train360/core/erp_sampling.py   |     0
+ healpix_utils.py => train360/core/healpix_utils.py |     0
+ interaction.py => train360/core/interaction.py     |   125 +-
+ losses.py => train360/core/losses.py               |    89 +-
+ train360/core/model.py                             |  1024 ++
+ pose_head.py => train360/core/pose_head.py         |     0
+ train360/core/train360_pose_losses.py              |    87 +
+ train360/core/train360d_pose_losses.py             |   224 +
+ .../core/transformer_encoder.py                    |     0
+ 117 files changed, 67012 insertions(+), 2 deletions(-)

@@ -28,7 +28,7 @@ from typing import Optional
 import torch
 import torch.nn.functional as F
 
-from pose_head import matrix_geodesic_distance
+from .pose_head import matrix_geodesic_distance
 
 
 def _normalize(v: torch.Tensor, eps: float = 1e-6) -> torch.Tensor:
@@ -164,6 +164,93 @@ def translation_magnitude_loss(
     # Use batch-mean normalization so large-motion weights produce
     # absolute gradient amplification rather than just relative reweighting.
     return (loss * w).mean()
+
+
+def tmag_speed_loss(
+    t_mag_pred: torch.Tensor,
+    t_mag_gt: torch.Tensor,
+    dt_world: torch.Tensor,
+    *,
+    eps: float = 1.0e-3,
+) -> torch.Tensor:
+    pred = t_mag_pred.float().view(-1).clamp_min(float(eps))
+    gt = t_mag_gt.float().view(-1).clamp_min(float(eps))
+    dt = dt_world.float().view(-1).clamp_min(float(eps))
+    log_speed_pred = torch.log(pred) - torch.log(dt)
+    log_speed_gt = torch.log(gt) - torch.log(dt)
+    return F.smooth_l1_loss(log_speed_pred, log_speed_gt)
+
+
+def tmag_pairwise_ratio_loss(
+    t_mag_pred_a: torch.Tensor,
+    t_mag_pred_b: torch.Tensor,
+    t_mag_gt_a: torch.Tensor,
+    t_mag_gt_b: torch.Tensor,
+    *,
+    eps: float = 1.0e-3,
+) -> torch.Tensor:
+    pred_a = t_mag_pred_a.float().view(-1).clamp_min(float(eps))
+    pred_b = t_mag_pred_b.float().view(-1).clamp_min(float(eps))
+    gt_a = t_mag_gt_a.float().view(-1).clamp_min(float(eps))
+    gt_b = t_mag_gt_b.float().view(-1).clamp_min(float(eps))
+    log_ratio_pred = torch.log(pred_a) - torch.log(pred_b)
+    log_ratio_gt = torch.log(gt_a) - torch.log(gt_b)
+    return F.smooth_l1_loss(log_ratio_pred, log_ratio_gt)
+
+
+def tmag_chain_sum_consistency_loss(
+    t_mag_pred_a: torch.Tensor,
+    t_mag_pred_b: torch.Tensor,
+    t_mag_gt_a: torch.Tensor,
+    t_mag_gt_b: torch.Tensor,
+    *,
+    eps: float = 1.0e-3,
+) -> torch.Tensor:
+    pred_sum = t_mag_pred_a.float().view(-1) + t_mag_pred_b.float().view(-1)
+    gt_sum = t_mag_gt_a.float().view(-1) + t_mag_gt_b.float().view(-1)
+    log_pred = torch.log(pred_sum.clamp_min(float(eps)))
+    log_gt = torch.log(gt_sum.clamp_min(float(eps)))
+    return F.smooth_l1_loss(log_pred, log_gt)
+
+
+def coupled_pose_joint_consistency_loss(
+    R_pred: torch.Tensor,
+    t_local_pred: torch.Tensor,
+    t_gt: torch.Tensor,
+    R_gt: torch.Tensor,
+    *,
+    oriented_weight: float = 1.0,
+    axis_weight: float = 0.0,
+    sample_weight: Optional[torch.Tensor] = None,
+) -> torch.Tensor:
+    """Compare the B-frame direction implied by (R_pred, t_local_pred) against GT."""
+    t_local_pred = _normalize(t_local_pred)
+    t_out_pred = _normalize(torch.matmul(R_pred.float(), t_local_pred.unsqueeze(-1)).squeeze(-1))
+    return translation_direction_loss(
+        t_out_pred,
+        t_gt,
+        R_gt,
+        pred_t_frame="B",
+        oriented_weight=oriented_weight,
+        axis_weight=axis_weight,
+        sample_weight=sample_weight,
+    )
+
+
+def coupled_pose_residual_regularization(
+    delta_rot_vec: torch.Tensor,
+    delta_tdir_vec: torch.Tensor,
+    gate: Optional[torch.Tensor] = None,
+    *,
+    use_rot: bool = True,
+    use_tdir: bool = True,
+) -> torch.Tensor:
+    rot_term = delta_rot_vec.float().pow(2).sum(dim=-1) if use_rot else torch.zeros_like(delta_rot_vec.float().sum(dim=-1))
+    tdir_term = delta_tdir_vec.float().pow(2).sum(dim=-1) if use_tdir else torch.zeros_like(delta_tdir_vec.float().sum(dim=-1))
+    reg = rot_term + tdir_term
+    if gate is not None:
+        reg = reg + gate.float().view(-1).pow(2)
+    return reg.mean()
 
 
 def epipolar_simplified_loss(
