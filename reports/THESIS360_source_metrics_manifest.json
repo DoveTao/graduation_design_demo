@@ -1,0 +1,256 @@
+{
+  "task_name": "THESIS360_experiment_section_and_result_narrative",
+  "visible_comparison_set": [
+    "FINAL360I",
+    "TRAIN360E",
+    "SEQ360B",
+    "BASE360D",
+    "T57b"
+  ],
+  "status_only_items": [
+    "SEQ360A",
+    "STRUCT360C"
+  ],
+  "metrics": [
+    {
+      "metric_name": "FINAL360I signed_tdir_mean_deg",
+      "value": 45.264702006380205,
+      "source_file": "reports/FINAL360I_metrics_test.json",
+      "model": "FINAL360I",
+      "split": "test",
+      "caveat": "pair-level metric"
+    },
+    {
+      "metric_name": "FINAL360I anti_parallel_rate",
+      "value": 0.20169893322797314,
+      "source_file": "reports/FINAL360I_metrics_test.json",
+      "model": "FINAL360I",
+      "split": "test",
+      "caveat": "pair-level metric"
+    },
+    {
+      "metric_name": "FINAL360I tmag_median_ratio",
+      "value": 0.8344251368086006,
+      "source_file": "reports/FINAL360I_metrics_test.json",
+      "model": "FINAL360I",
+      "split": "test",
+      "caveat": "pair-level metric"
+    },
+    {
+      "metric_name": "FINAL360I path_ratio",
+      "value": 0.6403519796204528,
+      "source_file": "reports/FINAL360I_metrics_test.json",
+      "model": "FINAL360I",
+      "split": "test",
+      "caveat": "pair-level component path ratio"
+    },
+    {
+      "metric_name": "TRAIN360E ATE none",
+      "value": 222.56856382785097,
+      "source_file": "reports/TRAIN360E_metrics_test.json",
+      "model": "TRAIN360E/FINAL360I",
+      "split": "test",
+      "caveat": "trajectory metric from adjacent-pair composition"
+    },
+    {
+      "metric_name": "TRAIN360E ATE SE3",
+      "value": 118.6037794846689,
+      "source_file": "reports/TRAIN360E_metrics_test.json",
+      "model": "TRAIN360E/FINAL360I",
+      "split": "test",
+      "caveat": "trajectory metric from adjacent-pair composition"
+    },
+    {
+      "metric_name": "TRAIN360E ATE Sim3",
+      "value": 27.564661865900444,
+      "source_file": "reports/TRAIN360E_metrics_test.json",
+      "model": "TRAIN360E/FINAL360I",
+      "split": "test",
+      "caveat": "trajectory metric from adjacent-pair composition"
+    },
+    {
+      "metric_name": "TRAIN360E trajectory_path_ratio",
+      "value": 1.756343083453392,
+      "source_file": "reports/TRAIN360E_metrics_test.json",
+      "model": "TRAIN360E/FINAL360I",
+      "split": "test",
+      "caveat": "trajectory path metric"
+    },
+    {
+      "metric_name": "SEQ360B signed_tdir_mean_deg",
+      "value": 45.32544604265589,
+      "source_file": "reports/SEQ360B_metrics_test.json",
+      "model": "SEQ360B",
+      "split": "test",
+      "caveat": "adjacent/component metric with scale-smoothed tmag"
+    },
+    {
+      "metric_name": "SEQ360B anti_parallel_rate",
+      "value": 0.20015760441292357,
+      "source_file": "reports/SEQ360B_metrics_test.json",
+      "model": "SEQ360B",
+      "split": "test",
+      "caveat": "adjacent/component metric with scale-smoothed tmag"
+    },
+    {
+      "metric_name": "SEQ360B tmag_median_ratio",
+      "value": 1.6978484631707425,
+      "source_file": "reports/SEQ360B_metrics_test.json",
+      "model": "SEQ360B",
+      "split": "test",
+      "caveat": "reveals pair-level scale over-correction"
+    },
+    {
+      "metric_name": "SEQ360B path_ratio",
+      "value": 1.3504765883324317,
+      "source_file": "reports/SEQ360B_metrics_test.json",
+      "model": "SEQ360B",
+      "split": "test",
+      "caveat": "adjacent/component path ratio"
+    },
+    {
+      "metric_name": "SEQ360B ATE none",
+      "value": 139.22717463963536,
+      "source_file": "reports/SEQ360B_trajectory_metrics_test.json",
+      "model": "SEQ360B",
+      "split": "test",
+      "caveat": "trajectory metric after scale smoothing"
+    },
+    {
+      "metric_name": "SEQ360B ATE SE3",
+      "value": 75.94691348103409,
+      "source_file": "reports/SEQ360B_trajectory_metrics_test.json",
+      "model": "SEQ360B",
+      "split": "test",
+      "caveat": "trajectory metric after scale smoothing"
+    },
+    {
+      "metric_name": "SEQ360B ATE Sim3",
+      "value": 27.567211313835486,
+      "source_file": "reports/SEQ360B_trajectory_metrics_test.json",
+      "model": "SEQ360B",
+      "split": "test",
+      "caveat": "unchanged trajectory-shape metric"
+    },
+    {
+      "metric_name": "SEQ360B trajectory_path_ratio",
+      "value": 1.3502369615185652,
+      "source_file": "reports/SEQ360B_trajectory_metrics_test.json",
+      "model": "SEQ360B",
+      "split": "test",
+      "caveat": "trajectory path metric after scale smoothing"
+    },
+    {
+      "metric_name": "BASE360D signed_tdir_mean_deg",
+      "value": 128.402578,
+      "source_file": "reports/BASE360D_component_metric_alignment.md",
+      "model": "BASE360D",
+      "split": "test component",
+      "caveat": "trajectory-derived component metric, not native pair forward output"
+    },
+    {
+      "metric_name": "BASE360D anti_parallel_rate",
+      "value": 0.814895,
+      "source_file": "reports/BASE360D_component_metric_alignment.md",
+      "model": "BASE360D",
+      "split": "test component",
+      "caveat": "trajectory-derived component metric, not native pair forward output"
+    },
+    {
+      "metric_name": "BASE360D tmag_median_ratio",
+      "value": 0.03991,
+      "source_file": "reports/BASE360D_component_metric_alignment.md",
+      "model": "BASE360D",
+      "split": "test component",
+      "caveat": "trajectory-derived component metric, not native pair forward output"
+    },
+    {
+      "metric_name": "BASE360D pair_component_path_ratio",
+      "value": 0.043542,
+      "source_file": "reports/BASE360D_component_metric_alignment.md",
+      "model": "BASE360D",
+      "split": "test component",
+      "caveat": "trajectory-derived component metric, not native pair forward output"
+    },
+    {
+      "metric_name": "BASE360D ATE none",
+      "value": 103.256252,
+      "source_file": "reports/BASE360D_component_metric_alignment.md",
+      "model": "BASE360D",
+      "split": "test trajectory",
+      "caveat": "official sequence VO pipeline with 0.5x adapter caveat"
+    },
+    {
+      "metric_name": "BASE360D ATE SE3",
+      "value": 79.295214,
+      "source_file": "reports/BASE360D_component_metric_alignment.md",
+      "model": "BASE360D",
+      "split": "test trajectory",
+      "caveat": "official sequence VO pipeline with 0.5x adapter caveat"
+    },
+    {
+      "metric_name": "BASE360D ATE Sim3",
+      "value": 2.974466,
+      "source_file": "reports/BASE360D_component_metric_alignment.md",
+      "model": "BASE360D",
+      "split": "test trajectory",
+      "caveat": "official sequence VO pipeline with 0.5x adapter caveat"
+    },
+    {
+      "metric_name": "BASE360D trajectory_path_ratio",
+      "value": 0.043618,
+      "source_file": "reports/BASE360D_component_metric_alignment.md",
+      "model": "BASE360D",
+      "split": "test trajectory",
+      "caveat": "official sequence VO pipeline with 0.5x adapter caveat"
+    },
+    {
+      "metric_name": "T57b signed_tdir_mean_deg",
+      "value": 111.964932,
+      "source_file": "reports/RESULTS360_main_results_table.md",
+      "model": "T57b",
+      "split": "reference",
+      "caveat": "legacy recovered external reference only"
+    },
+    {
+      "metric_name": "T57b anti_parallel_rate",
+      "value": 0.674672,
+      "source_file": "reports/RESULTS360_main_results_table.md",
+      "model": "T57b",
+      "split": "reference",
+      "caveat": "legacy recovered external reference only"
+    },
+    {
+      "metric_name": "T57b tmag_median_ratio",
+      "value": 0.175156,
+      "source_file": "reports/RESULTS360_main_results_table.md",
+      "model": "T57b",
+      "split": "reference",
+      "caveat": "legacy recovered external reference only"
+    },
+    {
+      "metric_name": "T57b path_ratio",
+      "value": 0.148787,
+      "source_file": "reports/RESULTS360_main_results_table.md",
+      "model": "T57b",
+      "split": "reference",
+      "caveat": "legacy recovered external reference only"
+    },
+    {
+      "metric_name": "SEQ360A classification",
+      "value": "no_improvement",
+      "source_file": "reports/SEQ360A_status_summary.md",
+      "model": "SEQ360A",
+      "split": "status-only",
+      "caveat": "negative ablation; not part of main comparison table"
+    },
+    {
+      "metric_name": "STRUCT360C classification",
+      "value": "evaluation_failed",
+      "source_file": "reports/STRUCT360C_status_summary.md",
+      "model": "STRUCT360C",
+      "split": "status-only",
+      "caveat": "unstable challenger; not part of main comparison table"
+    }
+  ]
+}
