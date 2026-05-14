@@ -1,0 +1,42 @@
+# Chapter X Experimental Evaluation and Result Analysis
+
+## 1. Dataset and Split Protocol
+All retained experiments are conducted on the DSET2C canonical split derived from the 360DVO/HKUST data source. The repository uses a manifest-native protocol: train, validation, and test samples are loaded from canonical JSONL manifests, rather than discovered through raw sequence-directory scanning. Random pair splitting is explicitly disallowed. This protocol is important because the thesis evaluates both pair-level relative pose quality and trajectory-level sequential composition under a stable sequence-aware partition.
+
+In terms of training and supervision constraints, no ORB-SLAM3 teacher, HKUST 360DVO teacher, or BASE360 outputs are used as training inputs. The method also remains strictly match-free: no explicit matching, RANSAC, PnP, or bundle adjustment is introduced into the learned relative pose pipeline. Therefore, the contribution boundary of this thesis is deliberately centered on panoramic pair-level relative pose estimation rather than on a complete sequence VO system.
+
+## 2. Compared Methods
+The visible comparison set is intentionally compact after repository cleanup. `FINAL360I_struct360b_final_selected` is the current pair-level thesis main model, structurally inherited from `STRUCT360B_match_free_coarse_to_fine`. `TRAIN360E` is not a separate model; instead, it composes adjacent predictions from `FINAL360I` into full trajectories and evaluates them with ATE. `SEQ360B` is the only retained sequence-scale variant, designed to study scale/path drift through a lightweight log-scale correction head. `BASE360D` denotes the HKUST official 360DVO external baseline, whose component metrics are trajectory-derived rather than native pair-level outputs. `T57b` is a recovered legacy baseline retained only as an external historical reference.
+
+Two additional lines are kept only as status summaries. `SEQ360A` has classification `no_improvement`, while `STRUCT360C` has classification `evaluation_failed`. Neither is treated as an effective improving method in the final comparison set.
+
+## 3. Evaluation Metrics
+The evaluation is divided into pair-level and trajectory-level layers. At the pair level, the key translation component metrics are signed translation-direction mean, anti-parallel rate, translation-magnitude median ratio, and path ratio. Signed translation-direction mean measures the average angular error between predicted and ground-truth translation vectors; lower is better. Anti-parallel rate measures the frequency of sign-flipped translation direction; lower is better. Translation-magnitude median ratio measures scale calibration and is ideally close to 1. Path ratio compares the summed predicted and ground-truth translation magnitudes over the evaluation set and reflects overall scale balance.
+
+At the trajectory level, adjacent relative poses are composed into full sequences. `ATE none` measures raw trajectory error without additional rigid alignment, `ATE SE3` measures rigidly aligned trajectory error, and `ATE Sim3` measures similarity-aligned error. `trajectory_path_ratio` measures the global predicted-versus-ground-truth path-length bias. These trajectory-level metrics evaluate accumulated sequential drift rather than isolated pair quality.
+
+## 4. Pair-level Results
+On the retained test split, `FINAL360I` achieves a signed translation-direction mean of `45.264702006380205`, an anti-parallel rate of `0.20169893322797314`, a translation-magnitude median ratio of `0.8344251368086006`, and a path ratio of `0.6403519796204528`. These values are substantially stronger than those of the recovered `T57b` legacy reference, whose corresponding values are approximately `111.964932`, `0.674672`, `0.175156`, and `0.148787`. They are also much stronger than those of the trajectory-derived `BASE360D` component baseline, which reaches `128.402578`, `0.814895`, `0.039910`, and `0.043542`, respectively.
+
+Accordingly, the most robust empirical claim is that `FINAL360I` clearly improves pair-level translation component behavior over both retained external references. However, the comparison with `BASE360D` must retain an important caveat: its component metrics are trajectory-derived from the official sequence pipeline and are therefore only partially comparable to native pair-level predictions.
+
+## 5. Trajectory-level Results
+The retained `TRAIN360E` evaluation shows that adjacent predictions from `FINAL360I` can be composed into complete trajectories with full reported test coverage. At the same time, direct adjacent-pair composition still exhibits substantial drift: the test `ATE none`, `ATE SE3`, and `ATE Sim3` are `222.56856382785097`, `118.6037794846689`, and `27.564661865900444`, respectively, and the `trajectory_path_ratio` is `1.756343083453392`. This demonstrates that strong pair-level quality does not automatically translate into stable long-horizon sequential behavior.
+
+By contrast, `BASE360D`, as an official sequence VO pipeline, retains clear advantages on trajectory-level evaluation. The retained report shows test `ATE none`, `ATE SE3`, and `ATE Sim3` of `103.256252`, `79.295214`, and `2.974466`, respectively. Therefore, this thesis must not claim that `FINAL360I` already surpasses the official 360DVO pipeline at the full trajectory level.
+
+## 6. SEQ360B Variant Analysis
+`SEQ360B` was designed to correct scale/path drift without changing the underlying rotation or translation-direction prediction branch. It partially succeeds in that objective: its test `trajectory_path_ratio` improves from `1.756343083453392` to `1.3502369615185652`, and its `ATE SE3` drops from `118.6037794846689` to `75.94691348103409`. `ATE none` is also reduced from `222.56856382785097` to `139.22717463963536`.
+
+However, the key limitation is that `ATE Sim3` remains effectively unchanged, moving from `27.564661865900444` to `27.567211313835486`. This strongly suggests that the remaining trajectory error is not purely a scale problem, but is instead more closely tied to trajectory shape, rotation accumulation, or direction accumulation. In addition, the pair-level `tmag_median_ratio` of `SEQ360B` rises to `1.6978484631707425`, indicating a clear scale over-correction risk. Therefore, `SEQ360B` should be interpreted as a useful partial variant rather than as a replacement for the main pair-level model.
+
+## 7. Diagnostic Attempts
+Two additional branches are retained only as diagnostic summaries. `SEQ360A` has status `no_improvement`, which indicates that short-clip local consistency alone did not reduce the main trajectory drift. `STRUCT360C` has status `evaluation_failed`, meaning that its rotation-aware fine-refinement design was not sufficiently stable for promotion into the final result line. These branches are informative as negative or unstable attempts, but they should not be presented as successful improving models.
+
+## 8. Discussion
+Taken together, the current evidence supports a focused interpretation. The main contribution of the thesis lies in match-free panoramic pair-level relative pose estimation, not in a complete end-to-end sequence VO pipeline. `FINAL360I` clearly improves pair-level translation component metrics, while `TRAIN360E` and `SEQ360B` together reveal the gap between pair-level success and sequence-level stability. `TRAIN360E` shows that direct composition is feasible but still drifts; `SEQ360B` shows that scale/path correction helps but does not solve trajectory shape.
+
+Therefore, the method should not be overclaimed as a full replacement for official 360DVO. A more accurate conclusion is that the thesis advances the pair-level panoramic relative pose component, while sequence-level drift remains a major open problem.
+
+## 9. Chapter Summary
+In summary, `FINAL360I` is the strongest retained pair-level model and significantly outperforms the retained `T57b` reference and the trajectory-derived `BASE360D` component baseline on pair-level translation behavior. At the same time, `TRAIN360E` shows that direct adjacent-pair composition still suffers from substantial sequence-level drift, and `SEQ360B` shows that scale/log-scale correction can improve path ratio and SE3 ATE without improving Sim3 trajectory shape. The retained evidence therefore supports a strong pair-level contribution and motivates future work toward sequence-level refinement, global scale calibration, and lightweight trajectory optimization.
