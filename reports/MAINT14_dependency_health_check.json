@@ -1,0 +1,1021 @@
+{
+  "task_name": "MAINT14_trim_remaining_config_report_dependencies_inside_final360i_and_struct360b_tools",
+  "summary": {
+    "scanned_files": 27,
+    "total_references": 126,
+    "current_required_missing": 0,
+    "current_optional_missing": 7,
+    "deleted_reference_count": 0,
+    "health_status": "partial"
+  },
+  "records": [
+    {
+      "file": "CURRENT_MAINLINE.md",
+      "line": 7,
+      "reference": "tools/current/show_mainline.py",
+      "exists_now": true,
+      "category": "current_required",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "CURRENT_MAINLINE.md",
+      "line": 8,
+      "reference": "tools/current/check_current_artifacts.py",
+      "exists_now": true,
+      "category": "current_required",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "CURRENT_MAINLINE.md",
+      "line": 13,
+      "reference": "configs/final360i_struct360b_final.yaml",
+      "exists_now": true,
+      "category": "current_required",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "CURRENT_MAINLINE.md",
+      "line": 14,
+      "reference": "tools/final360i_retrain_and_select.py",
+      "exists_now": true,
+      "category": "current_required",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "CURRENT_MAINLINE.md",
+      "line": 17,
+      "reference": "tools/train360e_sequence_trajectory_export_and_ate_eval.py",
+      "exists_now": true,
+      "category": "current_required",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "CURRENT_MAINLINE.md",
+      "line": 23,
+      "reference": "configs/seq360b_lightweight_scale_smoothing.yaml",
+      "exists_now": true,
+      "category": "current_required",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "CURRENT_MAINLINE.md",
+      "line": 24,
+      "reference": "tools/train_seq360b_lightweight_scale_smoothing.py",
+      "exists_now": true,
+      "category": "current_required",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "CURRENT_MAINLINE.md",
+      "line": 39,
+      "reference": "SEQ360A",
+      "exists_now": false,
+      "category": "current_optional",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "CURRENT_MAINLINE.md",
+      "line": 39,
+      "reference": "STRUCT360C",
+      "exists_now": false,
+      "category": "current_optional",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "PROJECT_STRUCTURE.md",
+      "line": 7,
+      "reference": "tools/current/README.md",
+      "exists_now": true,
+      "category": "current_required",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "PROJECT_STRUCTURE.md",
+      "line": 27,
+      "reference": "tools/final360i_retrain_and_select.py",
+      "exists_now": true,
+      "category": "current_required",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "PROJECT_STRUCTURE.md",
+      "line": 28,
+      "reference": "tools/train360e_sequence_trajectory_export_and_ate_eval.py",
+      "exists_now": true,
+      "category": "current_required",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "PROJECT_STRUCTURE.md",
+      "line": 29,
+      "reference": "tools/train_struct360b_match_free_coarse_to_fine.py",
+      "exists_now": true,
+      "category": "current_optional",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "PROJECT_STRUCTURE.md",
+      "line": 31,
+      "reference": "configs/final360i_struct360b_final.yaml",
+      "exists_now": true,
+      "category": "current_required",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "PROJECT_STRUCTURE.md",
+      "line": 32,
+      "reference": "configs/struct360b_match_free_coarse_to_fine.yaml",
+      "exists_now": true,
+      "category": "current_required",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "PROJECT_STRUCTURE.md",
+      "line": 36,
+      "reference": "tools/train_seq360b_lightweight_scale_smoothing.py",
+      "exists_now": true,
+      "category": "current_required",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "PROJECT_STRUCTURE.md",
+      "line": 38,
+      "reference": "configs/seq360b_lightweight_scale_smoothing.yaml",
+      "exists_now": true,
+      "category": "current_required",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "PROJECT_STRUCTURE.md",
+      "line": 46,
+      "reference": "external_baselines/results/dset2c_360dvo_canonical/",
+      "exists_now": true,
+      "category": "current_required",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "PROJECT_STRUCTURE.md",
+      "line": 48,
+      "reference": "external_baselines/results/base360_hkust_360dvo_official/",
+      "exists_now": true,
+      "category": "current_optional",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "PROJECT_STRUCTURE.md",
+      "line": 51,
+      "reference": "MAINT",
+      "exists_now": false,
+      "category": "legacy_reference",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "PROJECT_STRUCTURE.md",
+      "line": 57,
+      "reference": "scene01",
+      "exists_now": false,
+      "category": "legacy_reference",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "README.md",
+      "line": 6,
+      "reference": "tools/current/show_mainline.py",
+      "exists_now": true,
+      "category": "current_required",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "README.md",
+      "line": 7,
+      "reference": "tools/current/check_current_artifacts.py",
+      "exists_now": true,
+      "category": "current_required",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "README.md",
+      "line": 24,
+      "reference": "SEQ360A",
+      "exists_now": false,
+      "category": "current_optional",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "README.md",
+      "line": 24,
+      "reference": "STRUCT360C",
+      "exists_now": false,
+      "category": "current_optional",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/final360i_struct360b_final.yaml",
+      "line": 13,
+      "reference": "configs/struct360b_match_free_coarse_to_fine.yaml",
+      "exists_now": true,
+      "category": "current_required",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/final360i_struct360b_final.yaml",
+      "line": 14,
+      "reference": "checkpoints/DSET2C_360DVO_dataset_hygiene.json",
+      "exists_now": true,
+      "category": "current_optional",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/final360i_struct360b_final.yaml",
+      "line": 15,
+      "reference": "external_baselines/results/dset2c_360dvo_canonical/pair_manifest_train.jsonl",
+      "exists_now": true,
+      "category": "current_required",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/final360i_struct360b_final.yaml",
+      "line": 16,
+      "reference": "external_baselines/results/dset2c_360dvo_canonical/pair_manifest_val.jsonl",
+      "exists_now": true,
+      "category": "current_required",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/final360i_struct360b_final.yaml",
+      "line": 17,
+      "reference": "external_baselines/results/dset2c_360dvo_canonical/pair_manifest_test.jsonl",
+      "exists_now": true,
+      "category": "current_required",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/final360i_struct360b_final.yaml",
+      "line": 19,
+      "reference": "TRAIN360D",
+      "exists_now": false,
+      "category": "legacy_reference",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/final360i_struct360b_final.yaml",
+      "line": 19,
+      "reference": "checkpoints/TRAIN360D_observability_kstep_scale/best_val.pt",
+      "exists_now": true,
+      "category": "legacy_reference",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/final360i_struct360b_final.yaml",
+      "line": 20,
+      "reference": "checkpoints/STRUCT360B_match_free_coarse_to_fine/best_val.pt",
+      "exists_now": true,
+      "category": "current_optional",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/final360i_struct360b_final.yaml",
+      "line": 21,
+      "reference": "TRAIN360C",
+      "exists_now": false,
+      "category": "legacy_reference",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/final360i_struct360b_final.yaml",
+      "line": 21,
+      "reference": "reports/TRAIN360C_metrics_val.json",
+      "exists_now": true,
+      "category": "legacy_reference",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/final360i_struct360b_final.yaml",
+      "line": 22,
+      "reference": "TRAIN360C",
+      "exists_now": false,
+      "category": "legacy_reference",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/final360i_struct360b_final.yaml",
+      "line": 22,
+      "reference": "reports/TRAIN360C_metrics_test.json",
+      "exists_now": true,
+      "category": "legacy_reference",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/final360i_struct360b_final.yaml",
+      "line": 23,
+      "reference": "TRAIN360D",
+      "exists_now": false,
+      "category": "legacy_reference",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/final360i_struct360b_final.yaml",
+      "line": 23,
+      "reference": "reports/TRAIN360D_metrics_val.json",
+      "exists_now": true,
+      "category": "legacy_reference",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/final360i_struct360b_final.yaml",
+      "line": 24,
+      "reference": "TRAIN360D",
+      "exists_now": false,
+      "category": "legacy_reference",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/final360i_struct360b_final.yaml",
+      "line": 24,
+      "reference": "reports/TRAIN360D_metrics_test.json",
+      "exists_now": true,
+      "category": "legacy_reference",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/final360i_struct360b_final.yaml",
+      "line": 25,
+      "reference": "TRAIN360H",
+      "exists_now": false,
+      "category": "legacy_reference",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/final360i_struct360b_final.yaml",
+      "line": 25,
+      "reference": "reports/TRAIN360H_best_config_val.json",
+      "exists_now": true,
+      "category": "legacy_reference",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/final360i_struct360b_final.yaml",
+      "line": 26,
+      "reference": "TRAIN360H",
+      "exists_now": false,
+      "category": "legacy_reference",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/final360i_struct360b_final.yaml",
+      "line": 26,
+      "reference": "reports/TRAIN360H_best_config_test.json",
+      "exists_now": true,
+      "category": "legacy_reference",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/final360i_struct360b_final.yaml",
+      "line": 27,
+      "reference": "STRUCT360A",
+      "exists_now": false,
+      "category": "legacy_reference",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/final360i_struct360b_final.yaml",
+      "line": 27,
+      "reference": "reports/STRUCT360A_metrics_val.json",
+      "exists_now": true,
+      "category": "legacy_reference",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/final360i_struct360b_final.yaml",
+      "line": 28,
+      "reference": "STRUCT360A",
+      "exists_now": false,
+      "category": "legacy_reference",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/final360i_struct360b_final.yaml",
+      "line": 28,
+      "reference": "reports/STRUCT360A_metrics_test.json",
+      "exists_now": true,
+      "category": "legacy_reference",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/final360i_struct360b_final.yaml",
+      "line": 29,
+      "reference": "reports/STRUCT360B_metrics_val.json",
+      "exists_now": true,
+      "category": "current_optional",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/final360i_struct360b_final.yaml",
+      "line": 30,
+      "reference": "reports/STRUCT360B_metrics_test.json",
+      "exists_now": true,
+      "category": "current_optional",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/final360i_struct360b_final.yaml",
+      "line": 31,
+      "reference": "reports/BASE360D_metrics_val.json",
+      "exists_now": false,
+      "category": "current_optional",
+      "recommended_action": "make_optional"
+    },
+    {
+      "file": "configs/final360i_struct360b_final.yaml",
+      "line": 32,
+      "reference": "reports/BASE360D_metrics_test.json",
+      "exists_now": true,
+      "category": "current_optional",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/final360i_struct360b_final.yaml",
+      "line": 35,
+      "reference": "checkpoints/FINAL360I_struct360b_final",
+      "exists_now": true,
+      "category": "current_optional",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/final360i_struct360b_final.yaml",
+      "line": 36,
+      "reference": "reports/FINAL360I_final_retrain_and_model_selection.md",
+      "exists_now": true,
+      "category": "current_optional",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/final360i_struct360b_final.yaml",
+      "line": 37,
+      "reference": "reports/FINAL360I_metrics_val.json",
+      "exists_now": true,
+      "category": "current_optional",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/final360i_struct360b_final.yaml",
+      "line": 38,
+      "reference": "reports/FINAL360I_metrics_test.json",
+      "exists_now": true,
+      "category": "current_optional",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/final360i_struct360b_final.yaml",
+      "line": 39,
+      "reference": "reports/FINAL360I_model_selection_table.json",
+      "exists_now": true,
+      "category": "current_optional",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/final360i_struct360b_final.yaml",
+      "line": 40,
+      "reference": "reports/FINAL360I_vs_all_baselines_summary.md",
+      "exists_now": false,
+      "category": "current_optional",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/final360i_struct360b_final.yaml",
+      "line": 41,
+      "reference": "reports/FINAL360I_thesis_ready_result_paragraph.md",
+      "exists_now": true,
+      "category": "current_optional",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/seq360b_lightweight_scale_smoothing.yaml",
+      "line": 5,
+      "reference": "checkpoints/FINAL360I_struct360b_final/seed0/best_val.pt",
+      "exists_now": true,
+      "category": "current_optional",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/seq360b_lightweight_scale_smoothing.yaml",
+      "line": 6,
+      "reference": "checkpoints/DSET2C_360DVO_dataset_hygiene.json",
+      "exists_now": true,
+      "category": "current_optional",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/seq360b_lightweight_scale_smoothing.yaml",
+      "line": 7,
+      "reference": "external_baselines/results/dset2c_360dvo_canonical/pair_manifest_train.jsonl",
+      "exists_now": true,
+      "category": "current_required",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/seq360b_lightweight_scale_smoothing.yaml",
+      "line": 8,
+      "reference": "external_baselines/results/dset2c_360dvo_canonical/pair_manifest_val.jsonl",
+      "exists_now": true,
+      "category": "current_required",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/seq360b_lightweight_scale_smoothing.yaml",
+      "line": 9,
+      "reference": "external_baselines/results/dset2c_360dvo_canonical/pair_manifest_test.jsonl",
+      "exists_now": true,
+      "category": "current_required",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/seq360b_lightweight_scale_smoothing.yaml",
+      "line": 10,
+      "reference": "reports/FINAL360I_metrics_val.json",
+      "exists_now": true,
+      "category": "current_optional",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/seq360b_lightweight_scale_smoothing.yaml",
+      "line": 11,
+      "reference": "reports/FINAL360I_metrics_test.json",
+      "exists_now": true,
+      "category": "current_optional",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/seq360b_lightweight_scale_smoothing.yaml",
+      "line": 12,
+      "reference": "reports/TRAIN360E_metrics_val.json",
+      "exists_now": true,
+      "category": "current_optional",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/seq360b_lightweight_scale_smoothing.yaml",
+      "line": 13,
+      "reference": "reports/TRAIN360E_metrics_test.json",
+      "exists_now": true,
+      "category": "current_optional",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/seq360b_lightweight_scale_smoothing.yaml",
+      "line": 14,
+      "reference": "reports/BASE360D_metrics_val.json",
+      "exists_now": false,
+      "category": "current_optional",
+      "recommended_action": "make_optional"
+    },
+    {
+      "file": "configs/seq360b_lightweight_scale_smoothing.yaml",
+      "line": 15,
+      "reference": "reports/BASE360D_metrics_test.json",
+      "exists_now": true,
+      "category": "current_optional",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/seq360b_lightweight_scale_smoothing.yaml",
+      "line": 64,
+      "reference": "checkpoints/SEQ360B_lightweight_scale_smoothing",
+      "exists_now": true,
+      "category": "current_optional",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/seq360b_lightweight_scale_smoothing.yaml",
+      "line": 65,
+      "reference": "external_baselines/results/seq360b_scale_smoothing_trajectory",
+      "exists_now": false,
+      "category": "current_optional",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/seq360b_lightweight_scale_smoothing.yaml",
+      "line": 66,
+      "reference": "reports/SEQ360B_train_lightweight_scale_smoothing_head.md",
+      "exists_now": true,
+      "category": "current_optional",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/seq360b_lightweight_scale_smoothing.yaml",
+      "line": 67,
+      "reference": "reports/SEQ360B_metrics_val.json",
+      "exists_now": false,
+      "category": "current_optional",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/seq360b_lightweight_scale_smoothing.yaml",
+      "line": 68,
+      "reference": "reports/SEQ360B_metrics_test.json",
+      "exists_now": true,
+      "category": "current_optional",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/seq360b_lightweight_scale_smoothing.yaml",
+      "line": 69,
+      "reference": "reports/SEQ360B_trajectory_metrics_val.json",
+      "exists_now": false,
+      "category": "current_optional",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/seq360b_lightweight_scale_smoothing.yaml",
+      "line": 70,
+      "reference": "reports/SEQ360B_trajectory_metrics_test.json",
+      "exists_now": true,
+      "category": "current_optional",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "configs/seq360b_lightweight_scale_smoothing.yaml",
+      "line": 71,
+      "reference": "reports/SEQ360B_vs_FINAL360I_TRAIN360E_BASE360D_summary.md",
+      "exists_now": false,
+      "category": "current_optional",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "tools/current/README.md",
+      "line": 9,
+      "reference": "tools/final360i_retrain_and_select.py",
+      "exists_now": true,
+      "category": "current_required",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "tools/current/README.md",
+      "line": 10,
+      "reference": "tools/train360e_sequence_trajectory_export_and_ate_eval.py",
+      "exists_now": true,
+      "category": "current_required",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "tools/current/README.md",
+      "line": 11,
+      "reference": "tools/train_struct360b_match_free_coarse_to_fine.py",
+      "exists_now": true,
+      "category": "current_optional",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "tools/current/README.md",
+      "line": 12,
+      "reference": "tools/train_seq360b_lightweight_scale_smoothing.py",
+      "exists_now": true,
+      "category": "current_required",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "tools/current/check_current_artifacts.py",
+      "line": 13,
+      "reference": "configs/final360i_struct360b_final.yaml",
+      "exists_now": true,
+      "category": "current_required",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "tools/current/check_current_artifacts.py",
+      "line": 14,
+      "reference": "configs/struct360b_match_free_coarse_to_fine.yaml",
+      "exists_now": true,
+      "category": "current_required",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "tools/current/check_current_artifacts.py",
+      "line": 15,
+      "reference": "configs/seq360b_lightweight_scale_smoothing.yaml",
+      "exists_now": true,
+      "category": "current_required",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "tools/current/check_current_artifacts.py",
+      "line": 16,
+      "reference": "tools/final360i_retrain_and_select.py",
+      "exists_now": true,
+      "category": "current_required",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "tools/current/check_current_artifacts.py",
+      "line": 17,
+      "reference": "tools/train360e_sequence_trajectory_export_and_ate_eval.py",
+      "exists_now": true,
+      "category": "current_required",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "tools/current/check_current_artifacts.py",
+      "line": 18,
+      "reference": "tools/train_struct360b_match_free_coarse_to_fine.py",
+      "exists_now": true,
+      "category": "current_optional",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "tools/current/check_current_artifacts.py",
+      "line": 19,
+      "reference": "tools/train_seq360b_lightweight_scale_smoothing.py",
+      "exists_now": true,
+      "category": "current_required",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "tools/current/check_current_artifacts.py",
+      "line": 25,
+      "reference": "reports/FINAL360I_metrics_test.json",
+      "exists_now": true,
+      "category": "current_optional",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "tools/current/check_current_artifacts.py",
+      "line": 26,
+      "reference": "reports/TRAIN360E_metrics_test.json",
+      "exists_now": true,
+      "category": "current_optional",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "tools/current/check_current_artifacts.py",
+      "line": 27,
+      "reference": "reports/SEQ360B_metrics_test.json",
+      "exists_now": true,
+      "category": "current_optional",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "tools/current/check_current_artifacts.py",
+      "line": 28,
+      "reference": "external_baselines/results/dset2c_360dvo_canonical/pair_manifest_test.jsonl",
+      "exists_now": true,
+      "category": "current_required",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "tools/current/check_current_artifacts.py",
+      "line": 32,
+      "reference": "SEQ360A",
+      "exists_now": false,
+      "category": "legacy_reference",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "tools/current/check_current_artifacts.py",
+      "line": 32,
+      "reference": "reports/SEQ360A_status_summary.md",
+      "exists_now": true,
+      "category": "current_optional",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "tools/current/check_current_artifacts.py",
+      "line": 33,
+      "reference": "STRUCT360C",
+      "exists_now": false,
+      "category": "legacy_reference",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "tools/current/check_current_artifacts.py",
+      "line": 33,
+      "reference": "reports/STRUCT360C_status_summary.md",
+      "exists_now": true,
+      "category": "current_optional",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "tools/current/check_current_artifacts.py",
+      "line": 34,
+      "reference": "reports/BASE360D_component_metric_alignment.md",
+      "exists_now": true,
+      "category": "current_optional",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "tools/current/show_mainline.py",
+      "line": 9,
+      "reference": "configs/final360i_struct360b_final.yaml",
+      "exists_now": true,
+      "category": "current_required",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "tools/current/show_mainline.py",
+      "line": 10,
+      "reference": "tools/final360i_retrain_and_select.py",
+      "exists_now": true,
+      "category": "current_required",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "tools/current/show_mainline.py",
+      "line": 14,
+      "reference": "tools/train360e_sequence_trajectory_export_and_ate_eval.py",
+      "exists_now": true,
+      "category": "current_required",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "tools/current/show_mainline.py",
+      "line": 16,
+      "reference": "tools/train_seq360b_lightweight_scale_smoothing.py",
+      "exists_now": true,
+      "category": "current_required",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "tools/final360i_retrain_and_select.py",
+      "line": 200,
+      "reference": "data/360DVO/Sequences/",
+      "exists_now": true,
+      "category": "current_optional",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "tools/final360i_retrain_and_select.py",
+      "line": 352,
+      "reference": "TRAIN360C",
+      "exists_now": false,
+      "category": "legacy_reference",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "tools/final360i_retrain_and_select.py",
+      "line": 353,
+      "reference": "TRAIN360D",
+      "exists_now": false,
+      "category": "legacy_reference",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "tools/final360i_retrain_and_select.py",
+      "line": 354,
+      "reference": "TRAIN360H",
+      "exists_now": false,
+      "category": "legacy_reference",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "tools/final360i_retrain_and_select.py",
+      "line": 355,
+      "reference": "STRUCT360A",
+      "exists_now": false,
+      "category": "legacy_reference",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "tools/final360i_retrain_and_select.py",
+      "line": 604,
+      "reference": "TRAIN360C",
+      "exists_now": false,
+      "category": "legacy_reference",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "tools/final360i_retrain_and_select.py",
+      "line": 605,
+      "reference": "TRAIN360D",
+      "exists_now": false,
+      "category": "legacy_reference",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "tools/final360i_retrain_and_select.py",
+      "line": 606,
+      "reference": "TRAIN360H",
+      "exists_now": false,
+      "category": "legacy_reference",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "tools/final360i_retrain_and_select.py",
+      "line": 607,
+      "reference": "STRUCT360A",
+      "exists_now": false,
+      "category": "legacy_reference",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "tools/final360i_retrain_and_select.py",
+      "line": 638,
+      "reference": "TRAIN360D",
+      "exists_now": false,
+      "category": "legacy_reference",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "tools/final360i_retrain_and_select.py",
+      "line": 639,
+      "reference": "TRAIN360H",
+      "exists_now": false,
+      "category": "legacy_reference",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "tools/final360i_retrain_and_select.py",
+      "line": 649,
+      "reference": "reports/FINAL360I_thesis_ready_result_paragraph.md",
+      "exists_now": true,
+      "category": "current_optional",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "tools/final360i_retrain_and_select.py",
+      "line": 650,
+      "reference": "reports/FINAL360I_thesis_ready_result_paragraph.md",
+      "exists_now": true,
+      "category": "current_optional",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "tools/final360i_retrain_and_select.py",
+      "line": 696,
+      "reference": "TRAIN360D",
+      "exists_now": false,
+      "category": "legacy_reference",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "tools/final360i_retrain_and_select.py",
+      "line": 697,
+      "reference": "TRAIN360H",
+      "exists_now": false,
+      "category": "legacy_reference",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "tools/final360i_retrain_and_select.py",
+      "line": 703,
+      "reference": "TRAIN360D",
+      "exists_now": false,
+      "category": "legacy_reference",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "tools/final360i_retrain_and_select.py",
+      "line": 704,
+      "reference": "TRAIN360H",
+      "exists_now": false,
+      "category": "legacy_reference",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "tools/final360i_retrain_and_select.py",
+      "line": 745,
+      "reference": "TRAIN360D",
+      "exists_now": false,
+      "category": "legacy_reference",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "tools/final360i_retrain_and_select.py",
+      "line": 746,
+      "reference": "TRAIN360H",
+      "exists_now": false,
+      "category": "legacy_reference",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "tools/train360e_sequence_trajectory_export_and_ate_eval.py",
+      "line": 375,
+      "reference": "data/360DVO/Sequences/",
+      "exists_now": true,
+      "category": "current_optional",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "tools/train360e_sequence_trajectory_export_and_ate_eval.py",
+      "line": 1032,
+      "reference": "external_baselines/results/dset2c_360dvo_canonical/pair_manifest_",
+      "exists_now": false,
+      "category": "unknown",
+      "recommended_action": "replace_path"
+    },
+    {
+      "file": "train360/core/model.py",
+      "line": 458,
+      "reference": "S5E15",
+      "exists_now": false,
+      "category": "legacy_reference",
+      "recommended_action": "keep"
+    },
+    {
+      "file": "train360/core/model.py",
+      "line": 683,
+      "reference": "S5E15",
+      "exists_now": false,
+      "category": "legacy_reference",
+      "recommended_action": "keep"
+    }
+  ]
+}

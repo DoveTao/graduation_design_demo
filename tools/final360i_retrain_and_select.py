@@ -19,6 +19,7 @@ sys.path.insert(0, str(REPO_ROOT / "tools"))
 
 from train360.core.config import Config
 from datasets.dset2c_manifest_dataset import Dset2CCanonicalPairDataset, summarize_manifest_group
+from mainline_dependency_utils import optional_read_json, summarize_optional_artifact
 from miniyaml import load_yaml_like
 from models.struct360b_match_free_coarse_to_fine import STRUCT360BMatchFreeCoarseToFineModel
 from train_struct360b_match_free_coarse_to_fine import (
@@ -38,6 +39,20 @@ from train_struct360b_match_free_coarse_to_fine import (
 
 def _read_json(path: Path) -> Dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+
+
+OPTIONAL_INPUT_KEYS = {
+    "train360c_val_metrics",
+    "train360c_test_metrics",
+    "train360d_val_metrics",
+    "train360d_test_metrics",
+    "train360h_val_metrics",
+    "train360h_test_metrics",
+    "struct360a_val_metrics",
+    "struct360a_test_metrics",
+    "base360d_val_metrics",
+    "base360d_test_metrics",
+}
 
 
 def _dump_yaml(obj: Dict[str, Any], indent: int = 0) -> str:
@@ -172,7 +187,8 @@ def _run_prechecks(cfg: Mapping[str, Any]) -> Dict[str, Any]:
     if not torch.cuda.is_available():
         blockers.append("CUDA unavailable in pytorch environment")
 
-    required = {name: REPO_ROOT / rel for name, rel in cfg["inputs"].items()}
+    required = {name: REPO_ROOT / rel for name, rel in cfg["inputs"].items() if name not in OPTIONAL_INPUT_KEYS}
+    optional = {name: REPO_ROOT / rel for name, rel in cfg["inputs"].items() if name in OPTIONAL_INPUT_KEYS}
     for name, path in required.items():
         if not path.is_file():
             blockers.append(f"missing required file: {name} -> {path}")
@@ -221,6 +237,7 @@ def _run_prechecks(cfg: Mapping[str, Any]) -> Dict[str, Any]:
         "cuda_available": bool(torch.cuda.is_available()),
         "torch_version": str(torch.__version__),
         "required_paths": {k: str(v) for k, v in required.items()},
+        "optional_paths": {k: summarize_optional_artifact(v, k) for k, v in optional.items()},
         "image_hw": list(image_hw),
         "split_audit": split_audit,
     }

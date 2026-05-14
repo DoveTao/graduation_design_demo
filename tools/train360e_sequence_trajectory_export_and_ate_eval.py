@@ -21,6 +21,7 @@ sys.path.insert(0, str(REPO_ROOT / "tools"))
 
 from train360.core.config import Config
 from datasets.dset2c_manifest_dataset import Dset2CCanonicalPairDataset
+from mainline_dependency_utils import optional_read_json, summarize_optional_artifact
 from miniyaml import load_yaml_like
 from models.struct360b_match_free_coarse_to_fine import STRUCT360BMatchFreeCoarseToFineModel
 from run_base360_hkust_360dvo_official import _build_gt_rows as _build_gt_rows_from_raw
@@ -30,6 +31,8 @@ TASK_NAME = "TRAIN360E_sequence_trajectory_export_and_ATE_eval"
 EXPECTED_BRANCHES = [
     "experiment/final360i-final-retrain-and-model-selection",
     "experiment/train360e-sequence-trajectory-export-and-ate-eval",
+    "maintenance/destructive-cleanup-current-mainline-only",
+    "maintenance/trim-remaining-mainline-dependencies",
 ]
 CHECKPOINT_PATH = REPO_ROOT / "checkpoints" / "FINAL360I_struct360b_final" / "seed0" / "best_val.pt"
 BASE_CONFIG_PATH = REPO_ROOT / "configs" / "struct360b_match_free_coarse_to_fine.yaml"
@@ -67,6 +70,26 @@ def _git(args: Sequence[str]) -> str:
 
 def _read_json(path: Path) -> Dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _artifact_or_missing(path: Path, label: str) -> Dict[str, Any]:
+    payload = optional_read_json(path)
+    if payload.get("status") == "missing_after_cleanup":
+        payload["label"] = label
+    return payload
+
+
+def _empty_base360_eval(split: str, *, reason: str) -> Dict[str, Any]:
+    return {
+        "split": split,
+        "status": reason,
+        "per_sequence": {},
+        "ate_none": {"rmse": None},
+        "ate_se3": {"rmse": None},
+        "ate_sim3": {"rmse": None},
+        "pose_coverage": None,
+        "trajectory_path_ratio": None,
+    }
 
 
 def _read_jsonl(path: Path) -> List[Dict[str, Any]]:
@@ -331,7 +354,17 @@ def _precheck() -> Dict[str, Any]:
         blockers.append(f"insufficient disk free space: {disk_free_gb:.2f} GiB <= {MIN_DISK_FREE_GB:.2f} GiB")
     if not torch.cuda.is_available():
         blockers.append("CUDA unavailable in pytorch environment")
-    required = [CHECKPOINT_PATH, VAL_MANIFEST, TEST_MANIFEST, HYGIENE_JSON, DATASET_ADAPTER, BASE_CONFIG_PATH, *FINAL360I_REPORTS, *BASE360D_REPORTS]
+    required = [
+        CHECKPOINT_PATH,
+        VAL_MANIFEST,
+        TEST_MANIFEST,
+        HYGIENE_JSON,
+        DATASET_ADAPTER,
+        BASE_CONFIG_PATH,
+        FINAL360I_REPORTS[0],
+        FINAL360I_REPORTS[1],
+        FINAL360I_REPORTS[2],
+    ]
     for path in required:
         if not path.is_file():
             blockers.append(f"missing required file: {path}")
@@ -342,11 +375,12 @@ def _precheck() -> Dict[str, Any]:
     if "glob(" in adapter_text or "data/360DVO/Sequences/" in adapter_text:
         blockers.append("dataset adapter appears to use direct raw-sequence globbing")
     baseline_recap = {
-        "final360i_val": _read_json(FINAL360I_REPORTS[0]),
-        "final360i_test": _read_json(FINAL360I_REPORTS[1]),
-        "final360i_selection": _read_json(FINAL360I_REPORTS[2]),
-        "base360d_val": _read_json(BASE360D_REPORTS[1]),
-        "base360d_test": _read_json(BASE360D_REPORTS[2]),
+        "final360i_val": _artifact_or_missing(FINAL360I_REPORTS[0], "FINAL360I val metrics"),
+        "final360i_test": _artifact_or_missing(FINAL360I_REPORTS[1], "FINAL360I test metrics"),
+        "final360i_selection": _artifact_or_missing(FINAL360I_REPORTS[2], "FINAL360I selection table"),
+        "base360d_component_report": summarize_optional_artifact(BASE360D_REPORTS[0], "BASE360D component alignment report"),
+        "base360d_val": _artifact_or_missing(BASE360D_REPORTS[1], "BASE360D val metrics"),
+        "base360d_test": _artifact_or_missing(BASE360D_REPORTS[2], "BASE360D test metrics"),
     }
     return {
         "git_status_short": git_status,
@@ -888,7 +922,7 @@ def _build_comparison_summary(
         ("val", base_val, "official sequence VO pipeline"),
         ("test", base_test, "official sequence VO pipeline"),
     ]:
-        for seq_id, seq_payload in payload["per_sequence"].items():
+        for seq_id, seq_payload in payload.get("per_sequence", {}).items():
             none = seq_payload["trajectory_eval"]["none"]
             se3 = seq_payload["trajectory_eval"]["se3"]
             sim3 = seq_payload["trajectory_eval"]["sim3"]
@@ -896,6 +930,10 @@ def _build_comparison_summary(
                 f"| BASE360D | {split_name} | {seq_id} | {_fmt(none.get('rmse'))} | {_fmt(se3.get('rmse'))} | {_fmt(sim3.get('rmse'))} | "
                 f"{_fmt(none.get('trajectory_path_ratio'))} | {_fmt(none.get('pred_path_length'))} | {_fmt(none.get('gt_path_length'))} | "
                 f"{_fmt(none.get('pose_coverage'))} | {notes} |"
+            )
+        if not payload.get("per_sequence"):
+            lines.append(
+                f"| BASE360D | {split_name} | missing | N/A | N/A | N/A | N/A | N/A | N/A | N/A | {payload.get('status', 'missing_after_cleanup')} |"
             )
     lines.extend(
         [
@@ -909,6 +947,9 @@ def _build_comparison_summary(
 
 
 def _base360_split_eval(split: str, sequences: Sequence[str]) -> Dict[str, Any]:
+    split_root = BASE360_ROOT / split
+    if not split_root.exists():
+        return _empty_base360_eval(split, reason=f"missing_after_cleanup:{split_root}")
     per_sequence = {seq_id: _evaluate_base360_sequence(split, seq_id) for seq_id in sequences}
     error_buckets: Dict[str, List[float]] = {"none": [], "se3": [], "sim3": []}
     pred_path_total = 0.0
@@ -1061,8 +1102,8 @@ def _report_text(
         [
             "",
             "## 9. Comparison with BASE360D",
-            f"- val BASE360D ATE none / SE3 / Sim3 RMSE: `{base_val['ate_none']['rmse']}` / `{base_val['ate_se3']['rmse']}` / `{base_val['ate_sim3']['rmse']}`",
-            f"- test BASE360D ATE none / SE3 / Sim3 RMSE: `{base_test['ate_none']['rmse']}` / `{base_test['ate_se3']['rmse']}` / `{base_test['ate_sim3']['rmse']}`",
+            f"- val BASE360D ATE none / SE3 / Sim3 RMSE: `{base_val.get('ate_none', {}).get('rmse')}` / `{base_val.get('ate_se3', {}).get('rmse')}` / `{base_val.get('ate_sim3', {}).get('rmse')}`",
+            f"- test BASE360D ATE none / SE3 / Sim3 RMSE: `{base_test.get('ate_none', {}).get('rmse')}` / `{base_test.get('ate_se3', {}).get('rmse')}` / `{base_test.get('ate_sim3', {}).get('rmse')}`",
             f"- comparable to BASE360D: `{comparable_to_base360d}`",
             f"- better than BASE360D on trajectory: `{better_than_base360d}`",
             "- caveat: `BASE360D` is an official sequence pipeline while `TRAIN360E` is a composed pair-level trajectory export.",

@@ -22,6 +22,7 @@ sys.path.insert(0, str(REPO_ROOT / "tools"))
 
 from datasets.dset2c_manifest_dataset import Dset2CCanonicalPairDataset
 from datasets.dset2c_sequence_clip_dataset import Dset2CSequenceClipDataset
+from mainline_dependency_utils import optional_read_json, summarize_optional_artifact
 from miniyaml import load_yaml_like
 from models.seq360b_scale_smoothing_head import Seq360BScaleSmoothingHead, seq360b_scale_losses
 from models.struct360b_match_free_coarse_to_fine import STRUCT360BMatchFreeCoarseToFineModel
@@ -396,14 +397,19 @@ def _precheck(cfg: Mapping[str, Any]) -> Dict[str, Any]:
     blockers: List[str] = []
     branch = _git(["git", "branch", "--show-current"])
     disk_free_gb = shutil.disk_usage(REPO_ROOT).free / (1024 ** 3)
-    if branch != "experiment/seq360b-train-lightweight-scale-smoothing-head":
+    allowed_branches = {
+        "experiment/seq360b-train-lightweight-scale-smoothing-head",
+        "maintenance/destructive-cleanup-current-mainline-only",
+        "maintenance/trim-remaining-mainline-dependencies",
+    }
+    if branch not in allowed_branches:
         blockers.append(f"unexpected branch: {branch}")
     if disk_free_gb <= 5.0:
         blockers.append(f"insufficient disk free space: {disk_free_gb:.2f} GiB <= 5 GiB")
     if not torch.cuda.is_available():
         blockers.append("CUDA unavailable")
     required = []
-    for key in ["init_checkpoint", "hygiene_json", "train_manifest", "val_manifest", "test_manifest", "final360i_test_metrics", "train360e_test_metrics", "base360d_test_metrics"]:
+    for key in ["init_checkpoint", "hygiene_json", "train_manifest", "val_manifest", "test_manifest", "final360i_test_metrics", "train360e_test_metrics"]:
         required.append(REPO_ROOT / cfg["inputs"][key])
     required.extend([REPO_ROOT / "datasets/dset2c_manifest_dataset.py", REPO_ROOT / "datasets/dset2c_sequence_clip_dataset.py", REPO_ROOT / "models/seq360b_scale_smoothing_head.py"])
     for path in required:
@@ -425,12 +431,13 @@ def _precheck(cfg: Mapping[str, Any]) -> Dict[str, Any]:
         "cuda_available": bool(torch.cuda.is_available()),
         "clip_summaries": clip_summaries,
         "baseline_recap": {
-            "final360i_val": _read_json(REPO_ROOT / cfg["inputs"]["final360i_val_metrics"]),
-            "final360i_test": _read_json(REPO_ROOT / cfg["inputs"]["final360i_test_metrics"]),
-            "train360e_val": _read_json(REPO_ROOT / cfg["inputs"]["train360e_val_metrics"]),
-            "train360e_test": _read_json(REPO_ROOT / cfg["inputs"]["train360e_test_metrics"]),
-            "base360d_val": _read_json(REPO_ROOT / cfg["inputs"]["base360d_val_metrics"]),
-            "base360d_test": _read_json(REPO_ROOT / cfg["inputs"]["base360d_test_metrics"]),
+            "final360i_val": optional_read_json(REPO_ROOT / cfg["inputs"]["final360i_val_metrics"]),
+            "final360i_test": optional_read_json(REPO_ROOT / cfg["inputs"]["final360i_test_metrics"]),
+            "train360e_val": optional_read_json(REPO_ROOT / cfg["inputs"]["train360e_val_metrics"]),
+            "train360e_test": optional_read_json(REPO_ROOT / cfg["inputs"]["train360e_test_metrics"]),
+            "base360d_val": optional_read_json(REPO_ROOT / cfg["inputs"]["base360d_val_metrics"]),
+            "base360d_test": optional_read_json(REPO_ROOT / cfg["inputs"]["base360d_test_metrics"]),
+            "base360d_test_status": summarize_optional_artifact(REPO_ROOT / cfg["inputs"]["base360d_test_metrics"], "BASE360D test metrics"),
         },
     }
 
@@ -488,7 +495,15 @@ def _write_report(cfg: Mapping[str, Any], payload: Mapping[str, Any]) -> None:
     pair_test = payload["pair_test"]["metrics"]
     traj_test = payload["trajectory_test"]
     cls = payload["classification"]
-    next_rec = "prepare_thesis_experiment_section" if cls in {"primary_success", "balanced_success"} else ("proceed_to_SEQ360A_sequence_consistency_scale_drift_stabilization" if cls in {"partial", "trajectory_improved_scale_tradeoff"} else "keep_FINAL360I_as_main_and_report_SEQ360B_ablation")
+    next_rec = (
+        "prepare_thesis_experiment_section"
+        if cls in {"primary_success", "balanced_success"}
+        else (
+            "keep_SEQ360B_as_retained_sequence_scale_variant"
+            if cls in {"partial", "trajectory_improved_scale_tradeoff"}
+            else "keep_FINAL360I_as_main_and_report_SEQ360B_ablation"
+        )
+    )
     lines = [
         "# SEQ360B train lightweight scale smoothing head",
         "",
@@ -735,7 +750,7 @@ def main() -> int:
     print(f"- classification: {payload['classification']}")
     print("- committed to git: false")
     print("- pushed to remote: false")
-    print("- next recommended task: proceed_to_SEQ360A_sequence_consistency_scale_drift_stabilization")
+    print("- next recommended task: keep_SEQ360B_as_retained_sequence_scale_variant")
     return 0
 
 

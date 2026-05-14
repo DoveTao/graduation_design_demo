@@ -28,6 +28,12 @@ REQUIRED = {
     "canonical_manifest": "external_baselines/results/dset2c_360dvo_canonical/pair_manifest_test.jsonl",
 }
 
+OPTIONAL = {
+    "seq360a_status_summary": "reports/SEQ360A_status_summary.md",
+    "struct360c_status_summary": "reports/STRUCT360C_status_summary.md",
+    "base360d_report": "reports/BASE360D_component_metric_alignment.md",
+}
+
 
 def main() -> None:
     payload = {}
@@ -35,9 +41,12 @@ def main() -> None:
         path = REPO_ROOT / rel
         payload[key] = {"path": rel, "exists": path.exists()}
     payload["all_present"] = all(v["exists"] for v in payload.values())
+    payload["optional"] = {}
+    for key, rel in OPTIONAL.items():
+        path = REPO_ROOT / rel
+        payload["optional"][key] = {"path": rel, "exists": path.exists()}
     print(json.dumps(payload, ensure_ascii=False, indent=2))
 
 
 if __name__ == "__main__":
     main()
-

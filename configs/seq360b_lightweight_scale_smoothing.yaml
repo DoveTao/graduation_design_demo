@@ -11,8 +11,8 @@ inputs:
   final360i_test_metrics: reports/FINAL360I_metrics_test.json
   train360e_val_metrics: reports/TRAIN360E_metrics_val.json
   train360e_test_metrics: reports/TRAIN360E_metrics_test.json
-  base360d_val_metrics: reports/BASE360_metrics_val.json
-  base360d_test_metrics: reports/BASE360_metrics_test.json
+  base360d_val_metrics: reports/BASE360D_metrics_val.json
+  base360d_test_metrics: reports/BASE360D_metrics_test.json
 
 data:
   image_hw: [384, 768]

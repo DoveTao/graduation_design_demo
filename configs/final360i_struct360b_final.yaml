@@ -4,6 +4,8 @@ prechecks:
   expected_branches:
     - experiment/struct360b-match-free-coarse-to-fine-pose-refinement
     - experiment/final360i-final-retrain-and-model-selection
+    - maintenance/destructive-cleanup-current-mainline-only
+    - maintenance/trim-remaining-mainline-dependencies
   min_disk_free_gb: 5.0
   required_env: pytorch
 
