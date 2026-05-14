@@ -1,0 +1,30 @@
+{
+  "task_name": "TRAIN360C_spherical_pose_baseline",
+  "checkpoint_used": "/home/dovetao/graduation_design_demo/checkpoints/TRAIN360C_spherical_pose_baseline/best_val.pt",
+  "best_epoch": 1,
+  "metrics": {
+    "count": 5342,
+    "coverage": 1.0,
+    "rot_mean_deg": 1.6207817274503875,
+    "rot_median_deg": 1.4548146724700928,
+    "rot_p90_deg": 2.386548852920535,
+    "signed_tdir_mean_deg": 111.86139636050414,
+    "signed_tdir_median_deg": 126.03379567453939,
+    "signed_tdir_p90_deg": 149.9810230984543,
+    "unsigned_tdir_mean_deg": 51.82972950681737,
+    "unsigned_tdir_median_deg": 46.69579100547433,
+    "unsigned_tdir_p90_deg": 82.83056154949084,
+    "anti_parallel_rate": 0.7132160239610633,
+    "tmag_median_ratio": 1.0500272154773382,
+    "tmag_mean_ratio": 1.4846339810060392,
+    "tmag_p90_ratio": 3.7898684874353137,
+    "log_tmag_mae": 0.7252769329385486,
+    "path_ratio": 0.586026844451413,
+    "path_length_pred": 3560.4996472895145,
+    "path_length_gt": 6075.659640852362,
+    "nan_inf_count": 0,
+    "ate_none": null,
+    "ate_se3": null,
+    "ate_sim3": null
+  }
+}

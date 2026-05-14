@@ -1,0 +1,110 @@
+{
+  "name": "SB2b_s5_export_compatibility_audit",
+  "locked_s5_metrics": {
+    "drift": 1.327343,
+    "ATE": 7.352288,
+    "path_ratio": 0.932379
+  },
+  "external_s5_metrics": {
+    "none": {
+      "status": "ok",
+      "alignment_mode": "none",
+      "ATE": 8.150968340994227,
+      "drift": 0.4907920657982035,
+      "path_ratio": 1.3196949428241285,
+      "num_est_poses": 41,
+      "num_gt_poses": 454,
+      "num_matched_poses": 41,
+      "tracking_success_rate": 0.09030837004405286,
+      "gt_path_length": 10.200688750427336,
+      "est_path_length_raw": 13.461797357261933,
+      "metric_notes": {
+        "ATE": "RMSE position error after requested alignment.",
+        "drift": "RPE-like translation RMSE on consecutive matched steps after requested alignment.",
+        "path_ratio": "Raw estimated path length divided by GT path length; scale-sensitive and not Sim(3)-normalized."
+      }
+    },
+    "se3": {
+      "status": "ok",
+      "alignment_mode": "se3",
+      "ATE": 1.87281908066877,
+      "drift": 0.35292538474867535,
+      "path_ratio": 1.3196949428241285,
+      "num_est_poses": 41,
+      "num_gt_poses": 454,
+      "num_matched_poses": 41,
+      "tracking_success_rate": 0.09030837004405286,
+      "gt_path_length": 10.200688750427336,
+      "est_path_length_raw": 13.461797357261933,
+      "metric_notes": {
+        "ATE": "RMSE position error after requested alignment.",
+        "drift": "RPE-like translation RMSE on consecutive matched steps after requested alignment.",
+        "path_ratio": "Raw estimated path length divided by GT path length; scale-sensitive and not Sim(3)-normalized."
+      }
+    },
+    "sim3": {
+      "status": "ok",
+      "alignment_mode": "sim3",
+      "ATE": 1.4978029053468307,
+      "drift": 0.48797872783116647,
+      "path_ratio": 1.3196949428241285,
+      "num_est_poses": 41,
+      "num_gt_poses": 454,
+      "num_matched_poses": 41,
+      "tracking_success_rate": 0.09030837004405286,
+      "gt_path_length": 10.200688750427336,
+      "est_path_length_raw": 13.461797357261933,
+      "metric_notes": {
+        "ATE": "RMSE position error after requested alignment.",
+        "drift": "RPE-like translation RMSE on consecutive matched steps after requested alignment.",
+        "path_ratio": "Raw estimated path length divided by GT path length; scale-sensitive and not Sim(3)-normalized."
+      }
+    }
+  },
+  "s5_num_exported_poses": 41,
+  "gt_num_poses": 454,
+  "matched_timestamp_count": 41,
+  "tracking_success_rate": 0.09030837004405286,
+  "path_ratio_locked": 0.932379,
+  "path_ratio_external": 1.3196949428241285,
+  "predicted_path_length_export": 13.461797357261933,
+  "gt_path_length_matched_subset": 10.200688750427336,
+  "gt_path_length_full_sequence": 25.83364036045875,
+  "s5_policy_eval_config": {
+    "eval_min_dt": 0.02,
+    "eval_max_dt": 5.0,
+    "eval_pair_step": 1,
+    "split_by": "scene_seq",
+    "train_ratio": 0.8,
+    "split_seed": 3407
+  },
+  "k1_manifest_pair_count": 132,
+  "odometry_chain_count": 19,
+  "odometry_chain_num_pairs": 40,
+  "missing_timestamp_ranges": [
+    {
+      "start_index": 41,
+      "end_index": 453,
+      "count": 413,
+      "start_timestamp": 1745407686.921992,
+      "end_timestamp": 1745407707.736991
+    }
+  ],
+  "mismatch_flags": {
+    "sparse_export": true,
+    "tracking_success_rate_low": true,
+    "path_ratio_mismatch": true,
+    "timestamp_order_ok": true,
+    "export_matches_chain_pairs_plus_one": true
+  },
+  "root_cause_summary": {
+    "sparse_export_reason": "The exporter follows the official odometry-chain construction over selected_k=1 pairs, not a dense full-frame trajectory stream.",
+    "timestamp_alignment_reason": "The external evaluator matches only the sparse exported timestamps, so GT path length and path_ratio are computed on a sparse subset.",
+    "accumulation_convention": "Relative pair predictions are accumulated in the same odometry-chain convention used by the official evaluator debug path.",
+    "coordinate_frame_convention": "Export writes accumulated pose positions with qx qy qz qw quaternion ordering.",
+    "full_454_export_available": false,
+    "full_454_export_reason": "The current official clean evaluator does not directly expose a dense 454-pose full-frame trajectory; it exposes selected odometry chains over sparse k=1 evaluation pairs."
+  },
+  "final_classification": "SPARSE_EXPORT_DIAGNOSTIC_ONLY",
+  "thesis_policy": "For thesis reporting, S5 locked metrics and Pano-ORB-VO external trajectory metrics should be reported in clearly separated blocks unless a full-coverage S5 TUM export equivalent to the official evaluator is available."
+}

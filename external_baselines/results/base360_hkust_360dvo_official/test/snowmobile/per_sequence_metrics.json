@@ -1,0 +1,62 @@
+{
+  "available": true,
+  "coverage": 1.0,
+  "failed_frames": 0,
+  "trajectory_eval": {
+    "none": {
+      "status": "ok",
+      "alignment_mode": "none",
+      "ATE": 117.67736892832184,
+      "drift": 0.47620665509236487,
+      "path_ratio": 0.0348757550706861,
+      "num_est_poses": 719,
+      "num_gt_poses": 830,
+      "num_matched_poses": 719,
+      "tracking_success_rate": 0.8662650602409638,
+      "gt_path_length": 325.3816411553503,
+      "est_path_length_raw": 11.34793042143187,
+      "metric_notes": {
+        "ATE": "RMSE position error after requested alignment.",
+        "drift": "RPE-like translation RMSE on consecutive matched steps after requested alignment.",
+        "path_ratio": "Raw estimated path length divided by GT path length; scale-sensitive and not Sim(3)-normalized."
+      }
+    },
+    "se3": {
+      "status": "ok",
+      "alignment_mode": "se3",
+      "ATE": 87.8591096666949,
+      "drift": 0.44623328917854205,
+      "path_ratio": 0.0348757550706861,
+      "num_est_poses": 719,
+      "num_gt_poses": 830,
+      "num_matched_poses": 719,
+      "tracking_success_rate": 0.8662650602409638,
+      "gt_path_length": 325.3816411553503,
+      "est_path_length_raw": 11.34793042143187,
+      "metric_notes": {
+        "ATE": "RMSE position error after requested alignment.",
+        "drift": "RPE-like translation RMSE on consecutive matched steps after requested alignment.",
+        "path_ratio": "Raw estimated path length divided by GT path length; scale-sensitive and not Sim(3)-normalized."
+      }
+    },
+    "sim3": {
+      "status": "ok",
+      "alignment_mode": "sim3",
+      "ATE": 3.3749172325237167,
+      "drift": 0.04340640706337232,
+      "path_ratio": 0.0348757550706861,
+      "num_est_poses": 719,
+      "num_gt_poses": 830,
+      "num_matched_poses": 719,
+      "tracking_success_rate": 0.8662650602409638,
+      "gt_path_length": 325.3816411553503,
+      "est_path_length_raw": 11.34793042143187,
+      "metric_notes": {
+        "ATE": "RMSE position error after requested alignment.",
+        "drift": "RPE-like translation RMSE on consecutive matched steps after requested alignment.",
+        "path_ratio": "Raw estimated path length divided by GT path length; scale-sensitive and not Sim(3)-normalized."
+      }
+    }
+  },
+  "relative_metrics": {}
+}

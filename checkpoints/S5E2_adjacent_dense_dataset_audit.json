@@ -1,0 +1,84 @@
+{
+  "experiment": "S5E2_real_adjacent_dense_candidate",
+  "config": "configs/s5e2_adjacent_dense_candidate.yaml",
+  "allowed_dataset_classifications": [
+    "S5E2_ADJACENT_DATASET_READY",
+    "S5E2_ADJACENT_DATASET_BLOCKED",
+    "S5E2_SPLIT_RISK_BLOCKED",
+    "S5E2_DATASET_ERROR"
+  ],
+  "allowed_final_classifications": [
+    "S5E2_TRACEABLE_DENSE_IMPROVED",
+    "S5E2_TRACEABLE_DENSE_EXPORTED_NO_IMPROVEMENT",
+    "S5E2_TRACEABLE_DENSE_EXPORTED_FAILED_METRICS",
+    "S5E2_ADJACENT_DATASET_BLOCKED",
+    "S5E2_TRAINING_BLOCKED",
+    "S5E2_ADJACENT_DENSE_EXPORT_BLOCKED",
+    "S5E2_ERROR"
+  ],
+  "s5e1_blocker_recap": {
+    "s5e1_classification": "S5E1_ADJACENT_DENSE_EXPORT_BLOCKED",
+    "direct_adjacent_prediction": 0,
+    "selected_prediction": 132,
+    "unavailable": 321,
+    "training_blocked": true,
+    "training_blocker_reason": "No legal adjacent-dense training/inference harness is available in the current final S5 path. Training was not run to avoid changing official policy, train/test split, or using GT to generate predictions.",
+    "blocker_summary": "S5E1 was blocked by missing engineering interfaces: no adjacent-dense dataloader/head/export path existed. The final S5 traceable artifact was selected_k1 only, so 321 adjacent edges remained unavailable.",
+    "blocker_breakdown": {
+      "dataloader_supports_adjacent_pairs": false,
+      "model_head_supports_adjacent_prediction": false,
+      "checkpoint_or_config_missing": true,
+      "train_test_split_or_gt_leakage_risk": true,
+      "engineering_interface_missing": true,
+      "notes": [
+        "No legal adjacent-dense training/inference harness is available in the current final S5 path. Training was not run to avoid changing official policy, train/test split, or using GT to generate predictions.",
+        "SO(3) geodesic / tdir / tmag log / path length consistency / short-window consistency are design targets only in this blocked run."
+      ]
+    }
+  },
+  "split_summary": {
+    "split_by": "scene_seq",
+    "train_ratio": 0.8,
+    "split_seed": 3407,
+    "train_sequence_keys": [
+      [
+        "scene01",
+        "seq01"
+      ],
+      [
+        "scene01",
+        "seq02"
+      ]
+    ],
+    "test_sequence_keys": [
+      [
+        "scene01",
+        "seq03"
+      ]
+    ],
+    "all_sequence_keys": [
+      [
+        "scene01",
+        "seq01"
+      ],
+      [
+        "scene01",
+        "seq02"
+      ],
+      [
+        "scene01",
+        "seq03"
+      ]
+    ]
+  },
+  "num_train_pairs": 707,
+  "num_val_pairs": 79,
+  "eval_sequence": "scene01/seq03",
+  "eval_pairs": 453,
+  "available_eval_pairs_in_data_root": 453,
+  "test_gt_used_for_training": false,
+  "split_respected": true,
+  "no_gt_leakage": true,
+  "no_restored_dense_artifact_for_prediction": true,
+  "final_classification": "S5E2_ADJACENT_DATASET_READY"
+}

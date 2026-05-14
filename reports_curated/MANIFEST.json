@@ -1,0 +1,374 @@
+{
+  "entries": [
+    {
+      "notes": "final ablation summary should stay with final baseline line",
+      "role": "ablation",
+      "source_blob_hash": "1576aac9a3075b0916971675a255490c15cfd539",
+      "source_branch": "polish/final-reproducibility-guardrails",
+      "source_commit": "7cb0a2c",
+      "source_path": "reports/final_ablation_baseline_comparison.md",
+      "status": "copied",
+      "target_path": "reports_curated/ablations/final_ablation_baseline_comparison.md"
+    },
+    {
+      "notes": "three-axis thesis ablation companion report",
+      "role": "ablation",
+      "source_blob_hash": "07a4de68f35338cf3c6b84743e0fb210ffbe58ce",
+      "source_branch": "polish/final-reproducibility-guardrails",
+      "source_commit": "7cb0a2c",
+      "source_path": "reports/thesis_three_axis_ablation.md",
+      "status": "copied",
+      "target_path": "reports_curated/ablations/thesis_three_axis_ablation.md"
+    },
+    {
+      "notes": "tracks branch-specific artifact resolution history",
+      "role": "audit",
+      "source_blob_hash": "bbe1be1965c6d3d71cf5777d04dac906ce5f6da6",
+      "source_branch": "experiment/s5d2-dense-export-convention-audit",
+      "source_commit": "9fcdd5d",
+      "source_path": "reports/REPO2_untracked_experiment_artifact_resolution.md",
+      "status": "copied",
+      "target_path": "reports_curated/audits/REPO2_untracked_experiment_artifact_resolution.md"
+    },
+    {
+      "notes": "all-branch inventory that feeds later archive curation",
+      "role": "audit",
+      "source_blob_hash": "7a2f4c65fb954bb5b99152ecb968e041766774d8",
+      "source_branch": "experiment/s5d2-dense-export-convention-audit",
+      "source_commit": "9fcdd5d",
+      "source_path": "reports/all_branch_inventory_and_classification.md",
+      "status": "copied",
+      "target_path": "reports_curated/audits/all_branch_inventory_and_classification.md"
+    },
+    {
+      "notes": "cross-branch matrix for report canonicalization",
+      "role": "audit",
+      "source_blob_hash": "a815cb87bd710d46261db2f1cb239fd1d2cc2d25",
+      "source_branch": "experiment/s5d2-dense-export-convention-audit",
+      "source_commit": "9fcdd5d",
+      "source_path": "reports/multibranch_reports_inventory.md",
+      "status": "copied",
+      "target_path": "reports_curated/audits/multibranch_reports_inventory.md"
+    },
+    {
+      "notes": "pre-JRT hygiene audit with reproducibility context",
+      "role": "audit",
+      "source_blob_hash": "51bd6e7d023bd992a31bd8c9812544db48efc956",
+      "source_branch": "polish/final-reproducibility-guardrails",
+      "source_commit": "7cb0a2c",
+      "source_path": "reports/repo_remote_sync_and_hygiene_audit.md",
+      "status": "copied",
+      "target_path": "reports_curated/audits/repo_remote_sync_and_hygiene_audit.md"
+    },
+    {
+      "notes": "thesis-facing baseline comparison on the final/polish line",
+      "role": "baseline",
+      "source_blob_hash": "dabf035a200117b1f49a2cf7594b28bc28652616",
+      "source_branch": "polish/final-reproducibility-guardrails",
+      "source_commit": "7cb0a2c",
+      "source_path": "reports/external_algorithm_baseline_comparison.md",
+      "status": "copied",
+      "target_path": "reports_curated/baselines/external_algorithm_baseline_comparison.md"
+    },
+    {
+      "notes": "ORB-specific artifacts and reports live on the dedicated external baseline branch",
+      "role": "baseline",
+      "source_blob_hash": "3e01433fba0cdd503a713185633bd471640663a0",
+      "source_branch": "experiment/orbslam3-fisheye-strong-baseline",
+      "source_commit": "797865b",
+      "source_path": "reports/orbslam3_fisheye_evaluation_report.md",
+      "status": "copied",
+      "target_path": "reports_curated/baselines/orbslam3_fisheye_evaluation_report.md"
+    },
+    {
+      "notes": "final baseline branch keeps the stable panorama baseline story",
+      "role": "baseline",
+      "source_blob_hash": "a5c904b5b6cc9f40d16d6607db1558154c709667",
+      "source_branch": "polish/final-reproducibility-guardrails",
+      "source_commit": "7cb0a2c",
+      "source_path": "reports/pano_orb_vo_baseline_report.md",
+      "status": "copied",
+      "target_path": "reports_curated/baselines/pano_orb_vo_baseline_report.md"
+    },
+    {
+      "notes": "component-level companion for the panorama baseline",
+      "role": "baseline",
+      "source_blob_hash": "0e5b952dabe5643602171a3e0a4f3757284b7881",
+      "source_branch": "polish/final-reproducibility-guardrails",
+      "source_commit": "7cb0a2c",
+      "source_path": "reports/pano_orb_vo_component_diagnostics.md",
+      "status": "copied",
+      "target_path": "reports_curated/baselines/pano_orb_vo_component_diagnostics.md"
+    },
+    {
+      "notes": "paired comparison with ORB-SLAM3 belongs to the ORB branch",
+      "role": "baseline",
+      "source_blob_hash": "89e44c0f1fdf1d56e3d3beb056731f00ee919426",
+      "source_branch": "experiment/orbslam3-fisheye-strong-baseline",
+      "source_commit": "797865b",
+      "source_path": "reports/s5_orbslam3_same_evaluator_comparison.md",
+      "status": "copied",
+      "target_path": "reports_curated/baselines/s5_orbslam3_same_evaluator_comparison.md"
+    },
+    {
+      "notes": "latest branch-specific audit of dense export scope and convention",
+      "role": "diagnostic",
+      "source_blob_hash": "108376341666deb3db60389a6258cfb8837d996b",
+      "source_branch": "experiment/s5d2-dense-export-convention-audit",
+      "source_commit": "9fcdd5d",
+      "source_path": "reports/S5D2_dense_export_convention_audit.md",
+      "status": "copied",
+      "target_path": "reports_curated/diagnostics/S5D2_dense_export_convention_audit.md"
+    },
+    {
+      "notes": "paired dense export diagnostic used in same-evaluator comparison line",
+      "role": "diagnostic",
+      "source_blob_hash": "42bd9a60bbfccfeead10e79af84b160fc2e9dd56",
+      "source_branch": "experiment/orbslam3-fisheye-strong-baseline",
+      "source_commit": "797865b",
+      "source_path": "reports/s5_dense_external_export_report.md",
+      "status": "copied",
+      "target_path": "reports_curated/diagnostics/s5_dense_external_export_report.md"
+    },
+    {
+      "notes": "older compatibility audit retained as supporting diagnostic history",
+      "role": "diagnostic",
+      "source_blob_hash": "effd25397686793778ec6519d362ee822432dd7e",
+      "source_branch": "polish/final-reproducibility-guardrails",
+      "source_commit": "7cb0a2c",
+      "source_path": "reports/s5_external_export_compatibility_audit.md",
+      "status": "copied",
+      "target_path": "reports_curated/diagnostics/s5_external_export_compatibility_audit.md"
+    },
+    {
+      "notes": "DROID-SLAM setup feasibility context",
+      "role": "environment",
+      "source_blob_hash": "7e0d48c55e8f0f48dbb9ba829611d9884cf15347",
+      "source_branch": "polish/final-reproducibility-guardrails",
+      "source_commit": "7cb0a2c",
+      "source_path": "reports/droidslam_environment_setup_report.md",
+      "status": "copied",
+      "target_path": "reports_curated/environment/droidslam_environment_setup_report.md"
+    },
+    {
+      "notes": "baseline environment feasibility audit",
+      "role": "environment",
+      "source_blob_hash": "e9d3bf622d75bf2660d370087c52b73168bddee9",
+      "source_branch": "polish/final-reproducibility-guardrails",
+      "source_commit": "7cb0a2c",
+      "source_path": "reports/external_baseline_environment_audit.md",
+      "status": "copied",
+      "target_path": "reports_curated/environment/external_baseline_environment_audit.md"
+    },
+    {
+      "notes": "ORB-SLAM3 setup feasibility context",
+      "role": "environment",
+      "source_blob_hash": "c7bd43399da6f846def315b7117207264482d8f5",
+      "source_branch": "polish/final-reproducibility-guardrails",
+      "source_commit": "7cb0a2c",
+      "source_path": "reports/orbslam3_environment_setup_report.md",
+      "status": "copied",
+      "target_path": "reports_curated/environment/orbslam3_environment_setup_report.md"
+    },
+    {
+      "notes": "canonical locked final results table",
+      "role": "final",
+      "source_blob_hash": "c0d0d10e6e99cb9d54440ca47f79151f651a3a7b",
+      "source_branch": "polish/final-reproducibility-guardrails",
+      "source_commit": "7cb0a2c",
+      "source_path": "reports/final_clean_results_table.md",
+      "status": "copied",
+      "target_path": "reports_curated/final/final_clean_results_table.md"
+    },
+    {
+      "notes": "final mainline overview for thesis-facing archive",
+      "role": "final",
+      "source_blob_hash": "7e78bc0adea84b85a7da74a093da53d67739f2dc",
+      "source_branch": "polish/final-reproducibility-guardrails",
+      "source_commit": "7cb0a2c",
+      "source_path": "reports/final_project_mainline_summary.md",
+      "status": "copied",
+      "target_path": "reports_curated/final/final_project_mainline_summary.md"
+    },
+    {
+      "notes": "authoritative final reproducibility branch",
+      "role": "final",
+      "source_blob_hash": "de85db72cfa643633a2c819f79f11da6eb4296bf",
+      "source_branch": "polish/final-reproducibility-guardrails",
+      "source_commit": "7cb0a2c",
+      "source_path": "reports/final_reproducibility_guide.md",
+      "status": "copied",
+      "target_path": "reports_curated/final/final_reproducibility_guide.md"
+    },
+    {
+      "notes": "canonical claims/limitations summary",
+      "role": "final",
+      "source_blob_hash": "64fbeee344b656392f4bb6104b9d670d578ee78c",
+      "source_branch": "polish/final-reproducibility-guardrails",
+      "source_commit": "7cb0a2c",
+      "source_path": "reports/final_thesis_claims_and_limitations.md",
+      "status": "copied",
+      "target_path": "reports_curated/final/final_thesis_claims_and_limitations.md"
+    },
+    {
+      "notes": "thesis draft that ties experiments together",
+      "role": "final",
+      "source_blob_hash": "8f9b5434c79886208a2c339ccd8a2566fe204014",
+      "source_branch": "polish/final-reproducibility-guardrails",
+      "source_commit": "7cb0a2c",
+      "source_path": "reports/thesis_experiment_section_draft.md",
+      "status": "copied",
+      "target_path": "reports_curated/final/thesis_experiment_section_draft.md"
+    },
+    {
+      "notes": "negative experiment conclusion belongs to its own branch",
+      "role": "negative_experiment",
+      "source_blob_hash": "e19f8f618906cf5516e3a7bd94696006147a3d5d",
+      "source_branch": "experiment/jrt1-joint-rtdir-coupled-refiner",
+      "source_commit": "6765af3",
+      "source_path": "reports/JRT1_final_closeout_summary.md",
+      "status": "copied",
+      "target_path": "reports_curated/negative_experiments/jrt1/JRT1_final_closeout_summary.md"
+    },
+    {
+      "notes": "stage report retained as supporting evidence under the JRT1 closeout",
+      "role": "negative_experiment",
+      "source_blob_hash": "46db51d0df82ac2e362310bd968a051fc478bb18",
+      "source_branch": "experiment/jrt1-joint-rtdir-coupled-refiner",
+      "source_commit": "6765af3",
+      "source_path": "reports/JRT1b_train_cv_report.md",
+      "status": "copied",
+      "target_path": "reports_curated/negative_experiments/jrt1/JRT1b_train_cv_report.md"
+    },
+    {
+      "notes": "trajectory-proxy stage report retained as supporting evidence under the JRT1 closeout",
+      "role": "negative_experiment",
+      "source_blob_hash": "5ee0fac3940a33e48cf87b89b96fc28936a9ca7b",
+      "source_branch": "experiment/jrt1-joint-rtdir-coupled-refiner",
+      "source_commit": "6765af3",
+      "source_path": "reports/JRT1c_train_cv_trajectory_proxy_report.md",
+      "status": "copied",
+      "target_path": "reports_curated/negative_experiments/jrt1/JRT1c_train_cv_trajectory_proxy_report.md"
+    },
+    {
+      "notes": "negative experiment conclusion belongs to its own branch",
+      "role": "negative_experiment",
+      "source_blob_hash": "8bb58cea453f78497c73803772c2ce5cf8fdac96",
+      "source_branch": "experiment/mf1-multi-frame-chain-refiner",
+      "source_commit": "ea559d5",
+      "source_path": "reports/MF1_final_closeout_summary.md",
+      "status": "copied",
+      "target_path": "reports_curated/negative_experiments/mf1/MF1_final_closeout_summary.md"
+    },
+    {
+      "notes": "smoke harness evidence for MF1 line",
+      "role": "negative_experiment",
+      "source_blob_hash": "92e224ad4b996f42a30c6209e4db5a1a4e39a50c",
+      "source_branch": "experiment/mf1-multi-frame-chain-refiner",
+      "source_commit": "ea559d5",
+      "source_path": "reports/MF1a_chain_refiner_smoke_report.md",
+      "status": "copied",
+      "target_path": "reports_curated/negative_experiments/mf1/MF1a_chain_refiner_smoke_report.md"
+    },
+    {
+      "notes": "train-CV evidence for MF1 line",
+      "role": "negative_experiment",
+      "source_blob_hash": "f92fa962747086841e2dc33b83cf34625cdaaf0b",
+      "source_branch": "experiment/mf1-multi-frame-chain-refiner",
+      "source_commit": "ea559d5",
+      "source_path": "reports/MF1b_train_cv_report.md",
+      "status": "copied",
+      "target_path": "reports_curated/negative_experiments/mf1/MF1b_train_cv_report.md"
+    },
+    {
+      "notes": "Skipped during materialization because REPORT3 marked it needs review: represents optimize S10 negative summary without bringing full branch payload",
+      "role": "negative_experiment",
+      "source_blob_hash": null,
+      "source_branch": "optimize/s10-chain-pathratio-smoother",
+      "source_commit": "0ae9aee",
+      "source_path": "reports/final_s10_chain_smoother_summary.md",
+      "status": "skipped_needs_review",
+      "target_path": "reports_curated/negative_experiments/optimize/final_s10_chain_smoother_summary.md"
+    },
+    {
+      "notes": "Skipped during materialization because REPORT3 marked it needs review: represents optimize S11 negative summary without bringing full branch payload",
+      "role": "negative_experiment",
+      "source_blob_hash": null,
+      "source_branch": "optimize/s11-tmag-scale-consistency-training",
+      "source_commit": "b00eab4",
+      "source_path": "reports/final_s11_tmag_scale_consistency_summary.md",
+      "status": "skipped_needs_review",
+      "target_path": "reports_curated/negative_experiments/optimize/final_s11_tmag_scale_consistency_summary.md"
+    },
+    {
+      "notes": "Skipped during materialization because REPORT3 marked it needs review: represents optimize S12 negative summary without bringing full branch payload",
+      "role": "negative_experiment",
+      "source_blob_hash": null,
+      "source_branch": "optimize/s12-regime-balanced-sampling",
+      "source_commit": "34edd74",
+      "source_path": "reports/final_s12_regime_balanced_sampling_summary.md",
+      "status": "skipped_needs_review",
+      "target_path": "reports_curated/negative_experiments/optimize/final_s12_regime_balanced_sampling_summary.md"
+    },
+    {
+      "notes": "Skipped during materialization because REPORT3 marked it needs review: represents optimize S14 negative summary without bringing full branch payload",
+      "role": "negative_experiment",
+      "source_blob_hash": null,
+      "source_branch": "optimize/s14-local-window-pose-graph",
+      "source_commit": "36e68fe",
+      "source_path": "reports/final_s14_local_window_pose_graph_summary.md",
+      "status": "skipped_needs_review",
+      "target_path": "reports_curated/negative_experiments/optimize/final_s14_local_window_pose_graph_summary.md"
+    },
+    {
+      "notes": "Skipped during materialization because REPORT3 marked it needs review: represents optimize S15 negative summary without bringing full branch payload",
+      "role": "negative_experiment",
+      "source_blob_hash": null,
+      "source_branch": "optimize/s15-trajectory-level-training-objective",
+      "source_commit": "8a28577",
+      "source_path": "reports/final_s15_trajectory_level_training_objective_summary.md",
+      "status": "skipped_needs_review",
+      "target_path": "reports_curated/negative_experiments/optimize/final_s15_trajectory_level_training_objective_summary.md"
+    },
+    {
+      "notes": "Skipped during materialization because REPORT3 marked it needs review: represents optimize S16 negative summary without bringing full branch payload",
+      "role": "negative_experiment",
+      "source_blob_hash": null,
+      "source_branch": "optimize/s16-stronger-visual-backbone-feasibility",
+      "source_commit": "8f52076",
+      "source_path": "reports/final_s16_stronger_visual_backbone_feasibility_summary.md",
+      "status": "skipped_needs_review",
+      "target_path": "reports_curated/negative_experiments/optimize/final_s16_stronger_visual_backbone_feasibility_summary.md"
+    },
+    {
+      "notes": "Skipped during materialization because REPORT3 marked it needs review: represents optimize S17 negative summary without bringing full branch payload",
+      "role": "negative_experiment",
+      "source_blob_hash": null,
+      "source_branch": "optimize/s17-pose-supervision-dataset-quality-audit",
+      "source_commit": "e020e11",
+      "source_path": "reports/final_s17_pose_supervision_dataset_quality_summary.md",
+      "status": "skipped_needs_review",
+      "target_path": "reports_curated/negative_experiments/optimize/final_s17_pose_supervision_dataset_quality_summary.md"
+    },
+    {
+      "notes": "Skipped during materialization because REPORT3 marked it needs review: represents optimize S19 negative summary without bringing full branch payload",
+      "role": "negative_experiment",
+      "source_blob_hash": null,
+      "source_branch": "optimize/s19-geometry-aware-pretraining-feasibility",
+      "source_commit": "f90d167",
+      "source_path": "reports/final_s19_geometry_aware_pretraining_feasibility_summary.md",
+      "status": "skipped_needs_review",
+      "target_path": "reports_curated/negative_experiments/optimize/final_s19_geometry_aware_pretraining_feasibility_summary.md"
+    }
+  ],
+  "materialized_at_git_commit": "9de0632",
+  "no_branches_merged": true,
+  "no_cherry_picks": true,
+  "no_original_reports_deleted": true,
+  "no_original_reports_moved": true,
+  "s5_locked_metrics": {
+    "ATE": 7.352288,
+    "drift": 1.327343,
+    "path_ratio": 0.932379
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "coverage_vs_454": 0.0,
+  "metrics_by_source_type": {
+    "selected_prediction": {
+      "num_edges": 132,
+      "path_length": 18.789319270944194,
+      "rot_mean": null,
+      "tdir_mean": 99.54956140857578,
+      "tmag_max": 7.2821664762474825,
+      "tmag_median": 0.9819414718338607,
+      "tmag_p90": 5.680931529985728
+    },
+    "unavailable": {
+      "num_edges": 0,
+      "path_length": 0.0,
+      "rot_mean": null,
+      "tdir_mean": null,
+      "tmag_max": null,
+      "tmag_median": null,
+      "tmag_p90": null
+    }
+  },
+  "num_edges_by_source_type": {
+    "selected_prediction": 132,
+    "unavailable": 321
+  },
+  "num_poses": 0
+}

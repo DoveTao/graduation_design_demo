@@ -1,0 +1,37 @@
+{
+  "dataset": "360DVO",
+  "manifest_ready": true,
+  "pose_convention_ready": true,
+  "split_by_sequence": true,
+  "forbid_random_pair_split": true,
+  "max_smoke_pairs": 100,
+  "num_pairs": 100,
+  "num_adjacent_pairs": 25,
+  "num_kstep_pairs": 75,
+  "valid_pose_fraction": 1.0,
+  "k_values": [
+    1,
+    2,
+    3,
+    5
+  ],
+  "sequence_summaries": [
+    {
+      "seq_id": "Sequences/field",
+      "num_images": 101,
+      "pose_file": "data/360DVO/GroundTruth/field.txt",
+      "timestamp_file": "data/360DVO/Timestamps/field_timestamps.txt",
+      "pose_rows": 101,
+      "pairs_built": 100
+    }
+  ],
+  "blockers": [],
+  "target_schema_terms": [
+    "R_BA",
+    "t_BA_B",
+    "tdir_B",
+    "T_w_c",
+    "adjacent",
+    "kstep"
+  ]
+}

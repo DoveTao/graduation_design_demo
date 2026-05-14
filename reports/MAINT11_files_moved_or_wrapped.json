@@ -1,0 +1,36 @@
+{
+  "core_packaged": [
+    "config.py",
+    "model.py",
+    "interaction.py",
+    "losses.py",
+    "erp_sampling.py",
+    "healpix_utils.py",
+    "transformer_encoder.py",
+    "pose_head.py",
+    "train360_pose_losses.py",
+    "train360d_pose_losses.py",
+    "depth_branch.py"
+  ],
+  "legacy_quarantined": [
+    "dataset_pano_only.py",
+    "train_mvp.py",
+    "geometry_refine.py"
+  ],
+  "root_wrappers": [
+    "config.py",
+    "model.py",
+    "interaction.py",
+    "losses.py",
+    "pose_head.py",
+    "erp_sampling.py",
+    "healpix_utils.py",
+    "transformer_encoder.py",
+    "train360_pose_losses.py",
+    "train360d_pose_losses.py",
+    "depth_branch.py",
+    "dataset_pano_only.py",
+    "train_mvp.py",
+    "geometry_refine.py"
+  ]
+}

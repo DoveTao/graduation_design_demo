@@ -1,0 +1,49 @@
+dataset:
+  name: 360DVO
+  local_root: data/360DVO
+  sequence: field
+  manifest: external_baselines/results/gen2_360dvo_external_adapter/pair_manifest_smoke.jsonl
+  inspection: external_baselines/results/gen2_360dvo_external_adapter/dataset_inspection.json
+  motion_audit: external_baselines/results/gen2_360dvo_external_adapter/motion_distribution_audit.json
+  do_not_commit_raw_data: true
+
+model:
+  source_candidate: S5E15_scale_deunderfit_antiparallel_candidate
+  inference_mode: external_adapter_smoke
+  train_new_model: false
+  fine_tune: false
+  use_eval_gt_calibration: false
+  use_orbslam3_teacher: false
+  allow_block_if_inference_unavailable: true
+
+input:
+  image_type: ERP
+  source_resolution: [3840, 1920]
+  resize_policy:
+    use_existing_model_policy: true
+    no_gt_dependent_preprocessing: true
+
+pose_convention:
+  target:
+    R_BA: true
+    t_BA_B: true
+    tdir_frame: B
+  quaternion_order: xyzw
+  use_manifest_convention: true
+
+prediction:
+  output_per_pair:
+    - R_pred_BA
+    - tdir_pred_B
+    - tmag_pred
+    - tvec_pred_B
+  forbid_gt_scale_calibration: true
+  forbid_gt_direction_correction: true
+  forbid_prediction_fabrication: true
+
+evaluation:
+  compute_component_metrics: true
+  compute_path_ratio: true
+  export_tum_if_adjacent_chain_available: true
+  compute_none_se3_sim3_ate_if_tum_available: true
+  no_training: true

@@ -1,0 +1,20 @@
+{
+  "real_training_executed": true,
+  "optimizer_step_count": 120,
+  "learned_weights_saved": true,
+  "smoke_policy_only": false,
+  "uses_eval_gt_for_training": false,
+  "uses_eval_gt_for_gate": false,
+  "uses_orbslam3_teacher": false,
+  "uses_external_router": false,
+  "modified_train_edge_fraction": 0.5317124735729387,
+  "delta_tdir_norm_train_mean": 0.0018218941725826189,
+  "gate_dataset_ready": true,
+  "classification": "S5E21_REAL_NO_HARM_TRAINING_COMPLETE",
+  "validation_snapshot": {
+    "verify_final_candidate": "PASS",
+    "project_health_check": "PASS",
+    "s6_eval_only": "PASS",
+    "unittest": "PASS"
+  }
+}

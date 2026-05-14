@@ -1,0 +1,18 @@
+{
+  "status": "ok",
+  "alignment_mode": "se3",
+  "ATE": 59.83886749016649,
+  "drift": 1.9986010749372427,
+  "path_ratio": 6.391023106917223,
+  "num_est_poses": 454,
+  "num_gt_poses": 454,
+  "num_matched_poses": 454,
+  "tracking_success_rate": 1.0,
+  "gt_path_length": 25.83364036045875,
+  "est_path_length_raw": 165.10339247948127,
+  "metric_notes": {
+    "ATE": "RMSE position error after requested alignment.",
+    "drift": "RPE-like translation RMSE on consecutive matched steps after requested alignment.",
+    "path_ratio": "Raw estimated path length divided by GT path length; scale-sensitive and not Sim(3)-normalized."
+  }
+}

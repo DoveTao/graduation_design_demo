@@ -1,0 +1,8 @@
+{
+  "attempted": true,
+  "classification": "S5E12_FEATURE_GATE_PASSED",
+  "notes": [
+    "S5E12 不训练新模型，重点是验证真实 correspondence / flow / parallax feature gate 是否成立。",
+    "strict essential geometry 因 camera intrinsics 缺失而保持 limited。"
+  ]
+}

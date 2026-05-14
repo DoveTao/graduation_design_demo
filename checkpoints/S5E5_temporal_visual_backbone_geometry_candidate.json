@@ -1,0 +1,165 @@
+{
+  "experiment": "S5E5_temporal_visual_backbone_geometry_candidate",
+  "status": {
+    "experimental_candidate": true,
+    "official_s5_unchanged": true,
+    "not_official_replacement": true
+  },
+  "s5e1_blocker_recap": {},
+  "dataset": {
+    "adjacent_dataset_ready": null,
+    "split_respected": null,
+    "test_gt_used_for_training": false,
+    "num_train_pairs": null,
+    "num_val_pairs": null
+  },
+  "training": {
+    "attempted": true,
+    "classification": "S5E5_TRAINING_SMOKE_ONLY",
+    "config": "configs/s5e5_temporal_visual_backbone_geometry.yaml",
+    "checkpoint_dir": "checkpoints/S5E5_temporal_visual_backbone_geometry_candidate",
+    "uses_scene01_seq03_for_training": false,
+    "model_type": "temporal_visual_backbone",
+    "losses": {
+      "so3_geodesic": true,
+      "signed_tdir": true,
+      "tdir_abs_aux": true,
+      "anti_parallel_penalty": true,
+      "tmag_log": true,
+      "path_length_consistency": true,
+      "short_window_direction_consistency": true,
+      "smoothness": true
+    },
+    "best_checkpoint": "checkpoints/S5E5_temporal_visual_backbone_geometry_candidate/s5e5_temporal_visual_best.pt"
+  },
+  "adjacent_dense_export": {
+    "available": true,
+    "trajectory_path": "external_baselines/results/s5e5_traceable_dense/scene01_seq03_s5e5_traceable_dense_tum.txt",
+    "edge_provenance": "external_baselines/results/s5e5_traceable_dense/edge_provenance.jsonl",
+    "num_poses": 454,
+    "num_edges": 453,
+    "direct_adjacent_prediction_edges": 453,
+    "coverage": 1.0,
+    "all_edges_traceable": true
+  },
+  "component_metrics": {
+    "rot_mean_deg": 0.9134395040767528,
+    "rot_median_deg": 0.797895569319923,
+    "rot_p90_deg": 1.3218302317546538,
+    "tdir_mean_deg": 56.14019055030064,
+    "tdir_median_deg": 53.842707330263345,
+    "tdir_p90_deg": 92.30096311683484,
+    "tdir_abs_mean_deg": 52.096460882587564,
+    "tdir_abs_median_deg": 52.765473602918775,
+    "tdir_abs_p90_deg": 78.79367192164725,
+    "tdir_mean_cosine": 0.5120819299839849,
+    "anti_parallel_rate": 0.10816777041942605,
+    "severe_wrong_sign_rate": 0.008830022075055188,
+    "direction_abs_good_but_signed_bad_rate": 0.006622516556291391,
+    "tmag_median_ratio": 11.953588693727822,
+    "tmag_mean_ratio": 71.64852808991282,
+    "tmag_p90_ratio": 48.023883417026354,
+    "tmag_p95_ratio": 95.44378091660477,
+    "path_ratio": 6.591091747656769
+  },
+  "external_eval": {
+    "none": {
+      "ate": 113.44308639694538,
+      "drift": 2.1011291922148745,
+      "path_ratio": 6.591091680514336,
+      "status": "ok",
+      "num_matched_poses": 454,
+      "tracking_success_rate": 1.0
+    },
+    "se3": {
+      "ate": 66.13733880826825,
+      "drift": 2.104015006750345,
+      "path_ratio": 6.591091680514336,
+      "status": "ok",
+      "num_matched_poses": 454,
+      "tracking_success_rate": 1.0
+    },
+    "sim3": {
+      "ate": 4.111550831251635,
+      "drift": 0.13129335402424674,
+      "path_ratio": 6.591091680514336,
+      "status": "ok",
+      "num_matched_poses": 454,
+      "tracking_success_rate": 1.0
+    }
+  },
+  "comparison_to_orbslam3": {
+    "coverage_advantage": true,
+    "rot_close_to_orbslam3": true,
+    "tdir_gap_remaining": true,
+    "tmag_gap_remaining": true,
+    "aligned_ate_gap_to_orbslam3": 65.82879439757578,
+    "summary": "S5E5 tests whether temporal visual features improve direction and magnitude jointly while keeping full coverage."
+  },
+  "s5_official_locked_metrics": {
+    "ate": 7.352288,
+    "drift": 1.327343,
+    "path_ratio": 0.932379,
+    "unchanged": true,
+    "not_replaced_by_s5e5": true
+  },
+  "validation": {
+    "verify_final_candidate": "PASS",
+    "project_health_check": "PASS",
+    "s6_eval_only": "PASS",
+    "unittest": "PASS"
+  },
+  "allowed_final_classifications": [
+    "S5E5_GEOMETRY_IMPROVED",
+    "S5E5_TDIR_IMPROVED_TMAG_STILL_BAD",
+    "S5E5_TMAG_IMPROVED_TDIR_STILL_BAD",
+    "S5E5_TRACEABLE_DENSE_EXPORTED_NO_IMPROVEMENT",
+    "S5E5_TRAINING_BLOCKED",
+    "S5E5_EXPORT_BLOCKED",
+    "S5E5_ERROR"
+  ],
+  "final_classification": "S5E5_TMAG_IMPROVED_TDIR_STILL_BAD",
+  "baseline_reference": {
+    "s5e4": {
+      "rot_mean_deg": 0.9134395040767528,
+      "tdir_mean_deg": 51.47429479273258,
+      "tdir_abs_mean_deg": 46.07968707914154,
+      "anti_parallel_rate": 0.1368653421633554,
+      "tmag_median_ratio": 12.109093390318423,
+      "path_ratio": 2.1345479454214416,
+      "sim3_ate": 4.0211631491566155
+    },
+    "s5e3": {
+      "rot_mean_deg": 0.9134395040767528,
+      "tdir_mean_deg": 135.28985476811536,
+      "tdir_abs_mean_deg": 37.14982041104558,
+      "tmag_median_ratio": 12.109093390318419,
+      "path_ratio": 2.1345479454214416,
+      "sim3_ate": 3.9115097570948705
+    },
+    "s5e2": {
+      "rot_mean_deg": 0.9134395040767528,
+      "tdir_mean_deg": 51.47429479273258,
+      "tdir_abs_mean_deg": 46.07968707914153,
+      "tmag_median_ratio": 32.77577273937451,
+      "path_ratio": 3.5557784814144453,
+      "sim3_ate": 4.097680633241629
+    },
+    "orbslam3": {
+      "coverage": "273/454",
+      "se3_ate": 0.30854441069248173,
+      "sim3_ate": 0.224292165986624,
+      "path_ratio": 0.2998258665660257
+    }
+  },
+  "improvement_vs_s5e4": {
+    "rot_preserved": true,
+    "signed_tdir_improved": false,
+    "tdir_abs_improved": false,
+    "anti_parallel_rate_reduced_or_preserved": true,
+    "tmag_improved": true,
+    "path_ratio_improved": false,
+    "sim3_ate_improved": false,
+    "overall_geometry_improved": false
+  }
+}

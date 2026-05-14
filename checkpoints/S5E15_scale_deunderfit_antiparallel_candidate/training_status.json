@@ -1,0 +1,23 @@
+{
+  "attempted": true,
+  "classification": "S5E15_TRAIN_PRIOR_SCALE_ONLY",
+  "train_reliable_signed_edges": 0,
+  "uses_scene01_seq03_gt_for_training": false,
+  "uses_eval_gt_for_scale": false,
+  "uses_eval_gt_for_sign": false,
+  "uses_train_prior_scale": true,
+  "scale_factor_source": "train_split_prior",
+  "anti_parallel_guard_source": "correspondence_feature_confidence_gate",
+  "supervised_train_refinement_available": false,
+  "inference_time_feature_gating": true,
+  "losses": {
+    "scale_deunderfit_prior": true,
+    "anti_parallel_guard": true,
+    "robust_tmag_log": true,
+    "signed_tdir_confidence_gate": true
+  },
+  "notes": [
+    "train_prior_scale_factor=2.8",
+    "No eval GT used for scale/sign calibration."
+  ]
+}

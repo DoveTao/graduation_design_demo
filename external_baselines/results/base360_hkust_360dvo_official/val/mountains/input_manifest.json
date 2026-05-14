@@ -1,0 +1,33 @@
+{
+  "sequence": "mountains",
+  "split": "val",
+  "image_dir": "/home/dovetao/graduation_design_demo/data/360DVO/Sequences/mountains",
+  "official_demo_image_dir": "/home/dovetao/graduation_design_demo/external_baselines/results/base360_hkust_360dvo_official/val/mountains/official_demo_input_x0p5",
+  "official_demo_input_scale": 0.5,
+  "image_list": "/home/dovetao/graduation_design_demo/external_baselines/results/base360_hkust_360dvo_official/val/mountains/image_list.txt",
+  "gt_tum": "/home/dovetao/graduation_design_demo/external_baselines/results/base360_hkust_360dvo_official/val/mountains/gt_tum.txt",
+  "gt_pose_file": "/home/dovetao/graduation_design_demo/data/360DVO/GroundTruth/mountains.txt",
+  "gt_timestamp_file": "/home/dovetao/graduation_design_demo/data/360DVO/Timestamps/mountains_timestamps.txt",
+  "pred_tum": "/home/dovetao/graduation_design_demo/external_baselines/results/base360_hkust_360dvo_official/val/mountains/pred_tum.txt",
+  "frame_count": 765,
+  "pair_count": 3049,
+  "adjacent_pair_count": 764,
+  "official_sequence_level_input": true,
+  "official_pair_level_input": false,
+  "camera_model": "ERP spherical intrinsics inferred by official demo.compute_intrinsics(H, W)",
+  "calibration_source": "official demo intrinsics from image size; no dataset-specific legacy scene01 calibration used",
+  "official_timeout_seconds": 900,
+  "run_status": "not_attempted",
+  "failure_reason": null,
+  "command": [
+    "/home/dovetao/graduation_design_demo/tools/base360c_official_python",
+    "/tmp/360DVO_official/demo.py",
+    "--imagedir",
+    "/home/dovetao/graduation_design_demo/external_baselines/results/base360_hkust_360dvo_official/val/mountains/official_demo_input_x0p5",
+    "--config",
+    "/tmp/360DVO_official/config/360.yaml",
+    "--save_trajectory",
+    "--name",
+    "val_mountains"
+  ]
+}

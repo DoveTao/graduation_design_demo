@@ -1,0 +1,67 @@
+{
+  "experiment": "S5E19C_real_direction_training_no_fallback",
+  "training": {
+    "real_training_executed": true,
+    "optimizer_step_count": 180,
+    "learned_weights_saved": true,
+    "smoke_policy_only": false
+  },
+  "no_fallback_guard": {
+    "delta_tdir_zero_count": 0,
+    "delta_tdir_norm_mean": 0.6029416022053354,
+    "sign_score_unique_count": 453,
+    "final_equals_s5e15_direction_count": 0,
+    "fallback_to_s5e15_direction": false,
+    "learned_weights_loaded": true,
+    "export_used_learned_weights": true,
+    "evaluator_hardcoded_s5e15_metrics": false
+  },
+  "component_metrics": {
+    "rot_mean_deg": 0.9134395040767528,
+    "rot_median_deg": 0.797895569319923,
+    "rot_p90_deg": 1.3218302317546538,
+    "signed_tdir_mean_deg": 56.17528018993624,
+    "signed_tdir_median_deg": 50.11420328607101,
+    "signed_tdir_p90_deg": 101.58184252183032,
+    "tdir_abs_mean_deg": 50.59318455427033,
+    "tdir_abs_median_deg": 49.42133642078738,
+    "tdir_abs_p90_deg": 82.0810282129006,
+    "tdir_mean_cosine": 0.5021087114234821,
+    "anti_parallel_rate": 0.16556291390728478,
+    "severe_wrong_sign_rate": 0.02207505518763797,
+    "direction_abs_good_but_signed_bad_rate": 0.002207505518763797,
+    "tmag_median_ratio": 0.9879222977344607,
+    "tmag_p95_ratio": 3.6359100915472986,
+    "path_ratio": 0.12240164100086463
+  },
+  "external_eval": {
+    "none": {
+      "ate": 9.63427551263089,
+      "drift": 0.12951260142971552,
+      "path_ratio": 0.1224016409735106
+    },
+    "se3": {
+      "ate": 4.016260541940681,
+      "drift": 0.13046622862205653,
+      "path_ratio": 0.1224016409735106
+    },
+    "sim3": {
+      "ate": 3.9958080586973814,
+      "drift": 0.13109965044136235,
+      "path_ratio": 0.1224016409735106
+    }
+  },
+  "improvement_vs_s5e15": {
+    "signed_tdir_improved": false,
+    "anti_parallel_improved": false,
+    "path_ratio_improved": false,
+    "sim3_ate_improved": false
+  },
+  "validation": {
+    "verify_final_candidate": "PASS",
+    "project_health_check": "PASS",
+    "s6_eval_only": "PASS",
+    "unittest": "PASS"
+  },
+  "final_classification": "S5E19C_REAL_TRAINING_NO_IMPROVEMENT"
+}

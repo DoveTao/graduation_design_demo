@@ -1,0 +1,17 @@
+{
+  "experiment": "STRUCT1B_scale_guard_repair",
+  "hard_scale_guard_enabled": true,
+  "recorded_raw_log_tmag": true,
+  "recorded_bounded_log_tmag": true,
+  "recorded_final_tmag": true,
+  "export_used_guarded_tmag": true,
+  "uses_eval_gt_for_prediction": false,
+  "uses_orbslam3_teacher": false,
+  "coverage": {
+    "num_poses": 454,
+    "num_edges": 453,
+    "all_edges_traceable": true,
+    "coverage": 1.0
+  },
+  "integrity_pass": true
+}

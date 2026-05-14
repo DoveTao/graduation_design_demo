@@ -1,0 +1,22 @@
+name: S16b_frozen_pretrained_backbone_probe
+probe_mode: s16b
+purpose: feasibility diagnostic only; not a final clean candidate replacement
+baseline_contract: checkpoints/S8b_reproduction_contract.json
+s5_policy: checkpoints/S5_clean_tmag_calibration_policy.json
+s5_current_arch_result: checkpoints/S8b_current_arch_s5_wrapper_result.json
+report_path: checkpoints/S16b_frozen_pretrained_backbone_probe_report.md
+candidates_path: checkpoints/S16b_frozen_pretrained_backbone_probe_candidates.json
+summary_path: reports/final_s16b_frozen_pretrained_backbone_probe_summary.md
+train_cap_per_sequence: 512
+val_cap_per_sequence: 256
+cv_folds: heldout_scene01_seq01,heldout_scene01_seq02
+eval_k_list: 1,2,3,5,10,20
+ridge_lambda: 1.0
+high_error_quantile: 0.75
+encoder: torchvision_resnet50
+encoder_frozen: true
+feature_probe_only: true
+full_integration: false
+internet_download_allowed: true
+internet_download_user_approved: true
+s5_remains_final_clean_candidate: true

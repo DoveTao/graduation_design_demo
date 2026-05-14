@@ -1,0 +1,60 @@
+{
+  "real_training_executed": true,
+  "optimizer_step_count": 120,
+  "learned_weights_saved": true,
+  "smoke_policy_only": false,
+  "uses_eval_gt_for_training": false,
+  "uses_orbslam3_teacher": false,
+  "uses_random_batch_proxy": false,
+  "uses_true_contiguous_kstep_windows": true,
+  "k_values": [
+    1,
+    2,
+    3,
+    5
+  ],
+  "losses_actually_computed": {
+    "true_kstep_composition": true,
+    "path_length_consistency": true,
+    "delta_tdir_l2_regularization": true,
+    "signed_tdir_kstep": true
+  },
+  "delta_tdir_norm_train_mean": 0.02149228478430497,
+  "history": [
+    {
+      "step": 1,
+      "loss": 0.5699093341827393
+    },
+    {
+      "step": 20,
+      "loss": 0.9866470694541931
+    },
+    {
+      "step": 40,
+      "loss": 0.6910319328308105
+    },
+    {
+      "step": 60,
+      "loss": 0.6601816415786743
+    },
+    {
+      "step": 80,
+      "loss": 0.5996975898742676
+    },
+    {
+      "step": 100,
+      "loss": 0.7608432769775391
+    },
+    {
+      "step": 120,
+      "loss": 0.5939756631851196
+    }
+  ],
+  "classification": "S5E20_REAL_KSTEP_TRAINING_COMPLETE",
+  "validation_snapshot": {
+    "verify_final_candidate": "PASS",
+    "project_health_check": "PASS",
+    "s6_eval_only": "PASS",
+    "unittest": "PASS"
+  }
+}

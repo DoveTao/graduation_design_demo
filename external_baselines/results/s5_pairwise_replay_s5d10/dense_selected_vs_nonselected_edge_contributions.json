@@ -1,0 +1,20 @@
+{
+  "nonselected_edges": {
+    "num_edges": 321,
+    "path_length": 43.498224304700855,
+    "path_length_fraction": 0.6062729555107714,
+    "rot_mean_deg": 20.82698038561777,
+    "tdir_abs_mean_deg": 59.50699260891793,
+    "tdir_mean_deg": 93.69127653978485,
+    "tmag_median_ratio": 29.375292370072714
+  },
+  "selected_edges": {
+    "num_edges": 132,
+    "path_length": 28.24870735259957,
+    "path_length_fraction": 0.39372704448922863,
+    "rot_mean_deg": 20.820702786908246,
+    "tdir_abs_mean_deg": 51.49108111896134,
+    "tdir_mean_deg": 85.8020142769065,
+    "tmag_median_ratio": 1.310038384597929
+  }
+}

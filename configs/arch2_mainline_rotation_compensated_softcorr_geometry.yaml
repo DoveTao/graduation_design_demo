@@ -1,0 +1,125 @@
+model:
+  name: ARCH2_mainline_rotation_compensated_softcorr_geometry
+  base_candidate: S5E15_scale_deunderfit_antiparallel_candidate
+  preserve_spherical_token_backbone: true
+  use_coarse_to_fine: true
+  use_soft_correspondence_geometry: true
+  use_rotation_compensation: true
+  use_correspondence_geometry_tdir_head: true
+  use_fine_scale_head_with_s5e15_guard: true
+  use_observability_loss_weighting: true
+  use_external_router: false
+  protect_s5e15_base_direction: true
+  hidden_dim: 96
+
+softcorr_geometry:
+  use_W_ab: true
+  use_W_ba: true
+  use_matched_bearing: true
+  use_cycle_consistency: true
+  use_entropy_confidence: true
+  use_epipolar_residual: true
+  max_matches: 64
+
+rotation_compensation:
+  enabled: true
+  source: R_coarse
+  compute_bA_rot_in_B_frame: true
+  residual_flow: normalize(W_ab @ bearing_b) - normalize(R_coarse @ bearing_a)
+
+tdir_head:
+  input:
+    - interaction_features
+    - bearing_a
+    - matched_bearing_b
+    - rotation_compensated_residual_flow
+    - correspondence_confidence
+    - entropy
+    - epipolar_residual
+  output:
+    - delta_tdir
+    - observability_score
+  final_tdir:
+    formula: normalize(tdir_base_or_coarse + alpha * gate * delta_tdir)
+    max_alpha: 0.05
+    low_observability_alpha: 0.0
+  sign_head:
+    enabled: false
+
+scale_head:
+  enabled: true
+  inherits_s5e15_scale_guard: true
+  output: delta_log_tmag
+  bounded_by_train_split_prior: true
+  no_posthoc_eval_calibration: true
+  delta_clip: 0.08
+
+observability_weighting:
+  enabled: true
+  use_as_loss_weight: true
+  use_as_router: false
+  high_observability_tdir_weight: 1.0
+  low_observability_tdir_weight: 0.10
+  rot_loss_always_active: true
+  tmag_loss_always_active: true
+  path_loss_always_active: true
+  high_threshold_quantile: 0.75
+  low_threshold_quantile: 0.35
+
+kstep_geometry:
+  enabled: true
+  k_values: [1, 2, 3, 5]
+  true_contiguous_windows: true
+  forbid_random_batch_proxy: true
+
+pose_convention:
+  explicit_outputs:
+    - R_BA
+    - tdir_B
+    - tdir_A
+    - tmag
+    - tvec_B
+  forbid_ambiguous_t_dir_out: true
+  verify_Twc_Tcw_consistency: true
+
+training:
+  real_training_required: true
+  smoke_policy_allowed: false
+  train_scenes: ["scene01/seq01", "scene01/seq02"]
+  eval_scene: "scene01/seq03"
+  uses_eval_gt_for_training: false
+  uses_eval_gt_for_gate: false
+  uses_orbslam3_teacher: false
+  save_learned_weights: true
+  seed: 21
+  lr: 0.001
+  weight_decay: 0.0001
+  batch_size: 32
+  max_steps: 120
+
+losses:
+  w_rot_geodesic: 0.10
+  w_tdir_signed: 1.00
+  w_tdir_abs_aux: 0.25
+  w_antiparallel: 0.75
+  w_tmag_log: 0.40
+  w_path_window: 0.20
+  w_kstep_composition: 0.30
+  w_softcorr_cycle: 0.10
+  w_epipolar_residual: 0.10
+  w_delta_tdir_l2: 3.00
+  w_no_harm_margin: 0.75
+
+evaluation:
+  compare_to: ["S5E15", "S5E20", "S5E21", "ORB-SLAM3"]
+  required_metrics:
+    - signed_tdir
+    - anti_parallel_rate
+    - tmag_median_ratio
+    - path_ratio
+    - sim3_ate
+    - high_confidence_subset_tdir
+    - softcorr_entropy
+    - residual_flow_norm
+    - delta_tdir_norm
+    - no_harm_pass_rate

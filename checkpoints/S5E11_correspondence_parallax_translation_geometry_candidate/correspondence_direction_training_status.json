@@ -1,0 +1,341 @@
+{
+  "attempted": true,
+  "classification": "S5E11_CORRESPONDENCE_DIRECTION_TRAINING_SMOKE",
+  "num_train_pairs": 707,
+  "num_val_pairs": 79,
+  "uses_scene01_seq03_for_training": false,
+  "model_type": "correspondence_direction_candidate",
+  "best_params": {
+    "essential_conf_threshold": 0.15,
+    "inlier_ratio_threshold": 0.1,
+    "parallax_threshold": 0.0
+  },
+  "best_val_metrics": {
+    "signed_tdir_mean": 107.48615579758422,
+    "signed_tdir_median": 155.21194628562515,
+    "signed_tdir_p90": 161.03092617150745,
+    "tdir_abs_mean": 24.419210737056897,
+    "tdir_abs_median": 21.5835236814354,
+    "tdir_abs_p90": 35.97339502216615,
+    "tdir_mean_cosine": -0.240692977725717,
+    "anti_parallel_rate": 0.620253164556962,
+    "severe_wrong_sign_rate": 0.6075949367088608,
+    "direction_abs_good_but_signed_bad_rate": 0.5949367088607594,
+    "pair_order_dir_flip_cosine_mean": -1.0,
+    "pair_order_dir_flip_success_rate": 0.0,
+    "pair_order_dir_flip_success_rate_observable": null
+  },
+  "observable_edge_fraction_train": 0.02545968882602546,
+  "observable_edge_fraction_val": 0.0,
+  "search_history": [
+    {
+      "params": {
+        "essential_conf_threshold": 0.15,
+        "inlier_ratio_threshold": 0.1,
+        "parallax_threshold": 0.0
+      },
+      "val_metrics": {
+        "signed_tdir_mean": 107.48615579758422,
+        "signed_tdir_median": 155.21194628562515,
+        "signed_tdir_p90": 161.03092617150745,
+        "tdir_abs_mean": 24.419210737056897,
+        "tdir_abs_median": 21.5835236814354,
+        "tdir_abs_p90": 35.97339502216615,
+        "tdir_mean_cosine": -0.240692977725717,
+        "anti_parallel_rate": 0.620253164556962,
+        "severe_wrong_sign_rate": 0.6075949367088608,
+        "direction_abs_good_but_signed_bad_rate": 0.5949367088607594,
+        "pair_order_dir_flip_cosine_mean": -1.0,
+        "pair_order_dir_flip_success_rate": 0.0,
+        "pair_order_dir_flip_success_rate_observable": null
+      }
+    },
+    {
+      "params": {
+        "essential_conf_threshold": 0.15,
+        "inlier_ratio_threshold": 0.1,
+        "parallax_threshold": 0.0
+      },
+      "val_metrics": {
+        "signed_tdir_mean": 107.48615579758422,
+        "signed_tdir_median": 155.21194628562515,
+        "signed_tdir_p90": 161.03092617150745,
+        "tdir_abs_mean": 24.419210737056897,
+        "tdir_abs_median": 21.5835236814354,
+        "tdir_abs_p90": 35.97339502216615,
+        "tdir_mean_cosine": -0.240692977725717,
+        "anti_parallel_rate": 0.620253164556962,
+        "severe_wrong_sign_rate": 0.6075949367088608,
+        "direction_abs_good_but_signed_bad_rate": 0.5949367088607594,
+        "pair_order_dir_flip_cosine_mean": -1.0,
+        "pair_order_dir_flip_success_rate": 0.0,
+        "pair_order_dir_flip_success_rate_observable": null
+      }
+    },
+    {
+      "params": {
+        "essential_conf_threshold": 0.15,
+        "inlier_ratio_threshold": 0.1,
+        "parallax_threshold": 0.0
+      },
+      "val_metrics": {
+        "signed_tdir_mean": 107.48615579758422,
+        "signed_tdir_median": 155.21194628562515,
+        "signed_tdir_p90": 161.03092617150745,
+        "tdir_abs_mean": 24.419210737056897,
+        "tdir_abs_median": 21.5835236814354,
+        "tdir_abs_p90": 35.97339502216615,
+        "tdir_mean_cosine": -0.240692977725717,
+        "anti_parallel_rate": 0.620253164556962,
+        "severe_wrong_sign_rate": 0.6075949367088608,
+        "direction_abs_good_but_signed_bad_rate": 0.5949367088607594,
+        "pair_order_dir_flip_cosine_mean": -1.0,
+        "pair_order_dir_flip_success_rate": 0.0,
+        "pair_order_dir_flip_success_rate_observable": null
+      }
+    },
+    {
+      "params": {
+        "essential_conf_threshold": 0.15,
+        "inlier_ratio_threshold": 0.2,
+        "parallax_threshold": 0.0
+      },
+      "val_metrics": {
+        "signed_tdir_mean": 107.48615579758422,
+        "signed_tdir_median": 155.21194628562515,
+        "signed_tdir_p90": 161.03092617150745,
+        "tdir_abs_mean": 24.419210737056897,
+        "tdir_abs_median": 21.5835236814354,
+        "tdir_abs_p90": 35.97339502216615,
+        "tdir_mean_cosine": -0.240692977725717,
+        "anti_parallel_rate": 0.620253164556962,
+        "severe_wrong_sign_rate": 0.6075949367088608,
+        "direction_abs_good_but_signed_bad_rate": 0.5949367088607594,
+        "pair_order_dir_flip_cosine_mean": -1.0,
+        "pair_order_dir_flip_success_rate": 0.0,
+        "pair_order_dir_flip_success_rate_observable": null
+      }
+    },
+    {
+      "params": {
+        "essential_conf_threshold": 0.15,
+        "inlier_ratio_threshold": 0.2,
+        "parallax_threshold": 0.0
+      },
+      "val_metrics": {
+        "signed_tdir_mean": 107.48615579758422,
+        "signed_tdir_median": 155.21194628562515,
+        "signed_tdir_p90": 161.03092617150745,
+        "tdir_abs_mean": 24.419210737056897,
+        "tdir_abs_median": 21.5835236814354,
+        "tdir_abs_p90": 35.97339502216615,
+        "tdir_mean_cosine": -0.240692977725717,
+        "anti_parallel_rate": 0.620253164556962,
+        "severe_wrong_sign_rate": 0.6075949367088608,
+        "direction_abs_good_but_signed_bad_rate": 0.5949367088607594,
+        "pair_order_dir_flip_cosine_mean": -1.0,
+        "pair_order_dir_flip_success_rate": 0.0,
+        "pair_order_dir_flip_success_rate_observable": null
+      }
+    },
+    {
+      "params": {
+        "essential_conf_threshold": 0.15,
+        "inlier_ratio_threshold": 0.2,
+        "parallax_threshold": 0.0
+      },
+      "val_metrics": {
+        "signed_tdir_mean": 107.48615579758422,
+        "signed_tdir_median": 155.21194628562515,
+        "signed_tdir_p90": 161.03092617150745,
+        "tdir_abs_mean": 24.419210737056897,
+        "tdir_abs_median": 21.5835236814354,
+        "tdir_abs_p90": 35.97339502216615,
+        "tdir_mean_cosine": -0.240692977725717,
+        "anti_parallel_rate": 0.620253164556962,
+        "severe_wrong_sign_rate": 0.6075949367088608,
+        "direction_abs_good_but_signed_bad_rate": 0.5949367088607594,
+        "pair_order_dir_flip_cosine_mean": -1.0,
+        "pair_order_dir_flip_success_rate": 0.0,
+        "pair_order_dir_flip_success_rate_observable": null
+      }
+    },
+    {
+      "params": {
+        "essential_conf_threshold": 0.15,
+        "inlier_ratio_threshold": 0.3,
+        "parallax_threshold": 0.0
+      },
+      "val_metrics": {
+        "signed_tdir_mean": 107.48615579758422,
+        "signed_tdir_median": 155.21194628562515,
+        "signed_tdir_p90": 161.03092617150745,
+        "tdir_abs_mean": 24.419210737056897,
+        "tdir_abs_median": 21.5835236814354,
+        "tdir_abs_p90": 35.97339502216615,
+        "tdir_mean_cosine": -0.240692977725717,
+        "anti_parallel_rate": 0.620253164556962,
+        "severe_wrong_sign_rate": 0.6075949367088608,
+        "direction_abs_good_but_signed_bad_rate": 0.5949367088607594,
+        "pair_order_dir_flip_cosine_mean": -1.0,
+        "pair_order_dir_flip_success_rate": 0.0,
+        "pair_order_dir_flip_success_rate_observable": null
+      }
+    },
+    {
+      "params": {
+        "essential_conf_threshold": 0.15,
+        "inlier_ratio_threshold": 0.3,
+        "parallax_threshold": 0.0
+      },
+      "val_metrics": {
+        "signed_tdir_mean": 107.48615579758422,
+        "signed_tdir_median": 155.21194628562515,
+        "signed_tdir_p90": 161.03092617150745,
+        "tdir_abs_mean": 24.419210737056897,
+        "tdir_abs_median": 21.5835236814354,
+        "tdir_abs_p90": 35.97339502216615,
+        "tdir_mean_cosine": -0.240692977725717,
+        "anti_parallel_rate": 0.620253164556962,
+        "severe_wrong_sign_rate": 0.6075949367088608,
+        "direction_abs_good_but_signed_bad_rate": 0.5949367088607594,
+        "pair_order_dir_flip_cosine_mean": -1.0,
+        "pair_order_dir_flip_success_rate": 0.0,
+        "pair_order_dir_flip_success_rate_observable": null
+      }
+    },
+    {
+      "params": {
+        "essential_conf_threshold": 0.15,
+        "inlier_ratio_threshold": 0.3,
+        "parallax_threshold": 0.0
+      },
+      "val_metrics": {
+        "signed_tdir_mean": 107.48615579758422,
+        "signed_tdir_median": 155.21194628562515,
+        "signed_tdir_p90": 161.03092617150745,
+        "tdir_abs_mean": 24.419210737056897,
+        "tdir_abs_median": 21.5835236814354,
+        "tdir_abs_p90": 35.97339502216615,
+        "tdir_mean_cosine": -0.240692977725717,
+        "anti_parallel_rate": 0.620253164556962,
+        "severe_wrong_sign_rate": 0.6075949367088608,
+        "direction_abs_good_but_signed_bad_rate": 0.5949367088607594,
+        "pair_order_dir_flip_cosine_mean": -1.0,
+        "pair_order_dir_flip_success_rate": 0.0,
+        "pair_order_dir_flip_success_rate_observable": null
+      }
+    },
+    {
+      "params": {
+        "essential_conf_threshold": 0.25,
+        "inlier_ratio_threshold": 0.1,
+        "parallax_threshold": 0.0
+      },
+      "val_metrics": {
+        "signed_tdir_mean": 107.48615579758422,
+        "signed_tdir_median": 155.21194628562515,
+        "signed_tdir_p90": 161.03092617150745,
+        "tdir_abs_mean": 24.419210737056897,
+        "tdir_abs_median": 21.5835236814354,
+        "tdir_abs_p90": 35.97339502216615,
+        "tdir_mean_cosine": -0.240692977725717,
+        "anti_parallel_rate": 0.620253164556962,
+        "severe_wrong_sign_rate": 0.6075949367088608,
+        "direction_abs_good_but_signed_bad_rate": 0.5949367088607594,
+        "pair_order_dir_flip_cosine_mean": -1.0,
+        "pair_order_dir_flip_success_rate": 0.0,
+        "pair_order_dir_flip_success_rate_observable": null
+      }
+    },
+    {
+      "params": {
+        "essential_conf_threshold": 0.25,
+        "inlier_ratio_threshold": 0.1,
+        "parallax_threshold": 0.0
+      },
+      "val_metrics": {
+        "signed_tdir_mean": 107.48615579758422,
+        "signed_tdir_median": 155.21194628562515,
+        "signed_tdir_p90": 161.03092617150745,
+        "tdir_abs_mean": 24.419210737056897,
+        "tdir_abs_median": 21.5835236814354,
+        "tdir_abs_p90": 35.97339502216615,
+        "tdir_mean_cosine": -0.240692977725717,
+        "anti_parallel_rate": 0.620253164556962,
+        "severe_wrong_sign_rate": 0.6075949367088608,
+        "direction_abs_good_but_signed_bad_rate": 0.5949367088607594,
+        "pair_order_dir_flip_cosine_mean": -1.0,
+        "pair_order_dir_flip_success_rate": 0.0,
+        "pair_order_dir_flip_success_rate_observable": null
+      }
+    },
+    {
+      "params": {
+        "essential_conf_threshold": 0.25,
+        "inlier_ratio_threshold": 0.1,
+        "parallax_threshold": 0.0
+      },
+      "val_metrics": {
+        "signed_tdir_mean": 107.48615579758422,
+        "signed_tdir_median": 155.21194628562515,
+        "signed_tdir_p90": 161.03092617150745,
+        "tdir_abs_mean": 24.419210737056897,
+        "tdir_abs_median": 21.5835236814354,
+        "tdir_abs_p90": 35.97339502216615,
+        "tdir_mean_cosine": -0.240692977725717,
+        "anti_parallel_rate": 0.620253164556962,
+        "severe_wrong_sign_rate": 0.6075949367088608,
+        "direction_abs_good_but_signed_bad_rate": 0.5949367088607594,
+        "pair_order_dir_flip_cosine_mean": -1.0,
+        "pair_order_dir_flip_success_rate": 0.0,
+        "pair_order_dir_flip_success_rate_observable": null
+      }
+    }
+  ],
+  "split_summary": {
+    "split_by": "scene_seq",
+    "train_ratio": 0.8,
+    "split_seed": 3407,
+    "train_sequence_keys": [
+      [
+        "scene01",
+        "seq01"
+      ],
+      [
+        "scene01",
+        "seq02"
+      ]
+    ],
+    "test_sequence_keys": [
+      [
+        "scene01",
+        "seq03"
+      ]
+    ],
+    "all_sequence_keys": [
+      [
+        "scene01",
+        "seq01"
+      ],
+      [
+        "scene01",
+        "seq02"
+      ],
+      [
+        "scene01",
+        "seq03"
+      ]
+    ]
+  },
+  "notes": [
+    "S5E11 correspondence_direction_candidate 在 val 上搜索 essential axis 的可置信启用阈值。",
+    "如果显式几何轴在 observable edge 上都不能赢过 prior direction，就说明输入几何仍然不足。"
+  ],
+  "validation_snapshot": {
+    "verify_final_candidate": "PASS",
+    "project_health_check": "PASS",
+    "s6_eval_only": "PASS",
+    "unittest": "PASS"
+  }
+}

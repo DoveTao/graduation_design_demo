@@ -1,0 +1,30 @@
+name: S11_tmag_scale_consistency_training
+base_checkpoint: checkpoints/T57b_no_dt_multiscale_tmag_head_400/final.pt
+locked_s5_metrics:
+  drift: 1.327343
+  ATE: 7.352288
+  path_ratio: 0.932379
+launch_defaults:
+  mode: smoke
+  max_steps: 20
+  train_cv_groups:
+    - scene01/seq01
+    - scene01/seq02
+core_constraints:
+  train_tmag_head_only: true
+  no_residual_rot_tdir_training: true
+  no_router_postprocessing: true
+  no_test_selection: true
+candidates:
+  - name: A_tmag_head_only_baseline
+    family: baseline_tmag_head_only
+    notes: baseline fine-tune of tmag-related parameters only
+  - name: B_dt_aware_affine_calib
+    family: dt_aware_shallow_calibrator
+    notes: uses dt-conditioned tmag prediction path plus affine calibration
+  - name: C_consistency_losses
+    family: loss_only_consistency
+    notes: adds speed, ratio, and short-chain sum consistency losses
+  - name: D_consistency_high_regime_weighted
+    family: high_regime_weighted_consistency
+    notes: candidate C plus train-only high-regime reweighting

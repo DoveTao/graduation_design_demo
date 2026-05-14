@@ -1,0 +1,15 @@
+{
+  "checks": {
+    "concurrency_risk": "NO_CONCURRENT_S6_EVAL_ONLY_DETECTED",
+    "concurrent_s6_processes_found": false,
+    "nvidia_smi_available": true,
+    "nvidia_smi_log_path": "logs/s5d11_nvidia_smi_before.log",
+    "related_gpu_memory_mib_total": 0,
+    "s6_eval_only_process_count": 0
+  },
+  "experiment": "S5D11_validation_concurrency_audit",
+  "final_status": "NO_CONCURRENT_S6_EVAL_ONLY_DETECTED",
+  "gpu_process_memory_by_pid": {},
+  "related_processes": [],
+  "timestamp_utc": "2026-05-11T09:34:41.100686+00:00"
+}

@@ -1,0 +1,21 @@
+{
+  "available": true,
+  "candidate": "S5_clean_tmag_calibration_policy",
+  "checkpoint_path": "checkpoints/T57b_no_dt_multiscale_tmag_head_400/final.pt",
+  "coverage_vs_453": 0.2913907284768212,
+  "diagnostic_only": true,
+  "experiment": "S5D7_gpu_safe_pairwise_export_hook",
+  "gt_used_to_generate_predictions": false,
+  "jsonl_path": "external_baselines/results/s5_pairwise_replay_s5d7/final_s5_pairwise_vectors_scene01_seq03.jsonl",
+  "metadata_path": "external_baselines/results/s5_pairwise_replay_s5d7/final_s5_pairwise_export_metadata.json",
+  "model_load_missing": 14,
+  "model_load_unexpected": 0,
+  "notes": [],
+  "npz_path": "external_baselines/results/s5_pairwise_replay_s5d7/final_s5_pairwise_vectors_scene01_seq03.npz",
+  "num_pairs": 132,
+  "pair_selection": "selected_k1",
+  "policy_path": "checkpoints/S5_clean_tmag_calibration_policy.json",
+  "rotation_convention": "R_ij in model output frame",
+  "translation_frame": "local",
+  "unavailable_reason": null
+}

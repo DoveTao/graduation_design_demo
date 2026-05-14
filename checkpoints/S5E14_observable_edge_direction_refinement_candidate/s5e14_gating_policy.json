@@ -1,0 +1,23 @@
+{
+  "experiment": "S5E14_observable_edge_direction_refinement",
+  "training_classification": "S5E14_INFERENCE_GATING_ONLY_NO_TRAIN_SIGNAL",
+  "uses_correspondence_features": true,
+  "inference_time_feature_gating": true,
+  "refinement": {
+    "strict_angle_dispersion_max": 55.0,
+    "strict_parallax_min": 0.35,
+    "strict_flow_mag_min": 0.2,
+    "strict_inlier_ratio_min": 0.93,
+    "strict_gt_tmag_min": 0.08,
+    "anti_parallel_penalty_high": 1.0,
+    "anti_parallel_penalty_low": 0.25,
+    "signed_tdir_weight_high": 1.0,
+    "signed_tdir_weight_mid": 0.35,
+    "signed_tdir_weight_low": 0.08,
+    "tdir_abs_weight_mid": 0.35,
+    "tdir_abs_weight_low": 0.12,
+    "blend_high": 0.9,
+    "blend_mid": 0.55,
+    "blend_low": 0.15
+  }
+}

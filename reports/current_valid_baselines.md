@@ -2,7 +2,10 @@
 
 | label | checkpoint | eval status | drift | ATE | path_ratio | status |
 | --- | --- | --- | ---: | ---: | ---: | --- |
-| S1d5 exported clean dt-anchor + rot policy | `checkpoints/T57b_no_dt_multiscale_tmag_head_400/final.pt` | explicit-cfg / `unexpected=0` / clean exported policy / train-only selected policy / test labels used for selection: false | 1.396358 | 7.632463 | 0.934982 | current clean exported mainline |
+| S2b train-CV selected S1d5 dt-anchor + fine_rot=0.45 policy | `checkpoints/T57b_no_dt_multiscale_tmag_head_400/final.pt` | explicit-cfg / unexpected=0 / clean / train-CV selected / no test labels used for selection | 1.327402 | 7.352371 | 0.934984 | current clean fine-rot policy candidate |
+| S3a1 rot-only residual train-CV small run | `checkpoints/T57b_no_dt_multiscale_tmag_head_400/final.pt` | explicit-cfg / unexpected=0 / clean selection attempt / train-CV small run / no legal config selected | - | - | - | failed residual-head selection; does not replace S2b |
+| S2g train-CV selected `D0_conservative_small_dt` | `checkpoints/T57b_no_dt_multiscale_tmag_head_400/final.pt` | explicit-cfg / unexpected=0 / clean selection attempt / train-CV selected / no test labels used for selection | 1.366864 | 7.463772 | 0.934983 | failed train-CV diagnostic; does not replace S2b |
+| S1d5 exported clean dt-anchor + rot policy | `checkpoints/T57b_no_dt_multiscale_tmag_head_400/final.pt` | explicit-cfg / `unexpected=0` / clean exported policy / train-only selected policy / test labels used for selection: false | 1.396358 | 7.632463 | 0.934982 | tagged clean exported mainline baseline |
 | true T57b multiscale 0/0 | `checkpoints/T57b_no_dt_multiscale_tmag_head_400/final.pt` | explicit-cfg / `unexpected=0` | 1.494 | 9.644 | 0.496 | valid clean baseline |
 | true T57b multiscale + rot-only | `checkpoints/T57b_no_dt_multiscale_tmag_head_400/final.pt` | explicit-cfg / `unexpected=0` | 1.310 | 7.611 | 0.496 | valid eval-only diagnostic |
 | S1d2 best candidate | `checkpoints/T57b_no_dt_multiscale_tmag_head_400/final.pt` | explicit-cfg / unexpected=0 / clean / no test labels | 1.579 | 11.487 | 0.901 | clean scale-anchor candidate |

@@ -1,0 +1,177 @@
+{
+  "delete_time": "2026-05-13 12:26:21",
+  "disk_free_before": "9.0G",
+  "deleted_files": [
+    {
+      "path": "checkpoints/TRAIN360H_sweep/TRAIN360H_A0_reproduce_D_seed0/best_val.pt",
+      "bytes": 91600420,
+      "reason": "non_best_train360h_sweep_checkpoint"
+    },
+    {
+      "path": "checkpoints/TRAIN360H_sweep/TRAIN360H_A0_reproduce_D_seed0/final.pt",
+      "bytes": 91565615,
+      "reason": "non_best_train360h_sweep_checkpoint"
+    },
+    {
+      "path": "checkpoints/TRAIN360H_sweep/TRAIN360H_A1_obs_only_seed0/best_val.pt",
+      "bytes": 91600420,
+      "reason": "non_best_train360h_sweep_checkpoint"
+    },
+    {
+      "path": "checkpoints/TRAIN360H_sweep/TRAIN360H_A1_obs_only_seed0/final.pt",
+      "bytes": 91565615,
+      "reason": "non_best_train360h_sweep_checkpoint"
+    },
+    {
+      "path": "checkpoints/TRAIN360H_sweep/TRAIN360H_A3_scale_only_seed0/best_val.pt",
+      "bytes": 91600420,
+      "reason": "non_best_train360h_sweep_checkpoint"
+    },
+    {
+      "path": "checkpoints/TRAIN360H_sweep/TRAIN360H_A3_scale_only_seed0/final.pt",
+      "bytes": 91565615,
+      "reason": "non_best_train360h_sweep_checkpoint"
+    },
+    {
+      "path": "checkpoints/TRAIN360H_sweep/TRAIN360H_A4_obs_kstep_no_scale_seed0/best_val.pt",
+      "bytes": 91600484,
+      "reason": "non_best_train360h_sweep_checkpoint"
+    },
+    {
+      "path": "checkpoints/TRAIN360H_sweep/TRAIN360H_A4_obs_kstep_no_scale_seed0/final.pt",
+      "bytes": 91565679,
+      "reason": "non_best_train360h_sweep_checkpoint"
+    },
+    {
+      "path": "checkpoints/TRAIN360H_sweep/TRAIN360H_C01_lr3e5_dir2p0_scale0p05_seed0/best_val.pt",
+      "bytes": 91600228,
+      "reason": "non_best_train360h_sweep_checkpoint"
+    },
+    {
+      "path": "checkpoints/TRAIN360H_sweep/TRAIN360H_C01_lr3e5_dir2p0_scale0p05_seed0/final.pt",
+      "bytes": 91565423,
+      "reason": "non_best_train360h_sweep_checkpoint"
+    },
+    {
+      "path": "checkpoints/TRAIN360H_sweep/TRAIN360H_C02_lr5e5_dir2p0_scale0p1_seed0/best_val.pt",
+      "bytes": 91600484,
+      "reason": "non_best_train360h_sweep_checkpoint"
+    },
+    {
+      "path": "checkpoints/TRAIN360H_sweep/TRAIN360H_C02_lr5e5_dir2p0_scale0p1_seed0/final.pt",
+      "bytes": 91565679,
+      "reason": "non_best_train360h_sweep_checkpoint"
+    },
+    {
+      "path": "checkpoints/TRAIN360H_sweep/TRAIN360H_C03_lr1e4_dir1p5_scale0p2_seed0/best_val.pt",
+      "bytes": 91600484,
+      "reason": "non_best_train360h_sweep_checkpoint"
+    },
+    {
+      "path": "checkpoints/TRAIN360H_sweep/TRAIN360H_C03_lr1e4_dir1p5_scale0p2_seed0/final.pt",
+      "bytes": 91565679,
+      "reason": "non_best_train360h_sweep_checkpoint"
+    },
+    {
+      "path": "checkpoints/TRAIN360H_sweep/TRAIN360H_C04_obs_scale_no_k_seed0/best_val.pt",
+      "bytes": 91600484,
+      "reason": "non_best_train360h_sweep_checkpoint"
+    },
+    {
+      "path": "checkpoints/TRAIN360H_sweep/TRAIN360H_C04_obs_scale_no_k_seed0/final.pt",
+      "bytes": 91565615,
+      "reason": "non_best_train360h_sweep_checkpoint"
+    },
+    {
+      "path": "checkpoints/TRAIN360H_sweep/TRAIN360H_C05_obs_k_no_scale_seed0/best_val.pt",
+      "bytes": 91600484,
+      "reason": "non_best_train360h_sweep_checkpoint"
+    },
+    {
+      "path": "checkpoints/TRAIN360H_sweep/TRAIN360H_C05_obs_k_no_scale_seed0/final.pt",
+      "bytes": 91565615,
+      "reason": "non_best_train360h_sweep_checkpoint"
+    },
+    {
+      "path": "checkpoints/TRAIN360H_sweep/TRAIN360H_C06_balanced_scale_recovery_seed0/best_val.pt",
+      "bytes": 91600484,
+      "reason": "non_best_train360h_sweep_checkpoint"
+    },
+    {
+      "path": "checkpoints/TRAIN360H_sweep/TRAIN360H_C06_balanced_scale_recovery_seed0/final.pt",
+      "bytes": 91565679,
+      "reason": "non_best_train360h_sweep_checkpoint"
+    },
+    {
+      "path": "checkpoints/TRAIN360H_sweep/TRAIN360H_R01_lower_lr_more_tdir_seed0/best_val.pt",
+      "bytes": 91600484,
+      "reason": "non_best_train360h_sweep_checkpoint"
+    },
+    {
+      "path": "checkpoints/TRAIN360H_sweep/TRAIN360H_R01_lower_lr_more_tdir_seed0/final.pt",
+      "bytes": 91565679,
+      "reason": "non_best_train360h_sweep_checkpoint"
+    },
+    {
+      "path": "checkpoints/TRAIN360H_sweep/TRAIN360H_R02_more_scale_seed0/best_val.pt",
+      "bytes": 91600420,
+      "reason": "non_best_train360h_sweep_checkpoint"
+    },
+    {
+      "path": "checkpoints/TRAIN360H_sweep/TRAIN360H_R02_more_scale_seed0/final.pt",
+      "bytes": 91565615,
+      "reason": "non_best_train360h_sweep_checkpoint"
+    },
+    {
+      "path": "checkpoints/TRAIN360H_sweep/TRAIN360H_R03_tighter_clip_seed0/best_val.pt",
+      "bytes": 91600484,
+      "reason": "non_best_train360h_sweep_checkpoint"
+    },
+    {
+      "path": "checkpoints/TRAIN360H_sweep/TRAIN360H_R03_tighter_clip_seed0/final.pt",
+      "bytes": 91565615,
+      "reason": "non_best_train360h_sweep_checkpoint"
+    },
+    {
+      "path": "checkpoints/TRAIN360H_sweep/TRAIN360H_S1_best_seed1/best_val.pt",
+      "bytes": 91600164,
+      "reason": "non_best_train360h_sweep_checkpoint"
+    },
+    {
+      "path": "checkpoints/TRAIN360H_sweep/TRAIN360H_S1_best_seed1/final.pt",
+      "bytes": 91565359,
+      "reason": "non_best_train360h_sweep_checkpoint"
+    },
+    {
+      "path": "checkpoints/TRAIN360H_sweep/TRAIN360H_S2_best_seed2/best_val.pt",
+      "bytes": 91600164,
+      "reason": "non_best_train360h_sweep_checkpoint"
+    },
+    {
+      "path": "checkpoints/TRAIN360H_sweep/TRAIN360H_S2_best_seed2/final.pt",
+      "bytes": 91565359,
+      "reason": "non_best_train360h_sweep_checkpoint"
+    }
+  ],
+  "skipped_files": [
+    {
+      "path": "checkpoints/TRAIN360H_sweep/TRAIN360H_F01_TRAIN360H_S1_best_seed1/best_val.pt",
+      "reason": "must_keep"
+    },
+    {
+      "path": "checkpoints/TRAIN360H_sweep/TRAIN360H_F01_TRAIN360H_S1_best_seed1/final.pt",
+      "reason": "best_run_final_keep"
+    }
+  ],
+  "deleted_count": 30,
+  "total_bytes_planned": 2747489949,
+  "total_deleted_bytes": 2747489949,
+  "must_keep_files_verified": {
+    "checkpoints/T57b_no_dt_multiscale_tmag_head_400/final.pt": true,
+    "checkpoints/TRAIN360C_spherical_pose_baseline/best_val.pt": true,
+    "checkpoints/TRAIN360C_spherical_pose_baseline/final.pt": true,
+    "checkpoints/TRAIN360D_observability_kstep_scale/best_val.pt": true,
+    "checkpoints/TRAIN360D_observability_kstep_scale/final.pt": true,
+    "checkpoints/TRAIN360H_sweep/TRAIN360H_F01_TRAIN360H_S1_best_seed1/best_val.pt": true
+  }
+}

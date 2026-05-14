@@ -1,0 +1,27 @@
+{
+  "experiment": "STRUCT1_mainline_rebuild_with_geometry_tokens",
+  "spherical_token_backbone_used": true,
+  "tangent_geometric_channels_used": true,
+  "W_ab_W_ba_produced": true,
+  "W_ab_used_in_pose_solver": true,
+  "geometry_tokens_nonzero": true,
+  "tdir_from_geometry_tokens": true,
+  "no_fallback_to_S5E15": true,
+  "no_old_metrics_reuse": true,
+  "pose_convention_B_frame_consistent": true,
+  "fine_stage_used": true,
+  "eval_GT_not_used_for_prediction": true,
+  "ORB_teacher_not_used": true,
+  "audit_details": {
+    "confidence_mean": 0.6398040622012241,
+    "softcorr_entropy_mean": 1.1447220895990367,
+    "cycle_error_mean": 0.050072431243610695,
+    "coverage": {
+      "num_poses": 454,
+      "num_edges": 453,
+      "all_edges_traceable": true,
+      "coverage": 1.0
+    }
+  },
+  "integrity_pass": true
+}

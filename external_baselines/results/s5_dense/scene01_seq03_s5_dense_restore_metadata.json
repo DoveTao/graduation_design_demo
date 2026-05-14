@@ -1,0 +1,68 @@
+{
+  "eval": {
+    "metrics_consistent_with_s5d": true,
+    "none": {
+      "ATE": 21.681522044975264,
+      "alignment_mode": "none",
+      "drift": 0.21683137477814862,
+      "est_path_length_raw": 71.74693165730041,
+      "gt_path_length": 25.83364036045875,
+      "metric_notes": {
+        "ATE": "RMSE position error after requested alignment.",
+        "drift": "RPE-like translation RMSE on consecutive matched steps after requested alignment.",
+        "path_ratio": "Raw estimated path length divided by GT path length; scale-sensitive and not Sim(3)-normalized."
+      },
+      "num_est_poses": 454,
+      "num_gt_poses": 454,
+      "num_matched_poses": 454,
+      "path_ratio": 2.777267572676944,
+      "status": "ok",
+      "tracking_success_rate": 1.0
+    },
+    "se3": {
+      "ATE": 8.231468716451547,
+      "alignment_mode": "se3",
+      "drift": 0.23274388321733164,
+      "est_path_length_raw": 71.74693165730041,
+      "gt_path_length": 25.83364036045875,
+      "metric_notes": {
+        "ATE": "RMSE position error after requested alignment.",
+        "drift": "RPE-like translation RMSE on consecutive matched steps after requested alignment.",
+        "path_ratio": "Raw estimated path length divided by GT path length; scale-sensitive and not Sim(3)-normalized."
+      },
+      "num_est_poses": 454,
+      "num_gt_poses": 454,
+      "num_matched_poses": 454,
+      "path_ratio": 2.777267572676944,
+      "status": "ok",
+      "tracking_success_rate": 1.0
+    },
+    "sim3": {
+      "ATE": 4.07912293550008,
+      "alignment_mode": "sim3",
+      "drift": 0.13382808429229665,
+      "est_path_length_raw": 71.74693165730041,
+      "gt_path_length": 25.83364036045875,
+      "metric_notes": {
+        "ATE": "RMSE position error after requested alignment.",
+        "drift": "RPE-like translation RMSE on consecutive matched steps after requested alignment.",
+        "path_ratio": "Raw estimated path length divided by GT path length; scale-sensitive and not Sim(3)-normalized."
+      },
+      "num_est_poses": 454,
+      "num_gt_poses": 454,
+      "num_matched_poses": 454,
+      "path_ratio": 2.777267572676944,
+      "status": "ok",
+      "tracking_success_rate": 1.0
+    }
+  },
+  "gt_leakage_check_passed": true,
+  "metrics_consistent_with_s5d": true,
+  "num_poses": 454,
+  "quat_valid": true,
+  "restored": true,
+  "source": "found_existing",
+  "source_path": "git:experiment/orbslam3-fisheye-strong-baseline:external_baselines/results/s5_dense/scene01_seq03_s5_dense_est_tum.txt",
+  "target_path": "external_baselines/results/s5_dense/scene01_seq03_s5_dense_est_tum.txt",
+  "timestamp_status": "aligned_exact"
+}

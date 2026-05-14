@@ -1,0 +1,133 @@
+{
+  "name": "EXT1_external_algorithm_baseline_comparison",
+  "final_candidate": "S5_clean_tmag_calibration_policy",
+  "locked_metrics": {
+    "drift": 1.327343,
+    "ATE": 7.352288,
+    "path_ratio": 0.932379
+  },
+  "dataset_export": {
+    "output_dir": "external_baselines/dataset/scene01_seq03",
+    "sequence": "scene01/seq03",
+    "num_frames": 454,
+    "image_source_available": true,
+    "image_list_path": "external_baselines/dataset/scene01_seq03/image_list.txt",
+    "timestamps_path": "external_baselines/dataset/scene01_seq03/timestamps.txt",
+    "camera_path": "external_baselines/dataset/scene01_seq03/camera.yaml",
+    "groundtruth_path": "external_baselines/dataset/scene01_seq03/groundtruth_tum.txt",
+    "metadata_path": "external_baselines/dataset/scene01_seq03/metadata.json"
+  },
+  "baseline_methods": [
+    {
+      "method": "Pano-ORB-VO",
+      "category": "protocol-compatible classical panorama VO baseline",
+      "input": "panorama-derived virtual pinhole",
+      "loop_closure": "no",
+      "learning_based": "no",
+      "run_status": "ready_to_evaluate",
+      "output_trajectory_path": "external_baselines/results/pano_orb_vo/scene01_seq03_est_tum.txt",
+      "notes": "Repo-local strong baseline built from panorama-derived virtual pinhole views; not an external published method."
+    },
+    {
+      "method": "ORB-SLAM2",
+      "category": "feature-based SLAM",
+      "input": "monocular / stereo / RGB-D",
+      "loop_closure": "yes",
+      "learning_based": "no",
+      "run_status": "pending_external_run",
+      "output_trajectory_path": "(missing)",
+      "notes": "Protocol-compatible only if built and run on the exported sequence."
+    },
+    {
+      "method": "ORB-SLAM3",
+      "category": "feature-based visual / visual-inertial SLAM",
+      "input": "monocular / stereo / RGB-D / visual-inertial",
+      "loop_closure": "yes",
+      "learning_based": "no",
+      "run_status": "pending_external_run",
+      "output_trajectory_path": "(missing)",
+      "notes": "Protocol-compatible only if built and run on the exported sequence."
+    },
+    {
+      "method": "DSO",
+      "category": "direct sparse visual odometry",
+      "input": "monocular",
+      "loop_closure": "no",
+      "learning_based": "no",
+      "run_status": "pending_external_run",
+      "output_trajectory_path": "(missing)",
+      "notes": "Requires an input mode compatible with the exported panorama sequence or a documented adapter."
+    },
+    {
+      "method": "DROID-SLAM",
+      "category": "deep learning SLAM",
+      "input": "monocular / stereo / RGB-D",
+      "loop_closure": "implicit / backend-dependent",
+      "learning_based": "yes",
+      "run_status": "pending_external_run",
+      "output_trajectory_path": "(missing)",
+      "notes": "Protocol-compatible only after a same-sequence trajectory is generated locally."
+    },
+    {
+      "method": "S5",
+      "category": "proposed method",
+      "input": "monocular panorama / equirectangular RGB",
+      "loop_closure": "no",
+      "learning_based": "yes",
+      "run_status": "locked_internal_result",
+      "output_trajectory_path": "internal clean eval / locked metrics",
+      "notes": "Final clean candidate under the historical protocol."
+    }
+  ],
+  "quantitative_comparison": [
+    {
+      "method": "S5",
+      "alignment": "historical_clean_eval",
+      "ATE": 7.352288,
+      "drift": 1.327343,
+      "path_ratio": 0.932379,
+      "tracking_success_rate": 1.0,
+      "notes": "Locked internal clean result on the historical final test sequence."
+    },
+    {
+      "method": "Pano-ORB-VO",
+      "alignment": "none",
+      "ATE": 10.194694875196557,
+      "drift": 0.17236044858969543,
+      "path_ratio": 0.8113342173472655,
+      "tracking_success_rate": 1.0,
+      "notes": "Same-sequence evaluation only; do not compare against cross-dataset published numbers."
+    },
+    {
+      "method": "Pano-ORB-VO",
+      "alignment": "se3",
+      "ATE": 4.137858003823986,
+      "drift": 0.17315893947104516,
+      "path_ratio": 0.8113342173472655,
+      "tracking_success_rate": 1.0,
+      "notes": "Same-sequence evaluation only; do not compare against cross-dataset published numbers."
+    },
+    {
+      "method": "Pano-ORB-VO",
+      "alignment": "sim3",
+      "ATE": 4.133322001007926,
+      "drift": 0.23337763407732723,
+      "path_ratio": 0.8113342173472655,
+      "tracking_success_rate": 1.0,
+      "notes": "Same-sequence evaluation only; do not compare against cross-dataset published numbers."
+    }
+  ],
+  "caveats": [
+    "external baselines require matching input modality",
+    "monocular baselines have scale ambiguity",
+    "Sim(3)-aligned ATE and scale-sensitive path_ratio answer different questions",
+    "results are not comparable to published numbers from different datasets"
+  ],
+  "thesis_interpretation": {
+    "evaluation_only": true,
+    "no_new_candidate_selected": true,
+    "s5_remains_final_clean_candidate": true,
+    "s5_not_practical_ready": true,
+    "same_sequence_required_for_numeric_comparison": true
+  }
+}

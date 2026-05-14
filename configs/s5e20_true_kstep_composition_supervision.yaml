@@ -1,0 +1,73 @@
+model:
+  base_candidate: S5E15_scale_deunderfit_antiparallel_candidate
+  preserve_spherical_token_backbone: true
+  use_coarse_to_fine: true
+  use_direction_residual: true
+  use_external_router: false
+  use_sign_head: false
+  forbid_large_delta_tdir: true
+  hidden_dim: 128
+  delta_tdir_scale: 0.12
+  delta_log_tmag_clip: 0.10
+  export_delta_scale_alpha: 0.75
+
+kstep_supervision:
+  enabled: true
+  k_values: [1, 2, 3, 5]
+  require_contiguous_windows: true
+  forbid_random_batch_proxy: true
+  composition_order: "T_i_i+1_chain_to_T_i_ik"
+  use_rotation_composition: true
+  use_translation_direction_composition: true
+  use_path_length_consistency: true
+
+delta_tdir_regularization:
+  enabled: true
+  max_delta_norm_target: 0.20
+  l2_weight: 2.0
+  clamp_or_tanh_scale: true
+  initial_delta_scale: small
+  protect_base_direction: true
+
+observability_weighting:
+  enabled: true
+  source: S5E15_direction_confidence_or_train_statistics
+  low_signal_tdir_weight: 0.05
+  high_signal_tdir_weight: 1.0
+  apply_to_k1: true
+  apply_to_kstep: true
+
+losses:
+  signed_tdir_k1: true
+  signed_tdir_kstep: true
+  tdir_abs_aux: true
+  robust_tmag_log: true
+  path_length_consistency: true
+  true_kstep_composition: true
+  delta_tdir_l2_regularization: true
+  anti_parallel_penalty: true
+  w_signed_tdir_k1: 1.0
+  w_signed_tdir_kstep: 1.1
+  w_tdir_abs_aux: 0.15
+  w_robust_tmag_log: 0.40
+  w_path_length_consistency: 0.30
+  w_delta_tdir_l2_regularization: 2.0
+  w_anti_parallel_penalty: 0.35
+
+training:
+  real_training_required: true
+  smoke_policy_allowed: false
+  train_scenes: ["scene01/seq01", "scene01/seq02"]
+  eval_scene: "scene01/seq03"
+  uses_eval_gt_for_training: false
+  uses_orbslam3_teacher: false
+  max_steps: 120
+  batch_size: 12
+  lr: 0.0008
+  weight_decay: 0.00001
+  seed: 3407
+  save_learned_weights: true
+
+evaluation:
+  compare_to: ["S5E15", "S5E19C", "ORB-SLAM3"]
+  required_metrics: [signed_tdir, anti_parallel_rate, tmag_median_ratio, path_ratio, sim3_ate, k1_tdir, k2_tdir, k3_tdir, k5_tdir, delta_tdir_norm]

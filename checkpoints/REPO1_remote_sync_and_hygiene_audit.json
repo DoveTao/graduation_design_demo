@@ -1,0 +1,50 @@
+{
+  "name": "REPO1_remote_sync_and_repository_hygiene",
+  "current_branch": "polish/final-reproducibility-guardrails",
+  "latest_commit": "340eb440f845d723b977c89edbd85421c772112e",
+  "latest_commit_subject": "Add thesis experiment section draft",
+  "working_tree_clean": true,
+  "remote_url": "git@github.com:DoveTao/graduation_design_demo.git",
+  "branch_tracking_status": {
+    "current_branch_has_upstream": true,
+    "current_branch_upstream": "origin/polish/final-reproducibility-guardrails",
+    "push_u_performed": true
+  },
+  "ahead_behind_summary": {
+    "current_branch_ahead": 0,
+    "current_branch_behind": 0,
+    "all_known_upstreams_clean": true,
+    "stale_remote_branches_observed": false
+  },
+  "critical_files": {
+    "tools/verify_final_s5_candidate.py": true,
+    "scripts/verify_final_candidate.sh": true,
+    "scripts/project_health_check.sh": true,
+    "checkpoints/S5_clean_tmag_calibration_policy.json": true,
+    "checkpoints/final_clean_candidate_manifest.json": true,
+    "reports/final_ablation_baseline_comparison.md": true,
+    "checkpoints/AB1_final_ablation_baseline_comparison_results.json": true,
+    "reports/thesis_three_axis_ablation.md": true,
+    "checkpoints/AB2_thesis_three_axis_ablation_results.json": true,
+    "reports/external_algorithm_baseline_comparison.md": true,
+    "checkpoints/EXT1_external_algorithm_baseline_results.json": true,
+    "reports/pano_orb_vo_baseline_report.md": true,
+    "checkpoints/SB1_pano_orb_vo_baseline_results.json": true,
+    "external_baselines/results/pano_orb_vo/scene01_seq03_est_tum.txt": true,
+    "external_baselines/results/pano_orb_vo/pair_diagnostics.json": true,
+    "reports/pano_orb_vo_component_diagnostics.md": true,
+    "checkpoints/SB1b_pano_orb_vo_component_diagnostics.json": true,
+    "reports/s5_external_export_compatibility_audit.md": true,
+    "checkpoints/SB2b_s5_export_compatibility_audit.json": true,
+    "reports/thesis_experiment_section_draft.md": true
+  },
+  "verify_final_candidate_status": "PASS",
+  "project_health_check_status": "PASS",
+  "unittest_status": {
+    "status": "PASS",
+    "summary": "Ran 43 tests ... OK"
+  },
+  "ready_for_jrt1": true,
+  "recommended_next_branch": "experiment/jrt1-joint-rtdir-coupled-refiner",
+  "optional_tag_name": "pre-jrt1-clean-repo-state"
+}

@@ -1,0 +1,51 @@
+experiment: S5E14_observable_edge_direction_refinement
+report_language: zh
+scene: scene01
+eval_seq: seq03
+train_seqs:
+  - seq01
+  - seq02
+timestamps: external_baselines/dataset/scene01_seq03/timestamps.txt
+groundtruth: external_baselines/dataset/scene01_seq03/groundtruth_tum.txt
+s5e12_feature_dir: external_baselines/results/s5e12_feature_gate
+s5e13_metrics: external_baselines/results/s5e13_traceable_dense/edge_component_metrics.json
+s5e13_provenance: external_baselines/results/s5e13_traceable_dense/edge_provenance.jsonl
+s5e13_weights: external_baselines/results/s5e13_traceable_dense/correspondence_loss_weights.jsonl
+s5e13_checkpoint: checkpoints/S5E13_real_correspondence_signed_direction_candidate.json
+output_dir: external_baselines/results/s5e14_traceable_dense
+candidate_checkpoint_json: checkpoints/S5E14_observable_edge_direction_refinement_candidate.json
+training_status_json: checkpoints/S5E14_observable_edge_direction_refinement_candidate/training_status.json
+report_md: reports/s5e14_observable_edge_direction_refinement_report.md
+comparison_md: reports/s5e14_s5e13_s5e12_s5e9_orbslam3_comparison.md
+
+refinement:
+  strict_angle_dispersion_max: 55.0
+  strict_parallax_min: 0.35
+  strict_flow_mag_min: 0.20
+  strict_inlier_ratio_min: 0.93
+  strict_gt_tmag_min: 0.08
+  anti_parallel_penalty_high: 1.0
+  anti_parallel_penalty_low: 0.25
+  signed_tdir_weight_high: 1.0
+  signed_tdir_weight_mid: 0.35
+  signed_tdir_weight_low: 0.08
+  tdir_abs_weight_mid: 0.35
+  tdir_abs_weight_low: 0.12
+  blend_high: 0.90
+  blend_mid: 0.55
+  blend_low: 0.15
+
+losses:
+  so3_geodesic: true
+  signed_tdir_weighted_strict: true
+  anti_parallel_penalty_strict: true
+  tdir_abs_aux: true
+  robust_tmag_log: true
+  scale_de_underfit_prior: true
+
+caveats:
+  - S5E14 是 experimental candidate，不替代 official S5 locked result。
+  - S5 locked metrics/policy unchanged。
+  - 不修改 final manifest、train/test split、official evaluator 默认行为。
+  - strict essential geometry 仍受 equirectangular + missing pinhole intrinsics 限制。
+  - scene01/seq03 GT 只用于 evaluation / diagnostics，不用于训练或调参。

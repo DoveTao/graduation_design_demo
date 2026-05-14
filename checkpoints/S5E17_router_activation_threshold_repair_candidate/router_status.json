@@ -1,0 +1,28 @@
+{
+  "router_type": "quantile_rule_based",
+  "uses_eval_gt_for_thresholds": false,
+  "threshold_source": "score_quantiles/config",
+  "confidence_bins": {
+    "high": {
+      "rule": "router_confidence >= q75",
+      "expected_count": null
+    },
+    "medium": {
+      "rule": "q25 <= router_confidence < q75",
+      "expected_count": null
+    },
+    "low": {
+      "rule": "router_confidence < q25",
+      "expected_count": null
+    }
+  },
+  "sign_guard_rule": {
+    "rule": "anti_parallel_risk_score >= q85",
+    "expected_count": null
+  },
+  "scale_route_rule": {
+    "rule": "scale_confidence < q35 => train_prior_scale_route else conservative_scale_route",
+    "expected_count": null
+  },
+  "classification": "S5E17_ROUTER_THRESHOLDS_REPAIRED"
+}

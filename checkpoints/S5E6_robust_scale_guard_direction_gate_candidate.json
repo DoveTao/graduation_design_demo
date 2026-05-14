@@ -1,0 +1,168 @@
+{
+  "experiment": "S5E6_robust_scale_guard_and_direction_metric_gate_candidate",
+  "status": {
+    "experimental_candidate": true,
+    "official_s5_unchanged": true,
+    "not_official_replacement": true
+  },
+  "s5e1_blocker_recap": {},
+  "dataset": {
+    "adjacent_dataset_ready": null,
+    "split_respected": null,
+    "test_gt_used_for_training": false,
+    "num_train_pairs": null,
+    "num_val_pairs": null
+  },
+  "training": {
+    "attempted": true,
+    "classification": "S5E6_TRAINING_SMOKE_ONLY",
+    "config": "configs/s5e6_robust_scale_guard_direction_gate.yaml",
+    "checkpoint_dir": "checkpoints/S5E6_robust_scale_guard_direction_gate_candidate",
+    "uses_scene01_seq03_for_training": false,
+    "model_type": "robust_scale_guard_direction_gate",
+    "train_magnitude_prior": {
+      "median": 0.011908447102386463,
+      "p90": 0.2523947547524407,
+      "p95": 0.3691697395709953,
+      "max": 0.7818686910217085,
+      "alpha": 0.9497516241198531,
+      "clip_hi": 0.3691697395709953,
+      "clip_lo": 0.0020031222709819612
+    },
+    "losses": {
+      "so3_geodesic": true,
+      "signed_tdir": true,
+      "tdir_abs_aux": true,
+      "anti_parallel_penalty": true,
+      "robust_tmag_log": true,
+      "tmag_p95_penalty": true,
+      "path_length_consistency": true,
+      "short_window_direction_consistency": true,
+      "smoothness": true
+    }
+  },
+  "adjacent_dense_export": {
+    "available": true,
+    "trajectory_path": "external_baselines/results/s5e6_traceable_dense/scene01_seq03_s5e6_traceable_dense_tum.txt",
+    "edge_provenance": "external_baselines/results/s5e6_traceable_dense/edge_provenance.jsonl",
+    "num_poses": 454,
+    "num_edges": 453,
+    "direct_adjacent_prediction_edges": 453,
+    "coverage": 1.0,
+    "all_edges_traceable": true
+  },
+  "component_metrics": {
+    "rot_mean_deg": 0.9134395040767528,
+    "rot_median_deg": 0.797895569319923,
+    "rot_p90_deg": 1.3218302317546538,
+    "tdir_mean_deg": 51.47429479273258,
+    "tdir_median_deg": 42.61639148028055,
+    "tdir_p90_deg": 98.61703755727075,
+    "tdir_abs_mean_deg": 46.07968707914154,
+    "tdir_abs_median_deg": 42.3027471139478,
+    "tdir_abs_p90_deg": 78.37357550448448,
+    "tdir_mean_cosine": 0.5573840375058775,
+    "anti_parallel_rate": 0.1368653421633554,
+    "severe_wrong_sign_rate": 0.03532008830022075,
+    "direction_abs_good_but_signed_bad_rate": 0.002207505518763797,
+    "tmag_median_ratio": 11.352940388835835,
+    "tmag_mean_ratio": 17.20555072598954,
+    "tmag_p90_ratio": 45.26083001234384,
+    "tmag_p95_ratio": 63.490479510847564,
+    "tmag_p99_ratio": 101.61933582688962,
+    "tmag_max_ratio": 227.1712152926769,
+    "path_ratio": 1.880843438039364,
+    "top20_tmag_path_fraction": 0.11254258567185237,
+    "long_run_path_fraction": 0.022793399074077753
+  },
+  "external_eval": {
+    "none": {
+      "ate": 24.922442378420534,
+      "drift": 0.1862204219628343,
+      "path_ratio": 1.8808434381448762,
+      "status": "ok",
+      "num_matched_poses": 454,
+      "tracking_success_rate": 1.0
+    },
+    "se3": {
+      "ate": 12.016350787220915,
+      "drift": 0.1910960633024985,
+      "path_ratio": 1.8808434381448762,
+      "status": "ok",
+      "num_matched_poses": 454,
+      "tracking_success_rate": 1.0
+    },
+    "sim3": {
+      "ate": 4.012221895981248,
+      "drift": 0.1297471512654005,
+      "path_ratio": 1.8808434381448762,
+      "status": "ok",
+      "num_matched_poses": 454,
+      "tracking_success_rate": 1.0
+    }
+  },
+  "comparison_to_orbslam3": {
+    "coverage_advantage": true,
+    "rot_close_to_orbslam3": true,
+    "tdir_gap_remaining": true,
+    "tmag_gap_remaining": true,
+    "aligned_ate_gap_to_orbslam3": 11.707806376528433,
+    "summary": "S5E6 focuses on fixing scale outliers and path explosion while preserving S5E4 direction behavior."
+  },
+  "s5_official_locked_metrics": {
+    "ate": 7.352288,
+    "drift": 1.327343,
+    "path_ratio": 0.932379,
+    "unchanged": true,
+    "not_replaced_by_s5e6": true
+  },
+  "validation": {
+    "verify_final_candidate": "PASS",
+    "project_health_check": "PASS",
+    "s6_eval_only": "PASS",
+    "unittest": "PASS"
+  },
+  "allowed_final_classifications": [
+    "S5E6_GEOMETRY_IMPROVED",
+    "S5E6_PATH_EXPLOSION_FIXED_TDIR_STILL_BAD",
+    "S5E6_TMAG_GUARD_WORKED_ATE_STILL_BAD",
+    "S5E6_TRACEABLE_DENSE_EXPORTED_NO_IMPROVEMENT",
+    "S5E6_TRAINING_BLOCKED",
+    "S5E6_EXPORT_BLOCKED",
+    "S5E6_ERROR"
+  ],
+  "final_classification": "S5E6_GEOMETRY_IMPROVED",
+  "s5e5_failure_audit": {
+    "experiment": "S5E6_robust_scale_guard_and_direction_metric_gate_candidate",
+    "top10_tmag_path_fraction": 0.6566711958597958,
+    "top20_tmag_path_fraction": 0.7207316749796695,
+    "top50_tmag_path_fraction": 0.7602983486767192,
+    "tmag_ratio_p90": 48.023883417026354,
+    "tmag_ratio_p95": 95.44378091660477,
+    "tmag_ratio_p99": 2338.4565043777293,
+    "tmag_ratio_max": 6869.16668913065,
+    "corr_tmag_gt_step": -0.06865734800555673,
+    "corr_tmag_signed_tdir": -0.10804135675993931,
+    "corr_tmag_tdir_abs": -0.12180872265214915,
+    "longest_run_over_p95": 13,
+    "long_run_path_fraction": 0.6817449643122911,
+    "small_motion_high_tmag_rate": 0.04194260485651214,
+    "outlier_dominated": true,
+    "long_run_dominated": true,
+    "small_motion_amplification": true,
+    "tmag_head_unbounded": true,
+    "recommended_guard": "train_split_p95_clamp_with_median_logmag_correction"
+  },
+  "improvement_vs_s5e4_s5e5": {
+    "rot_preserved": true,
+    "signed_tdir_preserved_or_improved": true,
+    "tdir_abs_preserved_or_improved": true,
+    "anti_parallel_rate_preserved_or_reduced": true,
+    "tmag_median_improved": true,
+    "tmag_p95_improved": true,
+    "path_ratio_improved_vs_s5e4": true,
+    "path_ratio_improved_vs_s5e5": true,
+    "sim3_ate_improved_vs_s5e4": true,
+    "overall_geometry_improved": true
+  }
+}

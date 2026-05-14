@@ -1,0 +1,67 @@
+{
+  "s5e15_reference": {
+    "path_ratio": 0.1572,
+    "tmag_median_ratio": 1.2685,
+    "anti_parallel_rate": 0.1479,
+    "tdir_mean_deg": 50.353,
+    "sim3_ate": 3.9682
+  },
+  "confidence_bins": {
+    "high_confidence": {
+      "count": 202,
+      "anti_parallel_rate": 0.18316831683168316,
+      "tdir_mean_deg": 52.277252519650915,
+      "tmag_median_ratio": 0.961027419016233
+    },
+    "medium_confidence": {
+      "count": 251,
+      "anti_parallel_rate": 0.11952191235059761,
+      "tdir_mean_deg": 48.804473025460446,
+      "tmag_median_ratio": 1.4405326516219712
+    },
+    "low_confidence": {
+      "count": 0,
+      "anti_parallel_rate": null,
+      "tdir_mean_deg": null,
+      "tmag_median_ratio": null
+    }
+  },
+  "risk_bins": {
+    "anti_parallel_high_risk": {
+      "count": 0,
+      "anti_parallel_rate": null,
+      "tdir_mean_deg": null,
+      "tmag_median_ratio": null
+    },
+    "scale_high_risk": {
+      "count": 103,
+      "anti_parallel_rate": 0.0970873786407767,
+      "tdir_mean_deg": 54.6639851900305,
+      "tmag_median_ratio": 3.7083502768816348
+    },
+    "near_static": {
+      "count": 318,
+      "anti_parallel_rate": 0.13522012578616352,
+      "tdir_mean_deg": 51.367930841639804,
+      "tmag_median_ratio": 1.7821008494246522
+    },
+    "low_parallax": {
+      "count": 170,
+      "anti_parallel_rate": 0.17647058823529413,
+      "tdir_mean_deg": 53.36861882737824,
+      "tmag_median_ratio": 1.0551008359618126
+    }
+  },
+  "router_design_recommendation": {
+    "use_correspondence_direction_when": "corr_conf >= 0.75 and anti_risk < 0.60",
+    "fallback_direction_when": "corr_conf < 0.45 or near_static or low_parallax or anti_risk >= 0.60",
+    "use_train_prior_scale_when": "scale_conf >= 0.45",
+    "scale_guard_when": "scale_conf < 0.45 or small_motion",
+    "anti_parallel_guard_when": "anti_risk >= 0.60"
+  },
+  "diagnosis": {
+    "router_feasible": true,
+    "main_router_signal": "correspondence_confidence",
+    "main_remaining_risk": "anti_parallel"
+  }
+}

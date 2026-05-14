@@ -1,0 +1,63 @@
+sweep:
+  delta_alpha:
+    - 0.005
+    - 0.01
+    - 0.02
+    - 0.05
+
+  delta_clip_norm:
+    - 0.005
+    - 0.01
+    - 0.02
+    - 0.05
+
+  high_confidence_quantile:
+    - 0.25
+    - 0.35
+    - 0.50
+
+  softcorr_temperature:
+    - 0.03
+    - 0.05
+    - 0.10
+
+  loss_weights:
+    w_tdir:
+      - 1.0
+      - 2.0
+      - 5.0
+    w_path:
+      - 0.2
+      - 0.5
+      - 1.0
+    w_delta_l2:
+      - 1.0
+      - 5.0
+      - 10.0
+
+  train_steps:
+    - 120
+    - 300
+    - 800
+
+presets:
+  quick:
+    max_runs: 12
+  focused:
+    max_runs: 24
+  full:
+    max_runs: 48
+
+reference:
+  best_candidate: S5E15_scale_deunderfit_antiparallel_candidate
+  signed_tdir_mean_deg: 50.3530
+  anti_parallel_rate: 0.1479
+  path_ratio: 0.1572
+  sim3_ate: 3.9682
+  tmag_median_ratio: 1.2685
+
+rules:
+  uses_eval_gt_for_training: false
+  uses_eval_gt_for_gate: false
+  uses_orbslam3_teacher: false
+  no_metric_refresh: true

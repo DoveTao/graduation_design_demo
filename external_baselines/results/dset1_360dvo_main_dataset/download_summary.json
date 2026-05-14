@@ -1,0 +1,35 @@
+{
+  "dataset_repo_reachable": true,
+  "local_root": "data/360DVO",
+  "selected_sequences": [
+    "bridge_night",
+    "field",
+    "wingsuit"
+  ],
+  "download_attempted": true,
+  "download_complete": true,
+  "total_bytes_downloaded": 200577677,
+  "access_blocked": false,
+  "dependency_blocked": false,
+  "blockers": [],
+  "downloaded_sequences": [
+    {
+      "seq_id": "bridge_night",
+      "num_images": 80,
+      "groundtruth": "data/360DVO/GroundTruth/bridge_night.txt",
+      "timestamps": "data/360DVO/Timestamps/bridge_night_timestamps.txt"
+    },
+    {
+      "seq_id": "field",
+      "num_images": 178,
+      "groundtruth": "data/360DVO/GroundTruth/field.txt",
+      "timestamps": "data/360DVO/Timestamps/field_timestamps.txt"
+    },
+    {
+      "seq_id": "wingsuit",
+      "num_images": 47,
+      "groundtruth": "data/360DVO/GroundTruth/wingsuit.txt",
+      "timestamps": "data/360DVO/Timestamps/wingsuit_timestamps.txt"
+    }
+  ]
+}

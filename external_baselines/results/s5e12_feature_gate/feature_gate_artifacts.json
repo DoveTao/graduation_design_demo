@@ -1,0 +1,60 @@
+{
+  "experiment": "S5E12_real_correspondence_feature_gate",
+  "dependency_check": {
+    "experiment": "S5E12_real_correspondence_feature_gate",
+    "config": "configs/s5e12_real_correspondence_feature_gate.yaml",
+    "cv2_available": true,
+    "cv2_version": "4.13.0",
+    "cv2_cuda_devices": 0,
+    "cv2_error": null,
+    "orb_available": true,
+    "sift_available": true,
+    "matcher_available": true,
+    "essential_matrix_available": true,
+    "recover_pose_available": true,
+    "kornia_available": false,
+    "kornia_error": "No module named 'kornia'",
+    "optical_flow_available": true,
+    "camera_intrinsics_available": false,
+    "camera_intrinsics_path": "external_baselines/dataset/scene01_seq03/camera.yaml",
+    "camera_intrinsics_notes": [
+      "camera.yaml 存在，但当前数据是 panorama / non-pinhole 描述，不能当作可直接用于 essential geometry 的标准 intrinsics。"
+    ],
+    "can_extract_real_correspondence_features": true,
+    "dependency_classification": "S5E12_DEPENDENCY_READY",
+    "notes": [
+      "PyTorch 继续负责 CUDA 训练，OpenCV 当前只要求支持 CPU 侧 keypoint / match / essential geometry 特征提取。",
+      "即使 cv2 cuda devices 为 0，也不影响 S5E12 real correspondence feature gate。"
+    ]
+  },
+  "correspondence_feature_availability": {
+    "edge_count": 453,
+    "success_count": 453,
+    "success_fraction": 1.0
+  },
+  "essential_geometry": {
+    "experiment": "S5E12_real_correspondence_feature_gate",
+    "camera_intrinsics_available": false,
+    "camera_model": "equirectangular_panorama",
+    "strict_essential_geometry_available": false,
+    "essential_geometry_blocker": "pinhole_intrinsics_missing_or_non_pinhole_camera_model",
+    "findEssentialMat_api_available": true,
+    "recoverPose_api_available": true,
+    "essential_axis_gt_dir_mean_angle": "unavailable",
+    "essential_axis_gt_dir_p90_angle": "unavailable",
+    "essential_axis_sign_ambiguity_rate": "unavailable",
+    "reason": "pinhole_intrinsics_missing_or_non_pinhole_camera_model"
+  },
+  "observability_gate": {
+    "observable_edge_fraction": 0.2980132450331126,
+    "signed_direction_supervision_reliable_fraction": 0.2980132450331126,
+    "small_motion_observable_fraction": 0.043859649122807015
+  },
+  "artifacts": {
+    "dependency_json": "external_baselines/results/s5e12_feature_gate/dependency_check.json",
+    "correspondence_json": "external_baselines/results/s5e12_feature_gate/correspondence_features.json",
+    "quality_json": "external_baselines/results/s5e12_feature_gate/correspondence_quality_audit.json",
+    "essential_json": "external_baselines/results/s5e12_feature_gate/essential_geometry_audit.json",
+    "observability_json": "external_baselines/results/s5e12_feature_gate/observability_gate.json"
+  }
+}

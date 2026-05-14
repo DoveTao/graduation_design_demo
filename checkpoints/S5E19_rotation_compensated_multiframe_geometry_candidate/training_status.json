@@ -1,0 +1,37 @@
+{
+  "attempted": true,
+  "classification": "S5E19_TRAINING_SMOKE_ONLY",
+  "model_type": "rotation_compensated_multiframe_spherical_refinement",
+  "uses_spherical_erp_token_encoder": true,
+  "uses_coarse_pose_head": true,
+  "uses_fine_residual_refinement": true,
+  "uses_rotation_compensated_direction_head": true,
+  "uses_fine_scale_residual_head": true,
+  "uses_multiframe_geometry_loss": true,
+  "uses_observability_weighted_loss": true,
+  "uses_anti_parallel_hard_negative_loss": true,
+  "uses_external_router": false,
+  "uses_eval_gt_for_training": false,
+  "uses_eval_gt_for_scale": false,
+  "uses_orbslam3_teacher": false,
+  "train_scenes": [
+    "\"scene01/seq01\"",
+    "\"scene01/seq02\""
+  ],
+  "eval_scene": "\"scene01/seq03\"",
+  "losses": {
+    "so3_geodesic": true,
+    "signed_tdir": true,
+    "tdir_abs_aux": true,
+    "anti_parallel_hard_negative": true,
+    "robust_tmag_log": true,
+    "path_length_consistency": true,
+    "multiframe_composition": true
+  },
+  "best_checkpoint": "checkpoints/S5E19_rotation_compensated_multiframe_geometry_candidate/s5e19_smoke_policy.json",
+  "notes": [
+    "S5E19 以 smoke-only 方式验证结构接入与导出链路。",
+    "没有使用 eval GT calibration。",
+    "没有使用 ORB-SLAM3 teacher。"
+  ]
+}

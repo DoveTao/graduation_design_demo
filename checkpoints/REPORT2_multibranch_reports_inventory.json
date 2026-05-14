@@ -1,0 +1,3406 @@
+{
+  "branch_summaries": [
+    {
+      "branch": "experiment/jrt1-joint-rtdir-coupled-refiner",
+      "checkpoint_count": 157,
+      "final_classification_if_known": "NO_STABLE_JRT1_TRAJECTORY_GAIN",
+      "group": "archived_negative_experiments",
+      "key_checkpoints": [
+        "checkpoints/AB1_final_ablation_baseline_comparison_results.json",
+        "checkpoints/AB2_thesis_three_axis_ablation_results.json",
+        "checkpoints/EXT1_external_algorithm_baseline_results.json",
+        "checkpoints/JRT1a_framework_smoke_results.json",
+        "checkpoints/JRT1b_train_cv_results.json",
+        "checkpoints/JRT1c_train_cv_trajectory_proxy_results.json",
+        "checkpoints/SB1_pano_orb_vo_baseline_results.json",
+        "checkpoints/SB2_alignment_consistent_baseline_results.json"
+      ],
+      "key_reports": [
+        "reports/JRT1_final_closeout_summary.md",
+        "reports/final_ablation_baseline_comparison.md",
+        "reports/final_clean_results_table.md",
+        "reports/final_figure_index.md",
+        "reports/final_negative_results_summary.md",
+        "reports/final_post_s11_code_optimization_closure.md",
+        "reports/final_post_s14_code_optimization_closure.md",
+        "reports/final_post_s15_trajectory_training_closure.md"
+      ],
+      "latest_commit": "6765af3",
+      "latest_commit_message": "Add JRT1 branch remote sync audit",
+      "likely_role": "negative experiment branch with closeout reports",
+      "recommendation": "historical_archive",
+      "report_count": 74,
+      "script_count": 56,
+      "test_count": 15
+    },
+    {
+      "branch": "experiment/mf1-multi-frame-chain-refiner",
+      "checkpoint_count": 162,
+      "final_classification_if_known": "NO_STABLE_MF1_CHAIN_GAIN",
+      "group": "archived_negative_experiments",
+      "key_checkpoints": [
+        "checkpoints/AB1_final_ablation_baseline_comparison_results.json",
+        "checkpoints/AB2_thesis_three_axis_ablation_results.json",
+        "checkpoints/EXT1_external_algorithm_baseline_results.json",
+        "checkpoints/JRT1a_framework_smoke_results.json",
+        "checkpoints/JRT1b_train_cv_results.json",
+        "checkpoints/JRT1c_train_cv_trajectory_proxy_results.json",
+        "checkpoints/MF1a_chain_refiner_smoke_results.json",
+        "checkpoints/MF1b_train_cv_results.json"
+      ],
+      "key_reports": [
+        "reports/JRT1_final_closeout_summary.md",
+        "reports/MF1_final_closeout_summary.md",
+        "reports/final_ablation_baseline_comparison.md",
+        "reports/final_clean_results_table.md",
+        "reports/final_figure_index.md",
+        "reports/final_negative_results_summary.md",
+        "reports/final_post_s11_code_optimization_closure.md",
+        "reports/final_post_s14_code_optimization_closure.md"
+      ],
+      "latest_commit": "ea559d5",
+      "latest_commit_message": "Add MF1 multi-frame chain refiner artifacts",
+      "likely_role": "negative experiment branch with closeout reports",
+      "recommendation": "historical_archive",
+      "report_count": 77,
+      "script_count": 59,
+      "test_count": 18
+    },
+    {
+      "branch": "experiment/orbslam3-fisheye-strong-baseline",
+      "checkpoint_count": 159,
+      "final_classification_if_known": "unknown_or_not_applicable",
+      "group": "external_baseline_experiments",
+      "key_checkpoints": [
+        "checkpoints/AB1_final_ablation_baseline_comparison_results.json",
+        "checkpoints/AB2_thesis_three_axis_ablation_results.json",
+        "checkpoints/EXT1_external_algorithm_baseline_results.json",
+        "checkpoints/ORB1d_orbslam3_fisheye_evaluation_results.json",
+        "checkpoints/S5D_same_evaluator_comparison_results.json",
+        "checkpoints/SB1_pano_orb_vo_baseline_results.json",
+        "checkpoints/SB2_alignment_consistent_baseline_results.json",
+        "checkpoints/S1d5_final_figures/scale_repair_summary.png"
+      ],
+      "key_reports": [
+        "reports/final_ablation_baseline_comparison.md",
+        "reports/final_clean_results_table.md",
+        "reports/final_figure_index.md",
+        "reports/final_negative_results_summary.md",
+        "reports/final_post_s11_code_optimization_closure.md",
+        "reports/final_post_s14_code_optimization_closure.md",
+        "reports/final_post_s15_trajectory_training_closure.md",
+        "reports/final_post_s16_backbone_feasibility_closure.md"
+      ],
+      "latest_commit": "797865b",
+      "latest_commit_message": "Add S5 dense same-evaluator comparison artifacts",
+      "likely_role": "external baseline and same-evaluator comparison branch",
+      "recommendation": "keep_separate",
+      "report_count": 77,
+      "script_count": 54,
+      "test_count": 18
+    },
+    {
+      "branch": "experiment/s5d2-dense-export-convention-audit",
+      "checkpoint_count": 154,
+      "final_classification_if_known": "S5D2-EVAL-SCOPE-MISMATCH",
+      "group": "diagnostics",
+      "key_checkpoints": [
+        "checkpoints/AB1_final_ablation_baseline_comparison_results.json",
+        "checkpoints/AB2_thesis_three_axis_ablation_results.json",
+        "checkpoints/EXT1_external_algorithm_baseline_results.json",
+        "checkpoints/SB1_pano_orb_vo_baseline_results.json",
+        "checkpoints/SB2_alignment_consistent_baseline_results.json",
+        "checkpoints/S1d5_final_figures/scale_repair_summary.png",
+        "checkpoints/S1d5_final_mainline_summary.md",
+        "checkpoints/S1d5_final_repro/s1d5_policy_eval_summary.json"
+      ],
+      "key_reports": [
+        "reports/final_ablation_baseline_comparison.md",
+        "reports/final_clean_results_table.md",
+        "reports/final_figure_index.md",
+        "reports/final_negative_results_summary.md",
+        "reports/final_post_s11_code_optimization_closure.md",
+        "reports/final_post_s14_code_optimization_closure.md",
+        "reports/final_post_s15_trajectory_training_closure.md",
+        "reports/final_post_s16_backbone_feasibility_closure.md"
+      ],
+      "latest_commit": "9574f51",
+      "latest_commit_message": "Add all-branch inventory and classification",
+      "likely_role": "dense export diagnostic and inventory branch",
+      "recommendation": "keep_separate",
+      "report_count": 75,
+      "script_count": 53,
+      "test_count": 14
+    },
+    {
+      "branch": "main",
+      "checkpoint_count": 11,
+      "final_classification_if_known": "historical main branch reference",
+      "group": "final_or_polish",
+      "key_checkpoints": [
+        "checkpoints/S1d5_final_figures/scale_repair_summary.png",
+        "checkpoints/S1d5_final_mainline_summary.md",
+        "checkpoints/S1d5_final_repro/s1d5_policy_eval_summary.json",
+        "checkpoints/S1d5_clean_dt_anchor_policy.json",
+        "checkpoints/S1d5_freeze_clean_dt_anchor_policy_export_report.md",
+        "checkpoints/S1d5_final_baseline_comparison.md",
+        "checkpoints/S1d5_final_figures/baseline_bar_ATE_drift.png",
+        "checkpoints/S1d5_final_figures/baseline_bar_path_ratio.png"
+      ],
+      "key_reports": [
+        "reports/final_s1d5_english_abstract.md",
+        "reports/final_s1d5_mainline_report.md",
+        "reports/final_s1d5_results_table.csv",
+        "reports/final_s1d5_thesis_summary.md",
+        "reports/git_track_s1d5_final_files.md",
+        "reports/checkpoints_live_cleanup_summary.md",
+        "reports/cleanup_summary_s1d5.md",
+        "reports/git_commit_s1d5_summary.md"
+      ],
+      "latest_commit": "bb8fadd",
+      "latest_commit_message": "Add S1d5 cleanup and staging audit reports",
+      "likely_role": "reference branch",
+      "recommendation": "no_action",
+      "report_count": 18,
+      "script_count": 22,
+      "test_count": 0
+    },
+    {
+      "branch": "optimize/s10-chain-pathratio-smoother",
+      "checkpoint_count": 94,
+      "final_classification_if_known": "unknown_or_not_applicable",
+      "group": "historical_optimize_experiments",
+      "key_checkpoints": [
+        "checkpoints/S1d5_final_figures/scale_repair_summary.png",
+        "checkpoints/S1d5_final_mainline_summary.md",
+        "checkpoints/S1d5_final_repro/s1d5_policy_eval_summary.json",
+        "checkpoints/S2_final_fine_refinement_summary.md",
+        "checkpoints/S2a_fine_rot_policy_audit_on_s1d5/rot_0p2/s1d5_policy_eval_summary.json",
+        "checkpoints/S2a_fine_rot_policy_audit_on_s1d5/rot_0p25/s1d5_policy_eval_summary.json",
+        "checkpoints/S2a_fine_rot_policy_audit_on_s1d5/rot_0p3/s1d5_policy_eval_summary.json",
+        "checkpoints/S2a_fine_rot_policy_audit_on_s1d5/rot_0p35/s1d5_policy_eval_summary.json"
+      ],
+      "key_reports": [
+        "reports/final_clean_results_table.md",
+        "reports/final_figure_index.md",
+        "reports/final_negative_results_summary.md",
+        "reports/final_post_s9_code_optimization_closure.md",
+        "reports/final_project_mainline_summary.md",
+        "reports/final_reproducibility_guide.md",
+        "reports/final_s10_chain_smoother_summary.md",
+        "reports/final_s1d5_english_abstract.md"
+      ],
+      "latest_commit": "0ae9aee",
+      "latest_commit_message": "Add S10 chain-level path-ratio preserving smoother diagnostic",
+      "likely_role": "historical optimization experiment branch",
+      "recommendation": "historical_archive",
+      "report_count": 35,
+      "script_count": 33,
+      "test_count": 0
+    },
+    {
+      "branch": "optimize/s11-tmag-scale-consistency-training",
+      "checkpoint_count": 96,
+      "final_classification_if_known": "unknown_or_not_applicable",
+      "group": "historical_optimize_experiments",
+      "key_checkpoints": [
+        "checkpoints/S1d5_final_figures/scale_repair_summary.png",
+        "checkpoints/S1d5_final_mainline_summary.md",
+        "checkpoints/S1d5_final_repro/s1d5_policy_eval_summary.json",
+        "checkpoints/S2_final_fine_refinement_summary.md",
+        "checkpoints/S2a_fine_rot_policy_audit_on_s1d5/rot_0p2/s1d5_policy_eval_summary.json",
+        "checkpoints/S2a_fine_rot_policy_audit_on_s1d5/rot_0p25/s1d5_policy_eval_summary.json",
+        "checkpoints/S2a_fine_rot_policy_audit_on_s1d5/rot_0p3/s1d5_policy_eval_summary.json",
+        "checkpoints/S2a_fine_rot_policy_audit_on_s1d5/rot_0p35/s1d5_policy_eval_summary.json"
+      ],
+      "key_reports": [
+        "reports/final_clean_results_table.md",
+        "reports/final_figure_index.md",
+        "reports/final_negative_results_summary.md",
+        "reports/final_post_s11_code_optimization_closure.md",
+        "reports/final_post_s9_code_optimization_closure.md",
+        "reports/final_project_mainline_summary.md",
+        "reports/final_reproducibility_guide.md",
+        "reports/final_s10_chain_smoother_summary.md"
+      ],
+      "latest_commit": "b00eab4",
+      "latest_commit_message": "Close code optimization after S10 S11 diagnostics",
+      "likely_role": "historical optimization experiment branch",
+      "recommendation": "historical_archive",
+      "report_count": 37,
+      "script_count": 35,
+      "test_count": 0
+    },
+    {
+      "branch": "optimize/s12-regime-balanced-sampling",
+      "checkpoint_count": 111,
+      "final_classification_if_known": "unknown_or_not_applicable",
+      "group": "historical_optimize_experiments",
+      "key_checkpoints": [
+        "checkpoints/S1d5_final_figures/scale_repair_summary.png",
+        "checkpoints/S1d5_final_mainline_summary.md",
+        "checkpoints/S1d5_final_repro/s1d5_policy_eval_summary.json",
+        "checkpoints/S2_final_fine_refinement_summary.md",
+        "checkpoints/S2a_fine_rot_policy_audit_on_s1d5/rot_0p2/s1d5_policy_eval_summary.json",
+        "checkpoints/S2a_fine_rot_policy_audit_on_s1d5/rot_0p25/s1d5_policy_eval_summary.json",
+        "checkpoints/S2a_fine_rot_policy_audit_on_s1d5/rot_0p3/s1d5_policy_eval_summary.json",
+        "checkpoints/S2a_fine_rot_policy_audit_on_s1d5/rot_0p35/s1d5_policy_eval_summary.json"
+      ],
+      "key_reports": [
+        "reports/final_clean_results_table.md",
+        "reports/final_figure_index.md",
+        "reports/final_negative_results_summary.md",
+        "reports/final_post_s11_code_optimization_closure.md",
+        "reports/final_post_s9_code_optimization_closure.md",
+        "reports/final_project_mainline_summary.md",
+        "reports/final_reproducibility_guide.md",
+        "reports/final_s10_chain_smoother_summary.md"
+      ],
+      "latest_commit": "34edd74",
+      "latest_commit_message": "Add S13 practical usability gap analysis",
+      "likely_role": "historical optimization experiment branch",
+      "recommendation": "historical_archive",
+      "report_count": 39,
+      "script_count": 37,
+      "test_count": 0
+    },
+    {
+      "branch": "optimize/s14-local-window-pose-graph",
+      "checkpoint_count": 114,
+      "final_classification_if_known": "unknown_or_not_applicable",
+      "group": "historical_optimize_experiments",
+      "key_checkpoints": [
+        "checkpoints/S1d5_final_figures/scale_repair_summary.png",
+        "checkpoints/S1d5_final_mainline_summary.md",
+        "checkpoints/S1d5_final_repro/s1d5_policy_eval_summary.json",
+        "checkpoints/S2_final_fine_refinement_summary.md",
+        "checkpoints/S2a_fine_rot_policy_audit_on_s1d5/rot_0p2/s1d5_policy_eval_summary.json",
+        "checkpoints/S2a_fine_rot_policy_audit_on_s1d5/rot_0p25/s1d5_policy_eval_summary.json",
+        "checkpoints/S2a_fine_rot_policy_audit_on_s1d5/rot_0p3/s1d5_policy_eval_summary.json",
+        "checkpoints/S2a_fine_rot_policy_audit_on_s1d5/rot_0p35/s1d5_policy_eval_summary.json"
+      ],
+      "key_reports": [
+        "reports/final_clean_results_table.md",
+        "reports/final_figure_index.md",
+        "reports/final_negative_results_summary.md",
+        "reports/final_post_s11_code_optimization_closure.md",
+        "reports/final_post_s14_code_optimization_closure.md",
+        "reports/final_post_s9_code_optimization_closure.md",
+        "reports/final_project_mainline_summary.md",
+        "reports/final_reproducibility_guide.md"
+      ],
+      "latest_commit": "36e68fe",
+      "latest_commit_message": "Close code optimization after S14 pose graph diagnostic",
+      "likely_role": "historical optimization experiment branch",
+      "recommendation": "historical_archive",
+      "report_count": 41,
+      "script_count": 38,
+      "test_count": 0
+    },
+    {
+      "branch": "optimize/s15-trajectory-level-training-objective",
+      "checkpoint_count": 122,
+      "final_classification_if_known": "unknown_or_not_applicable",
+      "group": "historical_optimize_experiments",
+      "key_checkpoints": [
+        "checkpoints/S1d5_final_figures/scale_repair_summary.png",
+        "checkpoints/S1d5_final_mainline_summary.md",
+        "checkpoints/S1d5_final_repro/s1d5_policy_eval_summary.json",
+        "checkpoints/S2_final_fine_refinement_summary.md",
+        "checkpoints/S2a_fine_rot_policy_audit_on_s1d5/rot_0p2/s1d5_policy_eval_summary.json",
+        "checkpoints/S2a_fine_rot_policy_audit_on_s1d5/rot_0p25/s1d5_policy_eval_summary.json",
+        "checkpoints/S2a_fine_rot_policy_audit_on_s1d5/rot_0p3/s1d5_policy_eval_summary.json",
+        "checkpoints/S2a_fine_rot_policy_audit_on_s1d5/rot_0p35/s1d5_policy_eval_summary.json"
+      ],
+      "key_reports": [
+        "reports/final_clean_results_table.md",
+        "reports/final_figure_index.md",
+        "reports/final_negative_results_summary.md",
+        "reports/final_post_s11_code_optimization_closure.md",
+        "reports/final_post_s14_code_optimization_closure.md",
+        "reports/final_post_s15_trajectory_training_closure.md",
+        "reports/final_post_s9_code_optimization_closure.md",
+        "reports/final_project_mainline_summary.md"
+      ],
+      "latest_commit": "8a28577",
+      "latest_commit_message": "Close S15 trajectory training line after stability retest",
+      "likely_role": "historical optimization experiment branch",
+      "recommendation": "historical_archive",
+      "report_count": 48,
+      "script_count": 40,
+      "test_count": 0
+    },
+    {
+      "branch": "optimize/s16-stronger-visual-backbone-feasibility",
+      "checkpoint_count": 126,
+      "final_classification_if_known": "unknown_or_not_applicable",
+      "group": "historical_optimize_experiments",
+      "key_checkpoints": [
+        "checkpoints/S1d5_final_figures/scale_repair_summary.png",
+        "checkpoints/S1d5_final_mainline_summary.md",
+        "checkpoints/S1d5_final_repro/s1d5_policy_eval_summary.json",
+        "checkpoints/S2_final_fine_refinement_summary.md",
+        "checkpoints/S2a_fine_rot_policy_audit_on_s1d5/rot_0p2/s1d5_policy_eval_summary.json",
+        "checkpoints/S2a_fine_rot_policy_audit_on_s1d5/rot_0p25/s1d5_policy_eval_summary.json",
+        "checkpoints/S2a_fine_rot_policy_audit_on_s1d5/rot_0p3/s1d5_policy_eval_summary.json",
+        "checkpoints/S2a_fine_rot_policy_audit_on_s1d5/rot_0p35/s1d5_policy_eval_summary.json"
+      ],
+      "key_reports": [
+        "reports/final_clean_results_table.md",
+        "reports/final_figure_index.md",
+        "reports/final_negative_results_summary.md",
+        "reports/final_post_s11_code_optimization_closure.md",
+        "reports/final_post_s14_code_optimization_closure.md",
+        "reports/final_post_s15_trajectory_training_closure.md",
+        "reports/final_post_s16_backbone_feasibility_closure.md",
+        "reports/final_post_s9_code_optimization_closure.md"
+      ],
+      "latest_commit": "8f52076",
+      "latest_commit_message": "Close S16 backbone feasibility after ResNet50 probe",
+      "likely_role": "historical optimization experiment branch",
+      "recommendation": "historical_archive",
+      "report_count": 51,
+      "script_count": 40,
+      "test_count": 0
+    },
+    {
+      "branch": "optimize/s17-pose-supervision-dataset-quality-audit",
+      "checkpoint_count": 137,
+      "final_classification_if_known": "unknown_or_not_applicable",
+      "group": "historical_optimize_experiments",
+      "key_checkpoints": [
+        "checkpoints/S1d5_final_figures/scale_repair_summary.png",
+        "checkpoints/S1d5_final_mainline_summary.md",
+        "checkpoints/S1d5_final_repro/s1d5_policy_eval_summary.json",
+        "checkpoints/S2_final_fine_refinement_summary.md",
+        "checkpoints/S2a_fine_rot_policy_audit_on_s1d5/rot_0p2/s1d5_policy_eval_summary.json",
+        "checkpoints/S2a_fine_rot_policy_audit_on_s1d5/rot_0p25/s1d5_policy_eval_summary.json",
+        "checkpoints/S2a_fine_rot_policy_audit_on_s1d5/rot_0p3/s1d5_policy_eval_summary.json",
+        "checkpoints/S2a_fine_rot_policy_audit_on_s1d5/rot_0p35/s1d5_policy_eval_summary.json"
+      ],
+      "key_reports": [
+        "reports/final_clean_results_table.md",
+        "reports/final_figure_index.md",
+        "reports/final_negative_results_summary.md",
+        "reports/final_post_s11_code_optimization_closure.md",
+        "reports/final_post_s14_code_optimization_closure.md",
+        "reports/final_post_s15_trajectory_training_closure.md",
+        "reports/final_post_s16_backbone_feasibility_closure.md",
+        "reports/final_post_s9_code_optimization_closure.md"
+      ],
+      "latest_commit": "e020e11",
+      "latest_commit_message": "Add S18 split representativeness evaluation",
+      "likely_role": "historical optimization experiment branch",
+      "recommendation": "historical_archive",
+      "report_count": 53,
+      "script_count": 40,
+      "test_count": 0
+    },
+    {
+      "branch": "optimize/s19-geometry-aware-pretraining-feasibility",
+      "checkpoint_count": 143,
+      "final_classification_if_known": "unknown_or_not_applicable",
+      "group": "historical_optimize_experiments",
+      "key_checkpoints": [
+        "checkpoints/S1d5_final_figures/scale_repair_summary.png",
+        "checkpoints/S1d5_final_mainline_summary.md",
+        "checkpoints/S1d5_final_repro/s1d5_policy_eval_summary.json",
+        "checkpoints/S2_final_fine_refinement_summary.md",
+        "checkpoints/S2a_fine_rot_policy_audit_on_s1d5/rot_0p2/s1d5_policy_eval_summary.json",
+        "checkpoints/S2a_fine_rot_policy_audit_on_s1d5/rot_0p25/s1d5_policy_eval_summary.json",
+        "checkpoints/S2a_fine_rot_policy_audit_on_s1d5/rot_0p3/s1d5_policy_eval_summary.json",
+        "checkpoints/S2a_fine_rot_policy_audit_on_s1d5/rot_0p35/s1d5_policy_eval_summary.json"
+      ],
+      "key_reports": [
+        "reports/final_clean_results_table.md",
+        "reports/final_figure_index.md",
+        "reports/final_negative_results_summary.md",
+        "reports/final_post_s11_code_optimization_closure.md",
+        "reports/final_post_s14_code_optimization_closure.md",
+        "reports/final_post_s15_trajectory_training_closure.md",
+        "reports/final_post_s16_backbone_feasibility_closure.md",
+        "reports/final_post_s19_geometry_pretraining_closure.md"
+      ],
+      "latest_commit": "f90d167",
+      "latest_commit_message": "Add git branch remote sync audit",
+      "likely_role": "historical optimization experiment branch",
+      "recommendation": "historical_archive",
+      "report_count": 56,
+      "script_count": 42,
+      "test_count": 0
+    },
+    {
+      "branch": "optimize/s2-fine-refinement-on-s1d5",
+      "checkpoint_count": 44,
+      "final_classification_if_known": "unknown_or_not_applicable",
+      "group": "historical_optimize_experiments",
+      "key_checkpoints": [
+        "checkpoints/S1d5_final_figures/scale_repair_summary.png",
+        "checkpoints/S1d5_final_mainline_summary.md",
+        "checkpoints/S1d5_final_repro/s1d5_policy_eval_summary.json",
+        "checkpoints/S2_final_fine_refinement_summary.md",
+        "checkpoints/S2a_fine_rot_policy_audit_on_s1d5/rot_0p2/s1d5_policy_eval_summary.json",
+        "checkpoints/S2a_fine_rot_policy_audit_on_s1d5/rot_0p25/s1d5_policy_eval_summary.json",
+        "checkpoints/S2a_fine_rot_policy_audit_on_s1d5/rot_0p3/s1d5_policy_eval_summary.json",
+        "checkpoints/S2a_fine_rot_policy_audit_on_s1d5/rot_0p35/s1d5_policy_eval_summary.json"
+      ],
+      "key_reports": [
+        "reports/final_s1d5_english_abstract.md",
+        "reports/final_s1d5_mainline_report.md",
+        "reports/final_s1d5_results_table.csv",
+        "reports/final_s1d5_thesis_summary.md",
+        "reports/final_s2_fine_refinement_summary.md",
+        "reports/git_track_s1d5_final_files.md",
+        "reports/checkpoints_live_cleanup_summary.md",
+        "reports/cleanup_summary_s1d5.md"
+      ],
+      "latest_commit": "c1f4b36",
+      "latest_commit_message": "Add S3 coupled pose head design plan",
+      "likely_role": "historical optimization experiment branch",
+      "recommendation": "historical_archive",
+      "report_count": 22,
+      "script_count": 23,
+      "test_count": 0
+    },
+    {
+      "branch": "optimize/s3a0-coupled-pose-residual-head",
+      "checkpoint_count": 89,
+      "final_classification_if_known": "unknown_or_not_applicable",
+      "group": "historical_optimize_experiments",
+      "key_checkpoints": [
+        "checkpoints/S1d5_final_figures/scale_repair_summary.png",
+        "checkpoints/S1d5_final_mainline_summary.md",
+        "checkpoints/S1d5_final_repro/s1d5_policy_eval_summary.json",
+        "checkpoints/S2_final_fine_refinement_summary.md",
+        "checkpoints/S2a_fine_rot_policy_audit_on_s1d5/rot_0p2/s1d5_policy_eval_summary.json",
+        "checkpoints/S2a_fine_rot_policy_audit_on_s1d5/rot_0p25/s1d5_policy_eval_summary.json",
+        "checkpoints/S2a_fine_rot_policy_audit_on_s1d5/rot_0p3/s1d5_policy_eval_summary.json",
+        "checkpoints/S2a_fine_rot_policy_audit_on_s1d5/rot_0p35/s1d5_policy_eval_summary.json"
+      ],
+      "key_reports": [
+        "reports/final_clean_results_table.md",
+        "reports/final_figure_index.md",
+        "reports/final_negative_results_summary.md",
+        "reports/final_post_s9_code_optimization_closure.md",
+        "reports/final_project_mainline_summary.md",
+        "reports/final_reproducibility_guide.md",
+        "reports/final_s1d5_english_abstract.md",
+        "reports/final_s1d5_mainline_report.md"
+      ],
+      "latest_commit": "f232fa3",
+      "latest_commit_message": "Close post-S5 optimization after S8 S9 diagnostics",
+      "likely_role": "historical optimization experiment branch",
+      "recommendation": "historical_archive",
+      "report_count": 34,
+      "script_count": 32,
+      "test_count": 0
+    },
+    {
+      "branch": "polish/final-reproducibility-guardrails",
+      "checkpoint_count": 151,
+      "final_classification_if_known": "S5_clean_tmag_calibration_policy remains final clean candidate",
+      "group": "final_or_polish",
+      "key_checkpoints": [
+        "checkpoints/AB1_final_ablation_baseline_comparison_results.json",
+        "checkpoints/AB2_thesis_three_axis_ablation_results.json",
+        "checkpoints/EXT1_external_algorithm_baseline_results.json",
+        "checkpoints/SB1_pano_orb_vo_baseline_results.json",
+        "checkpoints/SB2_alignment_consistent_baseline_results.json",
+        "checkpoints/S1d5_final_figures/scale_repair_summary.png",
+        "checkpoints/S1d5_final_mainline_summary.md",
+        "checkpoints/S1d5_final_repro/s1d5_policy_eval_summary.json"
+      ],
+      "key_reports": [
+        "reports/final_ablation_baseline_comparison.md",
+        "reports/final_clean_results_table.md",
+        "reports/final_figure_index.md",
+        "reports/final_negative_results_summary.md",
+        "reports/final_post_s11_code_optimization_closure.md",
+        "reports/final_post_s14_code_optimization_closure.md",
+        "reports/final_post_s15_trajectory_training_closure.md",
+        "reports/final_post_s16_backbone_feasibility_closure.md"
+      ],
+      "latest_commit": "7cb0a2c",
+      "latest_commit_message": "Add repository hygiene audit before JRT1",
+      "likely_role": "authoritative clean baseline and final-report branch",
+      "recommendation": "canonical_for_topic",
+      "report_count": 69,
+      "script_count": 52,
+      "test_count": 11
+    }
+  ],
+  "branches_audited": [
+    "experiment/jrt1-joint-rtdir-coupled-refiner",
+    "experiment/mf1-multi-frame-chain-refiner",
+    "experiment/orbslam3-fisheye-strong-baseline",
+    "experiment/s5d2-dense-export-convention-audit",
+    "main",
+    "optimize/s10-chain-pathratio-smoother",
+    "optimize/s11-tmag-scale-consistency-training",
+    "optimize/s12-regime-balanced-sampling",
+    "optimize/s14-local-window-pose-graph",
+    "optimize/s15-trajectory-level-training-objective",
+    "optimize/s16-stronger-visual-backbone-feasibility",
+    "optimize/s17-pose-supervision-dataset-quality-audit",
+    "optimize/s19-geometry-aware-pretraining-feasibility",
+    "optimize/s2-fine-refinement-on-s1d5",
+    "optimize/s3a0-coupled-pose-residual-head",
+    "polish/final-reproducibility-guardrails"
+  ],
+  "canonical_recommendations": [
+    {
+      "canonical_branch": "polish/final-reproducibility-guardrails",
+      "canonical_file": "reports/final_reproducibility_guide.md",
+      "reason": "authoritative final reproducibility branch",
+      "topic": "final reproducibility guide"
+    },
+    {
+      "canonical_branch": "polish/final-reproducibility-guardrails",
+      "canonical_file": "reports/external_algorithm_baseline_comparison.md",
+      "reason": "thesis-facing baseline comparison on the final/polish line",
+      "topic": "external baseline comparison"
+    },
+    {
+      "canonical_branch": "polish/final-reproducibility-guardrails",
+      "canonical_file": "reports/pano_orb_vo_baseline_report.md",
+      "reason": "final baseline branch keeps the stable panorama baseline story",
+      "topic": "pano-orb-vo baseline"
+    },
+    {
+      "canonical_branch": "experiment/orbslam3-fisheye-strong-baseline",
+      "canonical_file": "reports/orbslam3_fisheye_evaluation_report.md",
+      "reason": "ORB-specific artifacts and reports live on the dedicated external baseline branch",
+      "topic": "orbslam3 fisheye baseline"
+    },
+    {
+      "canonical_branch": "experiment/orbslam3-fisheye-strong-baseline",
+      "canonical_file": "reports/s5_orbslam3_same_evaluator_comparison.md",
+      "reason": "paired comparison with ORB-SLAM3 belongs to the ORB branch",
+      "topic": "s5 dense same-evaluator comparison"
+    },
+    {
+      "canonical_branch": "experiment/s5d2-dense-export-convention-audit",
+      "canonical_file": "reports/S5D2_dense_export_convention_audit.md",
+      "reason": "latest branch-specific audit of dense export scope and convention",
+      "topic": "s5 dense export convention audit"
+    },
+    {
+      "canonical_branch": "experiment/jrt1-joint-rtdir-coupled-refiner",
+      "canonical_file": "reports/JRT1_final_closeout_summary.md",
+      "reason": "negative experiment conclusion belongs to its own branch",
+      "topic": "JRT1 closeout"
+    },
+    {
+      "canonical_branch": "experiment/mf1-multi-frame-chain-refiner",
+      "canonical_file": "reports/MF1_final_closeout_summary.md",
+      "reason": "negative experiment conclusion belongs to its own branch",
+      "topic": "MF1 closeout"
+    }
+  ],
+  "divergent_same_path_reports": [
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "main",
+        "optimize/s10-chain-pathratio-smoother",
+        "optimize/s11-tmag-scale-consistency-training",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "optimize/s2-fine-refinement-on-s1d5",
+        "optimize/s3a0-coupled-pose-residual-head",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "067b4aa3fce3",
+        "067b4aa3fce3",
+        "067b4aa3fce3",
+        "067b4aa3fce3",
+        "0c7f2b43f964",
+        "067b4aa3fce3",
+        "067b4aa3fce3",
+        "067b4aa3fce3",
+        "067b4aa3fce3",
+        "067b4aa3fce3",
+        "067b4aa3fce3",
+        "067b4aa3fce3",
+        "067b4aa3fce3",
+        "d2f147dab7b5",
+        "067b4aa3fce3",
+        "067b4aa3fce3"
+      ],
+      "path": "reports/current_valid_baselines.md",
+      "recommendation": "keep branch-local; do not merge wholesale"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "optimize/s10-chain-pathratio-smoother",
+        "optimize/s11-tmag-scale-consistency-training",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "optimize/s3a0-coupled-pose-residual-head",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "9873bf49efc9",
+        "9873bf49efc9",
+        "9873bf49efc9",
+        "9873bf49efc9",
+        "91daf528e272",
+        "a26ca94df6bd",
+        "a26ca94df6bd",
+        "6e4be91d5f77",
+        "5d2a1ff66653",
+        "e6b53cae80ee",
+        "e6b53cae80ee",
+        "9873bf49efc9",
+        "91daf528e272",
+        "9873bf49efc9"
+      ],
+      "path": "reports/final_clean_results_table.md",
+      "recommendation": "keep branch-local; do not merge wholesale"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "optimize/s10-chain-pathratio-smoother",
+        "optimize/s11-tmag-scale-consistency-training",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "optimize/s3a0-coupled-pose-residual-head",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "63ca4a28dccb",
+        "63ca4a28dccb",
+        "63ca4a28dccb",
+        "63ca4a28dccb",
+        "51af99adfd5e",
+        "84aa31120068",
+        "84aa31120068",
+        "decdb360ad01",
+        "4f7edd397a7c",
+        "d45d4fbcdebe",
+        "d45d4fbcdebe",
+        "63ca4a28dccb",
+        "51af99adfd5e",
+        "63ca4a28dccb"
+      ],
+      "path": "reports/final_negative_results_summary.md",
+      "recommendation": "keep branch-local; do not merge wholesale"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "optimize/s10-chain-pathratio-smoother",
+        "optimize/s11-tmag-scale-consistency-training",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "optimize/s3a0-coupled-pose-residual-head",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "847b23744411",
+        "847b23744411",
+        "847b23744411",
+        "847b23744411",
+        "558ac7b47f4a",
+        "5596fe403971",
+        "5596fe403971",
+        "79fe2f1fe768",
+        "c93676499603",
+        "00be5f8c52ea",
+        "00be5f8c52ea",
+        "847b23744411",
+        "558ac7b47f4a",
+        "847b23744411"
+      ],
+      "path": "reports/final_project_mainline_summary.md",
+      "recommendation": "keep branch-local; do not merge wholesale"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "optimize/s10-chain-pathratio-smoother",
+        "optimize/s11-tmag-scale-consistency-training",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "optimize/s3a0-coupled-pose-residual-head",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "396abb483d16",
+        "396abb483d16",
+        "396abb483d16",
+        "396abb483d16",
+        "6d6c4f0a8420",
+        "6d6c4f0a8420",
+        "6d6c4f0a8420",
+        "6d6c4f0a8420",
+        "6d6c4f0a8420",
+        "6d6c4f0a8420",
+        "6d6c4f0a8420",
+        "6d6c4f0a8420",
+        "6d6c4f0a8420",
+        "396abb483d16"
+      ],
+      "path": "reports/final_reproducibility_guide.md",
+      "recommendation": "keep branch-local; do not merge wholesale"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "optimize/s10-chain-pathratio-smoother",
+        "optimize/s11-tmag-scale-consistency-training",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "optimize/s3a0-coupled-pose-residual-head",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "29fe5f867ce2",
+        "29fe5f867ce2",
+        "29fe5f867ce2",
+        "29fe5f867ce2",
+        "174d47f0b927",
+        "bd7b100cdd5a",
+        "bd7b100cdd5a",
+        "d46e7b762443",
+        "d641b0a633b3",
+        "8493a4b028c8",
+        "8493a4b028c8",
+        "29fe5f867ce2",
+        "174d47f0b927",
+        "29fe5f867ce2"
+      ],
+      "path": "reports/final_thesis_claims_and_limitations.md",
+      "recommendation": "keep branch-local; do not merge wholesale"
+    }
+  ],
+  "duplicate_topic_groups": [
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner"
+      ],
+      "recommendation": "canonicalize later in REPORT3; no moves now",
+      "reports": [
+        "reports/JRT1_final_closeout_summary.md"
+      ],
+      "superseded_by": "reports/JRT1_final_closeout_summary.md",
+      "topic": "JRT1_final_closeout_summary.md"
+    },
+    {
+      "branches": [
+        "experiment/mf1-multi-frame-chain-refiner"
+      ],
+      "recommendation": "canonicalize later in REPORT3; no moves now",
+      "reports": [
+        "reports/MF1_final_closeout_summary.md"
+      ],
+      "superseded_by": null,
+      "topic": "MF1_final_closeout_summary.md"
+    },
+    {
+      "branches": [
+        "experiment/s5d2-dense-export-convention-audit"
+      ],
+      "recommendation": "canonicalize later in REPORT3; no moves now",
+      "reports": [
+        "reports/S5D2_dense_export_convention_audit.md"
+      ],
+      "superseded_by": null,
+      "topic": "S5D2_dense_export_convention_audit.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "main",
+        "optimize/s10-chain-pathratio-smoother",
+        "optimize/s11-tmag-scale-consistency-training",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "optimize/s2-fine-refinement-on-s1d5",
+        "optimize/s3a0-coupled-pose-residual-head",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "recommendation": "canonicalize later in REPORT3; no moves now",
+      "reports": [
+        "reports/current_valid_baselines.md"
+      ],
+      "superseded_by": "reports/current_valid_baselines.md",
+      "topic": "current_valid_baselines.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "recommendation": "canonicalize later in REPORT3; no moves now",
+      "reports": [
+        "reports/external_algorithm_baseline_comparison.md"
+      ],
+      "superseded_by": "reports/external_algorithm_baseline_comparison.md",
+      "topic": "external_algorithm_baseline_comparison.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "recommendation": "canonicalize later in REPORT3; no moves now",
+      "reports": [
+        "reports/final_ablation_baseline_comparison.md"
+      ],
+      "superseded_by": "reports/final_ablation_baseline_comparison.md",
+      "topic": "final_ablation_baseline_comparison.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "optimize/s10-chain-pathratio-smoother",
+        "optimize/s11-tmag-scale-consistency-training",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "optimize/s3a0-coupled-pose-residual-head",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "recommendation": "canonicalize later in REPORT3; no moves now",
+      "reports": [
+        "reports/final_clean_results_table.md"
+      ],
+      "superseded_by": "reports/final_clean_results_table.md",
+      "topic": "final_clean_results_table.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "optimize/s10-chain-pathratio-smoother",
+        "optimize/s11-tmag-scale-consistency-training",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "optimize/s3a0-coupled-pose-residual-head",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "recommendation": "canonicalize later in REPORT3; no moves now",
+      "reports": [
+        "reports/final_negative_results_summary.md"
+      ],
+      "superseded_by": "reports/final_negative_results_summary.md",
+      "topic": "final_negative_results_summary.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "optimize/s10-chain-pathratio-smoother",
+        "optimize/s11-tmag-scale-consistency-training",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "optimize/s3a0-coupled-pose-residual-head",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "recommendation": "canonicalize later in REPORT3; no moves now",
+      "reports": [
+        "reports/final_project_mainline_summary.md"
+      ],
+      "superseded_by": "reports/final_project_mainline_summary.md",
+      "topic": "final_project_mainline_summary.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "optimize/s10-chain-pathratio-smoother",
+        "optimize/s11-tmag-scale-consistency-training",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "optimize/s3a0-coupled-pose-residual-head",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "recommendation": "canonicalize later in REPORT3; no moves now",
+      "reports": [
+        "reports/final_reproducibility_guide.md"
+      ],
+      "superseded_by": "reports/final_reproducibility_guide.md",
+      "topic": "final_reproducibility_guide.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "optimize/s10-chain-pathratio-smoother",
+        "optimize/s11-tmag-scale-consistency-training",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "optimize/s3a0-coupled-pose-residual-head",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "recommendation": "canonicalize later in REPORT3; no moves now",
+      "reports": [
+        "reports/final_thesis_claims_and_limitations.md"
+      ],
+      "superseded_by": "reports/final_thesis_claims_and_limitations.md",
+      "topic": "final_thesis_claims_and_limitations.md"
+    },
+    {
+      "branches": [
+        "experiment/orbslam3-fisheye-strong-baseline"
+      ],
+      "recommendation": "canonicalize later in REPORT3; no moves now",
+      "reports": [
+        "reports/s5_dense_external_export_report.md"
+      ],
+      "superseded_by": null,
+      "topic": "s5_dense_external_export_report.md"
+    },
+    {
+      "branches": [
+        "experiment/orbslam3-fisheye-strong-baseline"
+      ],
+      "recommendation": "canonicalize later in REPORT3; no moves now",
+      "reports": [
+        "reports/s5_orbslam3_same_evaluator_comparison.md"
+      ],
+      "superseded_by": null,
+      "topic": "s5_orbslam3_same_evaluator_comparison.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "recommendation": "canonicalize later in REPORT3; no moves now",
+      "reports": [
+        "reports/thesis_three_axis_ablation.md"
+      ],
+      "superseded_by": "reports/thesis_three_axis_ablation.md",
+      "topic": "thesis_three_axis_ablation.md"
+    }
+  ],
+  "no_branches_merged": true,
+  "no_cherry_picks": true,
+  "no_files_deleted": true,
+  "no_files_moved": true,
+  "recommended_next_task": "REPORT3_curated_report_archive_plan",
+  "report_matrix": [
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner"
+      ],
+      "content_hashes": [
+        "cf47dc049eba"
+      ],
+      "paths": [
+        "reports/JRT1_branch_remote_sync_audit.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/jrt1-joint-rtdir-coupled-refiner",
+      "suggested_canonical_file": "reports/JRT1_branch_remote_sync_audit.md",
+      "topic": "JRT1_branch_remote_sync_audit.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner"
+      ],
+      "content_hashes": [
+        "0bdfa904d5f1"
+      ],
+      "paths": [
+        "reports/JRT1_final_closeout_summary.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/jrt1-joint-rtdir-coupled-refiner",
+      "suggested_canonical_file": "reports/JRT1_final_closeout_summary.md",
+      "topic": "JRT1_final_closeout_summary.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner"
+      ],
+      "content_hashes": [
+        "de333cc0aed6"
+      ],
+      "paths": [
+        "reports/JRT1a_framework_smoke_report.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/jrt1-joint-rtdir-coupled-refiner",
+      "suggested_canonical_file": "reports/JRT1a_framework_smoke_report.md",
+      "topic": "JRT1a_framework_smoke_report.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner"
+      ],
+      "content_hashes": [
+        "06b8743b4ec6"
+      ],
+      "paths": [
+        "reports/JRT1b_train_cv_report.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/jrt1-joint-rtdir-coupled-refiner",
+      "suggested_canonical_file": "reports/JRT1b_train_cv_report.md",
+      "topic": "JRT1b_train_cv_report.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner"
+      ],
+      "content_hashes": [
+        "caf1490b4d6a"
+      ],
+      "paths": [
+        "reports/JRT1c_train_cv_trajectory_proxy_report.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/jrt1-joint-rtdir-coupled-refiner",
+      "suggested_canonical_file": "reports/JRT1c_train_cv_trajectory_proxy_report.md",
+      "topic": "JRT1c_train_cv_trajectory_proxy_report.md"
+    },
+    {
+      "branches": [
+        "experiment/mf1-multi-frame-chain-refiner"
+      ],
+      "content_hashes": [
+        "4cb6003a9a64"
+      ],
+      "paths": [
+        "reports/MF1_final_closeout_summary.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/mf1-multi-frame-chain-refiner",
+      "suggested_canonical_file": "reports/MF1_final_closeout_summary.md",
+      "topic": "MF1_final_closeout_summary.md"
+    },
+    {
+      "branches": [
+        "experiment/mf1-multi-frame-chain-refiner"
+      ],
+      "content_hashes": [
+        "bde80339678d"
+      ],
+      "paths": [
+        "reports/MF1a_chain_refiner_smoke_report.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/mf1-multi-frame-chain-refiner",
+      "suggested_canonical_file": "reports/MF1a_chain_refiner_smoke_report.md",
+      "topic": "MF1a_chain_refiner_smoke_report.md"
+    },
+    {
+      "branches": [
+        "experiment/mf1-multi-frame-chain-refiner"
+      ],
+      "content_hashes": [
+        "f4186560a571"
+      ],
+      "paths": [
+        "reports/MF1b_train_cv_report.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/mf1-multi-frame-chain-refiner",
+      "suggested_canonical_file": "reports/MF1b_train_cv_report.md",
+      "topic": "MF1b_train_cv_report.md"
+    },
+    {
+      "branches": [
+        "experiment/s5d2-dense-export-convention-audit"
+      ],
+      "content_hashes": [
+        "c244d01f155d"
+      ],
+      "paths": [
+        "reports/REPO2_untracked_experiment_artifact_resolution.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/s5d2-dense-export-convention-audit",
+      "suggested_canonical_file": "reports/REPO2_untracked_experiment_artifact_resolution.md",
+      "topic": "REPO2_untracked_experiment_artifact_resolution.md"
+    },
+    {
+      "branches": [
+        "experiment/s5d2-dense-export-convention-audit"
+      ],
+      "content_hashes": [
+        "b28fdc95a31e"
+      ],
+      "paths": [
+        "reports/REPORT_INDEX.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/s5d2-dense-export-convention-audit",
+      "suggested_canonical_file": "reports/REPORT_INDEX.md",
+      "topic": "REPORT_INDEX.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "optimize/s10-chain-pathratio-smoother",
+        "optimize/s11-tmag-scale-consistency-training",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "optimize/s2-fine-refinement-on-s1d5",
+        "optimize/s3a0-coupled-pose-residual-head",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "a5f6d1d8ffbf"
+      ],
+      "paths": [
+        "reports/S3a0_minimal_coupled_pose_head_implementation_checklist.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/jrt1-joint-rtdir-coupled-refiner",
+      "suggested_canonical_file": "reports/S3a0_minimal_coupled_pose_head_implementation_checklist.md",
+      "topic": "S3a0_minimal_coupled_pose_head_implementation_checklist.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "optimize/s10-chain-pathratio-smoother",
+        "optimize/s11-tmag-scale-consistency-training",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "optimize/s2-fine-refinement-on-s1d5",
+        "optimize/s3a0-coupled-pose-residual-head",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "9cd4aa28659e"
+      ],
+      "paths": [
+        "reports/S3a_coupled_pose_head_design_plan.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/jrt1-joint-rtdir-coupled-refiner",
+      "suggested_canonical_file": "reports/S3a_coupled_pose_head_design_plan.md",
+      "topic": "S3a_coupled_pose_head_design_plan.md"
+    },
+    {
+      "branches": [
+        "experiment/s5d2-dense-export-convention-audit"
+      ],
+      "content_hashes": [
+        "250d00469643"
+      ],
+      "paths": [
+        "reports/S5D2_dense_export_convention_audit.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/s5d2-dense-export-convention-audit",
+      "suggested_canonical_file": "reports/S5D2_dense_export_convention_audit.md",
+      "topic": "S5D2_dense_export_convention_audit.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "a4d27ab38f98"
+      ],
+      "paths": [
+        "reports/alignment_consistent_strong_baseline_comparison.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/jrt1-joint-rtdir-coupled-refiner",
+      "suggested_canonical_file": "reports/alignment_consistent_strong_baseline_comparison.md",
+      "topic": "alignment_consistent_strong_baseline_comparison.md"
+    },
+    {
+      "branches": [
+        "experiment/s5d2-dense-export-convention-audit"
+      ],
+      "content_hashes": [
+        "a1f597d9306d"
+      ],
+      "paths": [
+        "reports/all_branch_inventory_and_classification.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/s5d2-dense-export-convention-audit",
+      "suggested_canonical_file": "reports/all_branch_inventory_and_classification.md",
+      "topic": "all_branch_inventory_and_classification.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "main",
+        "optimize/s10-chain-pathratio-smoother",
+        "optimize/s11-tmag-scale-consistency-training",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "optimize/s2-fine-refinement-on-s1d5",
+        "optimize/s3a0-coupled-pose-residual-head",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "d04fa5963b22"
+      ],
+      "paths": [
+        "reports/checkpoints_live_cleanup_inventory.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/jrt1-joint-rtdir-coupled-refiner",
+      "suggested_canonical_file": "reports/checkpoints_live_cleanup_inventory.md",
+      "topic": "checkpoints_live_cleanup_inventory.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "main",
+        "optimize/s10-chain-pathratio-smoother",
+        "optimize/s11-tmag-scale-consistency-training",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "optimize/s2-fine-refinement-on-s1d5",
+        "optimize/s3a0-coupled-pose-residual-head",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "3d01d9947b31"
+      ],
+      "paths": [
+        "reports/checkpoints_live_cleanup_state.json"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/jrt1-joint-rtdir-coupled-refiner",
+      "suggested_canonical_file": "reports/checkpoints_live_cleanup_state.json",
+      "topic": "checkpoints_live_cleanup_state.json"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "main",
+        "optimize/s10-chain-pathratio-smoother",
+        "optimize/s11-tmag-scale-consistency-training",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "optimize/s2-fine-refinement-on-s1d5",
+        "optimize/s3a0-coupled-pose-residual-head",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "da5072b4a8d5"
+      ],
+      "paths": [
+        "reports/checkpoints_live_cleanup_summary.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/jrt1-joint-rtdir-coupled-refiner",
+      "suggested_canonical_file": "reports/checkpoints_live_cleanup_summary.md",
+      "topic": "checkpoints_live_cleanup_summary.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "main",
+        "optimize/s10-chain-pathratio-smoother",
+        "optimize/s11-tmag-scale-consistency-training",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "optimize/s2-fine-refinement-on-s1d5",
+        "optimize/s3a0-coupled-pose-residual-head",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "99f7c3e9eacd"
+      ],
+      "paths": [
+        "reports/cleanup_actions_s1d5.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/jrt1-joint-rtdir-coupled-refiner",
+      "suggested_canonical_file": "reports/cleanup_actions_s1d5.md",
+      "topic": "cleanup_actions_s1d5.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "main",
+        "optimize/s10-chain-pathratio-smoother",
+        "optimize/s11-tmag-scale-consistency-training",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "optimize/s2-fine-refinement-on-s1d5",
+        "optimize/s3a0-coupled-pose-residual-head",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "ace9729eea0b"
+      ],
+      "paths": [
+        "reports/cleanup_delete_candidates_s1d5.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/jrt1-joint-rtdir-coupled-refiner",
+      "suggested_canonical_file": "reports/cleanup_delete_candidates_s1d5.md",
+      "topic": "cleanup_delete_candidates_s1d5.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "main",
+        "optimize/s10-chain-pathratio-smoother",
+        "optimize/s11-tmag-scale-consistency-training",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "optimize/s2-fine-refinement-on-s1d5",
+        "optimize/s3a0-coupled-pose-residual-head",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "e09d72406d30"
+      ],
+      "paths": [
+        "reports/cleanup_inventory_s1d5.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/jrt1-joint-rtdir-coupled-refiner",
+      "suggested_canonical_file": "reports/cleanup_inventory_s1d5.md",
+      "topic": "cleanup_inventory_s1d5.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "main",
+        "optimize/s10-chain-pathratio-smoother",
+        "optimize/s11-tmag-scale-consistency-training",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "optimize/s2-fine-refinement-on-s1d5",
+        "optimize/s3a0-coupled-pose-residual-head",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "1b8e0e4a07f7"
+      ],
+      "paths": [
+        "reports/cleanup_summary_s1d5.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/jrt1-joint-rtdir-coupled-refiner",
+      "suggested_canonical_file": "reports/cleanup_summary_s1d5.md",
+      "topic": "cleanup_summary_s1d5.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "main",
+        "optimize/s10-chain-pathratio-smoother",
+        "optimize/s11-tmag-scale-consistency-training",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "optimize/s2-fine-refinement-on-s1d5",
+        "optimize/s3a0-coupled-pose-residual-head",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "067b4aa3fce3",
+        "0c7f2b43f964",
+        "d2f147dab7b5"
+      ],
+      "paths": [
+        "reports/current_valid_baselines.md"
+      ],
+      "same_content": false,
+      "same_path_same_content": false,
+      "same_topic_different_versions": true,
+      "suggested_canonical_branch": "experiment/jrt1-joint-rtdir-coupled-refiner",
+      "suggested_canonical_file": "reports/current_valid_baselines.md",
+      "topic": "current_valid_baselines.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "ef93cfaea752"
+      ],
+      "paths": [
+        "reports/droidslam_environment_setup_report.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/jrt1-joint-rtdir-coupled-refiner",
+      "suggested_canonical_file": "reports/droidslam_environment_setup_report.md",
+      "topic": "droidslam_environment_setup_report.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "e7484727cd38"
+      ],
+      "paths": [
+        "reports/external_algorithm_baseline_comparison.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/jrt1-joint-rtdir-coupled-refiner",
+      "suggested_canonical_file": "reports/external_algorithm_baseline_comparison.md",
+      "topic": "external_algorithm_baseline_comparison.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "3ff8b04fc1a4"
+      ],
+      "paths": [
+        "reports/external_algorithm_baseline_protocol.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/jrt1-joint-rtdir-coupled-refiner",
+      "suggested_canonical_file": "reports/external_algorithm_baseline_protocol.md",
+      "topic": "external_algorithm_baseline_protocol.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "1d9aa3195144"
+      ],
+      "paths": [
+        "reports/external_baseline_environment_audit.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/jrt1-joint-rtdir-coupled-refiner",
+      "suggested_canonical_file": "reports/external_baseline_environment_audit.md",
+      "topic": "external_baseline_environment_audit.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "d57b4174dc5d"
+      ],
+      "paths": [
+        "reports/final_ablation_baseline_comparison.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "polish/final-reproducibility-guardrails",
+      "suggested_canonical_file": "reports/final_ablation_baseline_comparison.md",
+      "topic": "final_ablation_baseline_comparison.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "optimize/s10-chain-pathratio-smoother",
+        "optimize/s11-tmag-scale-consistency-training",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "optimize/s3a0-coupled-pose-residual-head",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "5d2a1ff66653",
+        "6e4be91d5f77",
+        "91daf528e272",
+        "9873bf49efc9",
+        "a26ca94df6bd",
+        "e6b53cae80ee"
+      ],
+      "paths": [
+        "reports/final_clean_results_table.md"
+      ],
+      "same_content": false,
+      "same_path_same_content": false,
+      "same_topic_different_versions": true,
+      "suggested_canonical_branch": "polish/final-reproducibility-guardrails",
+      "suggested_canonical_file": "reports/final_clean_results_table.md",
+      "topic": "final_clean_results_table.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "optimize/s10-chain-pathratio-smoother",
+        "optimize/s11-tmag-scale-consistency-training",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "optimize/s3a0-coupled-pose-residual-head",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "1d62e20d87e8"
+      ],
+      "paths": [
+        "reports/final_figure_index.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "polish/final-reproducibility-guardrails",
+      "suggested_canonical_file": "reports/final_figure_index.md",
+      "topic": "final_figure_index.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "optimize/s10-chain-pathratio-smoother",
+        "optimize/s11-tmag-scale-consistency-training",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "optimize/s3a0-coupled-pose-residual-head",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "4f7edd397a7c",
+        "51af99adfd5e",
+        "63ca4a28dccb",
+        "84aa31120068",
+        "d45d4fbcdebe",
+        "decdb360ad01"
+      ],
+      "paths": [
+        "reports/final_negative_results_summary.md"
+      ],
+      "same_content": false,
+      "same_path_same_content": false,
+      "same_topic_different_versions": true,
+      "suggested_canonical_branch": "polish/final-reproducibility-guardrails",
+      "suggested_canonical_file": "reports/final_negative_results_summary.md",
+      "topic": "final_negative_results_summary.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "optimize/s11-tmag-scale-consistency-training",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "6a202705682a"
+      ],
+      "paths": [
+        "reports/final_post_s11_code_optimization_closure.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "polish/final-reproducibility-guardrails",
+      "suggested_canonical_file": "reports/final_post_s11_code_optimization_closure.md",
+      "topic": "final_post_s11_code_optimization_closure.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "dc0da68819e2"
+      ],
+      "paths": [
+        "reports/final_post_s14_code_optimization_closure.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "polish/final-reproducibility-guardrails",
+      "suggested_canonical_file": "reports/final_post_s14_code_optimization_closure.md",
+      "topic": "final_post_s14_code_optimization_closure.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "e6c07ecef829"
+      ],
+      "paths": [
+        "reports/final_post_s15_trajectory_training_closure.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "polish/final-reproducibility-guardrails",
+      "suggested_canonical_file": "reports/final_post_s15_trajectory_training_closure.md",
+      "topic": "final_post_s15_trajectory_training_closure.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "eb9392f3edf8"
+      ],
+      "paths": [
+        "reports/final_post_s16_backbone_feasibility_closure.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "polish/final-reproducibility-guardrails",
+      "suggested_canonical_file": "reports/final_post_s16_backbone_feasibility_closure.md",
+      "topic": "final_post_s16_backbone_feasibility_closure.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "4731472d3cf8"
+      ],
+      "paths": [
+        "reports/final_post_s19_geometry_pretraining_closure.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "polish/final-reproducibility-guardrails",
+      "suggested_canonical_file": "reports/final_post_s19_geometry_pretraining_closure.md",
+      "topic": "final_post_s19_geometry_pretraining_closure.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "optimize/s10-chain-pathratio-smoother",
+        "optimize/s11-tmag-scale-consistency-training",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "optimize/s3a0-coupled-pose-residual-head",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "b97b3cf96f11"
+      ],
+      "paths": [
+        "reports/final_post_s9_code_optimization_closure.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "polish/final-reproducibility-guardrails",
+      "suggested_canonical_file": "reports/final_post_s9_code_optimization_closure.md",
+      "topic": "final_post_s9_code_optimization_closure.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "optimize/s10-chain-pathratio-smoother",
+        "optimize/s11-tmag-scale-consistency-training",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "optimize/s3a0-coupled-pose-residual-head",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "00be5f8c52ea",
+        "558ac7b47f4a",
+        "5596fe403971",
+        "79fe2f1fe768",
+        "847b23744411",
+        "c93676499603"
+      ],
+      "paths": [
+        "reports/final_project_mainline_summary.md"
+      ],
+      "same_content": false,
+      "same_path_same_content": false,
+      "same_topic_different_versions": true,
+      "suggested_canonical_branch": "polish/final-reproducibility-guardrails",
+      "suggested_canonical_file": "reports/final_project_mainline_summary.md",
+      "topic": "final_project_mainline_summary.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "optimize/s10-chain-pathratio-smoother",
+        "optimize/s11-tmag-scale-consistency-training",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "optimize/s3a0-coupled-pose-residual-head",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "396abb483d16",
+        "6d6c4f0a8420"
+      ],
+      "paths": [
+        "reports/final_reproducibility_guide.md"
+      ],
+      "same_content": false,
+      "same_path_same_content": false,
+      "same_topic_different_versions": true,
+      "suggested_canonical_branch": "polish/final-reproducibility-guardrails",
+      "suggested_canonical_file": "reports/final_reproducibility_guide.md",
+      "topic": "final_reproducibility_guide.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "optimize/s10-chain-pathratio-smoother",
+        "optimize/s11-tmag-scale-consistency-training",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "f32ed2500ae3"
+      ],
+      "paths": [
+        "reports/final_s10_chain_smoother_summary.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "polish/final-reproducibility-guardrails",
+      "suggested_canonical_file": "reports/final_s10_chain_smoother_summary.md",
+      "topic": "final_s10_chain_smoother_summary.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "optimize/s11-tmag-scale-consistency-training",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "bdcdbe1ff6b3"
+      ],
+      "paths": [
+        "reports/final_s11_tmag_scale_consistency_summary.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "polish/final-reproducibility-guardrails",
+      "suggested_canonical_file": "reports/final_s11_tmag_scale_consistency_summary.md",
+      "topic": "final_s11_tmag_scale_consistency_summary.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "ea1aae79fa2a"
+      ],
+      "paths": [
+        "reports/final_s12_regime_balanced_sampling_summary.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "polish/final-reproducibility-guardrails",
+      "suggested_canonical_file": "reports/final_s12_regime_balanced_sampling_summary.md",
+      "topic": "final_s12_regime_balanced_sampling_summary.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "5d5d5b862f9c"
+      ],
+      "paths": [
+        "reports/final_s13_practical_usability_gap_summary.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "polish/final-reproducibility-guardrails",
+      "suggested_canonical_file": "reports/final_s13_practical_usability_gap_summary.md",
+      "topic": "final_s13_practical_usability_gap_summary.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "d1b1cc6a0fe9"
+      ],
+      "paths": [
+        "reports/final_s14_local_window_pose_graph_summary.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "polish/final-reproducibility-guardrails",
+      "suggested_canonical_file": "reports/final_s14_local_window_pose_graph_summary.md",
+      "topic": "final_s14_local_window_pose_graph_summary.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "a5eadd3456b4"
+      ],
+      "paths": [
+        "reports/final_s15_trajectory_level_training_objective_summary.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "polish/final-reproducibility-guardrails",
+      "suggested_canonical_file": "reports/final_s15_trajectory_level_training_objective_summary.md",
+      "topic": "final_s15_trajectory_level_training_objective_summary.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "feeb148f6baa"
+      ],
+      "paths": [
+        "reports/final_s15a_trajectory_training_smoke_failure_attribution_summary.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "polish/final-reproducibility-guardrails",
+      "suggested_canonical_file": "reports/final_s15a_trajectory_training_smoke_failure_attribution_summary.md",
+      "topic": "final_s15a_trajectory_training_smoke_failure_attribution_summary.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "c979fa11a41f"
+      ],
+      "paths": [
+        "reports/final_s15b_pair_training_harness_stability_audit_summary.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "polish/final-reproducibility-guardrails",
+      "suggested_canonical_file": "reports/final_s15b_pair_training_harness_stability_audit_summary.md",
+      "topic": "final_s15b_pair_training_harness_stability_audit_summary.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "879f7f71eaa3"
+      ],
+      "paths": [
+        "reports/final_s15c_clean_policy_wrapped_training_harness_fix_summary.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "polish/final-reproducibility-guardrails",
+      "suggested_canonical_file": "reports/final_s15c_clean_policy_wrapped_training_harness_fix_summary.md",
+      "topic": "final_s15c_clean_policy_wrapped_training_harness_fix_summary.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "eb16df31d82d"
+      ],
+      "paths": [
+        "reports/final_s15d_train_eval_forward_parity_fix_summary.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "polish/final-reproducibility-guardrails",
+      "suggested_canonical_file": "reports/final_s15d_train_eval_forward_parity_fix_summary.md",
+      "topic": "final_s15d_train_eval_forward_parity_fix_summary.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "3af99ff03566"
+      ],
+      "paths": [
+        "reports/final_s15e_tiny_trajectory_retest_after_harness_fix_summary.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "polish/final-reproducibility-guardrails",
+      "suggested_canonical_file": "reports/final_s15e_tiny_trajectory_retest_after_harness_fix_summary.md",
+      "topic": "final_s15e_tiny_trajectory_retest_after_harness_fix_summary.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "cbd9b8a4da91"
+      ],
+      "paths": [
+        "reports/final_s16_stronger_visual_backbone_feasibility_summary.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "polish/final-reproducibility-guardrails",
+      "suggested_canonical_file": "reports/final_s16_stronger_visual_backbone_feasibility_summary.md",
+      "topic": "final_s16_stronger_visual_backbone_feasibility_summary.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "25bd95149b98"
+      ],
+      "paths": [
+        "reports/final_s16b_frozen_pretrained_backbone_probe_summary.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "polish/final-reproducibility-guardrails",
+      "suggested_canonical_file": "reports/final_s16b_frozen_pretrained_backbone_probe_summary.md",
+      "topic": "final_s16b_frozen_pretrained_backbone_probe_summary.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "ec58ef991241"
+      ],
+      "paths": [
+        "reports/final_s17_pose_supervision_dataset_quality_summary.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "polish/final-reproducibility-guardrails",
+      "suggested_canonical_file": "reports/final_s17_pose_supervision_dataset_quality_summary.md",
+      "topic": "final_s17_pose_supervision_dataset_quality_summary.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "97b43997ab93"
+      ],
+      "paths": [
+        "reports/final_s18_split_redesign_representativeness_summary.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "polish/final-reproducibility-guardrails",
+      "suggested_canonical_file": "reports/final_s18_split_redesign_representativeness_summary.md",
+      "topic": "final_s18_split_redesign_representativeness_summary.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "f04246da5155"
+      ],
+      "paths": [
+        "reports/final_s19_geometry_aware_pretraining_feasibility_summary.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "polish/final-reproducibility-guardrails",
+      "suggested_canonical_file": "reports/final_s19_geometry_aware_pretraining_feasibility_summary.md",
+      "topic": "final_s19_geometry_aware_pretraining_feasibility_summary.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "main",
+        "optimize/s10-chain-pathratio-smoother",
+        "optimize/s11-tmag-scale-consistency-training",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "optimize/s2-fine-refinement-on-s1d5",
+        "optimize/s3a0-coupled-pose-residual-head",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "bfdd12569801"
+      ],
+      "paths": [
+        "reports/final_s1d5_english_abstract.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "polish/final-reproducibility-guardrails",
+      "suggested_canonical_file": "reports/final_s1d5_english_abstract.md",
+      "topic": "final_s1d5_english_abstract.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "main",
+        "optimize/s10-chain-pathratio-smoother",
+        "optimize/s11-tmag-scale-consistency-training",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "optimize/s2-fine-refinement-on-s1d5",
+        "optimize/s3a0-coupled-pose-residual-head",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "c635eb6eac04"
+      ],
+      "paths": [
+        "reports/final_s1d5_mainline_report.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "polish/final-reproducibility-guardrails",
+      "suggested_canonical_file": "reports/final_s1d5_mainline_report.md",
+      "topic": "final_s1d5_mainline_report.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "main",
+        "optimize/s10-chain-pathratio-smoother",
+        "optimize/s11-tmag-scale-consistency-training",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "optimize/s2-fine-refinement-on-s1d5",
+        "optimize/s3a0-coupled-pose-residual-head",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "2ba700218b44"
+      ],
+      "paths": [
+        "reports/final_s1d5_results_table.csv"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "polish/final-reproducibility-guardrails",
+      "suggested_canonical_file": "reports/final_s1d5_results_table.csv",
+      "topic": "final_s1d5_results_table.csv"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "main",
+        "optimize/s10-chain-pathratio-smoother",
+        "optimize/s11-tmag-scale-consistency-training",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "optimize/s2-fine-refinement-on-s1d5",
+        "optimize/s3a0-coupled-pose-residual-head",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "367785aea2e6"
+      ],
+      "paths": [
+        "reports/final_s1d5_thesis_summary.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "polish/final-reproducibility-guardrails",
+      "suggested_canonical_file": "reports/final_s1d5_thesis_summary.md",
+      "topic": "final_s1d5_thesis_summary.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "optimize/s10-chain-pathratio-smoother",
+        "optimize/s11-tmag-scale-consistency-training",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "optimize/s2-fine-refinement-on-s1d5",
+        "optimize/s3a0-coupled-pose-residual-head",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "bce48bdf10ca"
+      ],
+      "paths": [
+        "reports/final_s2_fine_refinement_summary.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "polish/final-reproducibility-guardrails",
+      "suggested_canonical_file": "reports/final_s2_fine_refinement_summary.md",
+      "topic": "final_s2_fine_refinement_summary.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "optimize/s10-chain-pathratio-smoother",
+        "optimize/s11-tmag-scale-consistency-training",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "optimize/s3a0-coupled-pose-residual-head",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "2e6a30300e08"
+      ],
+      "paths": [
+        "reports/final_s3a_residual_head_summary.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "polish/final-reproducibility-guardrails",
+      "suggested_canonical_file": "reports/final_s3a_residual_head_summary.md",
+      "topic": "final_s3a_residual_head_summary.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "optimize/s10-chain-pathratio-smoother",
+        "optimize/s11-tmag-scale-consistency-training",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "optimize/s3a0-coupled-pose-residual-head",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "83274459af6c"
+      ],
+      "paths": [
+        "reports/final_s5_clean_candidate_summary.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "polish/final-reproducibility-guardrails",
+      "suggested_canonical_file": "reports/final_s5_clean_candidate_summary.md",
+      "topic": "final_s5_clean_candidate_summary.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "optimize/s10-chain-pathratio-smoother",
+        "optimize/s11-tmag-scale-consistency-training",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "optimize/s3a0-coupled-pose-residual-head",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "e6fe073062e6"
+      ],
+      "paths": [
+        "reports/final_s7_project_delivery_summary.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "polish/final-reproducibility-guardrails",
+      "suggested_canonical_file": "reports/final_s7_project_delivery_summary.md",
+      "topic": "final_s7_project_delivery_summary.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "optimize/s10-chain-pathratio-smoother",
+        "optimize/s11-tmag-scale-consistency-training",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "optimize/s3a0-coupled-pose-residual-head",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "93d57c1c7602"
+      ],
+      "paths": [
+        "reports/final_s8_token_reliability_negative_summary.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "polish/final-reproducibility-guardrails",
+      "suggested_canonical_file": "reports/final_s8_token_reliability_negative_summary.md",
+      "topic": "final_s8_token_reliability_negative_summary.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "optimize/s10-chain-pathratio-smoother",
+        "optimize/s11-tmag-scale-consistency-training",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "optimize/s3a0-coupled-pose-residual-head",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "40997e1a74c2"
+      ],
+      "paths": [
+        "reports/final_s9_regime_only_router_summary.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "polish/final-reproducibility-guardrails",
+      "suggested_canonical_file": "reports/final_s9_regime_only_router_summary.md",
+      "topic": "final_s9_regime_only_router_summary.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "optimize/s10-chain-pathratio-smoother",
+        "optimize/s11-tmag-scale-consistency-training",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "optimize/s3a0-coupled-pose-residual-head",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "174d47f0b927",
+        "29fe5f867ce2",
+        "8493a4b028c8",
+        "bd7b100cdd5a",
+        "d46e7b762443",
+        "d641b0a633b3"
+      ],
+      "paths": [
+        "reports/final_thesis_claims_and_limitations.md"
+      ],
+      "same_content": false,
+      "same_path_same_content": false,
+      "same_topic_different_versions": true,
+      "suggested_canonical_branch": "polish/final-reproducibility-guardrails",
+      "suggested_canonical_file": "reports/final_thesis_claims_and_limitations.md",
+      "topic": "final_thesis_claims_and_limitations.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "bc4f5b8d83ef"
+      ],
+      "paths": [
+        "reports/git_branch_remote_sync_audit.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/jrt1-joint-rtdir-coupled-refiner",
+      "suggested_canonical_file": "reports/git_branch_remote_sync_audit.md",
+      "topic": "git_branch_remote_sync_audit.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "main",
+        "optimize/s10-chain-pathratio-smoother",
+        "optimize/s11-tmag-scale-consistency-training",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "optimize/s2-fine-refinement-on-s1d5",
+        "optimize/s3a0-coupled-pose-residual-head",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "9fd24f5c5b1f"
+      ],
+      "paths": [
+        "reports/git_commit_s1d5_summary.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/jrt1-joint-rtdir-coupled-refiner",
+      "suggested_canonical_file": "reports/git_commit_s1d5_summary.md",
+      "topic": "git_commit_s1d5_summary.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "optimize/s10-chain-pathratio-smoother",
+        "optimize/s11-tmag-scale-consistency-training",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "optimize/s2-fine-refinement-on-s1d5",
+        "optimize/s3a0-coupled-pose-residual-head",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "9a524b8f22b4"
+      ],
+      "paths": [
+        "reports/git_commit_s2b_summary.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/jrt1-joint-rtdir-coupled-refiner",
+      "suggested_canonical_file": "reports/git_commit_s2b_summary.md",
+      "topic": "git_commit_s2b_summary.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "main",
+        "optimize/s10-chain-pathratio-smoother",
+        "optimize/s11-tmag-scale-consistency-training",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "optimize/s2-fine-refinement-on-s1d5",
+        "optimize/s3a0-coupled-pose-residual-head",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "2e86d9679e6d"
+      ],
+      "paths": [
+        "reports/git_staging_s1d5_precheck.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/jrt1-joint-rtdir-coupled-refiner",
+      "suggested_canonical_file": "reports/git_staging_s1d5_precheck.md",
+      "topic": "git_staging_s1d5_precheck.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "main",
+        "optimize/s10-chain-pathratio-smoother",
+        "optimize/s11-tmag-scale-consistency-training",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "optimize/s2-fine-refinement-on-s1d5",
+        "optimize/s3a0-coupled-pose-residual-head",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "5d366a33715e"
+      ],
+      "paths": [
+        "reports/git_staging_s1d5_summary.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/jrt1-joint-rtdir-coupled-refiner",
+      "suggested_canonical_file": "reports/git_staging_s1d5_summary.md",
+      "topic": "git_staging_s1d5_summary.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "main",
+        "optimize/s10-chain-pathratio-smoother",
+        "optimize/s11-tmag-scale-consistency-training",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "optimize/s2-fine-refinement-on-s1d5",
+        "optimize/s3a0-coupled-pose-residual-head",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "30d820af5bdb"
+      ],
+      "paths": [
+        "reports/git_track_s1d5_final_files.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/jrt1-joint-rtdir-coupled-refiner",
+      "suggested_canonical_file": "reports/git_track_s1d5_final_files.md",
+      "topic": "git_track_s1d5_final_files.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "main",
+        "optimize/s10-chain-pathratio-smoother",
+        "optimize/s11-tmag-scale-consistency-training",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "optimize/s2-fine-refinement-on-s1d5",
+        "optimize/s3a0-coupled-pose-residual-head",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "7301352926e0"
+      ],
+      "paths": [
+        "reports/gitignore_cleanup_plan.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/jrt1-joint-rtdir-coupled-refiner",
+      "suggested_canonical_file": "reports/gitignore_cleanup_plan.md",
+      "topic": "gitignore_cleanup_plan.md"
+    },
+    {
+      "branches": [
+        "experiment/orbslam3-fisheye-strong-baseline"
+      ],
+      "content_hashes": [
+        "ca586072998d"
+      ],
+      "paths": [
+        "reports/orbslam3_build_remediation_report.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/orbslam3-fisheye-strong-baseline",
+      "suggested_canonical_file": "reports/orbslam3_build_remediation_report.md",
+      "topic": "orbslam3_build_remediation_report.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "11317976fc34"
+      ],
+      "paths": [
+        "reports/orbslam3_environment_setup_report.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/orbslam3-fisheye-strong-baseline",
+      "suggested_canonical_file": "reports/orbslam3_environment_setup_report.md",
+      "topic": "orbslam3_environment_setup_report.md"
+    },
+    {
+      "branches": [
+        "experiment/orbslam3-fisheye-strong-baseline"
+      ],
+      "content_hashes": [
+        "67a5aa734563"
+      ],
+      "paths": [
+        "reports/orbslam3_fisheye_calibration_conversion_report.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/orbslam3-fisheye-strong-baseline",
+      "suggested_canonical_file": "reports/orbslam3_fisheye_calibration_conversion_report.md",
+      "topic": "orbslam3_fisheye_calibration_conversion_report.md"
+    },
+    {
+      "branches": [
+        "experiment/orbslam3-fisheye-strong-baseline"
+      ],
+      "content_hashes": [
+        "8166207b7124"
+      ],
+      "paths": [
+        "reports/orbslam3_fisheye_dataset_audit.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/orbslam3-fisheye-strong-baseline",
+      "suggested_canonical_file": "reports/orbslam3_fisheye_dataset_audit.md",
+      "topic": "orbslam3_fisheye_dataset_audit.md"
+    },
+    {
+      "branches": [
+        "experiment/orbslam3-fisheye-strong-baseline"
+      ],
+      "content_hashes": [
+        "6b8151ef4367"
+      ],
+      "paths": [
+        "reports/orbslam3_fisheye_evaluation_report.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/orbslam3-fisheye-strong-baseline",
+      "suggested_canonical_file": "reports/orbslam3_fisheye_evaluation_report.md",
+      "topic": "orbslam3_fisheye_evaluation_report.md"
+    },
+    {
+      "branches": [
+        "experiment/orbslam3-fisheye-strong-baseline"
+      ],
+      "content_hashes": [
+        "b73371bc7c64"
+      ],
+      "paths": [
+        "reports/orbslam3_fisheye_run_report.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/orbslam3-fisheye-strong-baseline",
+      "suggested_canonical_file": "reports/orbslam3_fisheye_run_report.md",
+      "topic": "orbslam3_fisheye_run_report.md"
+    },
+    {
+      "branches": [
+        "experiment/orbslam3-fisheye-strong-baseline"
+      ],
+      "content_hashes": [
+        "354ab909ecec"
+      ],
+      "paths": [
+        "reports/orbslam3_local_setup_report.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/orbslam3-fisheye-strong-baseline",
+      "suggested_canonical_file": "reports/orbslam3_local_setup_report.md",
+      "topic": "orbslam3_local_setup_report.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "0a84a2b95f61"
+      ],
+      "paths": [
+        "reports/pano_orb_vo_baseline_report.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/jrt1-joint-rtdir-coupled-refiner",
+      "suggested_canonical_file": "reports/pano_orb_vo_baseline_report.md",
+      "topic": "pano_orb_vo_baseline_report.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "127d75830270"
+      ],
+      "paths": [
+        "reports/pano_orb_vo_component_diagnostics.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/jrt1-joint-rtdir-coupled-refiner",
+      "suggested_canonical_file": "reports/pano_orb_vo_component_diagnostics.md",
+      "topic": "pano_orb_vo_component_diagnostics.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "main",
+        "optimize/s10-chain-pathratio-smoother",
+        "optimize/s11-tmag-scale-consistency-training",
+        "optimize/s12-regime-balanced-sampling",
+        "optimize/s14-local-window-pose-graph",
+        "optimize/s15-trajectory-level-training-objective",
+        "optimize/s16-stronger-visual-backbone-feasibility",
+        "optimize/s17-pose-supervision-dataset-quality-audit",
+        "optimize/s19-geometry-aware-pretraining-feasibility",
+        "optimize/s2-fine-refinement-on-s1d5",
+        "optimize/s3a0-coupled-pose-residual-head",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "601922209aca"
+      ],
+      "paths": [
+        "reports/post_commit_workspace_cleanup_plan.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/jrt1-joint-rtdir-coupled-refiner",
+      "suggested_canonical_file": "reports/post_commit_workspace_cleanup_plan.md",
+      "topic": "post_commit_workspace_cleanup_plan.md"
+    },
+    {
+      "branches": [
+        "experiment/s5d2-dense-export-convention-audit"
+      ],
+      "content_hashes": [
+        "a3e92b6a2800"
+      ],
+      "paths": [
+        "reports/post_s5d2_git_uncommitted_audit.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/s5d2-dense-export-convention-audit",
+      "suggested_canonical_file": "reports/post_s5d2_git_uncommitted_audit.md",
+      "topic": "post_s5d2_git_uncommitted_audit.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "298982d03dda"
+      ],
+      "paths": [
+        "reports/repo_remote_sync_and_hygiene_audit.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/jrt1-joint-rtdir-coupled-refiner",
+      "suggested_canonical_file": "reports/repo_remote_sync_and_hygiene_audit.md",
+      "topic": "repo_remote_sync_and_hygiene_audit.md"
+    },
+    {
+      "branches": [
+        "experiment/s5d2-dense-export-convention-audit"
+      ],
+      "content_hashes": [
+        "0690287509ff"
+      ],
+      "paths": [
+        "reports/reports_inventory_audit.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/s5d2-dense-export-convention-audit",
+      "suggested_canonical_file": "reports/reports_inventory_audit.md",
+      "topic": "reports_inventory_audit.md"
+    },
+    {
+      "branches": [
+        "experiment/orbslam3-fisheye-strong-baseline"
+      ],
+      "content_hashes": [
+        "c7b0dc16fe7f"
+      ],
+      "paths": [
+        "reports/s5_dense_external_export_report.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/orbslam3-fisheye-strong-baseline",
+      "suggested_canonical_file": "reports/s5_dense_external_export_report.md",
+      "topic": "s5_dense_external_export_report.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "2441ccc6fe14"
+      ],
+      "paths": [
+        "reports/s5_external_export_compatibility_audit.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/jrt1-joint-rtdir-coupled-refiner",
+      "suggested_canonical_file": "reports/s5_external_export_compatibility_audit.md",
+      "topic": "s5_external_export_compatibility_audit.md"
+    },
+    {
+      "branches": [
+        "experiment/orbslam3-fisheye-strong-baseline"
+      ],
+      "content_hashes": [
+        "403708ac7c84"
+      ],
+      "paths": [
+        "reports/s5_orbslam3_same_evaluator_comparison.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/orbslam3-fisheye-strong-baseline",
+      "suggested_canonical_file": "reports/s5_orbslam3_same_evaluator_comparison.md",
+      "topic": "s5_orbslam3_same_evaluator_comparison.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "686c7a98303a"
+      ],
+      "paths": [
+        "reports/thesis_experiment_section_draft.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/jrt1-joint-rtdir-coupled-refiner",
+      "suggested_canonical_file": "reports/thesis_experiment_section_draft.md",
+      "topic": "thesis_experiment_section_draft.md"
+    },
+    {
+      "branches": [
+        "experiment/jrt1-joint-rtdir-coupled-refiner",
+        "experiment/mf1-multi-frame-chain-refiner",
+        "experiment/orbslam3-fisheye-strong-baseline",
+        "experiment/s5d2-dense-export-convention-audit",
+        "polish/final-reproducibility-guardrails"
+      ],
+      "content_hashes": [
+        "9adb83d68ce4"
+      ],
+      "paths": [
+        "reports/thesis_three_axis_ablation.md"
+      ],
+      "same_content": true,
+      "same_path_same_content": true,
+      "same_topic_different_versions": false,
+      "suggested_canonical_branch": "experiment/jrt1-joint-rtdir-coupled-refiner",
+      "suggested_canonical_file": "reports/thesis_three_axis_ablation.md",
+      "topic": "thesis_three_axis_ablation.md"
+    }
+  ],
+  "superseded_candidates": [
+    {
+      "recommendation": "keep stage reports, but treat closeout as canonical summary",
+      "reports": [
+        "reports/JRT1a_framework_smoke_report.md",
+        "reports/JRT1b_train_cv_report.md",
+        "reports/JRT1c_train_cv_trajectory_proxy_report.md",
+        "reports/JRT1_final_closeout_summary.md"
+      ],
+      "superseded_by": "reports/JRT1_final_closeout_summary.md",
+      "topic": "JRT1 staged reports vs closeout"
+    },
+    {
+      "recommendation": "keep stage reports, but treat closeout as canonical summary",
+      "reports": [
+        "reports/MF1a_chain_refiner_smoke_report.md",
+        "reports/MF1b_train_cv_report.md",
+        "reports/MF1_final_closeout_summary.md"
+      ],
+      "superseded_by": "reports/MF1_final_closeout_summary.md",
+      "topic": "MF1 staged reports vs closeout"
+    },
+    {
+      "recommendation": "retain all; S5D2 is the current canonical dense-export audit",
+      "reports": [
+        "reports/s5_external_export_compatibility_audit.md",
+        "reports/s5_dense_external_export_report.md",
+        "reports/S5D2_dense_export_convention_audit.md"
+      ],
+      "superseded_by": "reports/S5D2_dense_export_convention_audit.md",
+      "topic": "S5 external export diagnostics chain"
+    },
+    {
+      "recommendation": "retain all, but latest inventory should anchor later curation work",
+      "reports": [
+        "reports/post_s5d2_git_uncommitted_audit.md",
+        "reports/REPO2_untracked_experiment_artifact_resolution.md",
+        "reports/all_branch_inventory_and_classification.md"
+      ],
+      "superseded_by": "reports/all_branch_inventory_and_classification.md",
+      "topic": "Repository sync audits"
+    }
+  ]
+}

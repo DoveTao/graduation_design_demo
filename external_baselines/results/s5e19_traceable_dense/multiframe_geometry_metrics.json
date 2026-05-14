@@ -1,0 +1,9 @@
+{
+  "k1_tdir": 50.35304148245505,
+  "composition_error_mean": 50.35304148245505,
+  "path_length_consistency_error": 0.05318809915997954,
+  "rotation_composition_error": 0.9134395044083475,
+  "k2_tdir": 48.066943689366354,
+  "k3_tdir": 47.774063258873134,
+  "k5_tdir": 47.298629760079265
+}

@@ -1,0 +1,100 @@
+{
+  "attempted": true,
+  "classification": "S5E10_SCALE_RECALIBRATION_SMOKE",
+  "num_train_pairs": 707,
+  "num_val_pairs": 79,
+  "uses_scene01_seq03_for_training": false,
+  "bucket_prior_choice": "p95",
+  "bucket_priors": {
+    "global": {
+      "median": 0.011908447102386463,
+      "p90": 0.2523947547524407,
+      "p95": 0.3691697395709953,
+      "p99": 0.526654362281555,
+      "max": 0.7818686910217085,
+      "clip_lo": 0.0020031222709819612,
+      "clip_hi": 0.3691697395709953
+    },
+    "near_static": {
+      "median": 0.0020024984394507806,
+      "p90": 0.0025388581303073536,
+      "p95": 0.0026094009608409363,
+      "p99": 0.0026432166918995636,
+      "max": 0.002647640458973654,
+      "clip_lo": 0.0011955469109660413,
+      "clip_hi": 0.0026094009608409363
+    },
+    "small_motion": {
+      "median": 0.0035446469453934365,
+      "p90": 0.004364841540517953,
+      "p95": 0.0045834041100720375,
+      "p99": 0.004763641215385276,
+      "max": 0.004801041553661831,
+      "clip_lo": 0.002716339369040706,
+      "clip_hi": 0.0045834041100720375
+    },
+    "normal_motion": {
+      "median": 0.011908447102386463,
+      "p90": 0.02716551357981745,
+      "p95": 0.03155805742315243,
+      "p99": 0.03644346638655226,
+      "max": 0.03816320217172562,
+      "clip_lo": 0.005123810287804876,
+      "clip_hi": 0.03155805742315243
+    },
+    "large_motion": {
+      "median": 0.2105054393596516,
+      "p90": 0.4370886400382462,
+      "p95": 0.5229383635602999,
+      "p99": 0.5870292489538451,
+      "max": 0.7818686910217085,
+      "clip_lo": 0.047578320811733917,
+      "clip_hi": 0.5229383635602999
+    }
+  },
+  "notes": [
+    "S5E10 scale recalibration 改用更宽但仍受控的 bucket p95 prior。",
+    "目标是在不重新引入 raw scale explosion 的前提下，把 S5E9 过度保守的 raw path_ratio 拉回一些。"
+  ],
+  "split_summary": {
+    "split_by": "scene_seq",
+    "train_ratio": 0.8,
+    "split_seed": 3407,
+    "train_sequence_keys": [
+      [
+        "scene01",
+        "seq01"
+      ],
+      [
+        "scene01",
+        "seq02"
+      ]
+    ],
+    "test_sequence_keys": [
+      [
+        "scene01",
+        "seq03"
+      ]
+    ],
+    "all_sequence_keys": [
+      [
+        "scene01",
+        "seq01"
+      ],
+      [
+        "scene01",
+        "seq02"
+      ],
+      [
+        "scene01",
+        "seq03"
+      ]
+    ]
+  },
+  "validation_snapshot": {
+    "verify_final_candidate": "PASS",
+    "project_health_check": "PASS",
+    "s6_eval_only": "PASS",
+    "unittest": "PASS"
+  }
+}

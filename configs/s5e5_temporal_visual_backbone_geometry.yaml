@@ -1,0 +1,41 @@
+experiment: S5E5_temporal_visual_backbone_geometry_candidate
+status:
+  experimental_candidate: true
+  not_official_replacement: true
+  official_s5_locked_metrics_unchanged: true
+
+data:
+  data_root: data
+  split_by: scene_seq
+  train_ratio: 0.8
+  split_seed: 3407
+  train_sequences: [scene01/seq01, scene01/seq02]
+  eval_sequence: scene01/seq03
+  uses_scene01_seq03_for_training: false
+  no_gt_leakage: true
+  no_restored_dense_artifact_for_prediction: true
+  no_orbslam3_distillation: true
+
+model:
+  model_type: temporal_visual_backbone
+  ordered_image_pair: true
+  visual_channels: [Ii, Ij, Ij_minus_Ii, abs_Ij_minus_Ii]
+  hybrid_prior: [s5e4_direction, s5e3_log_magnitude]
+  image_size: [64, 128]
+
+losses:
+  so3_geodesic: true
+  signed_tdir: true
+  tdir_abs_aux: true
+  anti_parallel_penalty: true
+  tmag_log: true
+  path_length_consistency: true
+  short_window_direction_consistency: true
+  smoothness: true
+
+caveats:
+  - S5E5 is experimental and does not replace official S5 locked result.
+  - S5 locked metrics/policy unchanged.
+  - scene01/seq03 GT is used only for evaluation / diagnostics.
+  - No restored dense artifact is used to generate prediction.
+  - ORB-SLAM3 trajectory is not used as a training label.

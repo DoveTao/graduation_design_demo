@@ -1,0 +1,100 @@
+{
+  "attempted": true,
+  "classification": "S5E8_DIRECTION_ONLY_TRAINING_SMOKE",
+  "direction_only_checkpoint": "checkpoints/S5E8_translation_geometry_diagnostic_ablation_candidate/s5e8_direction_only_best.pt",
+  "num_train_pairs": 707,
+  "num_val_pairs": 79,
+  "uses_scene01_seq03_for_training": false,
+  "history": [
+    {
+      "epoch": 0,
+      "val_metrics": {
+        "signed_tdir_mean": 100.57182101961932,
+        "signed_tdir_median": 129.18878173828125,
+        "signed_tdir_p90": 139.8962829589844,
+        "tdir_abs_mean": 45.7971167986906,
+        "tdir_abs_median": 46.28784942626953,
+        "tdir_abs_p90": 54.407264709472656,
+        "tdir_mean_cosine": -0.1735816435817047,
+        "anti_parallel_rate": 0.6329113924050633,
+        "severe_wrong_sign_rate": 0.620253164556962,
+        "direction_abs_good_but_signed_bad_rate": 0.20253164556962025
+      }
+    },
+    {
+      "epoch": 1,
+      "val_metrics": {
+        "signed_tdir_mean": 90.7919871897637,
+        "signed_tdir_median": 111.37293243408203,
+        "signed_tdir_p90": 141.51526794433593,
+        "tdir_abs_mean": 47.41329383850098,
+        "tdir_abs_median": 50.006004333496094,
+        "tdir_abs_p90": 69.16688537597656,
+        "tdir_mean_cosine": -0.050122015893320424,
+        "anti_parallel_rate": 0.6329113924050633,
+        "severe_wrong_sign_rate": 0.35443037974683544,
+        "direction_abs_good_but_signed_bad_rate": 0.12658227848101267
+      }
+    },
+    {
+      "epoch": 2,
+      "val_metrics": {
+        "signed_tdir_mean": 101.07754080808616,
+        "signed_tdir_median": 136.94215393066406,
+        "signed_tdir_p90": 153.95064086914064,
+        "tdir_abs_mean": 32.34453711932218,
+        "tdir_abs_median": 32.280582427978516,
+        "tdir_abs_p90": 45.91183166503907,
+        "tdir_mean_cosine": -0.18413427430774715,
+        "anti_parallel_rate": 0.620253164556962,
+        "severe_wrong_sign_rate": 0.6075949367088608,
+        "direction_abs_good_but_signed_bad_rate": 0.5443037974683544
+      }
+    }
+  ],
+  "split_summary": {
+    "split_by": "scene_seq",
+    "train_ratio": 0.8,
+    "split_seed": 3407,
+    "train_sequence_keys": [
+      [
+        "scene01",
+        "seq01"
+      ],
+      [
+        "scene01",
+        "seq02"
+      ]
+    ],
+    "test_sequence_keys": [
+      [
+        "scene01",
+        "seq03"
+      ]
+    ],
+    "all_sequence_keys": [
+      [
+        "scene01",
+        "seq01"
+      ],
+      [
+        "scene01",
+        "seq02"
+      ],
+      [
+        "scene01",
+        "seq03"
+      ]
+    ]
+  },
+  "notes": [
+    "S5E8 direction-only candidate 不学习 raw tmag，只优化 direction。",
+    "此实验用于检查 scale 学习是否干扰 direction 学习。"
+  ],
+  "validation_snapshot": {
+    "verify_final_candidate": "PASS",
+    "project_health_check": "PASS",
+    "s6_eval_only": "PASS",
+    "unittest": "PASS"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "num_sequences": 8,
+  "sequences_all": [
+    "bridge_night",
+    "canyon_line",
+    "city_driving",
+    "dragon_boat",
+    "field",
+    "hongkong_central",
+    "mountains",
+    "wingsuit"
+  ],
+  "train_sequences": [
+    "bridge_night",
+    "canyon_line",
+    "city_driving",
+    "dragon_boat",
+    "field",
+    "hongkong_central"
+  ],
+  "val_sequences": [
+    "mountains"
+  ],
+  "test_sequences": [
+    "wingsuit"
+  ],
+  "num_pairs_all": 1473,
+  "num_pairs_train": 1187,
+  "num_pairs_val": 137,
+  "num_pairs_test": 149,
+  "num_adjacent_pairs": 382,
+  "num_kstep_pairs": 1091,
+  "split_by_sequence": true,
+  "forbid_random_pair_split": true,
+  "pose_convention": "R_BA_t_BA_B_tdir_B",
+  "manifest_ready": true
+}

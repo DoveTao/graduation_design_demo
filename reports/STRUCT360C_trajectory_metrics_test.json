@@ -1,0 +1,10 @@
+{
+  "task_name": "STRUCT360C_train_rotation_aware_fine_refinement",
+  "evaluation_only_recovery": true,
+  "training_executed_in_recovery": false,
+  "trajectory_evaluation_completed": false,
+  "checkpoint_evaluated": "/home/dovetao/graduation_design_demo/checkpoints/STRUCT360C_rotation_aware_fine_refinement/best_val.pt",
+  "final_pt_used": false,
+  "selected_convention": "BA",
+  "blocker": "Eval-only recovery did not complete test trajectory export and ATE evaluation in this environment."
+}

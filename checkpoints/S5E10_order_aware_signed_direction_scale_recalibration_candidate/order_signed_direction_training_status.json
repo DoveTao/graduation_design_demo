@@ -1,0 +1,84 @@
+{
+  "attempted": true,
+  "classification": "S5E10_ORDER_SIGNED_DIRECTION_TRAINING_SMOKE",
+  "checkpoint": "checkpoints/S5E10_order_aware_signed_direction_scale_recalibration_candidate/s5e10_order_signed_best.pt",
+  "num_train_pairs": 707,
+  "num_val_pairs": 79,
+  "uses_scene01_seq03_for_training": false,
+  "reversed_pair_count": 707,
+  "reversed_pair_fraction": 1.0,
+  "history": [
+    {
+      "epoch": 0,
+      "val_metrics": {
+        "signed_tdir_mean": 94.63567130173308,
+        "signed_tdir_median": 92.4681396484375,
+        "signed_tdir_p90": 105.48228302001954,
+        "tdir_abs_mean": 83.52155680596074,
+        "tdir_abs_median": 86.34136199951172,
+        "tdir_abs_p90": 89.3910629272461,
+        "anti_parallel_rate": 0.7215189873417721,
+        "severe_wrong_sign_rate": 0.012658227848101266,
+        "pair_order_dir_flip_cosine_mean": -0.9999991979780076,
+        "pair_order_dir_flip_success_rate": 0.0,
+        "sign_accuracy": 0.4430379746835443,
+        "axis_tdir_abs_mean": 83.52155680596074
+      }
+    },
+    {
+      "epoch": 1,
+      "val_metrics": {
+        "signed_tdir_mean": 96.68148871313167,
+        "signed_tdir_median": 92.71532440185547,
+        "signed_tdir_p90": 111.74635467529298,
+        "tdir_abs_mean": 81.3239017438285,
+        "tdir_abs_median": 85.82437896728516,
+        "tdir_abs_p90": 88.87986450195312,
+        "anti_parallel_rate": 0.6582278481012658,
+        "severe_wrong_sign_rate": 0.0759493670886076,
+        "pair_order_dir_flip_cosine_mean": -0.9999999592575846,
+        "pair_order_dir_flip_success_rate": 0.0,
+        "sign_accuracy": 0.4430379746835443,
+        "axis_tdir_abs_mean": 81.3239017438285
+      }
+    },
+    {
+      "epoch": 2,
+      "val_metrics": {
+        "signed_tdir_mean": 98.34583881233311,
+        "signed_tdir_median": 94.89556884765625,
+        "signed_tdir_p90": 117.80472564697267,
+        "tdir_abs_mean": 79.63329764257503,
+        "tdir_abs_median": 82.77220916748047,
+        "tdir_abs_p90": 88.6317123413086,
+        "anti_parallel_rate": 0.759493670886076,
+        "severe_wrong_sign_rate": 0.10126582278481013,
+        "pair_order_dir_flip_cosine_mean": -0.9999998377848275,
+        "pair_order_dir_flip_success_rate": 0.0,
+        "sign_accuracy": 0.4430379746835443,
+        "axis_tdir_abs_mean": 79.63329764257503
+      }
+    }
+  ],
+  "architecture_audit": {
+    "uses_ordered_concat": true,
+    "uses_feature_difference": true,
+    "uses_absolute_difference": false,
+    "uses_symmetric_pooling": false,
+    "pair_order_label_flip_consistent": true,
+    "reversed_pair_export_consistent": true,
+    "order_invariant_path_suspected": false,
+    "signed_direction_label_convention_valid": true,
+    "summary": "S5E10 显式使用 ordered concat 与差分特征，没有只依赖对称聚合。"
+  },
+  "notes": [
+    "S5E10 显式使用 ordered concat、差分和乘积特征。",
+    "训练时引入 reversed pair anti-symmetry 约束。"
+  ],
+  "validation_snapshot": {
+    "verify_final_candidate": "PASS",
+    "project_health_check": "PASS",
+    "s6_eval_only": "PASS",
+    "unittest": "PASS"
+  }
+}

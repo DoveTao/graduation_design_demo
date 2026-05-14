@@ -1,0 +1,209 @@
+{
+  "attempted": true,
+  "classification": "S5E13_TRAINING_PARTIAL_NO_TRAIN_CORRESPONDENCE",
+  "num_train_pairs": 707,
+  "num_val_pairs": 79,
+  "uses_scene01_seq03_for_training": false,
+  "uses_scene01_seq03_gt_for_training": false,
+  "uses_correspondence_features": true,
+  "uses_strict_essential_geometry": false,
+  "losses": {
+    "so3_geodesic": true,
+    "signed_tdir_weighted": true,
+    "tdir_abs_aux": true,
+    "anti_parallel_penalty": true,
+    "robust_tmag_log": true,
+    "tmag_p95_penalty": true,
+    "path_length_consistency": true,
+    "short_window_direction_consistency": true,
+    "smoothness": true
+  },
+  "best_checkpoint": "checkpoints/S5E13_real_correspondence_signed_direction_candidate/s5e13_best.pt",
+  "best_val_metrics": {
+    "signed_tdir_mean": 104.37882232666016,
+    "tdir_abs_mean": 30.15453338623047,
+    "anti_parallel_rate": 0.6202532052993774,
+    "severe_wrong_sign_rate": 0.594936728477478,
+    "rot_mean_deg": 3.6962435245513916,
+    "tmag_p95_ratio": 10.274270057678223,
+    "path_ratio": 2.1998134065600374,
+    "observable_signed_tdir_mean": NaN
+  },
+  "history_tail": [
+    {
+      "epoch": 11,
+      "train_metrics": {
+        "signed_tdir_mean": 66.40052032470703,
+        "tdir_abs_mean": 39.49063491821289,
+        "anti_parallel_rate": 0.29844412207603455,
+        "severe_wrong_sign_rate": 0.21640735864639282,
+        "rot_mean_deg": 2.761165142059326,
+        "tmag_p95_ratio": 1.8058058023452759,
+        "path_ratio": 0.3594776007883242,
+        "observable_signed_tdir_mean": NaN
+      },
+      "val_metrics": {
+        "signed_tdir_mean": 105.95585632324219,
+        "tdir_abs_mean": 30.97982406616211,
+        "anti_parallel_rate": 0.6202532052993774,
+        "severe_wrong_sign_rate": 0.6075949668884277,
+        "rot_mean_deg": 3.2300901412963867,
+        "tmag_p95_ratio": 10.148126602172852,
+        "path_ratio": 2.1531849700220738,
+        "observable_signed_tdir_mean": NaN
+      },
+      "train_loss_parts": {
+        "rot_loss": 4.193410396575928,
+        "signed_loss": 0.5695511698722839,
+        "abs_loss": 0.278169184923172,
+        "anti_penalty": 0.1685655117034912,
+        "tmag_loss": 0.5533308982849121,
+        "tmag_p95_penalty": 0.0,
+        "path_consistency": 0.6405207514762878,
+        "short_window": 0.0467817485332489,
+        "smoothness": 0.5545976758003235
+      }
+    },
+    {
+      "epoch": 12,
+      "train_metrics": {
+        "signed_tdir_mean": 66.1717300415039,
+        "tdir_abs_mean": 39.47499465942383,
+        "anti_parallel_rate": 0.2970297038555145,
+        "severe_wrong_sign_rate": 0.2149929255247116,
+        "rot_mean_deg": 1.3392282724380493,
+        "tmag_p95_ratio": 1.8058058023452759,
+        "path_ratio": 0.3594768973740451,
+        "observable_signed_tdir_mean": NaN
+      },
+      "val_metrics": {
+        "signed_tdir_mean": 105.96744537353516,
+        "tdir_abs_mean": 30.998672485351562,
+        "anti_parallel_rate": 0.6202532052993774,
+        "severe_wrong_sign_rate": 0.6075949668884277,
+        "rot_mean_deg": 1.482182264328003,
+        "tmag_p95_ratio": 10.148126602172852,
+        "path_ratio": 2.1531849700220738,
+        "observable_signed_tdir_mean": NaN
+      },
+      "train_loss_parts": {
+        "rot_loss": 2.761165142059326,
+        "signed_loss": 0.5695474147796631,
+        "abs_loss": 0.27813270688056946,
+        "anti_penalty": 0.16854576766490936,
+        "tmag_loss": 0.5533325672149658,
+        "tmag_p95_penalty": 0.0,
+        "path_consistency": 0.6405224204063416,
+        "short_window": 0.04685183987021446,
+        "smoothness": 0.5548637509346008
+      }
+    },
+    {
+      "epoch": 13,
+      "train_metrics": {
+        "signed_tdir_mean": 66.10231018066406,
+        "tdir_abs_mean": 39.42359924316406,
+        "anti_parallel_rate": 0.2970297038555145,
+        "severe_wrong_sign_rate": 0.2149929255247116,
+        "rot_mean_deg": 2.3062379360198975,
+        "tmag_p95_ratio": 1.8058058023452759,
+        "path_ratio": 0.3594764284311923,
+        "observable_signed_tdir_mean": NaN
+      },
+      "val_metrics": {
+        "signed_tdir_mean": 105.98650360107422,
+        "tdir_abs_mean": 31.058334350585938,
+        "anti_parallel_rate": 0.6202532052993774,
+        "severe_wrong_sign_rate": 0.6075949668884277,
+        "rot_mean_deg": 2.3342111110687256,
+        "tmag_p95_ratio": 10.148126602172852,
+        "path_ratio": 2.1531849700220738,
+        "observable_signed_tdir_mean": NaN
+      },
+      "train_loss_parts": {
+        "rot_loss": 1.3392282724380493,
+        "signed_loss": 0.569335401058197,
+        "abs_loss": 0.2780134677886963,
+        "anti_penalty": 0.16849492490291595,
+        "tmag_loss": 0.5533333420753479,
+        "tmag_p95_penalty": 0.0,
+        "path_consistency": 0.6405230760574341,
+        "short_window": 0.04606647789478302,
+        "smoothness": 0.553990364074707
+      }
+    },
+    {
+      "epoch": 14,
+      "train_metrics": {
+        "signed_tdir_mean": 65.80270385742188,
+        "tdir_abs_mean": 39.21315002441406,
+        "anti_parallel_rate": 0.2970297038555145,
+        "severe_wrong_sign_rate": 0.2135785073041916,
+        "rot_mean_deg": 0.934563398361206,
+        "tmag_p95_ratio": 1.8058058023452759,
+        "path_ratio": 0.3594760376454817,
+        "observable_signed_tdir_mean": NaN
+      },
+      "val_metrics": {
+        "signed_tdir_mean": 106.00786590576172,
+        "tdir_abs_mean": 31.344196319580078,
+        "anti_parallel_rate": 0.6202532052993774,
+        "severe_wrong_sign_rate": 0.6075949668884277,
+        "rot_mean_deg": 1.2546058893203735,
+        "tmag_p95_ratio": 10.148126602172852,
+        "path_ratio": 2.1531849700220738,
+        "observable_signed_tdir_mean": NaN
+      },
+      "train_loss_parts": {
+        "rot_loss": 2.3062376976013184,
+        "signed_loss": 0.5683943033218384,
+        "abs_loss": 0.277503103017807,
+        "anti_penalty": 0.16831675171852112,
+        "tmag_loss": 0.5533338785171509,
+        "tmag_p95_penalty": 0.0,
+        "path_consistency": 0.6405235528945923,
+        "short_window": 0.046207793056964874,
+        "smoothness": 0.5549229383468628
+      }
+    },
+    {
+      "epoch": 15,
+      "train_metrics": {
+        "signed_tdir_mean": 64.0303955078125,
+        "tdir_abs_mean": 38.02144241333008,
+        "anti_parallel_rate": 0.28005659580230713,
+        "severe_wrong_sign_rate": 0.2065063714981079,
+        "rot_mean_deg": 2.4060044288635254,
+        "tmag_p95_ratio": 1.8058058023452759,
+        "path_ratio": 0.3594758422526264,
+        "observable_signed_tdir_mean": NaN
+      },
+      "val_metrics": {
+        "signed_tdir_mean": 105.6714859008789,
+        "tdir_abs_mean": 33.4512825012207,
+        "anti_parallel_rate": 0.6202532052993774,
+        "severe_wrong_sign_rate": 0.6075949668884277,
+        "rot_mean_deg": 2.611449956893921,
+        "tmag_p95_ratio": 10.148126602172852,
+        "path_ratio": 2.1531849700220738,
+        "observable_signed_tdir_mean": NaN
+      },
+      "train_loss_parts": {
+        "rot_loss": 0.934563398361206,
+        "signed_loss": 0.5649164915084839,
+        "abs_loss": 0.2753879725933075,
+        "anti_penalty": 0.1676643192768097,
+        "tmag_loss": 0.5533341765403748,
+        "tmag_p95_penalty": 0.0,
+        "path_consistency": 0.6405239701271057,
+        "short_window": 0.04670828580856323,
+        "smoothness": 0.5582886338233948
+      }
+    }
+  ],
+  "notes": [
+    "S5E13 使用 S5E12 real correspondence / optical_flow / observability 权重。",
+    "scene01/seq03 GT 没有用于训练；只用于最终 evaluation。",
+    "strict essential geometry 没有作为监督输入。"
+  ]
+}

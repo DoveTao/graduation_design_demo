@@ -1,0 +1,70 @@
+{
+  "experiment": "GIT1_local_remote_repo_hygiene_after_s5e12",
+  "branch": "experiment/s5e1-traceable-adjacent-dense",
+  "remote": {
+    "name": "origin",
+    "url": "git@github.com:DoveTao/graduation_design_demo.git",
+    "upstream_set": true
+  },
+  "gitignore_updated": true,
+  "large_file_audit": {
+    "files_over_20mb": [
+      "./checkpoints/T57b_no_dt_multiscale_tmag_head_400/final.pt",
+      "./logs/s5d12_dense_fill_code_search.log",
+      "./logs/s5d6_final_s5_pairwise_source_search.log"
+    ],
+    "large_files_committed": false,
+    "git_lfs_needed": false
+  },
+  "commits": [
+    {
+      "hash": "b56c7e1",
+      "message": "Repo: update gitignore for experimental artifacts"
+    },
+    {
+      "hash": "36cffac",
+      "message": "S5D2-S5E12: add experimental code and tests"
+    },
+    {
+      "hash": "65979f0",
+      "message": "S5D2-S5E12: add reports checkpoints and summaries"
+    },
+    {
+      "hash": "2c5e616",
+      "message": "S5D6-S5D13: add remaining replay and traceability tools"
+    }
+  ],
+  "pushed_to_remote": true,
+  "tag": {
+    "created": true,
+    "name": "s5e12-feature-gate-passed",
+    "pushed": true
+  },
+  "validation": {
+    "verify_final_candidate": "PASS",
+    "project_health_check": "PASS",
+    "s6_eval_only": "PASS",
+    "unittest": "PASS"
+  },
+  "uncommitted_local_only_files": [
+    "./checkpoints/T57b_no_dt_multiscale_tmag_head_400/final.pt",
+    "./logs/git_hygiene_status_before_s5e12.log",
+    "./logs/git_hygiene_large_files_s5e12.log",
+    "./logs/git_hygiene_validation_after_s5e12.log",
+    "./logs/s5d12_dense_fill_code_search.log",
+    "./logs/s5d6_final_s5_pairwise_source_search.log",
+    "./external_baselines/results/s5_pairwise_replay/final_s5_pairwise_vectors_scene01_seq03.jsonl",
+    "./external_baselines/results/s5_pairwise_replay/final_s5_pairwise_vectors_scene01_seq03.npz",
+    "./external_baselines/results/s5_pairwise_replay_s5d7/final_s5_pairwise_vectors_scene01_seq03.jsonl",
+    "./external_baselines/results/s5_pairwise_replay_s5d7/final_s5_pairwise_vectors_scene01_seq03.npz",
+    "./external_baselines/results/s5_pairwise_replay_s5d10/componentwise_replay_declared/",
+    "./external_baselines/results/s5_pairwise_replay_s5d10/componentwise_replay_inverse/"
+  ],
+  "s5_official_locked_metrics": {
+    "ate": 7.352288,
+    "drift": 1.327343,
+    "path_ratio": 0.932379,
+    "unchanged": true
+  },
+  "final_classification": "GIT1_REPO_HYGIENE_COMPLETE"
+}

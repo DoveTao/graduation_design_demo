@@ -1,0 +1,383 @@
+{
+  "alignment_aware_diagnostics": {
+    "alignments": [
+      "none",
+      "se3",
+      "sim3"
+    ],
+    "recommended_threshold_name": "median_gt_step_x_0.05",
+    "recommended_threshold_summary": {
+      "none": {
+        "orbslam3_on_matched_pairs": {
+          "num_pose_pairs": 272,
+          "num_valid_tdir_pairs": 179,
+          "rot_mean_deg": 0.625447776717409,
+          "rot_median_deg": 0.6043202083735559,
+          "rot_p90_deg": 0.7904699148643001,
+          "tdir_mean_cosine": -0.17263264290622268,
+          "tdir_mean_deg": 100.87681304914071,
+          "tdir_median_deg": 110.03810072736526,
+          "tdir_p90_deg": 140.51628180742458,
+          "threshold_name": "median_gt_step_x_0.05",
+          "threshold_type": "relative",
+          "threshold_value": 0.00037533225221091614,
+          "tmag_mean_log_error": 1.3018850816444016,
+          "tmag_mean_ratio": 0.9097467257966406,
+          "tmag_median_log_error": 1.1856412336964464,
+          "tmag_median_ratio": 0.37070114614774924,
+          "tmag_p90_log_error": 2.3165429886736044,
+          "valid_tdir_pair_ratio": 0.6580882352941176
+        },
+        "orbslam3_tracked": {
+          "num_pose_pairs": 272,
+          "num_valid_tdir_pairs": 179,
+          "rot_mean_deg": 0.625447776717409,
+          "rot_median_deg": 0.6043202083735559,
+          "rot_p90_deg": 0.7904699148643001,
+          "tdir_mean_cosine": -0.17263264290622268,
+          "tdir_mean_deg": 100.87681304914071,
+          "tdir_median_deg": 110.03810072736526,
+          "tdir_p90_deg": 140.51628180742458,
+          "threshold_name": "median_gt_step_x_0.05",
+          "threshold_type": "relative",
+          "threshold_value": 0.00037533225221091614,
+          "tmag_mean_log_error": 1.3018850816444016,
+          "tmag_mean_ratio": 0.9097467257966406,
+          "tmag_median_log_error": 1.1856412336964464,
+          "tmag_median_ratio": 0.37070114614774924,
+          "tmag_p90_log_error": 2.3165429886736044,
+          "valid_tdir_pair_ratio": 0.6580882352941176
+        },
+        "s5_full": {
+          "num_pose_pairs": 453,
+          "num_valid_tdir_pairs": 453,
+          "rot_mean_deg": 20.82515115155671,
+          "rot_median_deg": 20.770591377597693,
+          "rot_p90_deg": 21.356673134422547,
+          "tdir_mean_cosine": -0.028522221625837223,
+          "tdir_mean_deg": 91.39241866186,
+          "tdir_median_deg": 95.67985920477633,
+          "tdir_p90_deg": 139.55126037861987,
+          "threshold_name": "median_gt_step_x_0.05",
+          "threshold_type": "relative",
+          "threshold_value": 0.00037533225221091614,
+          "tmag_mean_log_error": 2.560972772637296,
+          "tmag_mean_ratio": 27.174141849809555,
+          "tmag_median_log_error": 2.8566954840570014,
+          "tmag_median_ratio": 17.40392027591447,
+          "tmag_p90_log_error": 4.1643977559344805,
+          "valid_tdir_pair_ratio": 1.0
+        },
+        "s5_on_orb_matched_pairs": {
+          "num_pose_pairs": 272,
+          "num_valid_tdir_pairs": 272,
+          "rot_mean_deg": 20.76274481502537,
+          "rot_median_deg": 20.76296380748966,
+          "rot_p90_deg": 20.8978361427579,
+          "tdir_mean_cosine": -0.09389392391548335,
+          "tdir_mean_deg": 95.81114430040958,
+          "tdir_median_deg": 98.76381467828924,
+          "tdir_p90_deg": 139.16136125337948,
+          "threshold_name": "median_gt_step_x_0.05",
+          "threshold_type": "relative",
+          "threshold_value": 0.00037533225221091614,
+          "tmag_mean_log_error": 3.439774604439766,
+          "tmag_mean_ratio": 41.645271500067935,
+          "tmag_median_log_error": 3.5376784552825846,
+          "tmag_median_ratio": 34.38699636029955,
+          "tmag_p90_log_error": 4.310918846948364,
+          "valid_tdir_pair_ratio": 1.0
+        }
+      },
+      "se3": {
+        "orbslam3_on_matched_pairs": {
+          "num_pose_pairs": 272,
+          "num_valid_tdir_pairs": 179,
+          "rot_mean_deg": 0.6254477767177544,
+          "rot_median_deg": 0.604320208374159,
+          "rot_p90_deg": 0.7904699148651299,
+          "tdir_mean_cosine": -0.17263264290622057,
+          "tdir_mean_deg": 100.87681304914067,
+          "tdir_median_deg": 110.03810072737849,
+          "tdir_p90_deg": 140.516281807424,
+          "threshold_name": "median_gt_step_x_0.05",
+          "threshold_type": "relative",
+          "threshold_value": 0.00037533225221091614,
+          "tmag_mean_log_error": 1.3018850816443726,
+          "tmag_mean_ratio": 0.9097467257966495,
+          "tmag_median_log_error": 1.1856412336968503,
+          "tmag_median_ratio": 0.3707011461479438,
+          "tmag_p90_log_error": 2.3165429886732745,
+          "valid_tdir_pair_ratio": 0.6580882352941176
+        },
+        "orbslam3_tracked": {
+          "num_pose_pairs": 272,
+          "num_valid_tdir_pairs": 179,
+          "rot_mean_deg": 0.6254477767177544,
+          "rot_median_deg": 0.604320208374159,
+          "rot_p90_deg": 0.7904699148651299,
+          "tdir_mean_cosine": -0.17263264290622057,
+          "tdir_mean_deg": 100.87681304914067,
+          "tdir_median_deg": 110.03810072737849,
+          "tdir_p90_deg": 140.516281807424,
+          "threshold_name": "median_gt_step_x_0.05",
+          "threshold_type": "relative",
+          "threshold_value": 0.00037533225221091614,
+          "tmag_mean_log_error": 1.3018850816443726,
+          "tmag_mean_ratio": 0.9097467257966495,
+          "tmag_median_log_error": 1.1856412336968503,
+          "tmag_median_ratio": 0.3707011461479438,
+          "tmag_p90_log_error": 2.3165429886732745,
+          "valid_tdir_pair_ratio": 0.6580882352941176
+        },
+        "s5_full": {
+          "num_pose_pairs": 453,
+          "num_valid_tdir_pairs": 453,
+          "rot_mean_deg": 20.82515115155659,
+          "rot_median_deg": 20.77059137759755,
+          "rot_p90_deg": 21.356673134422433,
+          "tdir_mean_cosine": -0.028522221625836973,
+          "tdir_mean_deg": 91.39241866186,
+          "tdir_median_deg": 95.67985920477682,
+          "tdir_p90_deg": 139.55126037861962,
+          "threshold_name": "median_gt_step_x_0.05",
+          "threshold_type": "relative",
+          "threshold_value": 0.00037533225221091614,
+          "tmag_mean_log_error": 2.560972772637297,
+          "tmag_mean_ratio": 27.174141849809555,
+          "tmag_median_log_error": 2.856695484057002,
+          "tmag_median_ratio": 17.40392027591448,
+          "tmag_p90_log_error": 4.164397755934487,
+          "valid_tdir_pair_ratio": 1.0
+        },
+        "s5_on_orb_matched_pairs": {
+          "num_pose_pairs": 272,
+          "num_valid_tdir_pairs": 272,
+          "rot_mean_deg": 20.762744815025243,
+          "rot_median_deg": 20.762963807489548,
+          "rot_p90_deg": 20.89783614275779,
+          "tdir_mean_cosine": -0.09389392391548285,
+          "tdir_mean_deg": 95.81114430040955,
+          "tdir_median_deg": 98.76381467828966,
+          "tdir_p90_deg": 139.16136125337968,
+          "threshold_name": "median_gt_step_x_0.05",
+          "threshold_type": "relative",
+          "threshold_value": 0.00037533225221091614,
+          "tmag_mean_log_error": 3.439774604439767,
+          "tmag_mean_ratio": 41.64527150006794,
+          "tmag_median_log_error": 3.5376784552825953,
+          "tmag_median_ratio": 34.38699636029992,
+          "tmag_p90_log_error": 4.310918846948358,
+          "valid_tdir_pair_ratio": 1.0
+        }
+      },
+      "sim3": {
+        "orbslam3_on_matched_pairs": {
+          "num_pose_pairs": 272,
+          "num_valid_tdir_pairs": 254,
+          "rot_mean_deg": 0.6254477767177544,
+          "rot_median_deg": 0.604320208374159,
+          "rot_p90_deg": 0.7904699148651299,
+          "tdir_mean_cosine": -0.12314552279340005,
+          "tdir_mean_deg": 97.59838358847409,
+          "tdir_median_deg": 108.376509087143,
+          "tdir_p90_deg": 140.09352105573217,
+          "threshold_name": "median_gt_step_x_0.05",
+          "threshold_type": "relative",
+          "threshold_value": 0.00037533225221091614,
+          "tmag_mean_log_error": 1.381171503580223,
+          "tmag_mean_ratio": 4.774020145134539,
+          "tmag_median_log_error": 1.090739298848482,
+          "tmag_median_ratio": 1.6558869670440508,
+          "tmag_p90_log_error": 2.7807372492987095,
+          "valid_tdir_pair_ratio": 0.9338235294117647
+        },
+        "orbslam3_tracked": {
+          "num_pose_pairs": 272,
+          "num_valid_tdir_pairs": 254,
+          "rot_mean_deg": 0.6254477767177544,
+          "rot_median_deg": 0.604320208374159,
+          "rot_p90_deg": 0.7904699148651299,
+          "tdir_mean_cosine": -0.12314552279340005,
+          "tdir_mean_deg": 97.59838358847409,
+          "tdir_median_deg": 108.376509087143,
+          "tdir_p90_deg": 140.09352105573217,
+          "threshold_name": "median_gt_step_x_0.05",
+          "threshold_type": "relative",
+          "threshold_value": 0.00037533225221091614,
+          "tmag_mean_log_error": 1.381171503580223,
+          "tmag_mean_ratio": 4.774020145134539,
+          "tmag_median_log_error": 1.090739298848482,
+          "tmag_median_ratio": 1.6558869670440508,
+          "tmag_p90_log_error": 2.7807372492987095,
+          "valid_tdir_pair_ratio": 0.9338235294117647
+        },
+        "s5_full": {
+          "num_pose_pairs": 453,
+          "num_valid_tdir_pairs": 453,
+          "rot_mean_deg": 20.82515115155659,
+          "rot_median_deg": 20.77059137759755,
+          "rot_p90_deg": 21.356673134422433,
+          "tdir_mean_cosine": -0.028522221625836834,
+          "tdir_mean_deg": 91.39241866185996,
+          "tdir_median_deg": 95.6798592047728,
+          "tdir_p90_deg": 139.55126037861783,
+          "threshold_name": "median_gt_step_x_0.05",
+          "threshold_type": "relative",
+          "threshold_value": 0.00037533225221091614,
+          "tmag_mean_log_error": 1.287676848911218,
+          "tmag_mean_ratio": 2.7883424952539664,
+          "tmag_median_log_error": 1.2822800340576088,
+          "tmag_median_ratio": 1.7858186932841782,
+          "tmag_p90_log_error": 2.3092572113522,
+          "valid_tdir_pair_ratio": 1.0
+        },
+        "s5_on_orb_matched_pairs": {
+          "num_pose_pairs": 272,
+          "num_valid_tdir_pairs": 272,
+          "rot_mean_deg": 20.762744815025243,
+          "rot_median_deg": 20.762963807489548,
+          "rot_p90_deg": 20.89783614275779,
+          "tdir_mean_cosine": -0.09389392391548355,
+          "tdir_mean_deg": 95.8111443004096,
+          "tdir_median_deg": 98.76381467828965,
+          "tdir_p90_deg": 139.16136125337832,
+          "threshold_name": "median_gt_step_x_0.05",
+          "threshold_type": "relative",
+          "threshold_value": 0.00037533225221091614,
+          "tmag_mean_log_error": 1.3046347011900457,
+          "tmag_mean_ratio": 4.273227132316678,
+          "tmag_median_log_error": 1.3109460797358508,
+          "tmag_median_ratio": 3.528454505224316,
+          "tmag_p90_log_error": 2.1034184252068906,
+          "valid_tdir_pair_ratio": 1.0
+        }
+      }
+    },
+    "recommended_threshold_value": 0.00037533225221091614,
+    "result_files": {
+      "orbslam3_on_matched_pairs": {
+        "none": "external_baselines/results/component_diagnostics_s5d3/orbslam3_on_matched_none_threshold_sweep.json",
+        "se3": "external_baselines/results/component_diagnostics_s5d3/orbslam3_on_matched_se3_threshold_sweep.json",
+        "sim3": "external_baselines/results/component_diagnostics_s5d3/orbslam3_on_matched_sim3_threshold_sweep.json"
+      },
+      "orbslam3_tracked": {
+        "none": "external_baselines/results/component_diagnostics_s5d3/orbslam3_tracked_none_threshold_sweep.json",
+        "se3": "external_baselines/results/component_diagnostics_s5d3/orbslam3_tracked_se3_threshold_sweep.json",
+        "sim3": "external_baselines/results/component_diagnostics_s5d3/orbslam3_tracked_sim3_threshold_sweep.json"
+      },
+      "s5_full": {
+        "none": "external_baselines/results/component_diagnostics_s5d3/s5_full_none_threshold_sweep.json",
+        "se3": "external_baselines/results/component_diagnostics_s5d3/s5_full_se3_threshold_sweep.json",
+        "sim3": "external_baselines/results/component_diagnostics_s5d3/s5_full_sim3_threshold_sweep.json"
+      },
+      "s5_on_orb_matched_pairs": {
+        "none": "external_baselines/results/component_diagnostics_s5d3/s5_on_orb_matched_none_threshold_sweep.json",
+        "se3": "external_baselines/results/component_diagnostics_s5d3/s5_on_orb_matched_se3_threshold_sweep.json",
+        "sim3": "external_baselines/results/component_diagnostics_s5d3/s5_on_orb_matched_sim3_threshold_sweep.json"
+      }
+    },
+    "thresholds": {
+      "absolute": [
+        1e-08,
+        1e-06,
+        1e-05,
+        0.0001,
+        0.001,
+        0.01
+      ],
+      "median_gt_step": 0.007506645044218322,
+      "relative_to_median_gt_step": [
+        0.01,
+        0.05,
+        0.1
+      ]
+    }
+  },
+  "classification_options": [
+    "S5D3_COMPLETE_VALIDATION_CLEAN",
+    "S5D3_COMPLETE_WITH_VALIDATION_BLOCKER",
+    "S5D3_DIAGNOSTICS_PARTIAL",
+    "S5D3_BLOCKED",
+    "S5D3_ERROR"
+  ],
+  "experiment": "S5D3_validation_and_alignment_aware_component_audit",
+  "fairness_notes": {
+    "input_protocol_note": "S5 uses project panorama/S5 representation; ORB-SLAM3 uses raw fisheye cam0.",
+    "matched_pair_rules": {
+      "no_orb_interpolation": true,
+      "same_matched_timestamp_pairs": true
+    },
+    "orbslam3_calibration_caveat": "fitted KB8 compatibility approximation, not native factory KB8",
+    "orbslam3_partial_coverage": true,
+    "same_component_metric_definitions": true,
+    "same_gt": true,
+    "same_input_protocol": false
+  },
+  "final_classification": "S5D3_COMPLETE_VALIDATION_CLEAN",
+  "guardrails": {
+    "does_not_modify_final_manifest": true,
+    "does_not_modify_official_evaluator": true,
+    "does_not_modify_s5_locked_metrics": true,
+    "does_not_modify_s5_policy": true,
+    "does_not_modify_train_test_split": true,
+    "does_not_replace_official_s5_locked_result": true
+  },
+  "inputs": {
+    "groundtruth": "external_baselines/dataset/scene01_seq03/groundtruth_tum.txt",
+    "orb_source_mode": "git_show:experiment/orbslam3-fisheye-strong-baseline",
+    "orbslam3_trajectory": "external_baselines/results/orbslam3_fisheye_cam0/scene01_seq03_est_tum.txt",
+    "s5_source_mode": "git_show:experiment/orbslam3-fisheye-strong-baseline",
+    "s5_trajectory": "external_baselines/results/s5_dense/scene01_seq03_s5_dense_est_tum.txt",
+    "s5d2_checkpoint": "checkpoints/S5D2_component_diagnostics.json",
+    "timestamps": "external_baselines/dataset/scene01_seq03/timestamps.txt"
+  },
+  "s5_official_locked_metrics": {
+    "ate": 7.352288,
+    "drift": 1.327343,
+    "not_replaced_by_s5d3": true,
+    "path_ratio": 0.932379,
+    "unchanged": true
+  },
+  "summary_findings": {
+    "dominant_s5_error_source": "mixed",
+    "evidence": [
+      "S5 matched rot mean (none): 20.762745 deg",
+      "S5 matched tdir mean (none/se3/sim3): 95.811144 / 95.811144 / 95.811144 deg",
+      "S5 matched tmag median ratio (none/se3/sim3): 34.386996 / 34.386996 / 3.528455"
+    ],
+    "recommendations": [
+      "Run dense export convention audit on axis/sign/frame consistency.",
+      "Add explicit tmag scale calibration regularization across short windows.",
+      "Strengthen SO(3) geodesic rotation loss and short-window pose consistency.",
+      "If tdir remains high after alignment-aware thresholds, add tdir-focused loss.",
+      "Use ORB-SLAM3 successful segments as distillation targets."
+    ],
+    "s5_rotation_error_confirmed": true,
+    "s5_tmag_overscale_confirmed": true,
+    "tdir_interpretation": "tdir improves under se3/sim3 and larger thresholds if tiny-step/gauge effects dominate.",
+    "tdir_reliable_after_threshold_alignment": false
+  },
+  "validation": {
+    "branch_clean": false,
+    "project_health_check": {
+      "log_path": "logs/s5d3_project_health_check.log",
+      "passed": true
+    },
+    "s6_lockdown_eval_only": {
+      "log_path": "logs/s5d3_s6_lockdown_eval_only.log",
+      "passed": true,
+      "root_cause_summary": "PASS; no lockdown mismatch found."
+    },
+    "unittest": {
+      "log_path": "logs/s5d3_unittest.log",
+      "passed": true,
+      "test_count": 83
+    },
+    "validation_clean": true,
+    "verify_final_candidate": {
+      "log_path": "logs/s5d3_verify_final_candidate.log",
+      "passed": true
+    }
+  }
+}

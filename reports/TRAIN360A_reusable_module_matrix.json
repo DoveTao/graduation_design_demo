@@ -1,0 +1,156 @@
+[
+  {
+    "module_name": "ERP token sampler and token encoders",
+    "source_family": "T57b",
+    "file_path": "model.py",
+    "function_or_class_name": "Module2Sampler",
+    "purpose": "Sample ERP patches on spherical grids and build coarse/fine token features for pair-forward pose inference.",
+    "reusable_status": "direct",
+    "required_adaptation": "Wire to canonical-manifest dataset instead of legacy raw-data split loaders.",
+    "dependency_risks": "No explicit scene-specific artifact dependency found.",
+    "recommendation": "Keep as TRAIN360-v0 visual front end."
+  },
+  {
+    "module_name": "Coarse pair interaction",
+    "source_family": "T57b",
+    "file_path": "interaction.py",
+    "function_or_class_name": "CoarseInteraction",
+    "purpose": "Compute coarse soft correspondences and predict coarse rotation, translation direction, and magnitude.",
+    "reusable_status": "direct",
+    "required_adaptation": "Disable legacy anchor-dependent training options in new config.",
+    "dependency_risks": "Training summaries reference a legacy tdir anchor checkpoint.",
+    "recommendation": "Use as v0 core interaction block."
+  },
+  {
+    "module_name": "Multiscale bounded tmag head",
+    "source_family": "T57b",
+    "file_path": "interaction.py",
+    "function_or_class_name": "TranslationMagnitudeHead",
+    "purpose": "Predict bounded log-translation magnitude with scalar or multiscale parameterization.",
+    "reusable_status": "direct",
+    "required_adaptation": "Retain multiscale mode but retrain on DSET2C canonical split without legacy calibration artifacts.",
+    "dependency_risks": "Optional ridge/ridge_calib branches can introduce external calibration files if enabled.",
+    "recommendation": "Use multiscale or equivalent bounded log_tmag head in TRAIN360-v0."
+  },
+  {
+    "module_name": "Positive scale reconstruction and log-bias clamp",
+    "source_family": "T57b",
+    "file_path": "model.py; interaction.py",
+    "function_or_class_name": "_apply_log_tmag_bias; positive_translation_magnitude",
+    "purpose": "Convert log-scale predictions to stable positive magnitudes with clamp/bias handling.",
+    "reusable_status": "direct",
+    "required_adaptation": "Keep only trainable in-model bias, not legacy frozen calibration policy thresholds.",
+    "dependency_risks": "Low if legacy policy files are not loaded.",
+    "recommendation": "Mandatory for v0 scale stabilization."
+  },
+  {
+    "module_name": "Fine pair interaction",
+    "source_family": "T57b",
+    "file_path": "interaction.py",
+    "function_or_class_name": "FineInteraction",
+    "purpose": "Fine-stage routed correspondence refinement for rotation, direction, and scale.",
+    "reusable_status": "adapt",
+    "required_adaptation": "Use without legacy depth/calibration extras at first; optionally add observability-aware pooling.",
+    "dependency_risks": "Can become overly coupled to optional depth or legacy fine-fuse settings.",
+    "recommendation": "Keep optional in v0, default on only after dataloader/metrics parity is stable."
+  },
+  {
+    "module_name": "Canonical pair-forward export bridge",
+    "source_family": "T57b",
+    "file_path": "tools/export_gen5_360dvo_t57b_predictions.py",
+    "function_or_class_name": "_load_model; run",
+    "purpose": "Load checkpoint and run direct pair-forward inference from canonical manifest rows.",
+    "reusable_status": "adapt",
+    "required_adaptation": "Refactor into generic TRAIN360 evaluator/export path and remove assumptions about old eval scripts.",
+    "dependency_risks": "Evaluator companion currently expects world-pose fields not present in current manifests.",
+    "recommendation": "Use as proof of true forward-model portability, not as final evaluator."
+  },
+  {
+    "module_name": "S5 clean tmag calibration policy",
+    "source_family": "S5clean",
+    "file_path": "checkpoints/S5_clean_tmag_calibration_policy.json",
+    "function_or_class_name": "policy artifact",
+    "purpose": "Frozen inference-time scale calibration policy on top of legacy T57b predictions.",
+    "reusable_status": "no",
+    "required_adaptation": "Only the idea is reusable; exact thresholds and policy file must not be carried into TRAIN360-v0.",
+    "dependency_risks": "Legacy train-CV quantiles and S2b policy factors.",
+    "recommendation": "Do not import as runtime dependency."
+  },
+  {
+    "module_name": "Observability feature gate",
+    "source_family": "S5E",
+    "file_path": "tools/s5e12_observability_gate.py",
+    "function_or_class_name": "run",
+    "purpose": "Bucket edges into observable/unreliable regimes for direction supervision weighting.",
+    "reusable_status": "adapt",
+    "required_adaptation": "Recompute online or from TRAIN360 train split only; remove scene01-specific feature dump dependency.",
+    "dependency_risks": "Current config and artifacts are scene01/seq03 specific and tied to correspondence CSV outputs.",
+    "recommendation": "Reuse the weighting logic, not the exported CSV/JSON artifacts."
+  },
+  {
+    "module_name": "S5E15 anti-parallel and scale refinement pipeline",
+    "source_family": "S5E15",
+    "file_path": "tools/export_s5e15_adjacent_dense_predictions.py",
+    "function_or_class_name": "run",
+    "purpose": "Post-hoc refine legacy adjacent-dense exports using train-prior scale and correspondence confidence guards.",
+    "reusable_status": "no",
+    "required_adaptation": "Reimplement anti-parallel regularization as a train-time loss or lightweight head inside a true pair-forward model.",
+    "dependency_risks": "Depends on S5E14 provenance, S5E14 weights, S5E12 correspondence feature CSVs, and scene01/seq03 paths.",
+    "recommendation": "Do not use as external forward inference or TRAIN360 runtime."
+  },
+  {
+    "module_name": "Rotation-compensated multiframe geometry idea",
+    "source_family": "S5E",
+    "file_path": "configs/s5e19_rotation_compensated_multiframe_geometry.yaml",
+    "function_or_class_name": "configuration concept",
+    "purpose": "Augment coarse-to-fine pair inference with rotation compensation, observability weighting, and multiframe composition.",
+    "reusable_status": "adapt",
+    "required_adaptation": "Implement only the architecture idea inside manifest-native training; do not inherit legacy scene split or train prior knobs.",
+    "dependency_risks": "Current config is explicitly trained on scene01/seq01-02 and evaluated on scene01/seq03.",
+    "recommendation": "Good source of v1/v2 ideas after TRAIN360-v0 is stable."
+  },
+  {
+    "module_name": "True k-step contiguous composition supervision",
+    "source_family": "S5E",
+    "file_path": "configs/s5e20_true_kstep_composition_supervision.yaml",
+    "function_or_class_name": "configuration concept",
+    "purpose": "Supervise k-step composition on contiguous windows rather than random batch proxies.",
+    "reusable_status": "adapt",
+    "required_adaptation": "Bind to canonical manifest rows grouped by seq_id and timestamp order.",
+    "dependency_risks": "Legacy config saves learned weights and uses scene01 split.",
+    "recommendation": "Add after v0 baseline, but keep design in initial config surface."
+  },
+  {
+    "module_name": "Spherical geometry token backbone",
+    "source_family": "other",
+    "file_path": "model.py",
+    "function_or_class_name": "SphericalGeometryTokenBackbone",
+    "purpose": "Fuse appearance tokens with spherical geometry channels before token encoding.",
+    "reusable_status": "adapt",
+    "required_adaptation": "Integrate behind a config flag and benchmark against plain T57b encoder.",
+    "dependency_risks": "Experimental path; not yet validated on canonical TRAIN360 data.",
+    "recommendation": "Candidate upgrade for STRUCT360 or ARCH360, not mandatory for v0."
+  },
+  {
+    "module_name": "Soft correspondence geometry solver",
+    "source_family": "other",
+    "file_path": "model.py",
+    "function_or_class_name": "SoftCorrespondenceGeometryLayer; GeometryTokenPoseSolver",
+    "purpose": "Build geometry-aware tokens from soft correspondences and solve for refined rotation, direction, and scale.",
+    "reusable_status": "adapt",
+    "required_adaptation": "Use only after pair-forward manifest baseline is stable and metrics are reproducible.",
+    "dependency_risks": "Experimental and not tied to a finished training path in current repo.",
+    "recommendation": "Defer to STRUCT360/ARCH360 rather than first TRAIN360-v0 pass."
+  },
+  {
+    "module_name": "Legacy raw-directory split loaders",
+    "source_family": "other",
+    "file_path": "dataset_pano_only.py",
+    "function_or_class_name": "RflyPanoPanoramaPairsMixedK; RflyPanoPanoramaPairsEvalFixedKList; RflyPanoPanoramaPairsTrainFixedList",
+    "purpose": "Current train/eval pair datasets for scene/seq-scanned legacy data.",
+    "reusable_status": "no",
+    "required_adaptation": "Replace with a canonical-manifest-native dataset class.",
+    "dependency_risks": "Internal split generation, raw-directory scanning, and non-canonical manifest format.",
+    "recommendation": "Do not use for TRAIN360-v0 runtime."
+  }
+]

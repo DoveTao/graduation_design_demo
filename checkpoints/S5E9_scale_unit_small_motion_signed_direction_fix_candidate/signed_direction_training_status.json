@@ -1,0 +1,100 @@
+{
+  "attempted": true,
+  "classification": "S5E9_SIGNED_DIRECTION_TRAINING_SMOKE",
+  "checkpoint": "checkpoints/S5E9_scale_unit_small_motion_signed_direction_fix_candidate/s5e9_signed_direction_best.pt",
+  "num_train_pairs": 707,
+  "num_val_pairs": 79,
+  "uses_scene01_seq03_for_training": false,
+  "history": [
+    {
+      "epoch": 0,
+      "val_metrics": {
+        "signed_tdir_mean": 107.64317603050908,
+        "signed_tdir_median": 147.93844604492188,
+        "signed_tdir_p90": 166.44005432128907,
+        "tdir_abs_mean": 26.580574301224722,
+        "tdir_abs_median": 25.745935440063477,
+        "tdir_abs_p90": 36.14612350463869,
+        "anti_parallel_rate": 0.620253164556962,
+        "severe_wrong_sign_rate": 0.5949367088607594,
+        "pair_order_dir_flip_cosine_mean": -0.9254663858232619,
+        "pair_order_dir_flip_success_rate": 0.0
+      }
+    },
+    {
+      "epoch": 1,
+      "val_metrics": {
+        "signed_tdir_mean": 91.15185329582118,
+        "signed_tdir_median": 117.6032485961914,
+        "signed_tdir_p90": 139.94127197265624,
+        "tdir_abs_mean": 44.20925574966624,
+        "tdir_abs_median": 49.223167419433594,
+        "tdir_abs_p90": 65.12906646728516,
+        "anti_parallel_rate": 0.6329113924050633,
+        "severe_wrong_sign_rate": 0.45569620253164556,
+        "pair_order_dir_flip_cosine_mean": -0.8328194920020767,
+        "pair_order_dir_flip_success_rate": 0.0
+      }
+    },
+    {
+      "epoch": 2,
+      "val_metrics": {
+        "signed_tdir_mean": 105.84170259403277,
+        "signed_tdir_median": 149.87103271484375,
+        "signed_tdir_p90": 170.54112854003907,
+        "tdir_abs_mean": 20.78894360306897,
+        "tdir_abs_median": 17.21059226989746,
+        "tdir_abs_p90": 33.23591079711916,
+        "anti_parallel_rate": 0.620253164556962,
+        "severe_wrong_sign_rate": 0.5949367088607594,
+        "pair_order_dir_flip_cosine_mean": -0.9104710885241062,
+        "pair_order_dir_flip_success_rate": 0.0
+      }
+    }
+  ],
+  "split_summary": {
+    "split_by": "scene_seq",
+    "train_ratio": 0.8,
+    "split_seed": 3407,
+    "train_sequence_keys": [
+      [
+        "scene01",
+        "seq01"
+      ],
+      [
+        "scene01",
+        "seq02"
+      ]
+    ],
+    "test_sequence_keys": [
+      [
+        "scene01",
+        "seq03"
+      ]
+    ],
+    "all_sequence_keys": [
+      [
+        "scene01",
+        "seq01"
+      ],
+      [
+        "scene01",
+        "seq02"
+      ],
+      [
+        "scene01",
+        "seq03"
+      ]
+    ]
+  },
+  "notes": [
+    "S5E9 signed-direction candidate 加入 pair-order anti-symmetry 约束。",
+    "near_static 与 small_motion 降低 signed direction 权重。"
+  ],
+  "validation_snapshot": {
+    "verify_final_candidate": "PASS",
+    "project_health_check": "PASS",
+    "s6_eval_only": "PASS",
+    "unittest": "PASS"
+  }
+}

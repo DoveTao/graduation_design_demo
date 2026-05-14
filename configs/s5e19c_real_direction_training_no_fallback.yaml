@@ -1,0 +1,51 @@
+experiment: S5E19C_real_direction_training_no_fallback
+report_language: zh
+
+model:
+  preserve_spherical_token_backbone: true
+  use_coarse_pose_head: true
+  use_fine_residual_refinement: true
+  use_rotation_compensation: true
+  use_direction_delta_head: true
+  use_sign_head: true
+  use_scale_head: true
+  use_external_router: false
+  allow_s5e15_direction_fallback: false
+  hidden_dim: 128
+  delta_tdir_scale: 0.35
+  delta_log_tmag_clip: 0.25
+
+training:
+  real_training_required: true
+  smoke_policy_allowed: false
+  require_optimizer_step: true
+  require_learned_weights: true
+  train_scenes: ["scene01/seq01", "scene01/seq02"]
+  eval_scene: "scene01/seq03"
+  uses_eval_gt_for_training: false
+  uses_orbslam3_teacher: false
+  epochs: 15
+  lr: 0.001
+  weight_decay: 0.00001
+  batch_size: 64
+  seed: 3407
+
+losses:
+  signed_tdir: true
+  tdir_abs_aux: true
+  anti_parallel_hard_negative: true
+  sign_score_bce: true
+  robust_tmag_log: true
+  multiframe_composition: true
+  path_length_consistency: true
+
+export:
+  forbid_s5e15_direction_fallback: true
+  require_nonzero_delta_tdir: true
+  require_nonconstant_sign_score: true
+  use_s5e15_only_for_scale_prior_reference: true
+
+caveats:
+  - S5E19C 是 experimental candidate，不替代 official locked result。
+  - 不使用 eval GT calibration。
+  - 不使用 ORB-SLAM3 trajectory 作为训练 label。

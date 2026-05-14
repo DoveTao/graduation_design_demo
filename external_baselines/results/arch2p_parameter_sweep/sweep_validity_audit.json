@@ -1,0 +1,128 @@
+{
+  "experiment": "ARCH2P_parameter_sensitivity_sweep",
+  "runs": [
+    {
+      "run_id": "000_baseline_arch2",
+      "real_training_executed": true,
+      "no_op_risk": false,
+      "fallback_risk": false,
+      "old_metrics_reuse_risk": false,
+      "uses_eval_gt_for_training": false,
+      "uses_orbslam3_teacher": false,
+      "valid": true
+    },
+    {
+      "run_id": "001_alpha_0.005",
+      "real_training_executed": true,
+      "no_op_risk": false,
+      "fallback_risk": false,
+      "old_metrics_reuse_risk": false,
+      "uses_eval_gt_for_training": false,
+      "uses_orbslam3_teacher": false,
+      "valid": true
+    },
+    {
+      "run_id": "002_alpha_0.01",
+      "real_training_executed": true,
+      "no_op_risk": false,
+      "fallback_risk": false,
+      "old_metrics_reuse_risk": false,
+      "uses_eval_gt_for_training": false,
+      "uses_orbslam3_teacher": false,
+      "valid": true
+    },
+    {
+      "run_id": "003_alpha_0.02",
+      "real_training_executed": true,
+      "no_op_risk": false,
+      "fallback_risk": false,
+      "old_metrics_reuse_risk": false,
+      "uses_eval_gt_for_training": false,
+      "uses_orbslam3_teacher": false,
+      "valid": true
+    },
+    {
+      "run_id": "004_clip_0.005",
+      "real_training_executed": true,
+      "no_op_risk": false,
+      "fallback_risk": false,
+      "old_metrics_reuse_risk": false,
+      "uses_eval_gt_for_training": false,
+      "uses_orbslam3_teacher": false,
+      "valid": true
+    },
+    {
+      "run_id": "005_clip_0.01",
+      "real_training_executed": true,
+      "no_op_risk": false,
+      "fallback_risk": false,
+      "old_metrics_reuse_risk": false,
+      "uses_eval_gt_for_training": false,
+      "uses_orbslam3_teacher": false,
+      "valid": true
+    },
+    {
+      "run_id": "006_clip_0.05",
+      "real_training_executed": true,
+      "no_op_risk": false,
+      "fallback_risk": false,
+      "old_metrics_reuse_risk": false,
+      "uses_eval_gt_for_training": false,
+      "uses_orbslam3_teacher": false,
+      "valid": true
+    },
+    {
+      "run_id": "007_hq_0.35",
+      "real_training_executed": true,
+      "no_op_risk": false,
+      "fallback_risk": false,
+      "old_metrics_reuse_risk": false,
+      "uses_eval_gt_for_training": false,
+      "uses_orbslam3_teacher": false,
+      "valid": true
+    },
+    {
+      "run_id": "008_hq_0.5",
+      "real_training_executed": true,
+      "no_op_risk": false,
+      "fallback_risk": false,
+      "old_metrics_reuse_risk": false,
+      "uses_eval_gt_for_training": false,
+      "uses_orbslam3_teacher": false,
+      "valid": true
+    },
+    {
+      "run_id": "009_temp_0.03",
+      "real_training_executed": true,
+      "no_op_risk": false,
+      "fallback_risk": false,
+      "old_metrics_reuse_risk": false,
+      "uses_eval_gt_for_training": false,
+      "uses_orbslam3_teacher": false,
+      "valid": true
+    },
+    {
+      "run_id": "010_temp_0.1",
+      "real_training_executed": true,
+      "no_op_risk": false,
+      "fallback_risk": false,
+      "old_metrics_reuse_risk": false,
+      "uses_eval_gt_for_training": false,
+      "uses_orbslam3_teacher": false,
+      "valid": true
+    },
+    {
+      "run_id": "011_tdir_up",
+      "real_training_executed": true,
+      "no_op_risk": false,
+      "fallback_risk": false,
+      "old_metrics_reuse_risk": false,
+      "uses_eval_gt_for_training": false,
+      "uses_orbslam3_teacher": false,
+      "valid": true
+    }
+  ],
+  "valid_run_count": 12,
+  "invalid_run_ids": [],
+  "final_classification": "ARCH2P_VALIDITY_OK"
+}
