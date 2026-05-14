@@ -1,9 +1,0 @@
-S1d5 是当前阶段整理出的最终 clean mainline 方案，它的意义在于：在修正评估口径之后，给出了一个可复现、可审计、可写入论文和答辩材料的 translation scale 修复策略。最初的问题并不是简单的性能波动，而是评估口径本身存在混淆。历史上曾记录过 T57b 与 F1c 的 `path_ratio≈0.983`，看起来似乎主模型本身已经具备较好的轨迹尺度一致性。但后续审计表明，这组数值并不来自真实的 multiscale checkpoint 评估，而是 `scalar-load mismatch` 造成的 artifact。也就是说，multiscale checkpoint 在 wrapper 中没有被完整恢复，实际是用错误的 scalar head 实例化后得到的结果，因此这部分历史 baseline 必须重标注，不能继续当作真实主线基线。
-
-在修复 eval harness 后，真实的 T57b multiscale baseline 被重新确认为：`drift=1.494`、`ATE=9.644`、`path_ratio=0.496`。这说明原始问题的核心不是方向估计整体失效，而是路径尺度明显塌缩。进一步的 S1 系列审计又发现，`direction_only path_ratio≈1.0`，而 metric path ratio 只有 `0.496`。这说明方向链本身没有严重坍缩，真正的问题主要来自 translation magnitude，也就是 tmag 的尺度幅值偏差。因此，后续主线不再继续围绕 fine training 或不受控的后验校准，而是转向对 tmag 尺度进行干净、受约束、可解释的修复。
-
-S1d5 的方法可以概括为：在 true T57b multiscale checkpoint 之上，使用 `dt-bucket trajectory scale anchor + rot-only fusion`。其中 dt 被划分为三个区间：`[0.1,0.3)`、`[0.3,0.5)`、`[0.5,1.0)`，分别施加不同的尺度修正因子。最终导出的有效因子为：`1.302368`、`2.600361`、`3.966214`，对应统一的 `alpha=1.05`。同时仅启用 `fine_rot_fuse_strength=0.40`，保持 `fine_tdir=0.0`、`fine_tmag=0.0`，并关闭 geometry refine。更重要的是，这些参数不是通过 test label 直接调出来的，而是通过 `train_only_leave_one_train_seq_out_cv` 进行选择，因此它在方法论上属于 clean 的 exported calibration/eval policy，而不是 test-swept diagnostic。
-
-最终，S1d5 在真实评估口径下实现了较稳定的改进：`drift=1.396358`、`ATE=7.632463`、`path_ratio=0.934982`。与真实 T57b multiscale baseline 相比，path_ratio 从 `0.496` 提升到 `0.935`，说明最初的 scale collapse 已被显著修复；ATE 从 `9.644` 降到 `7.632`，说明尺度修正并没有以牺牲整体轨迹质量为代价；drift 也从 `1.494` 改善到 `1.396`，保持了较好的轨迹一致性。这使得 S1d5 成为目前最适合作为最终展示版主线结果的方案。
-
-当然，这个结果不能被过度夸大。首先，ATE 在绝对量纲上仍然偏高，因此不能把 S1d5 描述成高精度工程级方案。其次，S1d5 本质上仍是一个 calibration/eval policy，而不是已经完全内化进网络参数中的端到端训练模型。它依赖于 dt-bucket 的尺度 anchor，因此如果未来获得更多场景和序列，仍需要进一步验证该策略的泛化性。最后，S1d6 虽然已经提出为后续工作，即尝试把这一策略内化为最小可训练 dt-anchor head，但当前并未运行。因此更稳妥的结论是：S1d5 已经足以作为本阶段的 clean mainline 和论文/答辩展示结果，但它更适合作为一个可靠、可复现的校准策略，而不是问题已经被彻底端到端解决的最终模型形态。

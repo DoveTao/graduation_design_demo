@@ -1,0 +1,32 @@
+{
+  "task_name": "MAINT14_trim_remaining_config_report_dependencies_inside_final360i_and_struct360b_tools",
+  "training_executed": false,
+  "files_restored_count": 0,
+  "old_reports_restored_count": 0,
+  "py_compile": "pass",
+  "import_smoke": {
+    "status": "pass",
+    "dataset_class": "Dset2CCanonicalPairDataset"
+  },
+  "current_artifact_check": {
+    "status": "pass",
+    "all_present": true
+  },
+  "show_mainline": {
+    "status": "pass"
+  },
+  "dependency_health_check": {
+    "status": "partial",
+    "current_required_missing": 0,
+    "current_optional_missing": 7,
+    "deleted_reference_count": 0
+  },
+  "micro_smoke": {
+    "status": "pass",
+    "final_task": "FINAL360I_final_retrain_and_model_selection",
+    "seq_task": "SEQ360B_lightweight_scale_smoothing_head",
+    "manifest_dataset_class": "Dset2CCanonicalPairDataset"
+  },
+  "checkpoints_modified": false,
+  "raw_data_modified": false
+}

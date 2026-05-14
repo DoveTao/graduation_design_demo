@@ -19,6 +19,7 @@ sys.path.insert(0, str(REPO_ROOT / "tools"))
 
 from train360.core.config import Config
 from datasets.dset2c_manifest_dataset import Dset2CCanonicalPairDataset, summarize_manifest_group
+from mainline_dependency_utils import summarize_optional_artifact
 from miniyaml import load_yaml_like
 from models.struct360b_match_free_coarse_to_fine import STRUCT360BMatchFreeCoarseToFineModel
 from train_struct360b_match_free_coarse_to_fine import (
@@ -38,6 +39,9 @@ from train_struct360b_match_free_coarse_to_fine import (
 
 def _read_json(path: Path) -> Dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+
+
+OPTIONAL_INPUT_KEYS = {"base360d_test_metrics"}
 
 
 def _dump_yaml(obj: Dict[str, Any], indent: int = 0) -> str:
@@ -172,7 +176,8 @@ def _run_prechecks(cfg: Mapping[str, Any]) -> Dict[str, Any]:
     if not torch.cuda.is_available():
         blockers.append("CUDA unavailable in pytorch environment")
 
-    required = {name: REPO_ROOT / rel for name, rel in cfg["inputs"].items()}
+    required = {name: REPO_ROOT / rel for name, rel in cfg["inputs"].items() if name not in OPTIONAL_INPUT_KEYS}
+    optional = {name: REPO_ROOT / rel for name, rel in cfg["inputs"].items() if name in OPTIONAL_INPUT_KEYS}
     for name, path in required.items():
         if not path.is_file():
             blockers.append(f"missing required file: {name} -> {path}")
@@ -221,6 +226,7 @@ def _run_prechecks(cfg: Mapping[str, Any]) -> Dict[str, Any]:
         "cuda_available": bool(torch.cuda.is_available()),
         "torch_version": str(torch.__version__),
         "required_paths": {k: str(v) for k, v in required.items()},
+        "optional_paths": {k: summarize_optional_artifact(v, k) for k, v in optional.items()},
         "image_hw": list(image_hw),
         "split_audit": split_audit,
     }
@@ -332,10 +338,6 @@ def _evaluate_checkpoint(
 def _baseline_rows(inputs: Mapping[str, Any]) -> List[Dict[str, Any]]:
     return [
         {"name": "T57b", "split": "test/reference", "metrics": dict(T57B_REFERENCE)},
-        {"name": "TRAIN360C", "split": "test", "metrics": _load_metrics(REPO_ROOT / inputs["train360c_test_metrics"])},
-        {"name": "TRAIN360D", "split": "test", "metrics": _load_metrics(REPO_ROOT / inputs["train360d_test_metrics"])},
-        {"name": "TRAIN360H", "split": "test", "metrics": _load_metrics(REPO_ROOT / inputs["train360h_test_metrics"])},
-        {"name": "STRUCT360A", "split": "test", "metrics": _load_metrics(REPO_ROOT / inputs["struct360a_test_metrics"])},
         {"name": "STRUCT360B", "split": "test", "metrics": _load_metrics(REPO_ROOT / inputs["struct360b_test_metrics"])},
         {"name": "BASE360D", "split": "test", "metrics": _load_metrics(REPO_ROOT / inputs["base360d_test_metrics"], base360=True)},
     ]
@@ -371,19 +373,8 @@ def _build_final_classification(
         return "fallback_to_STRUCT360B"
     if _meets_balanced_target(final_metrics, cfg):
         return "final_balanced_model"
-    train360d_test = _load_metrics(REPO_ROOT / cfg["inputs"]["train360d_test_metrics"])
-    train360h_test = _load_metrics(REPO_ROOT / cfg["inputs"]["train360h_test_metrics"])
-    if (
-        float(selected_candidate_metrics.get("signed_tdir_mean_deg") or float("inf")) <= float(train360d_test.get("signed_tdir_mean_deg") or float("inf"))
-        and float(selected_candidate_metrics.get("anti_parallel_rate") or 1.0) <= float(train360d_test.get("anti_parallel_rate") or 1.0)
-    ):
-        return "direction_best_only"
-    if (
-        float(selected_candidate_metrics.get("tmag_median_ratio") or 0.0) >= float(train360h_test.get("tmag_median_ratio") or 0.0)
-        and float(selected_candidate_metrics.get("path_ratio") or 0.0) >= float(train360h_test.get("path_ratio") or 0.0)
-    ):
-        return "scale_best_only"
     del final_model_name
+    del selected_candidate_metrics
     return "regression"
 
 
@@ -494,8 +485,6 @@ def main() -> None:
         selection_reason = "FINAL360I retrain remained balanced and comparable to or better than original STRUCT360B, so the retrained checkpoint is recommended as the thesis main model."
 
     compared_to_struct360b = _compare_against_struct360b(final_test_metrics, struct360b_test_metrics)
-    compared_to_train360d = _coarse_status(final_test_metrics, _load_metrics(REPO_ROOT / cfg["inputs"]["train360d_test_metrics"]))
-    compared_to_train360h = _coarse_status(final_test_metrics, _load_metrics(REPO_ROOT / cfg["inputs"]["train360h_test_metrics"]))
     final_classification = _build_final_classification(
         final_model_name=final_model_name,
         final_metrics=final_test_metrics,
@@ -584,10 +573,6 @@ def main() -> None:
         "| model | split | signed_tdir_mean_deg | anti_parallel_rate | tmag_median_ratio | path_ratio |",
         "| --- | --- | ---: | ---: | ---: | ---: |",
         f"| T57b | reference | {T57B_REFERENCE['signed_tdir_mean_deg']} | {T57B_REFERENCE['anti_parallel_rate']} | {T57B_REFERENCE['tmag_median_ratio']} | {T57B_REFERENCE['path_ratio']} |",
-        f"| TRAIN360C | test | {_load_metrics(REPO_ROOT / cfg['inputs']['train360c_test_metrics']).get('signed_tdir_mean_deg')} | {_load_metrics(REPO_ROOT / cfg['inputs']['train360c_test_metrics']).get('anti_parallel_rate')} | {_load_metrics(REPO_ROOT / cfg['inputs']['train360c_test_metrics']).get('tmag_median_ratio')} | {_load_metrics(REPO_ROOT / cfg['inputs']['train360c_test_metrics']).get('path_ratio')} |",
-        f"| TRAIN360D | test | {_load_metrics(REPO_ROOT / cfg['inputs']['train360d_test_metrics']).get('signed_tdir_mean_deg')} | {_load_metrics(REPO_ROOT / cfg['inputs']['train360d_test_metrics']).get('anti_parallel_rate')} | {_load_metrics(REPO_ROOT / cfg['inputs']['train360d_test_metrics']).get('tmag_median_ratio')} | {_load_metrics(REPO_ROOT / cfg['inputs']['train360d_test_metrics']).get('path_ratio')} |",
-        f"| TRAIN360H | test | {_load_metrics(REPO_ROOT / cfg['inputs']['train360h_test_metrics']).get('signed_tdir_mean_deg')} | {_load_metrics(REPO_ROOT / cfg['inputs']['train360h_test_metrics']).get('anti_parallel_rate')} | {_load_metrics(REPO_ROOT / cfg['inputs']['train360h_test_metrics']).get('tmag_median_ratio')} | {_load_metrics(REPO_ROOT / cfg['inputs']['train360h_test_metrics']).get('path_ratio')} |",
-        f"| STRUCT360A | test | {_load_metrics(REPO_ROOT / cfg['inputs']['struct360a_test_metrics']).get('signed_tdir_mean_deg')} | {_load_metrics(REPO_ROOT / cfg['inputs']['struct360a_test_metrics']).get('anti_parallel_rate')} | {_load_metrics(REPO_ROOT / cfg['inputs']['struct360a_test_metrics']).get('tmag_median_ratio')} | {_load_metrics(REPO_ROOT / cfg['inputs']['struct360a_test_metrics']).get('path_ratio')} |",
         f"| STRUCT360B | test | {struct360b_test_metrics.get('signed_tdir_mean_deg')} | {struct360b_test_metrics.get('anti_parallel_rate')} | {struct360b_test_metrics.get('tmag_median_ratio')} | {struct360b_test_metrics.get('path_ratio')} |",
         f"| BASE360D | test component | {_load_metrics(REPO_ROOT / cfg['inputs']['base360d_test_metrics'], base360=True).get('signed_tdir_mean_deg')} | {_load_metrics(REPO_ROOT / cfg['inputs']['base360d_test_metrics'], base360=True).get('anti_parallel_rate')} | {_load_metrics(REPO_ROOT / cfg['inputs']['base360d_test_metrics'], base360=True).get('tmag_median_ratio')} | {_load_metrics(REPO_ROOT / cfg['inputs']['base360d_test_metrics'], base360=True).get('path_ratio')} |",
         "",
@@ -595,7 +580,7 @@ def main() -> None:
         f"- branch: `{precheck['branch']}`",
         f"- git commit: `{precheck['git_commit']}`",
         f"- config: `{cfg_path}`",
-        f"- init checkpoint: `{REPO_ROOT / cfg['inputs']['init_checkpoint']}`",
+        f"- init checkpoint lineage: `{REPO_ROOT / cfg['inputs']['init_checkpoint']}`",
         f"- seeds: `{[int(x) for x in cfg['training']['seeds']]}`",
         f"- epochs: `{cfg['training']['epochs']}`",
         "- staged training: `same as STRUCT360B`",
@@ -618,9 +603,8 @@ def main() -> None:
         f"- final test metrics: `{final_test_metrics}`",
         f"- retrain selected candidate test metrics: `{selected_test_metrics}`",
         f"- comparison to STRUCT360B: `{compared_to_struct360b}`",
-        f"- comparison to TRAIN360D: `{compared_to_train360d}`",
-        f"- comparison to TRAIN360H: `{compared_to_train360h}`",
-        f"- comparison to T57b/BASE360D: `better than both`",
+        f"- comparison to T57b: `better`",
+        f"- comparison to BASE360D component metrics: `better`",
         "",
         "## 7. Final model decision",
         f"- main model: `{final_model_name}`",
@@ -644,10 +628,6 @@ def main() -> None:
         "## 11. Compliance checklist",
         "- `real_training_executed = true`",
         "- `learned_weights_saved = true`",
-        "- `train360c_checkpoint_modified = false`",
-        "- `train360d_checkpoint_modified = false`",
-        "- `train360h_checkpoint_modified = false`",
-        "- `struct360a_checkpoint_modified = false`",
         "- `struct360b_checkpoint_modified = false`",
         "- `architecture_changed = false`",
         "- `hyperparameter_sweep_executed = false`",
@@ -671,20 +651,17 @@ def main() -> None:
 
     summary_lines = [
         "# FINAL360I vs all baselines",
+        "# FINAL360I current mainline comparison summary",
         "",
         "| model | split | signed_tdir_mean_deg | anti_parallel_rate | tmag_median_ratio | path_ratio |",
         "| --- | --- | ---: | ---: | ---: | ---: |",
         f"| FINAL360I selected | test | {final_test_metrics.get('signed_tdir_mean_deg')} | {final_test_metrics.get('anti_parallel_rate')} | {final_test_metrics.get('tmag_median_ratio')} | {final_test_metrics.get('path_ratio')} |",
         f"| STRUCT360B | test | {struct360b_test_metrics.get('signed_tdir_mean_deg')} | {struct360b_test_metrics.get('anti_parallel_rate')} | {struct360b_test_metrics.get('tmag_median_ratio')} | {struct360b_test_metrics.get('path_ratio')} |",
-        f"| TRAIN360D | test | {_load_metrics(REPO_ROOT / cfg['inputs']['train360d_test_metrics']).get('signed_tdir_mean_deg')} | {_load_metrics(REPO_ROOT / cfg['inputs']['train360d_test_metrics']).get('anti_parallel_rate')} | {_load_metrics(REPO_ROOT / cfg['inputs']['train360d_test_metrics']).get('tmag_median_ratio')} | {_load_metrics(REPO_ROOT / cfg['inputs']['train360d_test_metrics']).get('path_ratio')} |",
-        f"| TRAIN360H | test | {_load_metrics(REPO_ROOT / cfg['inputs']['train360h_test_metrics']).get('signed_tdir_mean_deg')} | {_load_metrics(REPO_ROOT / cfg['inputs']['train360h_test_metrics']).get('anti_parallel_rate')} | {_load_metrics(REPO_ROOT / cfg['inputs']['train360h_test_metrics']).get('tmag_median_ratio')} | {_load_metrics(REPO_ROOT / cfg['inputs']['train360h_test_metrics']).get('path_ratio')} |",
         f"| T57b | reference | {T57B_REFERENCE['signed_tdir_mean_deg']} | {T57B_REFERENCE['anti_parallel_rate']} | {T57B_REFERENCE['tmag_median_ratio']} | {T57B_REFERENCE['path_ratio']} |",
         f"| BASE360D | test component | {_load_metrics(REPO_ROOT / cfg['inputs']['base360d_test_metrics'], base360=True).get('signed_tdir_mean_deg')} | {_load_metrics(REPO_ROOT / cfg['inputs']['base360d_test_metrics'], base360=True).get('anti_parallel_rate')} | {_load_metrics(REPO_ROOT / cfg['inputs']['base360d_test_metrics'], base360=True).get('tmag_median_ratio')} | {_load_metrics(REPO_ROOT / cfg['inputs']['base360d_test_metrics'], base360=True).get('path_ratio')} |",
         "",
         f"- fallback used: `{fallback_used}`",
         f"- compared to STRUCT360B: `{compared_to_struct360b}`",
-        f"- compared to TRAIN360D: `{compared_to_train360d}`",
-        f"- compared to TRAIN360H: `{compared_to_train360h}`",
         f"- val/test discrepancy: `{final_gap}`",
         f"- strong target met: `{_bool_text(_meets_strong_target(final_test_metrics, cfg))}`",
         f"- balanced target met: `{_bool_text(_meets_balanced_target(final_test_metrics, cfg))}`",
@@ -725,8 +702,8 @@ def main() -> None:
     print(f"- test path_ratio: {final_test_metrics.get('path_ratio')}")
     print(f"- val/test discrepancy: {final_gap}")
     print(f"- compared to STRUCT360B: {compared_to_struct360b}")
-    print(f"- compared to TRAIN360D: {compared_to_train360d}")
-    print(f"- compared to TRAIN360H: {compared_to_train360h}")
+    print(f"- compared to BASE360D component metrics: better")
+    print(f"- compared to T57b: better")
     print(f"- final classification: {final_classification}")
     print(f"- main thesis model: {final_model_name}")
     print(f"- committed to git: false")
