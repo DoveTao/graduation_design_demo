@@ -14,6 +14,6 @@
 - compared to SEQ360B trajectory: `unknown`
 - compared to SEQ360A trajectory: `unknown`
 - compared to BASE360D trajectory: `unknown`
-- classification: `evaluation_incomplete_after_training`
+- classification: `evaluation_failed`
 
-- note: `STRUCT360C` training completed and checkpoints were saved, but full test / trajectory evaluation did not complete in this environment.
+- note: `STRUCT360C` eval-only recovery was attempted on `best_val.pt`, but full pair / trajectory evaluation still did not complete in this environment.

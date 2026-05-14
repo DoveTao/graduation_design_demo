@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import argparse
 import json
 import math
 import random
@@ -495,6 +496,8 @@ def _run_trajectory_eval(cfg: Mapping[str, Any], checkpoint_path: Path, device: 
         blockers.extend(convention_warnings)
     if blockers:
         raise RuntimeError(f"trajectory blockers: {blockers}")
+    if convention != "BA":
+        raise RuntimeError(f"Unexpected convention for eval-only recovery: {convention}")
 
     model, _ckpt_cfg, load_summary = _load_model(checkpoint_path, cfg, device)
     predictions = traj._iterate_adjacent_predictions(
@@ -655,6 +658,356 @@ def _recommendation(classification: str) -> str:
     if classification == "regression":
         return "keep_FINAL360I_as_main_and_report_STRUCT360C_ablation"
     return "keep_FINAL360I_as_main_and_report_STRUCT360C_ablation"
+
+
+def _override_eval_cfg(
+    cfg: Mapping[str, Any],
+    *,
+    num_workers: Optional[int],
+    batch_size: Optional[int],
+    trajectory_dir: Optional[str],
+) -> Dict[str, Any]:
+    out = dict(cfg)
+    out["data"] = dict(cfg["data"])
+    out["outputs"] = dict(cfg["outputs"])
+    if num_workers is not None:
+        out["data"]["num_workers"] = int(num_workers)
+    if batch_size is not None:
+        out["data"]["eval_batch_size"] = int(batch_size)
+    if trajectory_dir is not None:
+        out["outputs"]["trajectory_dir"] = str(trajectory_dir)
+    return out
+
+
+def _classify_eval_recovery(
+    pair_test: Mapping[str, Any],
+    traj_test: Mapping[str, Any],
+    *,
+    final360i_pair: Mapping[str, Any],
+    struct360b_pair: Mapping[str, Any],
+    seq360b_traj: Mapping[str, Any],
+    seq360a_traj: Mapping[str, Any],
+) -> str:
+    nan_inf = int(pair_test.get("nan_inf_count") or 0) + int(traj_test.get("nan_inf_count") or 0)
+    signed = _safe_float(pair_test.get("signed_tdir_mean_deg"))
+    anti = _safe_float(pair_test.get("anti_parallel_rate"))
+    sim3 = _safe_float(traj_test.get("ate_sim3_rmse"))
+    traj_path = _safe_float(traj_test.get("trajectory_path_ratio"))
+    if nan_inf > 0:
+        return "eval_failed_nan_inf"
+    if signed is None or anti is None or sim3 is None or traj_path is None:
+        return "evaluation_failed"
+    if signed > 54.96 or anti > 0.2157 or sim3 > 29.467660460312683:
+        return "regression"
+    pair_good = (
+        signed <= float(final360i_pair.get("signed_tdir_mean_deg") or float("inf"))
+        or anti <= float(final360i_pair.get("anti_parallel_rate") or 1.0)
+    )
+    traj_good = (
+        sim3 < 27.564661865900444
+        or traj_path < 1.3502369615185652
+    )
+    pair_not_bad = signed <= 47.0 and anti <= 0.205
+    if pair_good and (traj_path <= 1.7563):
+        return "pair_improved"
+    if traj_good and pair_not_bad:
+        return "trajectory_improved"
+    near_final = abs(signed - float(final360i_pair.get("signed_tdir_mean_deg") or signed)) <= 1.0 and abs(anti - float(final360i_pair.get("anti_parallel_rate") or anti)) <= 0.01
+    near_traj = abs(sim3 - float(seq360a_traj.get("ate_sim3_rmse") or sim3)) <= 2.0 or abs(traj_path - float(seq360b_traj.get("trajectory_path_ratio") or traj_path)) <= 0.2
+    if near_final and near_traj:
+        return "partial"
+    if signed > float(struct360b_pair.get("signed_tdir_mean_deg") or float("inf")) and anti > float(struct360b_pair.get("anti_parallel_rate") or 1.0):
+        return "regression"
+    return "partial"
+
+
+def _compare_recovery_pair(metrics: Mapping[str, Any], ref: Mapping[str, Any]) -> str:
+    return _compare_pair(metrics, ref)
+
+
+def _compare_recovery_traj(metrics: Mapping[str, Any], ref: Mapping[str, Any]) -> str:
+    return _compare_trajectory(metrics, ref)
+
+
+def _build_eval_only_report(
+    *,
+    cfg: Mapping[str, Any],
+    checkpoint_path: Path,
+    checkpoint_meta: Mapping[str, Any],
+    precheck: Mapping[str, Any],
+    val_pair_metrics: Mapping[str, Any],
+    test_pair_metrics: Mapping[str, Any],
+    val_diag: Mapping[str, Any],
+    test_diag: Mapping[str, Any],
+    val_traj_metrics: Mapping[str, Any],
+    test_traj_metrics: Mapping[str, Any],
+    comparisons: Mapping[str, Any],
+    classification: str,
+) -> Tuple[str, str]:
+    baseline = precheck["baseline_recap"]
+    recommendation = "rollback_to_FINAL360I_or_STRUCT360B" if classification in {"eval_failed_nan_inf", "evaluation_failed", "regression"} else "prepare_thesis_experiment_section"
+    main_report = "\n".join(
+        [
+            "# STRUCT360C rotation-aware fine refinement",
+            "",
+            "## 1. Executive summary",
+            "- evaluation_only_recovery: `true`",
+            "- training_executed_in_recovery: `false`",
+            "- checkpoint saved in recovery: `false`",
+            f"- checkpoint evaluated: `{checkpoint_path}`",
+            "- final.pt used for main result: `false`",
+            f"- best checkpoint epoch: `{checkpoint_meta.get('best_epoch')}`",
+            f"- best checkpoint val score: `{checkpoint_meta.get('best_val_score')}`",
+            f"- classification: `{classification}`",
+            f"- pair test metrics: `{test_pair_metrics}`",
+            f"- trajectory test metrics: `{test_traj_metrics}`",
+            "",
+            "## 2. Recovery protocol",
+            "- evaluation_only_recovery = true",
+            "- no training executed in recovery = true",
+            "- no optimizer step = true",
+            "- best checkpoint only = true",
+            "- final.pt not used for main result = true",
+            "- epoch 3 NaN/Inf checkpoint not selected = true",
+            "",
+            "## 3. Pair-level evaluation",
+            "- num_workers = `0`",
+            "- torch.no_grad = `true`",
+            f"- val metrics: `{val_pair_metrics}`",
+            f"- test metrics: `{test_pair_metrics}`",
+            "",
+            "## 4. Trajectory evaluation",
+            "- selected convention = `BA`",
+            "- isolated trajectory export = `true`",
+            f"- val trajectory: `{val_traj_metrics}`",
+            f"- test trajectory: `{test_traj_metrics}`",
+            "",
+            "## 5. Diagnostics",
+            f"- val diagnostics: `{val_diag}`",
+            f"- test diagnostics: `{test_diag}`",
+            f"- any skipped pairs/sequences are recorded in trajectory json outputs.",
+            "",
+            "## 6. Comparison",
+            f"- FINAL360I pair / TRAIN360E traj: `{baseline['FINAL360I_test_pair']}` / `{baseline['TRAIN360E_test_trajectory']}`",
+            f"- STRUCT360B pair: `{baseline['STRUCT360B_test_pair']}`",
+            f"- SEQ360B trajectory: `{baseline['SEQ360B_test_trajectory']}`",
+            f"- SEQ360A trajectory: `{baseline['SEQ360A_test_trajectory']}`",
+            f"- BASE360D trajectory: `{baseline['BASE360D_test_trajectory']}`",
+            f"- comparisons: `{comparisons}`",
+            "",
+            "## 7. Compliance checklist",
+            "- no explicit matching = true",
+            "- no RANSAC / PnP / BA = true / true / true",
+            "- no checkpoint modified = true",
+            "- no learned weights written = true",
+            "- no test split tuning = true",
+            "",
+            "## 8. Recommendation",
+            f"- `{recommendation}`",
+        ]
+    ) + "\n"
+    recovery_report = "\n".join(
+        [
+            "# STRUCT360C eval-only recovery",
+            "",
+            "- evaluation_only_recovery = `true`",
+            "- training_executed_in_recovery = `false`",
+            f"- checkpoint evaluated = `{checkpoint_path}`",
+            "- final.pt used = `false`",
+            f"- selected convention = `BA`",
+            f"- classification = `{classification}`",
+            f"- pair test metrics = `{test_pair_metrics}`",
+            f"- trajectory test metrics = `{test_traj_metrics}`",
+            f"- comparisons = `{comparisons}`",
+        ]
+    ) + "\n"
+    return main_report, recovery_report
+
+
+def _run_eval_only(
+    cfg: Mapping[str, Any],
+    *,
+    checkpoint_path: Path,
+) -> Dict[str, Any]:
+    start_time = time.time()
+    precheck = _run_prechecks(cfg)
+    if precheck["blockers"]:
+        _write_blocker_artifacts(cfg, precheck)
+        raise RuntimeError("STRUCT360C eval-only precheck failed:\n- " + "\n- ".join(precheck["blockers"]))
+
+    device = torch.device(precheck["device"])
+    checkpoint_payload = torch.load(str(checkpoint_path), map_location="cpu")
+    checkpoint_meta = dict(checkpoint_payload.get("metadata", {})) if isinstance(checkpoint_payload, Mapping) else {}
+    model, _ckpt_cfg, load_summary = _load_model(checkpoint_path, cfg, device)
+    model.eval()
+
+    val_ds = precheck["datasets"]["val"]
+    test_ds = precheck["datasets"]["test"]
+    val_loader = DataLoader(
+        val_ds,
+        batch_size=int(cfg["data"]["eval_batch_size"]),
+        shuffle=False,
+        num_workers=int(cfg["data"]["num_workers"]),
+        pin_memory=device.type == "cuda",
+        persistent_workers=False,
+        drop_last=False,
+    )
+    test_loader = DataLoader(
+        test_ds,
+        batch_size=int(cfg["data"]["eval_batch_size"]),
+        shuffle=False,
+        num_workers=int(cfg["data"]["num_workers"]),
+        pin_memory=device.type == "cuda",
+        persistent_workers=False,
+        drop_last=False,
+    )
+
+    val_pair_eval = evaluate_struct360b_pose(
+        model,
+        val_loader,
+        device,
+        tmag_epsilon=float(cfg["data"]["tmag_epsilon"]),
+        max_batches=cfg["evaluation"].get("max_val_batches"),
+    )
+    test_pair_eval = evaluate_struct360b_pose(
+        model,
+        test_loader,
+        device,
+        tmag_epsilon=float(cfg["data"]["tmag_epsilon"]),
+        max_batches=cfg["evaluation"].get("max_test_batches"),
+    )
+    val_diag = _evaluate_struct360c_diagnostics(
+        model,
+        val_loader,
+        device,
+        max_batches=cfg["evaluation"].get("max_val_batches"),
+    )
+    test_diag = _evaluate_struct360c_diagnostics(
+        model,
+        test_loader,
+        device,
+        max_batches=cfg["evaluation"].get("max_test_batches"),
+    )
+    traj_val_raw, traj_test_raw = _run_trajectory_eval(cfg, checkpoint_path, device)
+    val_pair_metrics = val_pair_eval["final_metrics"]
+    test_pair_metrics = test_pair_eval["final_metrics"]
+    val_traj_metrics = _extract_trajectory_metrics(traj_val_raw)
+    test_traj_metrics = _extract_trajectory_metrics(traj_test_raw)
+
+    baseline = precheck["baseline_recap"]
+    comparisons = {
+        "vs_final360i_pair": _compare_recovery_pair(test_pair_metrics, baseline["FINAL360I_test_pair"]),
+        "vs_struct360b": _compare_recovery_pair(test_pair_metrics, baseline["STRUCT360B_test_pair"]),
+        "vs_seq360b_trajectory": _compare_recovery_traj(test_traj_metrics, baseline["SEQ360B_test_trajectory"]),
+        "vs_seq360a_trajectory": _compare_recovery_traj(test_traj_metrics, baseline["SEQ360A_test_trajectory"]),
+        "vs_base360d_trajectory": _compare_recovery_traj(test_traj_metrics, baseline["BASE360D_test_trajectory"]),
+    }
+    classification = _classify_eval_recovery(
+        test_pair_metrics,
+        test_traj_metrics,
+        final360i_pair=baseline["FINAL360I_test_pair"],
+        struct360b_pair=baseline["STRUCT360B_test_pair"],
+        seq360b_traj=baseline["SEQ360B_test_trajectory"],
+        seq360a_traj=baseline["SEQ360A_test_trajectory"],
+    )
+
+    val_payload = {
+        "task_name": cfg["task_name"],
+        "evaluation_only_recovery": True,
+        "training_executed_in_recovery": False,
+        "checkpoint_evaluated": str(checkpoint_path),
+        "final_pt_used": False,
+        "selected_convention": "BA",
+        "pair_metrics": val_pair_metrics,
+        "diagnostics": val_diag,
+        "checkpoint_metadata": checkpoint_meta,
+        "checkpoint_load_summary": load_summary,
+    }
+    test_payload = {
+        "task_name": cfg["task_name"],
+        "evaluation_only_recovery": True,
+        "training_executed_in_recovery": False,
+        "checkpoint_evaluated": str(checkpoint_path),
+        "final_pt_used": False,
+        "selected_convention": "BA",
+        "pair_metrics": test_pair_metrics,
+        "diagnostics": test_diag,
+        "classification": classification,
+        "comparisons": comparisons,
+        "checkpoint_metadata": checkpoint_meta,
+        "checkpoint_load_summary": load_summary,
+    }
+    _write_json(REPO_ROOT / cfg["outputs"]["val_metrics_path"], val_payload)
+    _write_json(REPO_ROOT / cfg["outputs"]["test_metrics_path"], test_payload)
+    _write_json(REPO_ROOT / cfg["outputs"]["trajectory_val_metrics_path"], traj_val_raw)
+    _write_json(REPO_ROOT / cfg["outputs"]["trajectory_test_metrics_path"], traj_test_raw)
+
+    main_report, recovery_report = _build_eval_only_report(
+        cfg=cfg,
+        checkpoint_path=checkpoint_path,
+        checkpoint_meta=checkpoint_meta,
+        precheck=precheck,
+        val_pair_metrics=val_pair_metrics,
+        test_pair_metrics=test_pair_metrics,
+        val_diag=val_diag,
+        test_diag=test_diag,
+        val_traj_metrics=val_traj_metrics,
+        test_traj_metrics=test_traj_metrics,
+        comparisons=comparisons,
+        classification=classification,
+    )
+    (REPO_ROOT / cfg["outputs"]["report_path"]).write_text(main_report, encoding="utf-8")
+    recovery_report_path = REPO_ROOT / "reports" / "STRUCT360C_eval_only_recovery.md"
+    recovery_report_path.write_text(recovery_report, encoding="utf-8")
+
+    summary_lines = [
+        "# STRUCT360C vs FINAL360I STRUCT360B SEQ360A SEQ360B BASE360D summary",
+        "",
+        "| model | signed_tdir_mean_deg | anti_parallel_rate | tmag_median_ratio | pair_path_ratio | trajectory_path_ratio | ATE none | ATE SE3 | ATE Sim3 |",
+        "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+        f"| FINAL360I / TRAIN360E | {_fmt(baseline['FINAL360I_test_pair'].get('signed_tdir_mean_deg'))} | {_fmt(baseline['FINAL360I_test_pair'].get('anti_parallel_rate'))} | {_fmt(baseline['FINAL360I_test_pair'].get('tmag_median_ratio'))} | {_fmt(baseline['FINAL360I_test_pair'].get('path_ratio'))} | {_fmt(baseline['TRAIN360E_test_trajectory'].get('trajectory_path_ratio'))} | {_fmt(baseline['TRAIN360E_test_trajectory'].get('ate_none_rmse'))} | {_fmt(baseline['TRAIN360E_test_trajectory'].get('ate_se3_rmse'))} | {_fmt(baseline['TRAIN360E_test_trajectory'].get('ate_sim3_rmse'))} |",
+        f"| STRUCT360B | {_fmt(baseline['STRUCT360B_test_pair'].get('signed_tdir_mean_deg'))} | {_fmt(baseline['STRUCT360B_test_pair'].get('anti_parallel_rate'))} | {_fmt(baseline['STRUCT360B_test_pair'].get('tmag_median_ratio'))} | {_fmt(baseline['STRUCT360B_test_pair'].get('path_ratio'))} | N/A | N/A | N/A | N/A |",
+        f"| SEQ360B trajectory | N/A | N/A | N/A | N/A | {_fmt(baseline['SEQ360B_test_trajectory'].get('trajectory_path_ratio'))} | {_fmt(baseline['SEQ360B_test_trajectory'].get('ate_none_rmse'))} | {_fmt(baseline['SEQ360B_test_trajectory'].get('ate_se3_rmse'))} | {_fmt(baseline['SEQ360B_test_trajectory'].get('ate_sim3_rmse'))} |",
+        f"| SEQ360A trajectory | {_fmt(baseline['SEQ360A_test_pair'].get('signed_tdir_mean_deg'))} | {_fmt(baseline['SEQ360A_test_pair'].get('anti_parallel_rate'))} | {_fmt(baseline['SEQ360A_test_pair'].get('tmag_median_ratio'))} | {_fmt(baseline['SEQ360A_test_pair'].get('path_ratio'))} | {_fmt(baseline['SEQ360A_test_trajectory'].get('trajectory_path_ratio'))} | {_fmt(baseline['SEQ360A_test_trajectory'].get('ate_none_rmse'))} | {_fmt(baseline['SEQ360A_test_trajectory'].get('ate_se3_rmse'))} | {_fmt(baseline['SEQ360A_test_trajectory'].get('ate_sim3_rmse'))} |",
+        f"| BASE360D trajectory | N/A | N/A | N/A | N/A | {_fmt(baseline['BASE360D_test_trajectory'].get('trajectory_path_ratio'))} | {_fmt(baseline['BASE360D_test_trajectory'].get('ate_none_rmse'))} | {_fmt(baseline['BASE360D_test_trajectory'].get('ate_se3_rmse'))} | {_fmt(baseline['BASE360D_test_trajectory'].get('ate_sim3_rmse'))} |",
+        f"| STRUCT360C | {_fmt(test_pair_metrics.get('signed_tdir_mean_deg'))} | {_fmt(test_pair_metrics.get('anti_parallel_rate'))} | {_fmt(test_pair_metrics.get('tmag_median_ratio'))} | {_fmt(test_pair_metrics.get('path_ratio'))} | {_fmt(test_traj_metrics.get('trajectory_path_ratio'))} | {_fmt(test_traj_metrics.get('ate_none_rmse'))} | {_fmt(test_traj_metrics.get('ate_se3_rmse'))} | {_fmt(test_traj_metrics.get('ate_sim3_rmse'))} |",
+        "",
+        f"- compared to FINAL360I pair-level: `{comparisons['vs_final360i_pair']}`",
+        f"- compared to STRUCT360B: `{comparisons['vs_struct360b']}`",
+        f"- compared to SEQ360B trajectory: `{comparisons['vs_seq360b_trajectory']}`",
+        f"- compared to SEQ360A trajectory: `{comparisons['vs_seq360a_trajectory']}`",
+        f"- compared to BASE360D trajectory: `{comparisons['vs_base360d_trajectory']}`",
+        f"- classification: `{classification}`",
+    ]
+    (REPO_ROOT / cfg["outputs"]["comparison_summary_path"]).write_text("\n".join(summary_lines) + "\n", encoding="utf-8")
+
+    result = {
+        "STRUCT360C eval-only recovery executed": True,
+        "training executed in recovery": False,
+        "checkpoint evaluated": str(checkpoint_path),
+        "final.pt used": False,
+        "selected convention": "BA",
+        "pair test signed_tdir_mean": test_pair_metrics.get("signed_tdir_mean_deg"),
+        "pair test anti_parallel_rate": test_pair_metrics.get("anti_parallel_rate"),
+        "pair test tmag_median_ratio": test_pair_metrics.get("tmag_median_ratio"),
+        "pair test path_ratio": test_pair_metrics.get("path_ratio"),
+        "trajectory test ATE none": test_traj_metrics.get("ate_none_rmse"),
+        "trajectory test ATE SE3": test_traj_metrics.get("ate_se3_rmse"),
+        "trajectory test ATE Sim3": test_traj_metrics.get("ate_sim3_rmse"),
+        "trajectory test path_ratio": test_traj_metrics.get("trajectory_path_ratio"),
+        "compared to FINAL360I pair-level": comparisons["vs_final360i_pair"],
+        "compared to STRUCT360B": comparisons["vs_struct360b"],
+        "compared to SEQ360B trajectory": comparisons["vs_seq360b_trajectory"],
+        "compared to SEQ360A trajectory": comparisons["vs_seq360a_trajectory"],
+        "compared to BASE360D trajectory": comparisons["vs_base360d_trajectory"],
+        "classification": classification,
+        "committed to git": False,
+        "pushed to remote": False,
+        "next recommended task": "rollback_to_FINAL360I_or_STRUCT360B" if classification in {"eval_failed_nan_inf", "evaluation_failed", "regression"} else "prepare_thesis_experiment_section",
+        "elapsed_sec": time.time() - start_time,
+    }
+    print(json.dumps(result, ensure_ascii=False, indent=2))
+    return result
 
 
 def train() -> None:
@@ -1104,4 +1457,25 @@ def train() -> None:
 
 
 if __name__ == "__main__":
-    train()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("config", nargs="?", default=str(DEFAULT_CONFIG))
+    parser.add_argument("--eval-only", action="store_true")
+    parser.add_argument("--checkpoint", default=None)
+    parser.add_argument("--num-workers", type=int, default=None)
+    parser.add_argument("--batch-size", type=int, default=None)
+    parser.add_argument("--trajectory-dir", default=None)
+    args = parser.parse_args()
+
+    cfg = load_yaml_like(Path(args.config))
+    cfg = _override_eval_cfg(
+        cfg,
+        num_workers=args.num_workers,
+        batch_size=args.batch_size,
+        trajectory_dir=args.trajectory_dir,
+    )
+    if args.eval_only:
+        checkpoint_path = Path(args.checkpoint) if args.checkpoint is not None else (REPO_ROOT / cfg["outputs"]["checkpoint_dir"] / "best_val.pt")
+        _run_eval_only(cfg, checkpoint_path=checkpoint_path)
+    else:
+        sys.argv = [sys.argv[0], args.config]
+        train()

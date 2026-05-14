@@ -1,13 +1,14 @@
 # STRUCT360C rotation-aware fine refinement
 
 ## 1. Executive summary
-- training executed: `true`
-- checkpoint saved: `true`
+- evaluation_only_recovery: `true`
+- training executed in recovery: `false`
+- checkpoint saved in recovery: `false`
 - best checkpoint: `/home/dovetao/graduation_design_demo/checkpoints/STRUCT360C_rotation_aware_fine_refinement/best_val.pt`
 - init checkpoint: `/home/dovetao/graduation_design_demo/checkpoints/FINAL360I_struct360b_final/seed0/best_val.pt`
-- classification: `evaluation_incomplete_after_training`
-- pair metrics: `test evaluation not completed in this run`
-- trajectory metrics: `trajectory evaluation not completed in this run`
+- classification: `evaluation_failed`
+- pair metrics: `not recovered`
+- trajectory metrics: `not recovered`
 
 ## 2. Motivation
 - FINAL360I pair-level strong.
@@ -45,13 +46,13 @@
 ## 7. Test pair-level results
 - FINAL360I: `available in reports/FINAL360I_metrics_test.json`
 - STRUCT360B: `available in reports/STRUCT360B_metrics_test.json`
-- STRUCT360C: `not completed in this run`
+- STRUCT360C: `eval-only recovery did not finish`
 
 ## 8. Test trajectory results
 - TRAIN360E FINAL360I: `available in reports/TRAIN360E_metrics_test.json`
 - SEQ360B: `available in external_baselines/results/seq360b_scale_smoothing_trajectory/`
 - SEQ360A: `available in reports/SEQ360A_trajectory_metrics_test.json`
-- STRUCT360C: `not completed in this run`
+- STRUCT360C: `eval-only recovery did not finish`
 - BASE360D: `available in reports/BASE360_metrics_test.json`
 
 ## 9. Diagnostics
@@ -64,11 +65,12 @@
 ## 10. Analysis
 - rotation-aware bias was integrated into fine cross-attention logits: `true`
 - training completed and checkpoints were saved: `true`
-- full test / trajectory evaluation completed: `false`
-- current blocker: `evaluation tail did not finish within reasonable runtime in this environment`
+- eval-only recovery executed: `true`
+- full test / trajectory evaluation completed in recovery: `false`
+- current blocker: `pair/trajectory eval-only recovery did not finish within reasonable runtime in this environment even with num_workers=0`
 
 ## 11. Recommendation
-- `keep_FINAL360I_as_main_and_report_STRUCT360C_ablation`
+- `rollback_to_FINAL360I_or_STRUCT360B`
 
 ## 12. Compliance checklist
 - `training_executed = true`
@@ -86,7 +88,7 @@
 - `base360_outputs_used_as_training_input = false`
 - `train_manifest_used = true`
 - `val_manifest_used_for_selection_only = true`
-- `test_manifest_used_for_final_eval_only = false`
+- `test_manifest_used_for_final_eval_only = true`
 - `dset2c_canonical_split_used = true`
 - `random_pair_split_used = false`
 - `direct_glob_data_360dvo_sequences = false`
