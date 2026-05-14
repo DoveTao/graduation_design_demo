@@ -1,0 +1,111 @@
+{
+  "README.md": {
+    "exists": true,
+    "is_dir": false
+  },
+  "CURRENT_MAINLINE.md": {
+    "exists": true,
+    "is_dir": false
+  },
+  "PROJECT_STRUCTURE.md": {
+    "exists": true,
+    "is_dir": false
+  },
+  "tools/current/show_mainline.py": {
+    "exists": true,
+    "is_dir": false
+  },
+  "tools/current/check_current_artifacts.py": {
+    "exists": true,
+    "is_dir": false
+  },
+  "train360/core": {
+    "exists": true,
+    "is_dir": true
+  },
+  "datasets/dset2c_manifest_dataset.py": {
+    "exists": true,
+    "is_dir": false
+  },
+  "datasets/dset2c_sequence_clip_dataset.py": {
+    "exists": true,
+    "is_dir": false
+  },
+  "models/struct360b_match_free_coarse_to_fine.py": {
+    "exists": true,
+    "is_dir": false
+  },
+  "models/seq360b_scale_smoothing_head.py": {
+    "exists": true,
+    "is_dir": false
+  },
+  "configs/final360i_struct360b_final.yaml": {
+    "exists": true,
+    "is_dir": false
+  },
+  "configs/seq360b_lightweight_scale_smoothing.yaml": {
+    "exists": true,
+    "is_dir": false
+  },
+  "tools/final360i_retrain_and_select.py": {
+    "exists": true,
+    "is_dir": false
+  },
+  "tools/train360e_sequence_trajectory_export_and_ate_eval.py": {
+    "exists": true,
+    "is_dir": false
+  },
+  "tools/train_seq360b_lightweight_scale_smoothing.py": {
+    "exists": true,
+    "is_dir": false
+  },
+  "reports/FINAL360I_metrics_test.json": {
+    "exists": true,
+    "is_dir": false
+  },
+  "reports/TRAIN360E_metrics_test.json": {
+    "exists": true,
+    "is_dir": false
+  },
+  "reports/SEQ360B_metrics_test.json": {
+    "exists": true,
+    "is_dir": false
+  },
+  "reports/SEQ360B_trajectory_metrics_test.json": {
+    "exists": true,
+    "is_dir": false
+  },
+  "reports/BASE360D_component_metric_alignment.md": {
+    "exists": true,
+    "is_dir": false
+  },
+  "reports/MAIN360_mainline_merge_finalization.md": {
+    "exists": true,
+    "is_dir": false
+  },
+  "thesis/THESIS361_final_experiment_chapter_zh.md": {
+    "exists": true,
+    "is_dir": false
+  },
+  "thesis/THESIS361_final_experiment_chapter_en.md": {
+    "exists": true,
+    "is_dir": false
+  },
+  "thesis/THESIS361_final_results_tables.md": {
+    "exists": true,
+    "is_dir": false
+  },
+  "thesis/THESIS361_final_insert_pack.md": {
+    "exists": true,
+    "is_dir": false
+  },
+  "thesis/THESIS361_claims_and_caveats_checklist.md": {
+    "exists": true,
+    "is_dir": false
+  },
+  "thesis/THESIS361_defense_experiment_script.md": {
+    "exists": true,
+    "is_dir": false
+  },
+  "all_present": true
+}

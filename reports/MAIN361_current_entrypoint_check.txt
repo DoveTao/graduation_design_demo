@@ -1,0 +1,148 @@
+Current thesis pair-level mainline:
+  model: FINAL360I_struct360b_final_selected
+  structure lineage: STRUCT360B_match_free_coarse_to_fine
+  config: configs/final360i_struct360b_final.yaml
+  trainer: tools/final360i_retrain_and_select.py
+  base model: models/struct360b_match_free_coarse_to_fine.py
+  dataset: datasets/dset2c_manifest_dataset.py
+Trajectory evaluation path:
+  tool: tools/train360e_sequence_trajectory_export_and_ate_eval.py
+Retained variant:
+  SEQ360B: tools/train_seq360b_lightweight_scale_smoothing.py
+  head: models/seq360b_scale_smoothing_head.py
+External baselines:
+  BASE360D: HKUST official 360DVO trajectory/component baseline
+  T57b: legacy recovered ERP pair baseline reference
+Archived status summaries:
+  SEQ360A: reports/SEQ360A_status_summary.md
+  STRUCT360C: reports/STRUCT360C_status_summary.md
+Core package:
+  train360/core/
+Quick docs:
+  README.md
+  CURRENT_MAINLINE.md
+  PROJECT_STRUCTURE.md
+
+
+{
+  "readme": {
+    "path": "README.md",
+    "exists": true
+  },
+  "current_mainline_doc": {
+    "path": "CURRENT_MAINLINE.md",
+    "exists": true
+  },
+  "pair_main_config": {
+    "path": "configs/final360i_struct360b_final.yaml",
+    "exists": true
+  },
+  "pair_base_config": {
+    "path": "configs/struct360b_match_free_coarse_to_fine.yaml",
+    "exists": true
+  },
+  "seq360b_config": {
+    "path": "configs/seq360b_lightweight_scale_smoothing.yaml",
+    "exists": true
+  },
+  "pair_main_tool": {
+    "path": "tools/final360i_retrain_and_select.py",
+    "exists": true
+  },
+  "trajectory_eval_tool": {
+    "path": "tools/train360e_sequence_trajectory_export_and_ate_eval.py",
+    "exists": true
+  },
+  "struct360b_tool": {
+    "path": "tools/train_struct360b_match_free_coarse_to_fine.py",
+    "exists": true
+  },
+  "seq360b_tool": {
+    "path": "tools/train_seq360b_lightweight_scale_smoothing.py",
+    "exists": true
+  },
+  "pair_main_model": {
+    "path": "models/struct360b_match_free_coarse_to_fine.py",
+    "exists": true
+  },
+  "seq360b_model": {
+    "path": "models/seq360b_scale_smoothing_head.py",
+    "exists": true
+  },
+  "core_model": {
+    "path": "train360/core/model.py",
+    "exists": true
+  },
+  "manifest_dataset": {
+    "path": "datasets/dset2c_manifest_dataset.py",
+    "exists": true
+  },
+  "sequence_dataset": {
+    "path": "datasets/dset2c_sequence_clip_dataset.py",
+    "exists": true
+  },
+  "final360i_report": {
+    "path": "reports/FINAL360I_metrics_test.json",
+    "exists": true
+  },
+  "train360e_report": {
+    "path": "reports/TRAIN360E_metrics_test.json",
+    "exists": true
+  },
+  "seq360b_report": {
+    "path": "reports/SEQ360B_metrics_test.json",
+    "exists": true
+  },
+  "base360d_report": {
+    "path": "reports/BASE360D_component_metric_alignment.md",
+    "exists": true
+  },
+  "canonical_manifest": {
+    "path": "external_baselines/results/dset2c_360dvo_canonical/pair_manifest_test.jsonl",
+    "exists": true
+  },
+  "all_present": true,
+  "optional": {
+    "seq360a_status_summary": {
+      "path": "reports/SEQ360A_status_summary.md",
+      "exists": true
+    },
+    "struct360c_status_summary": {
+      "path": "reports/STRUCT360C_status_summary.md",
+      "exists": true
+    }
+  },
+  "intentionally_omitted_after_cleanup": {
+    "base360d_val_metrics": {
+      "path": "reports/BASE360D_metrics_val.json",
+      "exists": false,
+      "status": "intentionally_omitted_after_cleanup"
+    },
+    "final360i_previous_summary": {
+      "path": "reports/FINAL360I_vs_all_baselines_summary.md",
+      "exists": false,
+      "status": "intentionally_omitted_after_cleanup"
+    },
+    "seq360b_trajectory_dir": {
+      "path": "external_baselines/results/seq360b_scale_smoothing_trajectory",
+      "exists": false,
+      "status": "intentionally_omitted_after_cleanup"
+    },
+    "seq360b_previous_val_metrics": {
+      "path": "reports/SEQ360B_metrics_val.json",
+      "exists": false,
+      "status": "intentionally_omitted_after_cleanup"
+    },
+    "seq360b_previous_trajectory_val_metrics": {
+      "path": "reports/SEQ360B_trajectory_metrics_val.json",
+      "exists": false,
+      "status": "intentionally_omitted_after_cleanup"
+    },
+    "seq360b_previous_summary": {
+      "path": "reports/SEQ360B_vs_FINAL360I_TRAIN360E_BASE360D_summary.md",
+      "exists": false,
+      "status": "intentionally_omitted_after_cleanup"
+    }
+  }
+}
+

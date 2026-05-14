@@ -1,0 +1,489 @@
+reports/TRAIN360H_best_config_val.json:2:  "run_id": "TRAIN360H_F01_TRAIN360H_S1_best_seed1",
+reports/TRAIN360H_best_config_val.json:36:  "checkpoint": "/home/dovetao/graduation_design_demo/checkpoints/TRAIN360H_sweep/TRAIN360H_F01_TRAIN360H_S1_best_seed1/best_val.pt",
+reports/TRAIN360H_best_config_val.json:38:    "task_name": "TRAIN360H_F01_TRAIN360H_S1_best_seed1",
+reports/TRAIN360H_best_config_val.json:48:      "init_checkpoint": "checkpoints/TRAIN360C_spherical_pose_baseline/best_val.pt",
+reports/TRAIN360H_best_config_val.json:49:      "train360c_best_checkpoint": "checkpoints/TRAIN360C_spherical_pose_baseline/best_val.pt",
+reports/TRAIN360H_best_config_val.json:50:      "train360c_final_checkpoint": "checkpoints/TRAIN360C_spherical_pose_baseline/final.pt",
+reports/TRAIN360H_best_config_val.json:51:      "train360c_val_metrics": "reports/TRAIN360C_metrics_val.json",
+reports/TRAIN360H_best_config_val.json:52:      "train360c_test_metrics": "reports/TRAIN360C_metrics_test.json",
+reports/TRAIN360H_best_config_val.json:57:      "checkpoint_dir": "checkpoints/TRAIN360H_sweep/TRAIN360H_F01_TRAIN360H_S1_best_seed1",
+reports/TRAIN360H_best_config_val.json:58:      "report_path": "checkpoints/TRAIN360H_sweep/TRAIN360H_F01_TRAIN360H_S1_best_seed1/run_report.md",
+reports/TRAIN360H_best_config_val.json:59:      "val_metrics_path": "checkpoints/TRAIN360H_sweep/TRAIN360H_F01_TRAIN360H_S1_best_seed1/metrics_val.json",
+reports/TRAIN360H_best_config_val.json:60:      "test_metrics_path": "checkpoints/TRAIN360H_sweep/TRAIN360H_F01_TRAIN360H_S1_best_seed1/metrics_test.json",
+reports/TRAIN360H_best_config_val.json:61:      "comparison_summary_path": "checkpoints/TRAIN360H_sweep/TRAIN360H_F01_TRAIN360H_S1_best_seed1/comparison_summary.md",
+reports/TRAIN360H_best_config_val.json:149:      "run_id": "TRAIN360H_F01_TRAIN360H_S1_best_seed1",
+reports/MAINT14_dependency_health_check.md:33:| PROJECT_STRUCTURE.md | 57 | `scene01` | `false` | `legacy_reference` | `keep` |
+reports/MAINT14_dependency_health_check.md:43:| configs/final360i_struct360b_final.yaml | 19 | `TRAIN360D` | `false` | `legacy_reference` | `keep` |
+reports/MAINT14_dependency_health_check.md:44:| configs/final360i_struct360b_final.yaml | 19 | `checkpoints/TRAIN360D_observability_kstep_scale/best_val.pt` | `true` | `legacy_reference` | `keep` |
+reports/MAINT14_dependency_health_check.md:46:| configs/final360i_struct360b_final.yaml | 21 | `TRAIN360C` | `false` | `legacy_reference` | `keep` |
+reports/MAINT14_dependency_health_check.md:47:| configs/final360i_struct360b_final.yaml | 21 | `reports/TRAIN360C_metrics_val.json` | `true` | `legacy_reference` | `keep` |
+reports/MAINT14_dependency_health_check.md:48:| configs/final360i_struct360b_final.yaml | 22 | `TRAIN360C` | `false` | `legacy_reference` | `keep` |
+reports/MAINT14_dependency_health_check.md:49:| configs/final360i_struct360b_final.yaml | 22 | `reports/TRAIN360C_metrics_test.json` | `true` | `legacy_reference` | `keep` |
+reports/MAINT14_dependency_health_check.md:50:| configs/final360i_struct360b_final.yaml | 23 | `TRAIN360D` | `false` | `legacy_reference` | `keep` |
+reports/MAINT14_dependency_health_check.md:51:| configs/final360i_struct360b_final.yaml | 23 | `reports/TRAIN360D_metrics_val.json` | `true` | `legacy_reference` | `keep` |
+reports/MAINT14_dependency_health_check.md:52:| configs/final360i_struct360b_final.yaml | 24 | `TRAIN360D` | `false` | `legacy_reference` | `keep` |
+reports/MAINT14_dependency_health_check.md:53:| configs/final360i_struct360b_final.yaml | 24 | `reports/TRAIN360D_metrics_test.json` | `true` | `legacy_reference` | `keep` |
+reports/MAINT14_dependency_health_check.md:54:| configs/final360i_struct360b_final.yaml | 25 | `TRAIN360H` | `false` | `legacy_reference` | `keep` |
+reports/MAINT14_dependency_health_check.md:55:| configs/final360i_struct360b_final.yaml | 25 | `reports/TRAIN360H_best_config_val.json` | `true` | `legacy_reference` | `keep` |
+reports/MAINT14_dependency_health_check.md:56:| configs/final360i_struct360b_final.yaml | 26 | `TRAIN360H` | `false` | `legacy_reference` | `keep` |
+reports/MAINT14_dependency_health_check.md:57:| configs/final360i_struct360b_final.yaml | 26 | `reports/TRAIN360H_best_config_test.json` | `true` | `legacy_reference` | `keep` |
+reports/MAINT14_dependency_health_check.md:58:| configs/final360i_struct360b_final.yaml | 27 | `STRUCT360A` | `false` | `legacy_reference` | `keep` |
+reports/MAINT14_dependency_health_check.md:59:| configs/final360i_struct360b_final.yaml | 27 | `reports/STRUCT360A_metrics_val.json` | `true` | `legacy_reference` | `keep` |
+reports/MAINT14_dependency_health_check.md:60:| configs/final360i_struct360b_final.yaml | 28 | `STRUCT360A` | `false` | `legacy_reference` | `keep` |
+reports/MAINT14_dependency_health_check.md:61:| configs/final360i_struct360b_final.yaml | 28 | `reports/STRUCT360A_metrics_test.json` | `true` | `legacy_reference` | `keep` |
+reports/MAINT14_dependency_health_check.md:117:| tools/final360i_retrain_and_select.py | 352 | `TRAIN360C` | `false` | `legacy_reference` | `keep` |
+reports/MAINT14_dependency_health_check.md:118:| tools/final360i_retrain_and_select.py | 353 | `TRAIN360D` | `false` | `legacy_reference` | `keep` |
+reports/MAINT14_dependency_health_check.md:119:| tools/final360i_retrain_and_select.py | 354 | `TRAIN360H` | `false` | `legacy_reference` | `keep` |
+reports/MAINT14_dependency_health_check.md:120:| tools/final360i_retrain_and_select.py | 355 | `STRUCT360A` | `false` | `legacy_reference` | `keep` |
+reports/MAINT14_dependency_health_check.md:121:| tools/final360i_retrain_and_select.py | 604 | `TRAIN360C` | `false` | `legacy_reference` | `keep` |
+reports/MAINT14_dependency_health_check.md:122:| tools/final360i_retrain_and_select.py | 605 | `TRAIN360D` | `false` | `legacy_reference` | `keep` |
+reports/MAINT14_dependency_health_check.md:123:| tools/final360i_retrain_and_select.py | 606 | `TRAIN360H` | `false` | `legacy_reference` | `keep` |
+reports/MAINT14_dependency_health_check.md:124:| tools/final360i_retrain_and_select.py | 607 | `STRUCT360A` | `false` | `legacy_reference` | `keep` |
+reports/MAINT14_dependency_health_check.md:125:| tools/final360i_retrain_and_select.py | 638 | `TRAIN360D` | `false` | `legacy_reference` | `keep` |
+reports/MAINT14_dependency_health_check.md:126:| tools/final360i_retrain_and_select.py | 639 | `TRAIN360H` | `false` | `legacy_reference` | `keep` |
+reports/MAINT14_dependency_health_check.md:129:| tools/final360i_retrain_and_select.py | 696 | `TRAIN360D` | `false` | `legacy_reference` | `keep` |
+reports/MAINT14_dependency_health_check.md:130:| tools/final360i_retrain_and_select.py | 697 | `TRAIN360H` | `false` | `legacy_reference` | `keep` |
+reports/MAINT14_dependency_health_check.md:131:| tools/final360i_retrain_and_select.py | 703 | `TRAIN360D` | `false` | `legacy_reference` | `keep` |
+reports/MAINT14_dependency_health_check.md:132:| tools/final360i_retrain_and_select.py | 704 | `TRAIN360H` | `false` | `legacy_reference` | `keep` |
+reports/MAINT14_dependency_health_check.md:133:| tools/final360i_retrain_and_select.py | 745 | `TRAIN360D` | `false` | `legacy_reference` | `keep` |
+reports/MAINT14_dependency_health_check.md:134:| tools/final360i_retrain_and_select.py | 746 | `TRAIN360H` | `false` | `legacy_reference` | `keep` |
+reports/MAINT14_dependency_health_check.md:137:| train360/core/model.py | 458 | `S5E15` | `false` | `legacy_reference` | `keep` |
+reports/MAINT14_dependency_health_check.md:138:| train360/core/model.py | 683 | `S5E15` | `false` | `legacy_reference` | `keep` |
+reports/STRUCT360A_metrics_test.json:2:  "task_name": "STRUCT360A_main_Dinit",
+reports/STRUCT360A_metrics_test.json:3:  "checkpoint_used": "/home/dovetao/graduation_design_demo/checkpoints/STRUCT360A_implicit_spherical_cross_attention/best_val.pt",
+reports/TRAIN360E_metrics_val.json:4286:      "?? checkpoints/STRUCT360A_implicit_spherical_cross_attention/",
+reports/TRAIN360E_metrics_val.json:4288:      "?? checkpoints/TRAIN360D_observability_kstep_scale/",
+reports/TRAIN360E_metrics_val.json:4289:      "?? checkpoints/TRAIN360H_sweep/",
+reports/TRAIN360E_metrics_val.json:4310:      "  experiment/struct360a-implicit-spherical-cross-attention        7b01b2a [origin/experiment/struct360a-implicit-spherical-cross-attention] MAINT: update STRUCT360A push status after successful sync",
+reports/TRAIN360E_metrics_val.json:4312:      "  experiment/train360d-observability-kstep-scale                  14bd3af [origin/experiment/train360d-observability-kstep-scale] MAINT: prune non-best TRAIN360H sweep checkpoints",
+reports/TRAIN360E_metrics_val.json:4315:      "  maintenance/env-git-cleanup                                     a6eb3e1 [origin/maintenance/env-git-cleanup] MAINT: document TRAIN360D branch preparation",
+reports/TRAIN360E_metrics_val.json:4568:            "name": "TRAIN360C",
+reports/TRAIN360E_metrics_val.json:4597:            "name": "TRAIN360D",
+reports/TRAIN360E_metrics_val.json:4633:            "name": "TRAIN360H",
+reports/TRAIN360E_metrics_val.json:4669:            "name": "STRUCT360A",
+reports/TRAIN360C_metrics_val.json:2:  "task_name": "TRAIN360C_spherical_pose_baseline",
+reports/TRAIN360C_metrics_val.json:3:  "checkpoint_used": "/home/dovetao/graduation_design_demo/checkpoints/TRAIN360C_spherical_pose_baseline/best_val.pt",
+reports/TRAIN360D_observability_kstep_scale_stabilization.md:1:# TRAIN360D observability / k-step / scale stabilization
+reports/TRAIN360D_observability_kstep_scale_stabilization.md:6:- best checkpoint path: `/home/dovetao/graduation_design_demo/checkpoints/TRAIN360D_observability_kstep_scale/best_val.pt`
+reports/TRAIN360D_observability_kstep_scale_stabilization.md:7:- whether TRAIN360C was preserved: `true`
+reports/TRAIN360D_observability_kstep_scale_stabilization.md:13:- TRAIN360C val numbers: `{'count': 5342, 'coverage': 1.0, 'rot_mean_deg': 1.6207817274503875, 'rot_median_deg': 1.4548146724700928, 'rot_p90_deg': 2.386548852920535, 'signed_tdir_mean_deg': 111.86139636050414, 'signed_tdir_median_deg': 126.03379567453939, 'signed_tdir_p90_deg': 149.9810230984543, 'unsigned_tdir_mean_deg': 51.82972950681737, 'unsigned_tdir_median_deg': 46.69579100547433, 'unsigned_tdir_p90_deg': 82.83056154949084, 'anti_parallel_rate': 0.7132160239610633, 'tmag_median_ratio': 1.0500272154773382, 'tmag_mean_ratio': 1.4846339810060392, 'tmag_p90_ratio': 3.7898684874353137, 'log_tmag_mae': 0.7252769329385486, 'path_ratio': 0.586026844451413, 'path_length_pred': 3560.4996472895145, 'path_length_gt': 6075.659640852362, 'nan_inf_count': 0, 'ate_none': None, 'ate_se3': None, 'ate_sim3': None}`
+reports/TRAIN360D_observability_kstep_scale_stabilization.md:14:- TRAIN360C test numbers: `{'count': 5062, 'coverage': 1.0, 'rot_mean_deg': 3.10108115458114, 'rot_median_deg': 1.37955904006958, 'rot_p90_deg': 6.586977815628064, 'signed_tdir_mean_deg': 54.956992341554056, 'signed_tdir_median_deg': 32.252885214586854, 'signed_tdir_p90_deg': 136.8987411712531, 'unsigned_tdir_mean_deg': 36.179565415569876, 'unsigned_tdir_median_deg': 30.233118255638377, 'unsigned_tdir_p90_deg': 63.42356182828336, 'anti_parallel_rate': 0.21572500987751878, 'tmag_median_ratio': 0.7692854374461574, 'tmag_mean_ratio': 1.0144076650971499, 'tmag_p90_ratio': 2.273796730138812, 'log_tmag_mae': 0.6861240981342551, 'path_ratio': 0.5888660831060318, 'path_length_pred': 4801.225281059742, 'path_length_gt': 8153.339814946055, 'nan_inf_count': 0, 'ate_none': None, 'ate_se3': None, 'ate_sim3': None}`
+reports/TRAIN360D_observability_kstep_scale_stabilization.md:30:- init checkpoint: `/home/dovetao/graduation_design_demo/checkpoints/TRAIN360C_spherical_pose_baseline/best_val.pt`
+reports/TRAIN360D_observability_kstep_scale_stabilization.md:36:## 5. TRAIN360D modifications
+reports/TRAIN360D_observability_kstep_scale_stabilization.md:67:- val composite score reason: `signed direction was the dominant failure mode in TRAIN360C, but score also penalizes anti-parallel errors and median scale drift so checkpoint selection does not chase one metric at the expense of the others.`
+reports/TRAIN360D_observability_kstep_scale_stabilization.md:70:- comparison to TRAIN360C val: `signed_tdir 111.86139636050414 -> 100.96635328042524, anti_parallel 0.7132160239610633 -> 0.6475102957693748, path_ratio 0.586026844451413 -> 0.5193150078709948`
+reports/TRAIN360D_observability_kstep_scale_stabilization.md:73:- selected checkpoint: `/home/dovetao/graduation_design_demo/checkpoints/TRAIN360D_observability_kstep_scale/best_val.pt`
+reports/TRAIN360D_observability_kstep_scale_stabilization.md:75:- comparison to TRAIN360C test: `signed_tdir 54.956992341554056 -> 44.986174454415895, anti_parallel 0.21572500987751878 -> 0.19695772421967603, tmag_median_ratio 0.7692854374461574 -> 0.7572524310356576, path_ratio 0.5888660831060318 -> 0.5787942300950458`
+reports/TRAIN360D_observability_kstep_scale_stabilization.md:80:- Did observability weighting help? `obs weights tracked every epoch in /home/dovetao/graduation_design_demo/checkpoints/TRAIN360D_observability_kstep_scale/train_log.jsonl; best final read is indirect via signed_tdir / anti_parallel changes.`
+reports/TRAIN360D_observability_kstep_scale_stabilization.md:83:- Did val/test discrepancy shrink? `TRAIN360C gap=56.90440401895009, TRAIN360D gap=55.98017882600934`
+reports/TRAIN360D_observability_kstep_scale_stabilization.md:88:- `proceed_to_TRAIN360D_ablation`
+reports/TRAIN360D_observability_kstep_scale_stabilization.md:103:- `legacy_scene01_artifact_dependency = false`
+reports/TRAIN360D_metrics_val.json:2:  "task_name": "TRAIN360D_observability_kstep_scale_stabilization",
+reports/TRAIN360D_metrics_val.json:3:  "checkpoint_used": "/home/dovetao/graduation_design_demo/checkpoints/TRAIN360D_observability_kstep_scale/best_val.pt",
+reports/MAINT15_legacy_label_scan.md:24:| `configs/final360i_struct360b_final.yaml` | 19 | `checkpoints/TRAIN360D_observability_kstep_scale/best_val.pt` | `historical_note` | `keep` |
+reports/MAINT13_keep_list.txt:39:reports/TRAIN360C_metrics_val.json
+reports/MAINT13_keep_list.txt:40:reports/TRAIN360C_metrics_test.json
+reports/MAINT13_keep_list.txt:41:reports/TRAIN360D_metrics_val.json
+reports/MAINT13_keep_list.txt:42:reports/TRAIN360D_metrics_test.json
+reports/MAINT13_keep_list.txt:43:reports/TRAIN360D_observability_kstep_scale_stabilization.md
+reports/MAINT13_keep_list.txt:44:reports/TRAIN360H_best_config_val.json
+reports/MAINT13_keep_list.txt:45:reports/TRAIN360H_best_config_test.json
+reports/MAINT13_keep_list.txt:46:reports/TRAIN360H_hyperparameter_sweep.md
+reports/MAINT13_keep_list.txt:47:reports/STRUCT360A_metrics_val.json
+reports/MAINT13_keep_list.txt:48:reports/STRUCT360A_metrics_test.json
+reports/MAINT13_keep_list.txt:49:reports/STRUCT360A_implicit_spherical_cross_attention.md
+reports/MAINT15_dependency_health_after_label_trim.json:288:      "reference": "TRAIN360D",
+reports/MAINT15_dependency_health_after_label_trim.json:296:      "reference": "checkpoints/TRAIN360D_observability_kstep_scale/best_val.pt",
+reports/MAINT15_dependency_health_after_label_trim.json:856:      "reference": "S5E15",
+reports/MAINT15_dependency_health_after_label_trim.json:864:      "reference": "S5E15",
+reports/FINAL360I_model_selection_table.json:75:      "name": "TRAIN360C",
+reports/FINAL360I_model_selection_table.json:104:      "name": "TRAIN360D",
+reports/FINAL360I_model_selection_table.json:140:      "name": "TRAIN360H",
+reports/FINAL360I_model_selection_table.json:176:      "name": "STRUCT360A",
+reports/TRAIN360D_metrics_test.json:2:  "task_name": "TRAIN360D_observability_kstep_scale_stabilization",
+reports/TRAIN360D_metrics_test.json:3:  "checkpoint_used": "/home/dovetao/graduation_design_demo/checkpoints/TRAIN360D_observability_kstep_scale/best_val.pt",
+reports/TRAIN360E_metrics_test.json:4076:      "?? checkpoints/STRUCT360A_implicit_spherical_cross_attention/",
+reports/TRAIN360E_metrics_test.json:4078:      "?? checkpoints/TRAIN360D_observability_kstep_scale/",
+reports/TRAIN360E_metrics_test.json:4079:      "?? checkpoints/TRAIN360H_sweep/",
+reports/TRAIN360E_metrics_test.json:4100:      "  experiment/struct360a-implicit-spherical-cross-attention        7b01b2a [origin/experiment/struct360a-implicit-spherical-cross-attention] MAINT: update STRUCT360A push status after successful sync",
+reports/TRAIN360E_metrics_test.json:4102:      "  experiment/train360d-observability-kstep-scale                  14bd3af [origin/experiment/train360d-observability-kstep-scale] MAINT: prune non-best TRAIN360H sweep checkpoints",
+reports/TRAIN360E_metrics_test.json:4105:      "  maintenance/env-git-cleanup                                     a6eb3e1 [origin/maintenance/env-git-cleanup] MAINT: document TRAIN360D branch preparation",
+reports/TRAIN360E_metrics_test.json:4358:            "name": "TRAIN360C",
+reports/TRAIN360E_metrics_test.json:4387:            "name": "TRAIN360D",
+reports/TRAIN360E_metrics_test.json:4423:            "name": "TRAIN360H",
+reports/TRAIN360E_metrics_test.json:4459:            "name": "STRUCT360A",
+reports/MAINT15_dependency_health_after_label_trim.md:49:| configs/final360i_struct360b_final.yaml | 19 | `TRAIN360D` | `false` | `legacy_reference` | `keep` |
+reports/MAINT15_dependency_health_after_label_trim.md:50:| configs/final360i_struct360b_final.yaml | 19 | `checkpoints/TRAIN360D_observability_kstep_scale/best_val.pt` | `true` | `legacy_reference` | `keep` |
+reports/MAINT15_dependency_health_after_label_trim.md:120:| train360/core/model.py | 458 | `S5E15` | `false` | `legacy_reference` | `keep` |
+reports/MAINT15_dependency_health_after_label_trim.md:121:| train360/core/model.py | 683 | `S5E15` | `false` | `legacy_reference` | `keep` |
+reports/TRAIN360C_metrics_test.json:2:  "task_name": "TRAIN360C_spherical_pose_baseline",
+reports/TRAIN360C_metrics_test.json:3:  "checkpoint_used": "/home/dovetao/graduation_design_demo/checkpoints/TRAIN360C_spherical_pose_baseline/best_val.pt",
+tools/run_base360_hkust_360dvo_official.py:31:DEFAULT_TRAIN360C_REPORT = REPO_ROOT / "reports" / "TRAIN360C_spherical_pose_baseline.md"
+tools/run_base360_hkust_360dvo_official.py:32:DEFAULT_TRAIN360C_VAL = REPO_ROOT / "reports" / "TRAIN360C_metrics_val.json"
+tools/run_base360_hkust_360dvo_official.py:33:DEFAULT_TRAIN360C_TEST = REPO_ROOT / "reports" / "TRAIN360C_metrics_test.json"
+tools/run_base360_hkust_360dvo_official.py:34:DEFAULT_TRAIN360C_CKPT = REPO_ROOT / "checkpoints" / "TRAIN360C_spherical_pose_baseline" / "best_val.pt"
+tools/run_base360_hkust_360dvo_official.py:318:            "calibration_source": "official demo intrinsics from image size; no dataset-specific legacy scene01 calibration used",
+tools/run_base360_hkust_360dvo_official.py:458:            "model": "TRAIN360C self-developed baseline",
+tools/run_base360_hkust_360dvo_official.py:459:            "source": "reports/TRAIN360C_metrics_val.json",
+tools/run_base360_hkust_360dvo_official.py:473:            "model": "TRAIN360C self-developed baseline",
+tools/run_base360_hkust_360dvo_official.py:474:            "source": "reports/TRAIN360C_metrics_test.json",
+tools/run_base360_hkust_360dvo_official.py:582:        "- 与 TRAIN360C 相比的主要结论: 当前无法形成 BASE360 官方结果，因为 official method 在本地未完成依赖安装、CUDA 扩展构建和权重下载；TRAIN360C 仍是当前唯一完整的 DSET2C canonical val/test 结果。",
+tools/run_base360_hkust_360dvo_official.py:609:        "- calibration / ERP config: official demo uses ERP intrinsics derived from image height/width; no legacy scene01 calibration was used",
+tools/run_base360_hkust_360dvo_official.py:632:        "## 9. TRAIN360C vs BASE360 vs T57b comparison",
+tools/run_base360_hkust_360dvo_official.py:634:        f"- TRAIN360C test signed_tdir_mean_deg: `{_fmt_num(train360_test.get('signed_tdir_mean_deg'))}`",
+tools/run_base360_hkust_360dvo_official.py:636:        "- which model is best on which metric: only TRAIN360C has canonical DSET2C val/test metrics at this point; BASE360 official is blocked and T57b is out-of-split reference only",
+tools/run_base360_hkust_360dvo_official.py:637:        "- whether TRAIN360C remains competitive: yes, because it remains the only completed canonical evaluation",
+tools/run_base360_hkust_360dvo_official.py:638:        "- whether BASE360 exposes weaknesses in TRAIN360C: not yet, because no official BASE360 metrics were produced",
+tools/run_base360_hkust_360dvo_official.py:656:        "- `legacy_scene01_artifact_dependency = false`",
+tools/run_base360_hkust_360dvo_official.py:672:    p.add_argument("--train360c-report", default=str(DEFAULT_TRAIN360C_REPORT))
+tools/run_base360_hkust_360dvo_official.py:673:    p.add_argument("--train360c-val", default=str(DEFAULT_TRAIN360C_VAL))
+tools/run_base360_hkust_360dvo_official.py:674:    p.add_argument("--train360c-test", default=str(DEFAULT_TRAIN360C_TEST))
+tools/run_base360_hkust_360dvo_official.py:675:    p.add_argument("--train360c-ckpt", default=str(DEFAULT_TRAIN360C_CKPT))
+tools/run_base360_hkust_360dvo_official.py:729:        "comparable to TRAIN360C": "yes" if test_metrics.get("ate_sim3") is not None else "no",
+tools/run_base360_hkust_360dvo_official.py:730:        "best model on test translation": "TRAIN360C self-developed baseline",
+tools/run_base360_hkust_360dvo_official.py:742:    print(f"comparable to TRAIN360C: {terminal_summary['comparable to TRAIN360C']}")
+reports/MAINT13_post_cleanup_tree.txt:124:./reports/STRUCT360A_implicit_spherical_cross_attention.md
+reports/MAINT13_post_cleanup_tree.txt:125:./reports/STRUCT360A_metrics_test.json
+reports/MAINT13_post_cleanup_tree.txt:126:./reports/STRUCT360A_metrics_val.json
+reports/MAINT13_post_cleanup_tree.txt:131:./reports/TRAIN360C_metrics_test.json
+reports/MAINT13_post_cleanup_tree.txt:132:./reports/TRAIN360C_metrics_val.json
+reports/MAINT13_post_cleanup_tree.txt:133:./reports/TRAIN360D_metrics_test.json
+reports/MAINT13_post_cleanup_tree.txt:134:./reports/TRAIN360D_metrics_val.json
+reports/MAINT13_post_cleanup_tree.txt:135:./reports/TRAIN360D_observability_kstep_scale_stabilization.md
+reports/MAINT13_post_cleanup_tree.txt:140:./reports/TRAIN360H_best_config_test.json
+reports/MAINT13_post_cleanup_tree.txt:141:./reports/TRAIN360H_best_config_val.json
+reports/MAINT13_post_cleanup_tree.txt:142:./reports/TRAIN360H_hyperparameter_sweep.md
+reports/MAIN361_diff_name_status.txt:40:A	checkpoints/S12_regime_balanced_sampling_manifests/heldout_scene01_seq01_A_baseline_uniform_sampling.json
+reports/MAIN361_diff_name_status.txt:41:A	checkpoints/S12_regime_balanced_sampling_manifests/heldout_scene01_seq01_B_pred_tmag_balanced_sampling.json
+reports/MAIN361_diff_name_status.txt:42:A	checkpoints/S12_regime_balanced_sampling_manifests/heldout_scene01_seq01_C_gt_tmag_balanced_sampling.json
+reports/MAIN361_diff_name_status.txt:43:A	checkpoints/S12_regime_balanced_sampling_manifests/heldout_scene01_seq01_D_dt_k_balanced_sampling.json
+reports/MAIN361_diff_name_status.txt:44:A	checkpoints/S12_regime_balanced_sampling_manifests/heldout_scene01_seq01_E_hard_regime_oversampling.json
+reports/MAIN361_diff_name_status.txt:45:A	checkpoints/S12_regime_balanced_sampling_manifests/heldout_scene01_seq01_F_mixed_balanced_sampling.json
+reports/MAIN361_diff_name_status.txt:46:A	checkpoints/S12_regime_balanced_sampling_manifests/heldout_scene01_seq02_A_baseline_uniform_sampling.json
+reports/MAIN361_diff_name_status.txt:47:A	checkpoints/S12_regime_balanced_sampling_manifests/heldout_scene01_seq02_B_pred_tmag_balanced_sampling.json
+reports/MAIN361_diff_name_status.txt:48:A	checkpoints/S12_regime_balanced_sampling_manifests/heldout_scene01_seq02_C_gt_tmag_balanced_sampling.json
+reports/MAIN361_diff_name_status.txt:49:A	checkpoints/S12_regime_balanced_sampling_manifests/heldout_scene01_seq02_D_dt_k_balanced_sampling.json
+reports/MAIN361_diff_name_status.txt:50:A	checkpoints/S12_regime_balanced_sampling_manifests/heldout_scene01_seq02_E_hard_regime_oversampling.json
+reports/MAIN361_diff_name_status.txt:51:A	checkpoints/S12_regime_balanced_sampling_manifests/heldout_scene01_seq02_F_mixed_balanced_sampling.json
+reports/MAIN361_diff_name_status.txt:174:A	checkpoints/S5E15_scale_deunderfit_antiparallel_candidate.json
+reports/MAIN361_diff_name_status.txt:175:A	checkpoints/S5E15_scale_deunderfit_antiparallel_candidate/s5e15_refinement_policy.json
+reports/MAIN361_diff_name_status.txt:176:A	checkpoints/S5E15_scale_deunderfit_antiparallel_candidate/training_status.json
+reports/MAIN361_diff_name_status.txt:333:A	reports/STRUCT360A_implicit_spherical_cross_attention.md
+reports/MAIN361_diff_name_status.txt:334:A	reports/STRUCT360A_metrics_test.json
+reports/MAIN361_diff_name_status.txt:335:A	reports/STRUCT360A_metrics_val.json
+reports/MAIN361_diff_name_status.txt:344:A	reports/TRAIN360C_metrics_test.json
+reports/MAIN361_diff_name_status.txt:345:A	reports/TRAIN360C_metrics_val.json
+reports/MAIN361_diff_name_status.txt:346:A	reports/TRAIN360D_metrics_test.json
+reports/MAIN361_diff_name_status.txt:347:A	reports/TRAIN360D_metrics_val.json
+reports/MAIN361_diff_name_status.txt:348:A	reports/TRAIN360D_observability_kstep_scale_stabilization.md
+reports/MAIN361_diff_name_status.txt:353:A	reports/TRAIN360H_best_config_test.json
+reports/MAIN361_diff_name_status.txt:354:A	reports/TRAIN360H_best_config_val.json
+reports/MAIN361_diff_name_status.txt:355:A	reports/TRAIN360H_hyperparameter_sweep.md
+reports/TRAIN360H_best_config_test.json:2:  "run_id": "TRAIN360H_F01_TRAIN360H_S1_best_seed1",
+reports/TRAIN360H_best_config_test.json:35:  "checkpoint": "/home/dovetao/graduation_design_demo/checkpoints/TRAIN360H_sweep/TRAIN360H_F01_TRAIN360H_S1_best_seed1/best_val.pt"
+reports/MAINT14_dependency_health_check.json:175:      "reference": "scene01",
+reports/MAINT14_dependency_health_check.json:255:      "reference": "TRAIN360D",
+reports/MAINT14_dependency_health_check.json:263:      "reference": "checkpoints/TRAIN360D_observability_kstep_scale/best_val.pt",
+reports/MAINT14_dependency_health_check.json:279:      "reference": "TRAIN360C",
+reports/MAINT14_dependency_health_check.json:287:      "reference": "reports/TRAIN360C_metrics_val.json",
+reports/MAINT14_dependency_health_check.json:295:      "reference": "TRAIN360C",
+reports/MAINT14_dependency_health_check.json:303:      "reference": "reports/TRAIN360C_metrics_test.json",
+reports/MAINT14_dependency_health_check.json:311:      "reference": "TRAIN360D",
+reports/MAINT14_dependency_health_check.json:319:      "reference": "reports/TRAIN360D_metrics_val.json",
+reports/MAINT14_dependency_health_check.json:327:      "reference": "TRAIN360D",
+reports/MAINT14_dependency_health_check.json:335:      "reference": "reports/TRAIN360D_metrics_test.json",
+reports/MAINT14_dependency_health_check.json:343:      "reference": "TRAIN360H",
+reports/MAINT14_dependency_health_check.json:351:      "reference": "reports/TRAIN360H_best_config_val.json",
+reports/MAINT14_dependency_health_check.json:359:      "reference": "TRAIN360H",
+reports/MAINT14_dependency_health_check.json:367:      "reference": "reports/TRAIN360H_best_config_test.json",
+reports/MAINT14_dependency_health_check.json:375:      "reference": "STRUCT360A",
+reports/MAINT14_dependency_health_check.json:383:      "reference": "reports/STRUCT360A_metrics_val.json",
+reports/MAINT14_dependency_health_check.json:391:      "reference": "STRUCT360A",
+reports/MAINT14_dependency_health_check.json:399:      "reference": "reports/STRUCT360A_metrics_test.json",
+reports/MAINT14_dependency_health_check.json:847:      "reference": "TRAIN360C",
+reports/MAINT14_dependency_health_check.json:855:      "reference": "TRAIN360D",
+reports/MAINT14_dependency_health_check.json:863:      "reference": "TRAIN360H",
+reports/MAINT14_dependency_health_check.json:871:      "reference": "STRUCT360A",
+reports/MAINT14_dependency_health_check.json:879:      "reference": "TRAIN360C",
+reports/MAINT14_dependency_health_check.json:887:      "reference": "TRAIN360D",
+reports/MAINT14_dependency_health_check.json:895:      "reference": "TRAIN360H",
+reports/MAINT14_dependency_health_check.json:903:      "reference": "STRUCT360A",
+reports/MAINT14_dependency_health_check.json:911:      "reference": "TRAIN360D",
+reports/MAINT14_dependency_health_check.json:919:      "reference": "TRAIN360H",
+reports/MAINT14_dependency_health_check.json:943:      "reference": "TRAIN360D",
+reports/MAINT14_dependency_health_check.json:951:      "reference": "TRAIN360H",
+reports/MAINT14_dependency_health_check.json:959:      "reference": "TRAIN360D",
+reports/MAINT14_dependency_health_check.json:967:      "reference": "TRAIN360H",
+reports/MAINT14_dependency_health_check.json:975:      "reference": "TRAIN360D",
+reports/MAINT14_dependency_health_check.json:983:      "reference": "TRAIN360H",
+reports/MAINT14_dependency_health_check.json:1007:      "reference": "S5E15",
+reports/MAINT14_dependency_health_check.json:1015:      "reference": "S5E15",
+reports/STRUCT360A_implicit_spherical_cross_attention.md:1:# STRUCT360A implicit spherical cross-image attention
+reports/STRUCT360A_implicit_spherical_cross_attention.md:6:- best checkpoint: `/home/dovetao/graduation_design_demo/checkpoints/STRUCT360A_implicit_spherical_cross_attention/best_val.pt`
+reports/STRUCT360A_implicit_spherical_cross_attention.md:7:- whether STRUCT360A improves over TRAIN360D/H: `vs TRAIN360D=partial, vs TRAIN360H=partial`
+reports/STRUCT360A_implicit_spherical_cross_attention.md:18:- base model inherited from TRAIN360D coarse pose-regression backbone with manifest-native DSET2C pipeline.
+reports/STRUCT360A_implicit_spherical_cross_attention.md:26:- init checkpoint: `/home/dovetao/graduation_design_demo/checkpoints/TRAIN360D_observability_kstep_scale/best_val.pt`
+reports/STRUCT360A_implicit_spherical_cross_attention.md:47:- STRUCT360A val metrics: `{'count': 5342, 'coverage': 1.0, 'rot_mean_deg': 1.3607315784651481, 'rot_median_deg': 1.0910981893539429, 'rot_p90_deg': 2.7543621778488165, 'signed_tdir_mean_deg': 103.0691856567912, 'signed_tdir_median_deg': 112.74870285112182, 'signed_tdir_p90_deg': 145.06946368829279, 'unsigned_tdir_mean_deg': 55.897616848849, 'unsigned_tdir_median_deg': 55.49466774350331, 'unsigned_tdir_p90_deg': 81.98746877235769, 'anti_parallel_rate': 0.615874204417821, 'tmag_ratio_p10': 0.22596395191209148, 'tmag_median_ratio': 1.0053238154085171, 'tmag_ratio_p50': 1.0053238154085171, 'tmag_mean_ratio': 1.4822812567087058, 'tmag_ratio_p90': 4.154795444632747, 'tmag_p90_ratio': 4.154795444632747, 'log_tmag_mae': 0.8033110708683128, 'scale_collapse_rate': 0.007675028079371022, 'scale_explosion_rate': 0.00037439161362785476, 'path_ratio': 0.5238780909029992, 'path_length_pred': 3182.904973626137, 'path_length_gt': 6075.659640852362, 'nan_inf_count': 0, 'nan_count': 0, 'inf_count': 0, 'ate_none': None, 'ate_se3': None, 'ate_sim3': None}`
+reports/STRUCT360A_implicit_spherical_cross_attention.md:48:- comparison to TRAIN360D val: `signed_tdir 100.96635328042524 -> 103.0691856567912, anti_parallel 0.6475102957693748 -> 0.615874204417821, tmag_ratio 0.9443229312709943 -> 1.0053238154085171, path_ratio 0.5193150078709948 -> 0.5238780909029992`
+reports/STRUCT360A_implicit_spherical_cross_attention.md:49:- comparison to TRAIN360H val: `signed_tdir 104.39754351706829 -> 103.0691856567912, anti_parallel 0.6523773867465369 -> 0.615874204417821, tmag_ratio 0.9151370322858172 -> 1.0053238154085171, path_ratio 0.5895168494209848 -> 0.5238780909029992`
+reports/STRUCT360A_implicit_spherical_cross_attention.md:52:- STRUCT360A test metrics: `{'count': 5062, 'coverage': 1.0, 'rot_mean_deg': 2.548525930560775, 'rot_median_deg': 0.558831512928009, 'rot_p90_deg': 6.858948278427127, 'signed_tdir_mean_deg': 45.806573800840134, 'signed_tdir_median_deg': 21.810124610566334, 'signed_tdir_p90_deg': 142.6163187579279, 'unsigned_tdir_mean_deg': 26.118755416385255, 'unsigned_tdir_median_deg': 18.602058774565876, 'unsigned_tdir_p90_deg': 59.68229224158159, 'anti_parallel_rate': 0.21197155274595023, 'tmag_ratio_p10': 0.27294669541635247, 'tmag_median_ratio': 0.7683920813313971, 'tmag_ratio_p50': 0.7683920813313971, 'tmag_mean_ratio': 1.0215865542579114, 'tmag_ratio_p90': 2.2482729344643895, 'tmag_p90_ratio': 2.2482729344643895, 'log_tmag_mae': 0.6790944442402986, 'scale_collapse_rate': 0.011853022520742789, 'scale_explosion_rate': 0.0, 'path_ratio': 0.5926014164348259, 'path_length_pred': 4831.680723011494, 'path_length_gt': 8153.339814946055, 'nan_inf_count': 0, 'nan_count': 0, 'inf_count': 0, 'ate_none': None, 'ate_se3': None, 'ate_sim3': None}`
+reports/STRUCT360A_implicit_spherical_cross_attention.md:53:- comparison to TRAIN360C: `signed_tdir 54.956992341554056 -> 45.806573800840134, anti_parallel 0.21572500987751878 -> 0.21197155274595023, tmag_ratio 0.7692854374461574 -> 0.7683920813313971, path_ratio 0.5888660831060318 -> 0.5926014164348259`
+reports/STRUCT360A_implicit_spherical_cross_attention.md:54:- comparison to TRAIN360D: `signed_tdir 44.986174454415895 -> 45.806573800840134, anti_parallel 0.19695772421967603 -> 0.21197155274595023, tmag_ratio 0.7572524310356576 -> 0.7683920813313971, path_ratio 0.5787942300950458 -> 0.5926014164348259`
+reports/STRUCT360A_implicit_spherical_cross_attention.md:55:- comparison to TRAIN360H: `signed_tdir 53.73375854133177 -> 45.806573800840134, anti_parallel 0.20209403397866457 -> 0.21197155274595023, tmag_ratio 0.8503917514492008 -> 0.7683920813313971, path_ratio 0.6493755813576354 -> 0.5926014164348259`
+reports/STRUCT360A_implicit_spherical_cross_attention.md:65:- if scale worsens: `STRUCT360A kept TRAIN360D loss weights, so scale may still lag TRAIN360H if relation pooling helps direction more than magnitude calibration.`
+tools/maint14_dependency_health_check.py:57:    "TRAIN360A",
+tools/maint14_dependency_health_check.py:58:    "TRAIN360B",
+tools/maint14_dependency_health_check.py:59:    "TRAIN360C",
+tools/maint14_dependency_health_check.py:60:    "TRAIN360D",
+tools/maint14_dependency_health_check.py:61:    "TRAIN360H",
+tools/maint14_dependency_health_check.py:62:    "STRUCT360A",
+tools/maint14_dependency_health_check.py:65:    "DEV360",
+tools/maint14_dependency_health_check.py:67:    "HANDOFF",
+tools/maint14_dependency_health_check.py:68:    "RUNHANDOFF",
+tools/maint14_dependency_health_check.py:69:    "S5E15",
+tools/maint14_dependency_health_check.py:70:    "scene01",
+tools/maint14_dependency_health_check.py:71:    "C31",
+reports/STRUCT360B_match_free_coarse_to_fine_pose_refinement.md:8:- whether STRUCT360B improves over TRAIN360D/H/STRUCT360A: `vs TRAIN360D=partial, vs TRAIN360H=better, vs STRUCT360A=better`
+reports/STRUCT360B_match_free_coarse_to_fine_pose_refinement.md:18:- coarse stage: `TRAIN360D coarse interaction predicts R0 / tdir0 / log_tmag0`.
+reports/STRUCT360B_match_free_coarse_to_fine_pose_refinement.md:28:- init checkpoint: `/home/dovetao/graduation_design_demo/checkpoints/TRAIN360D_observability_kstep_scale/best_val.pt`
+reports/STRUCT360B_match_free_coarse_to_fine_pose_refinement.md:49:- comparison to TRAIN360D val: `signed_tdir 100.96635328042524 -> 104.85806009386242, anti_parallel 0.6475102957693748 -> 0.6679146387120929, tmag_ratio 0.9443229312709943 -> 1.0119845231298872, path_ratio 0.5193150078709948 -> 0.5718190267578538`
+reports/STRUCT360B_match_free_coarse_to_fine_pose_refinement.md:50:- comparison to TRAIN360H val: `signed_tdir 104.39754351706829 -> 104.85806009386242, anti_parallel 0.6523773867465369 -> 0.6679146387120929, tmag_ratio 0.9151370322858172 -> 1.0119845231298872, path_ratio 0.5895168494209848 -> 0.5718190267578538`
+reports/STRUCT360B_match_free_coarse_to_fine_pose_refinement.md:51:- comparison to STRUCT360A val: `signed_tdir 103.0691856567912 -> 104.85806009386242, anti_parallel 0.615874204417821 -> 0.6679146387120929, tmag_ratio 1.0053238154085171 -> 1.0119845231298872, path_ratio 0.5238780909029992 -> 0.5718190267578538`
+reports/STRUCT360B_match_free_coarse_to_fine_pose_refinement.md:60:| TRAIN360C | test | 54.956992341554056 | 0.21572500987751878 | 0.7692854374461574 | 0.5888660831060318 | 1.0 |
+reports/STRUCT360B_match_free_coarse_to_fine_pose_refinement.md:61:| TRAIN360D | test | 44.986174454415895 | 0.19695772421967603 | 0.7572524310356576 | 0.5787942300950458 | 1.0 |
+reports/STRUCT360B_match_free_coarse_to_fine_pose_refinement.md:62:| TRAIN360H | test | 53.73375854133177 | 0.20209403397866457 | 0.8503917514492008 | 0.6493755813576354 | 1.0 |
+reports/STRUCT360B_match_free_coarse_to_fine_pose_refinement.md:63:| STRUCT360A | test | 45.806573800840134 | 0.21197155274595023 | 0.7683920813313971 | 0.5926014164348259 | 1.0 |
+reports/STRUCT360B_match_free_coarse_to_fine_pose_refinement.md:76:- if scale worsens: `revisit beta / residual log-tmag scale and consider TRAIN360H-style scale weighting for a follow-up retrain.`
+tools/train_struct360b_match_free_coarse_to_fine.py:695:        return "keep_TRAIN360H_scale_best"
+tools/train_struct360b_match_free_coarse_to_fine.py:697:        return "rollback_to_TRAIN360D_direction_best"
+tools/train_struct360b_match_free_coarse_to_fine.py:1115:        f"- whether STRUCT360B improves over TRAIN360D/H/STRUCT360A: `vs TRAIN360D={versus_d}, vs TRAIN360H={versus_h}, vs STRUCT360A={versus_a}`",
+tools/train_struct360b_match_free_coarse_to_fine.py:1125:        "- coarse stage: `TRAIN360D coarse interaction predicts R0 / tdir0 / log_tmag0`.",
+tools/train_struct360b_match_free_coarse_to_fine.py:1156:        f"- comparison to TRAIN360D val: `signed_tdir {train360d_val.get('signed_tdir_mean_deg')} -> {val_metrics.get('signed_tdir_mean_deg')}, anti_parallel {train360d_val.get('anti_parallel_rate')} -> {val_metrics.get('anti_parallel_rate')}, tmag_ratio {train360d_val.get('tmag_median_ratio')} -> {val_metrics.get('tmag_median_ratio')}, path_ratio {train360d_val.get('path_ratio')} -> {val_metrics.get('path_ratio')}`",
+tools/train_struct360b_match_free_coarse_to_fine.py:1157:        f"- comparison to TRAIN360H val: `signed_tdir {train360h_val.get('signed_tdir_mean_deg')} -> {val_metrics.get('signed_tdir_mean_deg')}, anti_parallel {train360h_val.get('anti_parallel_rate')} -> {val_metrics.get('anti_parallel_rate')}, tmag_ratio {train360h_val.get('tmag_median_ratio')} -> {val_metrics.get('tmag_median_ratio')}, path_ratio {train360h_val.get('path_ratio')} -> {val_metrics.get('path_ratio')}`",
+tools/train_struct360b_match_free_coarse_to_fine.py:1158:        f"- comparison to STRUCT360A val: `signed_tdir {struct360a_val.get('signed_tdir_mean_deg')} -> {val_metrics.get('signed_tdir_mean_deg')}, anti_parallel {struct360a_val.get('anti_parallel_rate')} -> {val_metrics.get('anti_parallel_rate')}, tmag_ratio {struct360a_val.get('tmag_median_ratio')} -> {val_metrics.get('tmag_median_ratio')}, path_ratio {struct360a_val.get('path_ratio')} -> {val_metrics.get('path_ratio')}`",
+tools/train_struct360b_match_free_coarse_to_fine.py:1167:        f"| TRAIN360C | test | {train360c_test.get('signed_tdir_mean_deg')} | {train360c_test.get('anti_parallel_rate')} | {train360c_test.get('tmag_median_ratio')} | {train360c_test.get('path_ratio')} | {train360c_test.get('coverage')} |",
+tools/train_struct360b_match_free_coarse_to_fine.py:1168:        f"| TRAIN360D | test | {train360d_test.get('signed_tdir_mean_deg')} | {train360d_test.get('anti_parallel_rate')} | {train360d_test.get('tmag_median_ratio')} | {train360d_test.get('path_ratio')} | {train360d_test.get('coverage')} |",
+tools/train_struct360b_match_free_coarse_to_fine.py:1169:        f"| TRAIN360H | test | {train360h_test.get('signed_tdir_mean_deg')} | {train360h_test.get('anti_parallel_rate')} | {train360h_test.get('tmag_median_ratio')} | {train360h_test.get('path_ratio')} | {train360h_test.get('coverage')} |",
+tools/train_struct360b_match_free_coarse_to_fine.py:1170:        f"| STRUCT360A | test | {struct360a_test.get('signed_tdir_mean_deg')} | {struct360a_test.get('anti_parallel_rate')} | {struct360a_test.get('tmag_median_ratio')} | {struct360a_test.get('path_ratio')} | {struct360a_test.get('coverage')} |",
+tools/train_struct360b_match_free_coarse_to_fine.py:1183:        "- if scale worsens: `revisit beta / residual log-tmag scale and consider TRAIN360H-style scale weighting for a follow-up retrain.`",
+tools/train_struct360b_match_free_coarse_to_fine.py:1217:        "# STRUCT360B vs TRAIN360C / D / H / STRUCT360A / BASE360D",
+tools/train_struct360b_match_free_coarse_to_fine.py:1223:        f"| TRAIN360C | test | {train360c_test.get('signed_tdir_mean_deg')} | {train360c_test.get('anti_parallel_rate')} | {train360c_test.get('tmag_median_ratio')} | {train360c_test.get('path_ratio')} | {train360c_test.get('coverage')} |",
+tools/train_struct360b_match_free_coarse_to_fine.py:1224:        f"| TRAIN360D | test | {train360d_test.get('signed_tdir_mean_deg')} | {train360d_test.get('anti_parallel_rate')} | {train360d_test.get('tmag_median_ratio')} | {train360d_test.get('path_ratio')} | {train360d_test.get('coverage')} |",
+tools/train_struct360b_match_free_coarse_to_fine.py:1225:        f"| TRAIN360H | test | {train360h_test.get('signed_tdir_mean_deg')} | {train360h_test.get('anti_parallel_rate')} | {train360h_test.get('tmag_median_ratio')} | {train360h_test.get('path_ratio')} | {train360h_test.get('coverage')} |",
+tools/train_struct360b_match_free_coarse_to_fine.py:1226:        f"| STRUCT360A | test | {struct360a_test.get('signed_tdir_mean_deg')} | {struct360a_test.get('anti_parallel_rate')} | {struct360a_test.get('tmag_median_ratio')} | {struct360a_test.get('path_ratio')} | {struct360a_test.get('coverage')} |",
+tools/train_struct360b_match_free_coarse_to_fine.py:1231:        f"- compared to TRAIN360D: `{versus_d}`",
+tools/train_struct360b_match_free_coarse_to_fine.py:1232:        f"- compared to TRAIN360H: `{versus_h}`",
+tools/train_struct360b_match_free_coarse_to_fine.py:1233:        f"- compared to STRUCT360A: `{versus_a}`",
+tools/train_struct360b_match_free_coarse_to_fine.py:1252:    print(f"- compared to TRAIN360D: {versus_d}")
+tools/train_struct360b_match_free_coarse_to_fine.py:1253:    print(f"- compared to TRAIN360H: {versus_h}")
+tools/train_struct360b_match_free_coarse_to_fine.py:1254:    print(f"- compared to STRUCT360A: {versus_a}")
+reports/RESULTS360_main_results_table.json:6:    "legacy_scene01_role": "diagnostic_only",
+reports/RESULTS360_main_results_table.json:43:      "model": "TRAIN360C self-developed hybrid spherical pose baseline",
+reports/RESULTS360_main_results_table.json:45:      "source": "reports/TRAIN360C_metrics_val.json and reports/TRAIN360C_metrics_test.json",
+reports/RESULTS360_main_results_table.json:46:      "checkpoint": "checkpoints/TRAIN360C_spherical_pose_baseline/best_val.pt",
+reports/RESULTS360_main_results_table.json:73:        "model": "TRAIN360C self-developed hybrid spherical pose baseline",
+reports/RESULTS360_main_results_table.json:74:        "source": "reports/TRAIN360C_metrics_val.json",
+reports/RESULTS360_main_results_table.json:85:        "model": "TRAIN360C self-developed hybrid spherical pose baseline",
+reports/RESULTS360_main_results_table.json:86:        "source": "reports/TRAIN360C_metrics_test.json",
+reports/RESULTS360_main_results_table.json:136:        "model": "TRAIN360C self-developed hybrid spherical pose baseline",
+reports/RESULTS360_main_results_table.json:137:        "source": "reports/TRAIN360C_metrics_val.json",
+reports/RESULTS360_main_results_table.json:146:        "notes": "ATE none/se3/sim3 not reported in current TRAIN360C evaluation path."
+reports/RESULTS360_main_results_table.json:149:        "model": "TRAIN360C self-developed hybrid spherical pose baseline",
+reports/RESULTS360_main_results_table.json:150:        "source": "reports/TRAIN360C_metrics_test.json",
+reports/RESULTS360_main_results_table.json:159:        "notes": "ATE none/se3/sim3 not reported in current TRAIN360C evaluation path."
+reports/RESULTS360_main_results_table.json:193:    "TRAIN360C val/test discrepancy remains disclosed."
+reports/MAIN361_large_forbidden_file_check.txt:38:checkpoints/S12_regime_balanced_sampling_manifests/heldout_scene01_seq01_A_baseline_uniform_sampling.json
+reports/MAIN361_large_forbidden_file_check.txt:39:checkpoints/S12_regime_balanced_sampling_manifests/heldout_scene01_seq01_B_pred_tmag_balanced_sampling.json
+reports/MAIN361_large_forbidden_file_check.txt:40:checkpoints/S12_regime_balanced_sampling_manifests/heldout_scene01_seq01_C_gt_tmag_balanced_sampling.json
+reports/MAIN361_large_forbidden_file_check.txt:41:checkpoints/S12_regime_balanced_sampling_manifests/heldout_scene01_seq01_D_dt_k_balanced_sampling.json
+reports/MAIN361_large_forbidden_file_check.txt:42:checkpoints/S12_regime_balanced_sampling_manifests/heldout_scene01_seq01_E_hard_regime_oversampling.json
+reports/MAIN361_large_forbidden_file_check.txt:43:checkpoints/S12_regime_balanced_sampling_manifests/heldout_scene01_seq01_F_mixed_balanced_sampling.json
+reports/MAIN361_large_forbidden_file_check.txt:44:checkpoints/S12_regime_balanced_sampling_manifests/heldout_scene01_seq02_A_baseline_uniform_sampling.json
+reports/MAIN361_large_forbidden_file_check.txt:45:checkpoints/S12_regime_balanced_sampling_manifests/heldout_scene01_seq02_B_pred_tmag_balanced_sampling.json
+reports/MAIN361_large_forbidden_file_check.txt:46:checkpoints/S12_regime_balanced_sampling_manifests/heldout_scene01_seq02_C_gt_tmag_balanced_sampling.json
+reports/MAIN361_large_forbidden_file_check.txt:47:checkpoints/S12_regime_balanced_sampling_manifests/heldout_scene01_seq02_D_dt_k_balanced_sampling.json
+reports/MAIN361_large_forbidden_file_check.txt:48:checkpoints/S12_regime_balanced_sampling_manifests/heldout_scene01_seq02_E_hard_regime_oversampling.json
+reports/MAIN361_large_forbidden_file_check.txt:49:checkpoints/S12_regime_balanced_sampling_manifests/heldout_scene01_seq02_F_mixed_balanced_sampling.json
+reports/MAIN361_large_forbidden_file_check.txt:183:checkpoints/S5E15_scale_deunderfit_antiparallel_candidate.json
+reports/MAIN361_large_forbidden_file_check.txt:184:checkpoints/S5E15_scale_deunderfit_antiparallel_candidate/s5e15_refinement_policy.json
+reports/MAIN361_large_forbidden_file_check.txt:185:checkpoints/S5E15_scale_deunderfit_antiparallel_candidate/training_status.json
+reports/MAIN361_large_forbidden_file_check.txt:296:checkpoints/S12_regime_balanced_sampling_manifests/heldout_scene01_seq01_A_baseline_uniform_sampling.json
+reports/MAIN361_large_forbidden_file_check.txt:297:checkpoints/S12_regime_balanced_sampling_manifests/heldout_scene01_seq01_B_pred_tmag_balanced_sampling.json
+reports/MAIN361_large_forbidden_file_check.txt:298:checkpoints/S12_regime_balanced_sampling_manifests/heldout_scene01_seq01_C_gt_tmag_balanced_sampling.json
+reports/MAIN361_large_forbidden_file_check.txt:299:checkpoints/S12_regime_balanced_sampling_manifests/heldout_scene01_seq01_D_dt_k_balanced_sampling.json
+reports/MAIN361_large_forbidden_file_check.txt:300:checkpoints/S12_regime_balanced_sampling_manifests/heldout_scene01_seq01_E_hard_regime_oversampling.json
+reports/MAIN361_large_forbidden_file_check.txt:301:checkpoints/S12_regime_balanced_sampling_manifests/heldout_scene01_seq01_F_mixed_balanced_sampling.json
+reports/MAIN361_large_forbidden_file_check.txt:302:checkpoints/S12_regime_balanced_sampling_manifests/heldout_scene01_seq02_A_baseline_uniform_sampling.json
+reports/MAIN361_large_forbidden_file_check.txt:303:checkpoints/S12_regime_balanced_sampling_manifests/heldout_scene01_seq02_B_pred_tmag_balanced_sampling.json
+reports/MAIN361_large_forbidden_file_check.txt:304:checkpoints/S12_regime_balanced_sampling_manifests/heldout_scene01_seq02_C_gt_tmag_balanced_sampling.json
+reports/MAIN361_large_forbidden_file_check.txt:305:checkpoints/S12_regime_balanced_sampling_manifests/heldout_scene01_seq02_D_dt_k_balanced_sampling.json
+reports/MAIN361_large_forbidden_file_check.txt:306:checkpoints/S12_regime_balanced_sampling_manifests/heldout_scene01_seq02_E_hard_regime_oversampling.json
+reports/MAIN361_large_forbidden_file_check.txt:307:checkpoints/S12_regime_balanced_sampling_manifests/heldout_scene01_seq02_F_mixed_balanced_sampling.json
+reports/MAIN361_large_forbidden_file_check.txt:430:checkpoints/S5E15_scale_deunderfit_antiparallel_candidate.json
+reports/MAIN361_large_forbidden_file_check.txt:431:checkpoints/S5E15_scale_deunderfit_antiparallel_candidate/s5e15_refinement_policy.json
+reports/MAIN361_large_forbidden_file_check.txt:432:checkpoints/S5E15_scale_deunderfit_antiparallel_candidate/training_status.json
+reports/MAINT15_legacy_label_scan.json:102:      "label/reference": "checkpoints/TRAIN360D_observability_kstep_scale/best_val.pt",
+reports/MAINT13_delete_candidates.txt:337:reports/MAINT7_push_STRUCT360A_branch_or_create_patch_bundle.md | tracked=true | maintenance-only report noise | recover: git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- reports/MAINT7_push_STRUCT360A_branch_or_create_patch_bundle.md
+reports/MAINT13_delete_candidates.txt:510:external_baselines/config/orbslam3_scene01_seq03.yaml | tracked=true | not part of retained current-mainline repository slice | recover: git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- external_baselines/config/orbslam3_scene01_seq03.yaml
+reports/MAINT13_delete_candidates.txt:511:external_baselines/dataset/scene01_seq03/README.md | tracked=true | not part of retained current-mainline repository slice | recover: git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- external_baselines/dataset/scene01_seq03/README.md
+reports/MAINT13_delete_candidates.txt:512:external_baselines/dataset/scene01_seq03/camera.yaml | tracked=true | not part of retained current-mainline repository slice | recover: git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- external_baselines/dataset/scene01_seq03/camera.yaml
+reports/MAINT13_delete_candidates.txt:513:external_baselines/dataset/scene01_seq03/groundtruth_tum.txt | tracked=true | not part of retained current-mainline repository slice | recover: git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- external_baselines/dataset/scene01_seq03/groundtruth_tum.txt
+reports/MAINT13_delete_candidates.txt:514:external_baselines/dataset/scene01_seq03/image_list.txt | tracked=true | not part of retained current-mainline repository slice | recover: git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- external_baselines/dataset/scene01_seq03/image_list.txt
+reports/MAINT13_delete_candidates.txt:515:external_baselines/dataset/scene01_seq03/images/README.md | tracked=true | not part of retained current-mainline repository slice | recover: git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- external_baselines/dataset/scene01_seq03/images/README.md
+reports/MAINT13_delete_candidates.txt:516:external_baselines/dataset/scene01_seq03/metadata.json | tracked=true | not part of retained current-mainline repository slice | recover: git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- external_baselines/dataset/scene01_seq03/metadata.json
+reports/MAINT13_delete_candidates.txt:517:external_baselines/dataset/scene01_seq03/timestamps.txt | tracked=true | not part of retained current-mainline repository slice | recover: git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- external_baselines/dataset/scene01_seq03/timestamps.txt
+reports/MAINT13_delete_candidates.txt:544:reports/STRUCT360A_resume_after_compact_failure.md | tracked=true | report not retained in current-mainline-focused report set | recover: git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- reports/STRUCT360A_resume_after_compact_failure.md
+reports/MAINT13_delete_candidates.txt:545:reports/STRUCT360A_vs_TRAIN360C_D_H_BASE360D_summary.md | tracked=true | report not retained in current-mainline-focused report set | recover: git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- reports/STRUCT360A_vs_TRAIN360C_D_H_BASE360D_summary.md
+reports/MAINT13_delete_candidates.txt:546:reports/STRUCT360B_vs_TRAIN360C_D_H_STRUCT360A_BASE360D_summary.md | tracked=true | report not retained in current-mainline-focused report set | recover: git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- reports/STRUCT360B_vs_TRAIN360C_D_H_STRUCT360A_BASE360D_summary.md
+reports/MAINT13_delete_candidates.txt:554:reports/TRAIN360A_architecture_inventory_and_reusable_module_audit.md | tracked=true | report not retained in current-mainline-focused report set | recover: git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- reports/TRAIN360A_architecture_inventory_and_reusable_module_audit.md
+reports/MAINT13_delete_candidates.txt:555:reports/TRAIN360A_reusable_module_matrix.json | tracked=true | report not retained in current-mainline-focused report set | recover: git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- reports/TRAIN360A_reusable_module_matrix.json
+reports/MAINT13_delete_candidates.txt:556:reports/TRAIN360B_forward_sanity.json | tracked=true | report not retained in current-mainline-focused report set | recover: git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- reports/TRAIN360B_forward_sanity.json
+reports/MAINT13_delete_candidates.txt:557:reports/TRAIN360B_manifest_native_dataloader_adapter_and_forward_sanity.md | tracked=true | report not retained in current-mainline-focused report set | recover: git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- reports/TRAIN360B_manifest_native_dataloader_adapter_and_forward_sanity.md
+reports/MAINT13_delete_candidates.txt:558:reports/TRAIN360C_spherical_pose_baseline.md | tracked=true | report not retained in current-mainline-focused report set | recover: git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- reports/TRAIN360C_spherical_pose_baseline.md
+reports/MAINT13_delete_candidates.txt:559:reports/TRAIN360D_vs_TRAIN360C_T57b_BASE360D_summary.md | tracked=true | report not retained in current-mainline-focused report set | recover: git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- reports/TRAIN360D_vs_TRAIN360C_T57b_BASE360D_summary.md
+reports/MAINT13_delete_candidates.txt:560:reports/TRAIN360H_sweep_leaderboard.csv | tracked=true | report not retained in current-mainline-focused report set | recover: git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- reports/TRAIN360H_sweep_leaderboard.csv
+reports/MAINT13_delete_candidates.txt:561:reports/TRAIN360H_sweep_leaderboard.json | tracked=true | report not retained in current-mainline-focused report set | recover: git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- reports/TRAIN360H_sweep_leaderboard.json
+reports/MAINT13_delete_candidates.txt:562:reports/TRAIN360H_vs_TRAIN360C_TRAIN360D_BASE360D_summary.md | tracked=true | report not retained in current-mainline-focused report set | recover: git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- reports/TRAIN360H_vs_TRAIN360C_TRAIN360D_BASE360D_summary.md
+reports/MAINT13_delete_candidates.txt:796:external_baselines/results/pano_orb_vo/scene01_seq03_est_oracle_scale_tum.txt | tracked=true | historical generated result tree outside canonical manifests and official baseline | recover: git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- external_baselines/results/pano_orb_vo/scene01_seq03_est_oracle_scale_tum.txt
+reports/MAINT13_delete_candidates.txt:797:external_baselines/results/pano_orb_vo/scene01_seq03_est_tum.txt | tracked=true | historical generated result tree outside canonical manifests and official baseline | recover: git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- external_baselines/results/pano_orb_vo/scene01_seq03_est_tum.txt
+reports/MAINT13_delete_candidates.txt:798:external_baselines/results/s5/scene01_seq03_est_tum.txt | tracked=true | historical generated result tree outside canonical manifests and official baseline | recover: git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- external_baselines/results/s5/scene01_seq03_est_tum.txt
+reports/MAINT13_delete_candidates.txt:802:external_baselines/results/s5_dense/scene01_seq03_s5_dense_restore_metadata.json | tracked=true | historical generated result tree outside canonical manifests and official baseline | recover: git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- external_baselines/results/s5_dense/scene01_seq03_s5_dense_restore_metadata.json
+reports/MAINT13_deleted_files_manifest.json:446:      "path": "external_baselines/config/orbslam3_scene01_seq03.yaml",
+reports/MAINT13_deleted_files_manifest.json:450:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- external_baselines/config/orbslam3_scene01_seq03.yaml"
+reports/MAINT13_deleted_files_manifest.json:453:      "path": "external_baselines/dataset/scene01_seq03/README.md",
+reports/MAINT13_deleted_files_manifest.json:457:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- external_baselines/dataset/scene01_seq03/README.md"
+reports/MAINT13_deleted_files_manifest.json:460:      "path": "external_baselines/dataset/scene01_seq03/camera.yaml",
+reports/MAINT13_deleted_files_manifest.json:464:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- external_baselines/dataset/scene01_seq03/camera.yaml"
+reports/MAINT13_deleted_files_manifest.json:467:      "path": "external_baselines/dataset/scene01_seq03/groundtruth_tum.txt",
+reports/MAINT13_deleted_files_manifest.json:471:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- external_baselines/dataset/scene01_seq03/groundtruth_tum.txt"
+reports/MAINT13_deleted_files_manifest.json:474:      "path": "external_baselines/dataset/scene01_seq03/image_list.txt",
+reports/MAINT13_deleted_files_manifest.json:478:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- external_baselines/dataset/scene01_seq03/image_list.txt"
+reports/MAINT13_deleted_files_manifest.json:481:      "path": "external_baselines/dataset/scene01_seq03/images/README.md",
+reports/MAINT13_deleted_files_manifest.json:485:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- external_baselines/dataset/scene01_seq03/images/README.md"
+reports/MAINT13_deleted_files_manifest.json:488:      "path": "external_baselines/dataset/scene01_seq03/metadata.json",
+reports/MAINT13_deleted_files_manifest.json:492:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- external_baselines/dataset/scene01_seq03/metadata.json"
+reports/MAINT13_deleted_files_manifest.json:495:      "path": "external_baselines/dataset/scene01_seq03/timestamps.txt",
+reports/MAINT13_deleted_files_manifest.json:499:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- external_baselines/dataset/scene01_seq03/timestamps.txt"
+reports/MAINT13_deleted_files_manifest.json:978:      "path": "external_baselines/results/pano_orb_vo/scene01_seq03_est_oracle_scale_tum.txt",
+reports/MAINT13_deleted_files_manifest.json:982:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- external_baselines/results/pano_orb_vo/scene01_seq03_est_oracle_scale_tum.txt"
+reports/MAINT13_deleted_files_manifest.json:985:      "path": "external_baselines/results/pano_orb_vo/scene01_seq03_est_tum.txt",
+reports/MAINT13_deleted_files_manifest.json:989:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- external_baselines/results/pano_orb_vo/scene01_seq03_est_tum.txt"
+reports/MAINT13_deleted_files_manifest.json:992:      "path": "external_baselines/results/s5/scene01_seq03_est_tum.txt",
+reports/MAINT13_deleted_files_manifest.json:996:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- external_baselines/results/s5/scene01_seq03_est_tum.txt"
+reports/MAINT13_deleted_files_manifest.json:1020:      "path": "external_baselines/results/s5_dense/scene01_seq03_s5_dense_restore_metadata.json",
+reports/MAINT13_deleted_files_manifest.json:1024:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- external_baselines/results/s5_dense/scene01_seq03_s5_dense_restore_metadata.json"
+reports/MAINT13_deleted_files_manifest.json:2742:      "path": "reports/MAINT7_push_STRUCT360A_branch_or_create_patch_bundle.md",
+reports/MAINT13_deleted_files_manifest.json:2746:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- reports/MAINT7_push_STRUCT360A_branch_or_create_patch_bundle.md"
+reports/MAINT13_deleted_files_manifest.json:2903:      "path": "reports/STRUCT360A_resume_after_compact_failure.md",
+reports/MAINT13_deleted_files_manifest.json:2907:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- reports/STRUCT360A_resume_after_compact_failure.md"
+reports/MAINT13_deleted_files_manifest.json:2910:      "path": "reports/STRUCT360A_vs_TRAIN360C_D_H_BASE360D_summary.md",
+reports/MAINT13_deleted_files_manifest.json:2914:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- reports/STRUCT360A_vs_TRAIN360C_D_H_BASE360D_summary.md"
+reports/MAINT13_deleted_files_manifest.json:2917:      "path": "reports/STRUCT360B_vs_TRAIN360C_D_H_STRUCT360A_BASE360D_summary.md",
+reports/MAINT13_deleted_files_manifest.json:2921:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- reports/STRUCT360B_vs_TRAIN360C_D_H_STRUCT360A_BASE360D_summary.md"
+reports/MAINT13_deleted_files_manifest.json:2973:      "path": "reports/TRAIN360A_architecture_inventory_and_reusable_module_audit.md",
+reports/MAINT13_deleted_files_manifest.json:2977:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- reports/TRAIN360A_architecture_inventory_and_reusable_module_audit.md"
+reports/MAINT13_deleted_files_manifest.json:2980:      "path": "reports/TRAIN360A_reusable_module_matrix.json",
+reports/MAINT13_deleted_files_manifest.json:2984:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- reports/TRAIN360A_reusable_module_matrix.json"
+reports/MAINT13_deleted_files_manifest.json:2987:      "path": "reports/TRAIN360B_forward_sanity.json",
+reports/MAINT13_deleted_files_manifest.json:2991:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- reports/TRAIN360B_forward_sanity.json"
+reports/MAINT13_deleted_files_manifest.json:2994:      "path": "reports/TRAIN360B_manifest_native_dataloader_adapter_and_forward_sanity.md",
+reports/MAINT13_deleted_files_manifest.json:2998:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- reports/TRAIN360B_manifest_native_dataloader_adapter_and_forward_sanity.md"
+reports/MAINT13_deleted_files_manifest.json:3001:      "path": "reports/TRAIN360C_spherical_pose_baseline.md",
+reports/MAINT13_deleted_files_manifest.json:3005:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- reports/TRAIN360C_spherical_pose_baseline.md"
+reports/MAINT13_deleted_files_manifest.json:3008:      "path": "reports/TRAIN360D_vs_TRAIN360C_T57b_BASE360D_summary.md",
+reports/MAINT13_deleted_files_manifest.json:3012:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- reports/TRAIN360D_vs_TRAIN360C_T57b_BASE360D_summary.md"
+reports/MAINT13_deleted_files_manifest.json:3015:      "path": "reports/TRAIN360H_sweep_leaderboard.csv",
+reports/MAINT13_deleted_files_manifest.json:3019:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- reports/TRAIN360H_sweep_leaderboard.csv"
+reports/MAINT13_deleted_files_manifest.json:3022:      "path": "reports/TRAIN360H_sweep_leaderboard.json",
+reports/MAINT13_deleted_files_manifest.json:3026:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- reports/TRAIN360H_sweep_leaderboard.json"
+reports/MAINT13_deleted_files_manifest.json:3029:      "path": "reports/TRAIN360H_vs_TRAIN360C_TRAIN360D_BASE360D_summary.md",
+reports/MAINT13_deleted_files_manifest.json:3033:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- reports/TRAIN360H_vs_TRAIN360C_TRAIN360D_BASE360D_summary.md"
+reports/STRUCT360A_metrics_val.json:2:  "task_name": "STRUCT360A_main_Dinit",
+reports/STRUCT360A_metrics_val.json:3:  "checkpoint_used": "/home/dovetao/graduation_design_demo/checkpoints/STRUCT360A_implicit_spherical_cross_attention/best_val.pt",
+train360/core/model.py:458:class FineScaleHeadWithS5E15Guard(nn.Module):
+train360/core/model.py:683:        self.scale_head = FineScaleHeadWithS5E15Guard(hidden_dim, hidden_dim=hidden_dim, delta_clip=scale_delta_clip)
+reports/TRAIN360H_hyperparameter_sweep.md:1:# TRAIN360H hyperparameter sweep
+reports/TRAIN360H_hyperparameter_sweep.md:6:- best run_id: `TRAIN360H_F01_TRAIN360H_S1_best_seed1`
+reports/TRAIN360H_hyperparameter_sweep.md:7:- best checkpoint path: `/home/dovetao/graduation_design_demo/checkpoints/TRAIN360H_sweep/TRAIN360H_F01_TRAIN360H_S1_best_seed1/best_val.pt`
+reports/TRAIN360H_hyperparameter_sweep.md:8:- whether it improves over TRAIN360D: `partial`
+reports/TRAIN360H_hyperparameter_sweep.md:9:- whether it improves over TRAIN360C: `yes`
+reports/TRAIN360H_hyperparameter_sweep.md:14:- TRAIN360C: `{'count': 5062, 'coverage': 1.0, 'rot_mean_deg': 3.10108115458114, 'rot_median_deg': 1.37955904006958, 'rot_p90_deg': 6.586977815628064, 'signed_tdir_mean_deg': 54.956992341554056, 'signed_tdir_median_deg': 32.252885214586854, 'signed_tdir_p90_deg': 136.8987411712531, 'unsigned_tdir_mean_deg': 36.179565415569876, 'unsigned_tdir_median_deg': 30.233118255638377, 'unsigned_tdir_p90_deg': 63.42356182828336, 'anti_parallel_rate': 0.21572500987751878, 'tmag_median_ratio': 0.7692854374461574, 'tmag_mean_ratio': 1.0144076650971499, 'tmag_p90_ratio': 2.273796730138812, 'log_tmag_mae': 0.6861240981342551, 'path_ratio': 0.5888660831060318, 'path_length_pred': 4801.225281059742, 'path_length_gt': 8153.339814946055, 'nan_inf_count': 0, 'ate_none': None, 'ate_se3': None, 'ate_sim3': None}`
+reports/TRAIN360H_hyperparameter_sweep.md:15:- TRAIN360D: `{'count': 5062, 'coverage': 1.0, 'rot_mean_deg': 2.3460544469162485, 'rot_median_deg': 0.2373882383108139, 'rot_p90_deg': 6.743095779418965, 'signed_tdir_mean_deg': 44.986174454415895, 'signed_tdir_median_deg': 21.105894321746558, 'signed_tdir_p90_deg': 139.97897615069112, 'unsigned_tdir_mean_deg': 25.543904119901278, 'unsigned_tdir_median_deg': 18.518269029988943, 'unsigned_tdir_p90_deg': 57.49787609422275, 'anti_parallel_rate': 0.19695772421967603, 'tmag_ratio_p10': 0.2636780983810221, 'tmag_median_ratio': 0.7572524310356576, 'tmag_ratio_p50': 0.7572524310356576, 'tmag_mean_ratio': 0.994777083491742, 'tmag_ratio_p90': 2.2236141016906847, 'tmag_p90_ratio': 2.2236141016906847, 'log_tmag_mae': 0.683274985087713, 'scale_collapse_rate': 0.009877518767285659, 'scale_explosion_rate': 0.0, 'path_ratio': 0.5787942300950458, 'path_length_pred': 4719.106040894985, 'path_length_gt': 8153.339814946055, 'nan_inf_count': 0, 'nan_count': 0, 'inf_count': 0, 'ate_none': None, 'ate_se3': None, 'ate_sim3': None}`
+reports/TRAIN360H_hyperparameter_sweep.md:21:| TRAIN360H_A4_obs_kstep_no_scale_seed0 | 109.62795545593225 | 45.357834520303136 | 0.0 | 2.0287990385136654 | 1.7461766782996997 | 55.77945159211351 | 0.7713805482615894 |
+reports/TRAIN360H_hyperparameter_sweep.md:22:| TRAIN360H_A0_reproduce_D_seed0 | 109.78978151589976 | 44.956484798332696 | 0.0 | 2.0848518949947197 | 1.7942905706546781 | 55.46502585619085 | 0.775810812400399 |
+reports/TRAIN360H_hyperparameter_sweep.md:23:| TRAIN360H_A1_obs_only_seed0 | 110.32036663006657 | 45.469595021448555 | 0.0 | 2.0886753945673613 | 1.797082306854836 | 55.96411464259915 | 0.7775654981873537 |
+reports/TRAIN360H_hyperparameter_sweep.md:24:| TRAIN360H_A3_scale_only_seed0 | 112.04095744749083 | 45.187159926184115 | 0.0 | 2.306794527369367 | 1.9837194254554353 | 56.52648010781024 | 0.7942237998828358 |
+reports/TRAIN360H_hyperparameter_sweep.md:39:- csv: `/home/dovetao/graduation_design_demo/reports/TRAIN360H_sweep_leaderboard.csv`
+reports/TRAIN360H_hyperparameter_sweep.md:40:- json: `/home/dovetao/graduation_design_demo/reports/TRAIN360H_sweep_leaderboard.json`
+reports/TRAIN360H_hyperparameter_sweep.md:43:- full hyperparams: `{'task_name': 'TRAIN360H_F01_TRAIN360H_S1_best_seed1', 'prechecks': {'expected_branch': 'experiment/train360d-observability-kstep-scale'}, 'inputs': {'hygiene_json': 'checkpoints/DSET2C_360DVO_dataset_hygiene.json', 'train_manifest': 'external_baselines/results/dset2c_360dvo_canonical/pair_manifest_train.jsonl', 'val_manifest': 'external_baselines/results/dset2c_360dvo_canonical/pair_manifest_val.jsonl', 'test_manifest': 'external_baselines/results/dset2c_360dvo_canonical/pair_manifest_test.jsonl', 'dataset_adapter': 'datasets/dset2c_manifest_dataset.py', 'init_checkpoint': 'checkpoints/TRAIN360C_spherical_pose_baseline/best_val.pt', 'train360c_best_checkpoint': 'checkpoints/TRAIN360C_spherical_pose_baseline/best_val.pt', 'train360c_final_checkpoint': 'checkpoints/TRAIN360C_spherical_pose_baseline/final.pt', 'train360c_val_metrics': 'reports/TRAIN360C_metrics_val.json', 'train360c_test_metrics': 'reports/TRAIN360C_metrics_test.json', 'base360d_val_metrics': 'reports/BASE360D_metrics_val.json', 'base360d_test_metrics': 'reports/BASE360D_metrics_test.json'}, 'outputs': {'checkpoint_dir': 'checkpoints/TRAIN360H_sweep/TRAIN360H_F01_TRAIN360H_S1_best_seed1', 'report_path': 'checkpoints/TRAIN360H_sweep/TRAIN360H_F01_TRAIN360H_S1_best_seed1/run_report.md', 'val_metrics_path': 'checkpoints/TRAIN360H_sweep/TRAIN360H_F01_TRAIN360H_S1_best_seed1/metrics_val.json', 'test_metrics_path': 'checkpoints/TRAIN360H_sweep/TRAIN360H_F01_TRAIN360H_S1_best_seed1/metrics_test.json', 'comparison_summary_path': 'checkpoints/TRAIN360H_sweep/TRAIN360H_F01_TRAIN360H_S1_best_seed1/comparison_summary.md', 'next_recommendation': 'proceed_to_TRAIN360I_final_retrain_with_best_hparams'}, 'data': {'image_hw': [384, 768], 'tmag_epsilon': '1e-06', 'train_batch_size': 2, 'eval_batch_size': 8, 'num_workers': 4, 'train_subset_max': 48, 'shuffle_train': True, 'require_paths': True, 'skip_invalid': True}, 'model': {'strict_load_attempt': True, 'enable_fine_stage': False, 'enable_coupled_pose_head': False, 'enable_depth_fusion': False, 'use_cuda_if_available': True}, 'loss': {'rot_weight': 1.0, 'tdir_weight': 2.0, 'tmag_weight': 0.75, 'scale_stability_weight': 0.05, 'tmag_loss_type': 'log_smooth_l1', 'k_step_balancing': {'weight_k1': 1.0, 'weight_k2': 1.05, 'weight_k3': 1.0, 'weight_k5': 0.9, 'mode': 'adjacent_vs_nonadjacent', 'adjacent_weight': 1.25, 'non_adjacent_weight': 1.0, 'decay': 'none', 'min_weight': 0.2}, 'observability': {'tmag_epsilon': '1e-06', 'near_zero_tmag': 0.005, 'low_tmag': 0.05, 'medium_tmag': 0.15, 'high_tmag': 0.4, 'min_weight': 0.5, 'max_weight': 1.5, 'k1_factor': 1.05, 'k2_factor': 1.0, 'k3_factor': 0.95, 'k5_factor': 0.85, 'moderate_baseline_boost': 1.25, 'medium_weight': 1.25, 'high_weight': 1.35}, 'scale_stability': {'collapse_ratio': 0.1, 'explosion_ratio': 10.0, 'mean_log_bias_weight': 1.0}, 'components': {}}, 'training': {'epochs': 3, 'optimizer': 'AdamW', 'lr': '3e-05', 'weight_decay': 0.0001, 'grad_clip_norm': 1.0, 'amp': False, 'seed': 1, 'scheduler': 'none', 'min_lr': '1e-06'}, 'evaluation': {'max_val_batches': None, 'max_test_batches': None, 'run_test': False, 'selection_score': {'anti_parallel_weight': 30.0, 'tmag_ratio_weight': 20.0, 'path_ratio_weight': 10.0, 'rot_weight': 0.0}}, 'metadata': {'phase': 'final_eval', 'run_id': 'TRAIN360H_F01_TRAIN360H_S1_best_seed1', 'selection_policy': 'final_candidate_eval_only'}}`
+reports/TRAIN360H_hyperparameter_sweep.md:52:| TRAIN360C | 54.956992341554056 | 0.21572500987751878 | 0.7692854374461574 | 0.5888660831060318 | 1.0 | locked baseline |
+reports/TRAIN360H_hyperparameter_sweep.md:53:| TRAIN360D | 44.986174454415895 | 0.19695772421967603 | 0.7572524310356576 | 0.5787942300950458 | 1.0 | current best before sweep |
+reports/TRAIN360H_hyperparameter_sweep.md:54:| TRAIN360H best | 53.73375854133177 | 0.20209403397866457 | 0.8503917514492008 | 0.6493755813576354 | 1.0 | staged sweep result |
+configs/final360i_struct360b_final.yaml:19:  init_checkpoint: checkpoints/TRAIN360D_observability_kstep_scale/best_val.pt
+configs/struct360b_match_free_coarse_to_fine.yaml:14:  init_checkpoint: checkpoints/TRAIN360D_observability_kstep_scale/best_val.pt
+configs/struct360b_match_free_coarse_to_fine.yaml:15:  train360c_val_metrics: reports/TRAIN360C_metrics_val.json
+configs/struct360b_match_free_coarse_to_fine.yaml:16:  train360c_test_metrics: reports/TRAIN360C_metrics_test.json
+configs/struct360b_match_free_coarse_to_fine.yaml:17:  train360d_report: reports/TRAIN360D_observability_kstep_scale_stabilization.md
+configs/struct360b_match_free_coarse_to_fine.yaml:18:  train360d_val_metrics: reports/TRAIN360D_metrics_val.json
+configs/struct360b_match_free_coarse_to_fine.yaml:19:  train360d_test_metrics: reports/TRAIN360D_metrics_test.json
+configs/struct360b_match_free_coarse_to_fine.yaml:20:  train360h_report: reports/TRAIN360H_hyperparameter_sweep.md
+configs/struct360b_match_free_coarse_to_fine.yaml:21:  train360h_val_metrics: reports/TRAIN360H_best_config_val.json
+configs/struct360b_match_free_coarse_to_fine.yaml:22:  train360h_test_metrics: reports/TRAIN360H_best_config_test.json
+configs/struct360b_match_free_coarse_to_fine.yaml:23:  struct360a_report: reports/STRUCT360A_implicit_spherical_cross_attention.md
+configs/struct360b_match_free_coarse_to_fine.yaml:24:  struct360a_val_metrics: reports/STRUCT360A_metrics_val.json
+configs/struct360b_match_free_coarse_to_fine.yaml:25:  struct360a_test_metrics: reports/STRUCT360A_metrics_test.json
+configs/struct360b_match_free_coarse_to_fine.yaml:26:  struct360a_summary: reports/STRUCT360A_vs_TRAIN360C_D_H_BASE360D_summary.md
+configs/struct360b_match_free_coarse_to_fine.yaml:27:  train360h_best_checkpoint: checkpoints/TRAIN360H_sweep/TRAIN360H_F01_TRAIN360H_S1_best_seed1/best_val.pt
+configs/struct360b_match_free_coarse_to_fine.yaml:28:  struct360a_best_checkpoint: checkpoints/STRUCT360A_implicit_spherical_cross_attention/best_val.pt
+configs/struct360b_match_free_coarse_to_fine.yaml:37:  comparison_summary_path: reports/STRUCT360B_vs_TRAIN360C_D_H_STRUCT360A_BASE360D_summary.md
+configs/struct360b_match_free_coarse_to_fine.yaml:53:  init_source: TRAIN360D
+reports/MAINT13_delete_candidates.json:446:      "path": "external_baselines/config/orbslam3_scene01_seq03.yaml",
+reports/MAINT13_delete_candidates.json:450:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- external_baselines/config/orbslam3_scene01_seq03.yaml"
+reports/MAINT13_delete_candidates.json:453:      "path": "external_baselines/dataset/scene01_seq03/README.md",
+reports/MAINT13_delete_candidates.json:457:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- external_baselines/dataset/scene01_seq03/README.md"
+reports/MAINT13_delete_candidates.json:460:      "path": "external_baselines/dataset/scene01_seq03/camera.yaml",
+reports/MAINT13_delete_candidates.json:464:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- external_baselines/dataset/scene01_seq03/camera.yaml"
+reports/MAINT13_delete_candidates.json:467:      "path": "external_baselines/dataset/scene01_seq03/groundtruth_tum.txt",
+reports/MAINT13_delete_candidates.json:471:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- external_baselines/dataset/scene01_seq03/groundtruth_tum.txt"
+reports/MAINT13_delete_candidates.json:474:      "path": "external_baselines/dataset/scene01_seq03/image_list.txt",
+reports/MAINT13_delete_candidates.json:478:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- external_baselines/dataset/scene01_seq03/image_list.txt"
+reports/MAINT13_delete_candidates.json:481:      "path": "external_baselines/dataset/scene01_seq03/images/README.md",
+reports/MAINT13_delete_candidates.json:485:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- external_baselines/dataset/scene01_seq03/images/README.md"
+reports/MAINT13_delete_candidates.json:488:      "path": "external_baselines/dataset/scene01_seq03/metadata.json",
+reports/MAINT13_delete_candidates.json:492:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- external_baselines/dataset/scene01_seq03/metadata.json"
+reports/MAINT13_delete_candidates.json:495:      "path": "external_baselines/dataset/scene01_seq03/timestamps.txt",
+reports/MAINT13_delete_candidates.json:499:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- external_baselines/dataset/scene01_seq03/timestamps.txt"
+reports/MAINT13_delete_candidates.json:978:      "path": "external_baselines/results/pano_orb_vo/scene01_seq03_est_oracle_scale_tum.txt",
+reports/MAINT13_delete_candidates.json:982:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- external_baselines/results/pano_orb_vo/scene01_seq03_est_oracle_scale_tum.txt"
+reports/MAINT13_delete_candidates.json:985:      "path": "external_baselines/results/pano_orb_vo/scene01_seq03_est_tum.txt",
+reports/MAINT13_delete_candidates.json:989:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- external_baselines/results/pano_orb_vo/scene01_seq03_est_tum.txt"
+reports/MAINT13_delete_candidates.json:992:      "path": "external_baselines/results/s5/scene01_seq03_est_tum.txt",
+reports/MAINT13_delete_candidates.json:996:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- external_baselines/results/s5/scene01_seq03_est_tum.txt"
+reports/MAINT13_delete_candidates.json:1020:      "path": "external_baselines/results/s5_dense/scene01_seq03_s5_dense_restore_metadata.json",
+reports/MAINT13_delete_candidates.json:1024:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- external_baselines/results/s5_dense/scene01_seq03_s5_dense_restore_metadata.json"
+reports/MAINT13_delete_candidates.json:2742:      "path": "reports/MAINT7_push_STRUCT360A_branch_or_create_patch_bundle.md",
+reports/MAINT13_delete_candidates.json:2746:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- reports/MAINT7_push_STRUCT360A_branch_or_create_patch_bundle.md"
+reports/MAINT13_delete_candidates.json:2903:      "path": "reports/STRUCT360A_resume_after_compact_failure.md",
+reports/MAINT13_delete_candidates.json:2907:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- reports/STRUCT360A_resume_after_compact_failure.md"
+reports/MAINT13_delete_candidates.json:2910:      "path": "reports/STRUCT360A_vs_TRAIN360C_D_H_BASE360D_summary.md",
+reports/MAINT13_delete_candidates.json:2914:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- reports/STRUCT360A_vs_TRAIN360C_D_H_BASE360D_summary.md"
+reports/MAINT13_delete_candidates.json:2917:      "path": "reports/STRUCT360B_vs_TRAIN360C_D_H_STRUCT360A_BASE360D_summary.md",
+reports/MAINT13_delete_candidates.json:2921:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- reports/STRUCT360B_vs_TRAIN360C_D_H_STRUCT360A_BASE360D_summary.md"
+reports/MAINT13_delete_candidates.json:2973:      "path": "reports/TRAIN360A_architecture_inventory_and_reusable_module_audit.md",
+reports/MAINT13_delete_candidates.json:2977:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- reports/TRAIN360A_architecture_inventory_and_reusable_module_audit.md"
+reports/MAINT13_delete_candidates.json:2980:      "path": "reports/TRAIN360A_reusable_module_matrix.json",
+reports/MAINT13_delete_candidates.json:2984:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- reports/TRAIN360A_reusable_module_matrix.json"
+reports/MAINT13_delete_candidates.json:2987:      "path": "reports/TRAIN360B_forward_sanity.json",
+reports/MAINT13_delete_candidates.json:2991:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- reports/TRAIN360B_forward_sanity.json"
+reports/MAINT13_delete_candidates.json:2994:      "path": "reports/TRAIN360B_manifest_native_dataloader_adapter_and_forward_sanity.md",
+reports/MAINT13_delete_candidates.json:2998:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- reports/TRAIN360B_manifest_native_dataloader_adapter_and_forward_sanity.md"
+reports/MAINT13_delete_candidates.json:3001:      "path": "reports/TRAIN360C_spherical_pose_baseline.md",
+reports/MAINT13_delete_candidates.json:3005:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- reports/TRAIN360C_spherical_pose_baseline.md"
+reports/MAINT13_delete_candidates.json:3008:      "path": "reports/TRAIN360D_vs_TRAIN360C_T57b_BASE360D_summary.md",
+reports/MAINT13_delete_candidates.json:3012:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- reports/TRAIN360D_vs_TRAIN360C_T57b_BASE360D_summary.md"
+reports/MAINT13_delete_candidates.json:3015:      "path": "reports/TRAIN360H_sweep_leaderboard.csv",
+reports/MAINT13_delete_candidates.json:3019:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- reports/TRAIN360H_sweep_leaderboard.csv"
+reports/MAINT13_delete_candidates.json:3022:      "path": "reports/TRAIN360H_sweep_leaderboard.json",
+reports/MAINT13_delete_candidates.json:3026:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- reports/TRAIN360H_sweep_leaderboard.json"
+reports/MAINT13_delete_candidates.json:3029:      "path": "reports/TRAIN360H_vs_TRAIN360C_TRAIN360D_BASE360D_summary.md",
+reports/MAINT13_delete_candidates.json:3033:      "recover_command": "git checkout backup/pre-maint13-destructive-cleanup-20260514-174819 -- reports/TRAIN360H_vs_TRAIN360C_TRAIN360D_BASE360D_summary.md"
