@@ -1,0 +1,15 @@
+{
+  "passed": true,
+  "artifacts": {
+    "CURRENT_MAINLINE.md": true,
+    "PROJECT_STRUCTURE.md": true,
+    "tools/current/README.md": true,
+    "tools/current/show_mainline.py": true,
+    "tools/current/check_current_artifacts.py": true,
+    "configs/final360i_struct360b_final.yaml": true,
+    "tools/final360i_retrain_and_select.py": true,
+    "tools/train360e_sequence_trajectory_export_and_ate_eval.py": true,
+    "train360/core/model.py": true,
+    "train360/legacy/train_mvp.py": true
+  }
+}

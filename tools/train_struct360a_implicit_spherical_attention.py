@@ -18,7 +18,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 sys.path.insert(0, str(REPO_ROOT / "tools"))
 
-from config import Config
+from train360.core.config import Config
 from datasets.dset2c_manifest_dataset import Dset2CCanonicalPairDataset, summarize_manifest_group
 from miniyaml import load_yaml_like
 from models.struct360a_implicit_spherical_attention import (
@@ -26,7 +26,7 @@ from models.struct360a_implicit_spherical_attention import (
     count_parameters,
 )
 from tools.eval_train360_pose import evaluate_train360_pose
-from train360d_pose_losses import train360d_pose_loss
+from train360.core.train360d_pose_losses import train360d_pose_loss
 
 
 T57B_REFERENCE = {

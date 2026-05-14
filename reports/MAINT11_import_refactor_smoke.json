@@ -1,0 +1,127 @@
+{
+  "task_name": "MAINT11_current_mainline_layout_and_core_refactor_phase1",
+  "branch": "maintenance/current-mainline-layout-and-core-refactor-phase1",
+  "training_executed": false,
+  "files_deleted": false,
+  "checkpoints_modified": false,
+  "py_compile": {
+    "passed": true,
+    "file_count": 42
+  },
+  "root_wrapper_import_smoke": {
+    "passed": true,
+    "modules": {
+      "config": true,
+      "model": true,
+      "interaction": true,
+      "losses": true,
+      "pose_head": true,
+      "erp_sampling": true,
+      "healpix_utils": true,
+      "transformer_encoder": true,
+      "train360_pose_losses": true,
+      "train360d_pose_losses": true,
+      "depth_branch": true
+    }
+  },
+  "legacy_import_smoke": {
+    "passed": true,
+    "modules": {
+      "dataset_pano_only": true,
+      "train_mvp": true,
+      "geometry_refine": true,
+      "train360.legacy.dataset_pano_only": true,
+      "train360.legacy.train_mvp": true
+    }
+  },
+  "current_mainline_imports_migrated": {
+    "passed": true,
+    "remaining_legacy_imports": {}
+  },
+  "smoke_device": "cuda",
+  "cuda_available": true,
+  "FINAL360I_smoke": {
+    "passed": true,
+    "R_shape": [
+      1,
+      3,
+      3
+    ],
+    "t_shape": [
+      1,
+      3
+    ],
+    "aux_keys_sample": [
+      "Fc",
+      "Fc_t",
+      "R_after_residual",
+      "R_before_residual",
+      "Rc",
+      "Wc_ab",
+      "Wc_ba",
+      "alpha",
+      "bearingA_c",
+      "bearingA_f",
+      "bearingB_c",
+      "bearingB_f",
+      "beta",
+      "cA_c",
+      "cB_c",
+      "coarse_R",
+      "coarse_log_t_mag",
+      "coarse_pair_context",
+      "coarse_t_dir_out",
+      "coarse_t_mag"
+    ],
+    "finite": true,
+    "checkpoint_epoch": 1
+  },
+  "TRAIN360E_smoke": {
+    "passed": true,
+    "manifest_rows": 5342,
+    "sample_sequence_id": "unknown",
+    "tum_writer_ok": true
+  },
+  "SEQ360B_smoke": {
+    "passed": true,
+    "mode": "artifact_compatibility_only",
+    "tool_present": false,
+    "checkpoint_keys": [
+      "base_model_frozen",
+      "cfg",
+      "epoch",
+      "head",
+      "init_checkpoint",
+      "val_score"
+    ],
+    "head_key_count": 8,
+    "head_finite": true,
+    "trajectory_dir_exists": true
+  },
+  "STRUCT360C_smoke": {
+    "passed": true,
+    "mode": "eval_only_checkpoint_forward",
+    "checkpoint_epoch": 1,
+    "load_summary": {
+      "missing_keys": [],
+      "unexpected_keys": []
+    },
+    "bias_mean": -1.5707651376724243,
+    "gate_mean": 0.039119791239500046
+  },
+  "current_mainline_check": {
+    "passed": true,
+    "artifacts": {
+      "CURRENT_MAINLINE.md": true,
+      "PROJECT_STRUCTURE.md": true,
+      "tools/current/README.md": true,
+      "tools/current/show_mainline.py": true,
+      "tools/current/check_current_artifacts.py": true,
+      "configs/final360i_struct360b_final.yaml": true,
+      "tools/final360i_retrain_and_select.py": true,
+      "tools/train360e_sequence_trajectory_export_and_ate_eval.py": true,
+      "train360/core/model.py": true,
+      "train360/legacy/train_mvp.py": true
+    }
+  }
+}

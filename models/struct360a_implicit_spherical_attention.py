@@ -6,10 +6,10 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from config import Config
-from interaction import Tokens
-from model import Module2Sampler, PanoramaRelPoseModel
-from transformer_encoder import MLP, BearingPosEnc, CrossContextEncoder
+from train360.core.config import Config
+from train360.core.interaction import Tokens
+from train360.core.model import Module2Sampler, PanoramaRelPoseModel
+from train360.core.transformer_encoder import MLP, BearingPosEnc, CrossContextEncoder
 
 
 class SphericalPositionalEncoding(nn.Module):

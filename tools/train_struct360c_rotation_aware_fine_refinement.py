@@ -26,7 +26,7 @@ from models.struct360c_rotation_aware_fine_refinement import (
     STRUCT360CRotationAwareFineRefinementModel,
     count_parameters,
 )
-from train360d_pose_losses import train360d_pose_loss
+from train360.core.train360d_pose_losses import train360d_pose_loss
 from train_struct360b_match_free_coarse_to_fine import (
     _cfg_from_dict,
     _inject_struct360b_cfg,

@@ -6,9 +6,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from config import Config
-from interaction import Tokens
-from model import PanoramaRelPoseModel, _apply_dt_bucket_scale_anchor, _local_t_to_output_frame, _set_transform_outputs, _so3_exp_map
+from train360.core.config import Config
+from train360.core.interaction import Tokens
+from train360.core.model import PanoramaRelPoseModel, _apply_dt_bucket_scale_anchor, _local_t_to_output_frame, _set_transform_outputs, _so3_exp_map
 
 
 class SphericalPositionalEncoding(nn.Module):
