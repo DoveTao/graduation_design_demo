@@ -10,6 +10,14 @@
 
 - `FINAL360I_struct360b_final_selected`
 
+## Current Visible Comparison Set
+
+- `FINAL360I` main pair-level model
+- `TRAIN360E` trajectory / ATE evaluation path for `FINAL360I`
+- `SEQ360B` retained sequence-scale variant
+- `BASE360D` HKUST official `360DVO` external baseline
+- `T57b` legacy recovered external reference
+
 ## Current Core Directories
 
 - `train360/core/`
@@ -21,5 +29,5 @@
 ## Not Recommended
 
 - old MVP/raw-scan entrypoints have been removed from the active tree
-- `SEQ360A` and `STRUCT360C` are preserved only as cleanup summaries, not as active codepaths
-
+- `SEQ360A`: no_improvement; retained only as `reports/SEQ360A_status_summary.md`
+- `STRUCT360C`: evaluation_failed; retained only as `reports/STRUCT360C_status_summary.md`

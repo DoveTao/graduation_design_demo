@@ -64,8 +64,8 @@ outputs:
   checkpoint_dir: checkpoints/SEQ360B_lightweight_scale_smoothing
   trajectory_dir: external_baselines/results/seq360b_scale_smoothing_trajectory
   report_path: reports/SEQ360B_train_lightweight_scale_smoothing_head.md
-  val_metrics_path: reports/SEQ360B_metrics_val.json
+  val_metrics_path: reports/SEQ360B_current_variant_metrics_val.json
   test_metrics_path: reports/SEQ360B_metrics_test.json
-  trajectory_val_metrics_path: reports/SEQ360B_trajectory_metrics_val.json
+  trajectory_val_metrics_path: reports/SEQ360B_current_variant_trajectory_metrics_val.json
   trajectory_test_metrics_path: reports/SEQ360B_trajectory_metrics_test.json
-  comparison_summary_path: reports/SEQ360B_vs_FINAL360I_TRAIN360E_BASE360D_summary.md
+  comparison_summary_path: reports/SEQ360B_current_variant_summary.md

@@ -590,7 +590,7 @@ def _write_report(cfg: Mapping[str, Any], payload: Mapping[str, Any]) -> None:
     ]
     (REPO_ROOT / cfg["outputs"]["report_path"]).write_text("\n".join(lines) + "\n", encoding="utf-8")
     summary = [
-        "# SEQ360B vs FINAL360I TRAIN360E BASE360D summary",
+        "# SEQ360B current variant summary",
         "",
         f"- classification: `{cls}`",
         f"- compared to FINAL360I pair-level: `{payload['compared_to_final360i_pair']}`",

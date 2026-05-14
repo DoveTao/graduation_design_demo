@@ -10,6 +10,7 @@
 ## Current Thesis Mainline
 
 - main model: `FINAL360I_struct360b_final_selected`
+- main structure lineage: `STRUCT360B_match_free_coarse_to_fine`
 - pair-level config: `configs/final360i_struct360b_final.yaml`
 - pair-level trainer/selector: `tools/final360i_retrain_and_select.py`
 - pair-level base model: `models/struct360b_match_free_coarse_to_fine.py`
@@ -20,9 +21,15 @@
 ## Preserved Variant
 
 - sequence scale variant: `SEQ360B`
+- variant full name: `SEQ360B_lightweight_scale_smoothing_head`
 - config: `configs/seq360b_lightweight_scale_smoothing.yaml`
 - tool: `tools/train_seq360b_lightweight_scale_smoothing.py`
 - model head: `models/seq360b_scale_smoothing_head.py`
+
+## External Baselines
+
+- official external baseline: `BASE360D` (`HKUST official 360DVO`)
+- legacy baseline reference: `T57b`
 
 ## Current Pair-Level Reference
 
@@ -36,5 +43,8 @@
 - direct adjacent-pair trajectory composition still drifts
 - `TRAIN360E` is the kept trajectory evaluation path
 - `SEQ360B` is retained as the only promoted non-mainline variant
-- `SEQ360A` and `STRUCT360C` are no longer active codepaths; only status summaries are kept
 
+## Status-Only Experiments
+
+- `SEQ360A`: no_improvement; retained only as `reports/SEQ360A_status_summary.md`
+- `STRUCT360C`: evaluation_failed; retained only as `reports/STRUCT360C_status_summary.md`

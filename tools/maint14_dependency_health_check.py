@@ -8,8 +8,8 @@ from typing import Any, Dict, Iterable, List, Sequence, Tuple
 
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-REPORT_JSON = REPO_ROOT / "reports" / "MAINT14_dependency_health_check.json"
-REPORT_MD = REPO_ROOT / "reports" / "MAINT14_dependency_health_check.md"
+REPORT_JSON = REPO_ROOT / "reports" / "MAINT15_dependency_health_after_label_trim.json"
+REPORT_MD = REPO_ROOT / "reports" / "MAINT15_dependency_health_after_label_trim.md"
 DELETED_MANIFEST = REPO_ROOT / "reports" / "MAINT13_deleted_files_manifest.json"
 
 SCAN_TARGETS = [
@@ -43,6 +43,15 @@ OPTIONAL_REPORTS = [
     REPO_ROOT / "reports" / "BASE360D_metrics_test.json",
     REPO_ROOT / "reports" / "RESULTS360_main_results_table.md",
 ]
+
+INTENTIONALLY_OMITTED_PATHS = {
+    "reports/BASE360D_metrics_val.json",
+    "reports/FINAL360I_vs_all_baselines_summary.md",
+    "external_baselines/results/seq360b_scale_smoothing_trajectory",
+    "reports/SEQ360B_metrics_val.json",
+    "reports/SEQ360B_trajectory_metrics_val.json",
+    "reports/SEQ360B_vs_FINAL360I_TRAIN360E_BASE360D_summary.md",
+}
 
 KEYWORDS = [
     "TRAIN360A",
@@ -155,8 +164,10 @@ def _categorize(file_rel: str, reference: str, exists_now: bool, deleted_paths: 
         return "legacy_reference", "keep"
     if exists_now:
         return "current_optional", "keep"
+    if reference in INTENTIONALLY_OMITTED_PATHS:
+        return "current_optional", "mark_intentionally_omitted"
     if is_output_path:
-        return "current_optional", "keep"
+        return "current_optional", "mark_intentionally_omitted"
     if reference in deleted_paths or has_legacy_keyword:
         if "status_summary" in line_lower or "status summary" in line_lower:
             return "current_optional", "keep"
@@ -203,14 +214,16 @@ def _collect_records() -> List[Dict[str, Any]]:
 
 def _render_markdown(records: Sequence[Dict[str, Any]], summary: Dict[str, Any]) -> str:
     lines = [
-        "# MAINT14 dependency health check",
+        "# MAINT15 dependency health after label trim",
         "",
         "## Summary",
         f"- scanned files: `{summary['scanned_files']}`",
         f"- total references: `{summary['total_references']}`",
         f"- current_required missing: `{summary['current_required_missing']}`",
         f"- current_optional missing: `{summary['current_optional_missing']}`",
+        f"- intentional omissions: `{summary['intentional_omission_count']}`",
         f"- deleted references: `{summary['deleted_reference_count']}`",
+        f"- health status: `{summary['health_status']}`",
         "",
         "## Reference table",
         "| file | line | reference | exists_now | category | recommended_action |",
@@ -228,6 +241,14 @@ def _render_markdown(records: Sequence[Dict[str, Any]], summary: Dict[str, Any])
     )
     for path in OPTIONAL_REPORTS:
         lines.append(f"- `{_repo_rel(path)}`: `{'present' if path.exists() else 'missing_after_cleanup'}`")
+    lines.extend(
+        [
+            "",
+            "## Intentional omissions",
+        ]
+    )
+    for path in sorted(INTENTIONALLY_OMITTED_PATHS):
+        lines.append(f"- `{path}`: `{'present' if (REPO_ROOT / path).exists() else 'intentionally_omitted_after_cleanup'}`")
     return "\n".join(lines) + "\n"
 
 
@@ -243,15 +264,20 @@ def main() -> None:
         "current_optional_missing": sum(
             1 for row in records if row["category"] == "current_optional" and not row["exists_now"] and "/" in row["reference"]
         ),
+        "intentional_omission_count": sum(
+            1 for row in records if row["recommended_action"] == "mark_intentionally_omitted" and not row["exists_now"]
+        ),
         "deleted_reference_count": sum(1 for row in records if row["category"] == "deleted_reference"),
         "health_status": "pass",
     }
     if summary["current_required_missing"] > 0:
         summary["health_status"] = "fail"
-    elif summary["deleted_reference_count"] > 0 or summary["current_optional_missing"] > 0:
+    elif summary["deleted_reference_count"] > 0:
         summary["health_status"] = "partial"
+    elif summary["current_optional_missing"] > 0:
+        summary["health_status"] = "pass_with_intentional_omissions"
     payload = {
-        "task_name": "MAINT14_trim_remaining_config_report_dependencies_inside_final360i_and_struct360b_tools",
+        "task_name": "MAINT15_reduce_legacy_comparison_labels_inside_final360i_reports_and_configs",
         "summary": summary,
         "records": records,
     }

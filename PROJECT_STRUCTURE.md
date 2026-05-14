@@ -37,6 +37,19 @@
 - `models/seq360b_scale_smoothing_head.py`
 - `configs/seq360b_lightweight_scale_smoothing.yaml`
 
+## Visible Comparison Set
+
+- `FINAL360I`: current pair-level thesis main model
+- `TRAIN360E`: kept trajectory / ATE evaluation path for `FINAL360I`
+- `SEQ360B`: retained sequence-scale variant
+- `BASE360D`: official external baseline
+- `T57b`: legacy external reference
+
+## Status-Only Items
+
+- `SEQ360A`: no_improvement; summary only
+- `STRUCT360C`: evaluation_failed; summary only
+
 ## Data And Results
 
 - `checkpoints/`
@@ -48,13 +61,12 @@
 - `external_baselines/results/base360_hkust_360dvo_official/`
   official baseline results, preserved
 - `reports/`
-  reduced to current-mainline-facing reports, key dependencies, and MAINT13 cleanup records
+  reduced to current-mainline-facing reports, retained summaries, and cleanup records
 
 ## Removed From Active Tree
 
 - root-level compatibility wrappers
 - `train360/legacy/`
-- old S5 / scene01 / one-off train/eval scripts
+- old one-off train/eval scripts
 - maintenance-heavy report noise
 - failed or non-promoted ablation codepaths
-

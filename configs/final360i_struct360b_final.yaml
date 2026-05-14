@@ -18,17 +18,8 @@ inputs:
   dataset_adapter: datasets/dset2c_manifest_dataset.py
   init_checkpoint: checkpoints/TRAIN360D_observability_kstep_scale/best_val.pt
   struct360b_best_checkpoint: checkpoints/STRUCT360B_match_free_coarse_to_fine/best_val.pt
-  train360c_val_metrics: reports/TRAIN360C_metrics_val.json
-  train360c_test_metrics: reports/TRAIN360C_metrics_test.json
-  train360d_val_metrics: reports/TRAIN360D_metrics_val.json
-  train360d_test_metrics: reports/TRAIN360D_metrics_test.json
-  train360h_val_metrics: reports/TRAIN360H_best_config_val.json
-  train360h_test_metrics: reports/TRAIN360H_best_config_test.json
-  struct360a_val_metrics: reports/STRUCT360A_metrics_val.json
-  struct360a_test_metrics: reports/STRUCT360A_metrics_test.json
   struct360b_val_metrics: reports/STRUCT360B_metrics_val.json
   struct360b_test_metrics: reports/STRUCT360B_metrics_test.json
-  base360d_val_metrics: reports/BASE360D_metrics_val.json
   base360d_test_metrics: reports/BASE360D_metrics_test.json
 
 outputs:
@@ -37,7 +28,7 @@ outputs:
   val_metrics_path: reports/FINAL360I_metrics_val.json
   test_metrics_path: reports/FINAL360I_metrics_test.json
   model_selection_table_path: reports/FINAL360I_model_selection_table.json
-  comparison_summary_path: reports/FINAL360I_vs_all_baselines_summary.md
+  comparison_summary_path: reports/FINAL360I_mainline_comparison_summary.md
   thesis_paragraph_path: reports/FINAL360I_thesis_ready_result_paragraph.md
 
 training:

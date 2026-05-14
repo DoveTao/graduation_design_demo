@@ -44,7 +44,6 @@ FINAL360I_REPORTS = [
     REPO_ROOT / "reports" / "FINAL360I_metrics_val.json",
     REPO_ROOT / "reports" / "FINAL360I_metrics_test.json",
     REPO_ROOT / "reports" / "FINAL360I_model_selection_table.json",
-    REPO_ROOT / "reports" / "FINAL360I_vs_all_baselines_summary.md",
     REPO_ROOT / "reports" / "FINAL360I_final_retrain_and_model_selection.md",
 ]
 BASE360D_REPORTS = [

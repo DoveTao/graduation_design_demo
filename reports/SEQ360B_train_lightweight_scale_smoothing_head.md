@@ -57,7 +57,7 @@
 - FINAL360I remains the pair-level main model unless sequence-scale behavior is preferred.
 
 ## 10. Next recommendation
-- `proceed_to_SEQ360A_sequence_consistency_scale_drift_stabilization`
+- `keep_SEQ360B_as_retained_sequence_scale_variant`
 
 ## 11. Compliance checklist
 - `training_executed = true`

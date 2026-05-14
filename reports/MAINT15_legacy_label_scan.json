@@ -1,0 +1,156 @@
+{
+  "task_name": "MAINT15_reduce_legacy_comparison_labels_inside_final360i_reports_and_configs",
+  "visible_comparison_set": [
+    "FINAL360I",
+    "TRAIN360E",
+    "SEQ360B",
+    "BASE360D",
+    "T57b"
+  ],
+  "status_only_experiments": [
+    "SEQ360A",
+    "STRUCT360C"
+  ],
+  "records": [
+    {
+      "file": "README.md",
+      "line": 32,
+      "label/reference": "SEQ360A",
+      "category": "status_only_allowed",
+      "action": "keep"
+    },
+    {
+      "file": "README.md",
+      "line": 33,
+      "label/reference": "STRUCT360C",
+      "category": "status_only_allowed",
+      "action": "keep"
+    },
+    {
+      "file": "CURRENT_MAINLINE.md",
+      "line": 49,
+      "label/reference": "SEQ360A",
+      "category": "status_only_allowed",
+      "action": "keep"
+    },
+    {
+      "file": "CURRENT_MAINLINE.md",
+      "line": 50,
+      "label/reference": "STRUCT360C",
+      "category": "status_only_allowed",
+      "action": "keep"
+    },
+    {
+      "file": "PROJECT_STRUCTURE.md",
+      "line": 50,
+      "label/reference": "SEQ360A",
+      "category": "status_only_allowed",
+      "action": "keep"
+    },
+    {
+      "file": "PROJECT_STRUCTURE.md",
+      "line": 51,
+      "label/reference": "STRUCT360C",
+      "category": "status_only_allowed",
+      "action": "keep"
+    },
+    {
+      "file": "tools/current/show_mainline.py",
+      "line": 23,
+      "label/reference": "reports/SEQ360A_status_summary.md",
+      "category": "status_only_allowed",
+      "action": "keep"
+    },
+    {
+      "file": "tools/current/show_mainline.py",
+      "line": 24,
+      "label/reference": "reports/STRUCT360C_status_summary.md",
+      "category": "status_only_allowed",
+      "action": "keep"
+    },
+    {
+      "file": "tools/current/check_current_artifacts.py",
+      "line": 39,
+      "label/reference": "reports/FINAL360I_vs_all_baselines_summary.md",
+      "category": "stale_comparison",
+      "action": "mark_intentionally_omitted"
+    },
+    {
+      "file": "tools/current/check_current_artifacts.py",
+      "line": 41,
+      "label/reference": "reports/SEQ360B_metrics_val.json",
+      "category": "stale_comparison",
+      "action": "mark_intentionally_omitted"
+    },
+    {
+      "file": "tools/current/check_current_artifacts.py",
+      "line": 42,
+      "label/reference": "reports/SEQ360B_trajectory_metrics_val.json",
+      "category": "stale_comparison",
+      "action": "mark_intentionally_omitted"
+    },
+    {
+      "file": "tools/current/check_current_artifacts.py",
+      "line": 43,
+      "label/reference": "reports/SEQ360B_vs_FINAL360I_TRAIN360E_BASE360D_summary.md",
+      "category": "stale_comparison",
+      "action": "mark_intentionally_omitted"
+    },
+    {
+      "file": "configs/final360i_struct360b_final.yaml",
+      "line": 19,
+      "label/reference": "checkpoints/TRAIN360D_observability_kstep_scale/best_val.pt",
+      "category": "historical_note",
+      "action": "keep"
+    },
+    {
+      "file": "reports/FINAL360I_final_retrain_and_model_selection.md",
+      "line": 37,
+      "label/reference": "reports/SEQ360A_status_summary.md",
+      "category": "status_only_allowed",
+      "action": "keep"
+    },
+    {
+      "file": "reports/FINAL360I_final_retrain_and_model_selection.md",
+      "line": 38,
+      "label/reference": "reports/STRUCT360C_status_summary.md",
+      "category": "status_only_allowed",
+      "action": "keep"
+    },
+    {
+      "file": "reports/RESULTS360_main_results_table.md",
+      "line": 37,
+      "label/reference": "reports/SEQ360A_status_summary.md",
+      "category": "status_only_allowed",
+      "action": "keep"
+    },
+    {
+      "file": "reports/RESULTS360_main_results_table.md",
+      "line": 38,
+      "label/reference": "reports/STRUCT360C_status_summary.md",
+      "category": "status_only_allowed",
+      "action": "keep"
+    },
+    {
+      "file": "reports/SEQ360A_status_summary.md",
+      "line": 7,
+      "label/reference": "tools/train_seq360a_sequence_consistency_scale_drift.py",
+      "category": "historical_note",
+      "action": "keep"
+    },
+    {
+      "file": "reports/STRUCT360C_status_summary.md",
+      "line": 6,
+      "label/reference": "tools/train_struct360c_rotation_aware_fine_refinement.py",
+      "category": "historical_note",
+      "action": "keep"
+    },
+    {
+      "file": "reports/BASE360D_component_metric_alignment.md",
+      "line": 16,
+      "label/reference": "MAINT13 cleanup",
+      "category": "historical_note",
+      "action": "keep"
+    }
+  ]
+}

@@ -25,13 +25,22 @@ REQUIRED = {
     "final360i_report": "reports/FINAL360I_metrics_test.json",
     "train360e_report": "reports/TRAIN360E_metrics_test.json",
     "seq360b_report": "reports/SEQ360B_metrics_test.json",
+    "base360d_report": "reports/BASE360D_component_metric_alignment.md",
     "canonical_manifest": "external_baselines/results/dset2c_360dvo_canonical/pair_manifest_test.jsonl",
 }
 
 OPTIONAL = {
     "seq360a_status_summary": "reports/SEQ360A_status_summary.md",
     "struct360c_status_summary": "reports/STRUCT360C_status_summary.md",
-    "base360d_report": "reports/BASE360D_component_metric_alignment.md",
+}
+
+INTENTIONALLY_OMITTED_AFTER_CLEANUP = {
+    "base360d_val_metrics": "reports/BASE360D_metrics_val.json",
+    "final360i_previous_summary": "reports/FINAL360I_vs_all_baselines_summary.md",
+    "seq360b_trajectory_dir": "external_baselines/results/seq360b_scale_smoothing_trajectory",
+    "seq360b_previous_val_metrics": "reports/SEQ360B_metrics_val.json",
+    "seq360b_previous_trajectory_val_metrics": "reports/SEQ360B_trajectory_metrics_val.json",
+    "seq360b_previous_summary": "reports/SEQ360B_vs_FINAL360I_TRAIN360E_BASE360D_summary.md",
 }
 
 
@@ -45,6 +54,14 @@ def main() -> None:
     for key, rel in OPTIONAL.items():
         path = REPO_ROOT / rel
         payload["optional"][key] = {"path": rel, "exists": path.exists()}
+    payload["intentionally_omitted_after_cleanup"] = {}
+    for key, rel in INTENTIONALLY_OMITTED_AFTER_CLEANUP.items():
+        path = REPO_ROOT / rel
+        payload["intentionally_omitted_after_cleanup"][key] = {
+            "path": rel,
+            "exists": path.exists(),
+            "status": "intentionally_omitted_after_cleanup" if not path.exists() else "present",
+        }
     print(json.dumps(payload, ensure_ascii=False, indent=2))
 
 
