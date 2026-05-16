@@ -1,0 +1,52 @@
+{
+  "task_name": "FINAL360J_tdir_loss_reweight_and_antiparallel_stabilization",
+  "training_executed": true,
+  "selected_checkpoint": "/home/dovetao/graduation_design_demo/checkpoints/FINAL360J_tdir_loss_reweight/best_val.pt",
+  "best_epoch": 2,
+  "val_score": 164.97172419955692,
+  "metrics": {
+    "count": 5062,
+    "coverage": 1.0,
+    "rot_mean_deg": 2.3749489163555255,
+    "rot_median_deg": 0.29341986775398254,
+    "rot_p90_deg": 6.734423923492441,
+    "signed_tdir_mean_deg": 46.236052001935235,
+    "signed_tdir_median_deg": 23.738133652515195,
+    "signed_tdir_p90_deg": 141.424592870657,
+    "unsigned_tdir_mean_deg": 26.86426735655429,
+    "unsigned_tdir_median_deg": 20.33691765201405,
+    "unsigned_tdir_p90_deg": 60.7425059654726,
+    "anti_parallel_rate": 0.2056499407348874,
+    "tmag_ratio_p10": 0.25264710580098654,
+    "tmag_median_ratio": 0.7251413215270102,
+    "tmag_ratio_p50": 0.7251413215270102,
+    "tmag_mean_ratio": 0.9552756907106262,
+    "tmag_ratio_p90": 2.1235026880614556,
+    "tmag_p90_ratio": 2.1235026880614556,
+    "log_tmag_mae": 0.6971472370983129,
+    "scale_collapse_rate": 0.013433425523508494,
+    "scale_explosion_rate": 0.0,
+    "path_ratio": 0.5542818158986929,
+    "path_length_pred": 4519.247998267412,
+    "path_length_gt": 8153.339814946055,
+    "nan_inf_count": 0,
+    "nan_count": 0,
+    "inf_count": 0
+  },
+  "diagnostics": {
+    "delta_rot_mean_deg": 0.015457396004356352,
+    "delta_tdir_norm_mean": 2.9406173296051008e-05,
+    "delta_log_tmag_abs_mean": 9.2797164194642e-07,
+    "residual_gate_mean": 0.03799959287674401,
+    "residual_gate_median": 0.03799959272146225,
+    "residual_gate_max": 0.03800024464726448
+  },
+  "val_test_discrepancy": {
+    "rot_mean_deg": 1.1379633616412048,
+    "signed_tdir_mean_deg": -61.31982877407604,
+    "anti_parallel_rate": -0.4952111599764567,
+    "tmag_median_ratio": -0.17073238760631393,
+    "path_ratio": 0.057896679336230605
+  },
+  "test_used_for_selection": false
+}
