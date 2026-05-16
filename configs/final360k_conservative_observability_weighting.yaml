@@ -1,0 +1,135 @@
+task_name: FINAL360K_conservative_observability_weighting
+
+prechecks:
+  expected_branches:
+    - research/data360a-tdir-regime-diagnostic
+    - research/final360k-conservative-observability-weighting
+  min_disk_free_gb: 5.0
+  required_env: pytorch
+
+inputs:
+  init_checkpoint: checkpoints/FINAL360I_struct360b_final/seed0/best_val.pt
+  train_manifest: external_baselines/results/dset2c_360dvo_canonical/pair_manifest_train.jsonl
+  val_manifest: external_baselines/results/dset2c_360dvo_canonical/pair_manifest_val.jsonl
+  test_manifest: external_baselines/results/dset2c_360dvo_canonical/pair_manifest_test.jsonl
+  data360a_report: reports/DATA360A_translation_direction_regime_diagnostic_and_reweighting.md
+  data360a_regime_buckets: reports/DATA360A_regime_buckets.json
+  data360a_antiparallel: reports/DATA360A_antiparallel_analysis.json
+  data360a_reweighting: reports/DATA360A_reweighting_recommendations.md
+  final360i_test_metrics: reports/FINAL360I_metrics_test.json
+  seq360b_test_metrics: reports/SEQ360B_metrics_test.json
+  base360d_test_metrics: reports/BASE360D_metrics_test.json
+  final360j_report: reports/FINAL360J_tdir_loss_reweight_and_antiparallel_stabilization.md
+  final360j_test_metrics: reports/FINAL360J_metrics_test.json
+  final360j_bucket_summary: reports/FINAL360J_vs_FINAL360I_bucket_summary.md
+
+outputs:
+  checkpoint_dir: checkpoints/FINAL360K_conservative_observability_weighting
+  report_path: reports/FINAL360K_conservative_observability_weighting.md
+  val_metrics_path: reports/FINAL360K_metrics_val.json
+  test_metrics_path: reports/FINAL360K_metrics_test.json
+  model_selection_table_path: reports/FINAL360K_model_selection_table.json
+  comparison_summary_path: reports/FINAL360K_vs_FINAL360I_FINAL360J_SEQ360B_summary.md
+  bucket_diagnostic_path: reports/FINAL360K_bucket_diagnostic.json
+  bucket_summary_path: reports/FINAL360K_vs_FINAL360I_FINAL360J_bucket_summary.md
+
+data:
+  image_hw: [384, 768]
+  tmag_epsilon: 1.0e-6
+  train_batch_size: 4
+  eval_batch_size: 16
+  num_workers: 2
+  train_subset_max: 256
+  shuffle_train: true
+  require_paths: true
+  skip_invalid: true
+
+model:
+  strict_load_attempt: true
+  use_cuda_if_available: true
+  init_source: FINAL360I
+  enable_depth_fusion: false
+  struct360b:
+    fine_heads: 4
+    fine_dropout: 0.05
+    fine_mlp_ratio: 2.0
+    refiner_gate_bias: -2.0
+    residual_hidden_dim: 256
+    delta_rot_scale: 0.08
+    delta_tdir_scale: 0.25
+    delta_log_tmag_scale: 0.35
+    residual_gate_bias: -2.5
+    residual_gate_max: 0.5
+    alpha: 0.25
+    beta: 0.25
+
+loss:
+  rot_weight: 1.0
+  tdir_weight: 1.05
+  tmag_weight: 0.5
+  scale_stability_weight: 0.1
+  tmag_loss_type: log_smooth_l1
+  coarse_aux_weight: 0.5
+  residual_reg_weight: 0.05
+  anti_parallel:
+    weight: 0.0
+    margin: 0.0
+  components:
+    enable_k_step_balancing: true
+    enable_scale_stabilization: true
+  k_step_balancing:
+    weight_k1: 1.0
+    weight_k2: 1.05
+    weight_k3: 1.0
+    weight_k5: 0.9
+  scale_stability:
+    collapse_ratio: 0.1
+    explosion_ratio: 10.0
+    mean_log_bias_weight: 1.0
+  conservative_weighting:
+    threshold_source: train_split_quantiles
+    tmag_quantiles: [10, 25, 50, 75]
+    tmag_weights:
+      very_small: 0.45
+      small: 0.60
+      medium: 1.00
+      large: 1.05
+      very_large: 0.95
+    rot_buckets_deg:
+      small_max: 15.0
+      medium_max: 45.0
+      large_max: 90.0
+    rot_weights:
+      small_rotation: 0.95
+      medium_rotation: 1.00
+      large_rotation: 1.10
+      extreme_rotation: 1.05
+    clamp_min: 0.35
+    clamp_max: 1.20
+
+training:
+  epochs: 3
+  optimizer: AdamW
+  coarse_lr: 1.0e-5
+  fine_lr: 2.0e-5
+  warmup_coarse_lr: 0.0
+  warmup_fine_lr: 2.0e-5
+  warmup_epochs: 1
+  weight_decay: 1.0e-4
+  grad_clip_norm: 1.0
+  amp: false
+  seed: 0
+  scheduler: cosine
+  min_lr: 1.0e-6
+  resource_limited_single_seed: true
+
+evaluation:
+  max_val_batches: null
+  max_test_batches: null
+  run_test: true
+  selection_score:
+    signed_tdir_weight: 1.0
+    anti_parallel_weight: 80.0
+    tmag_ratio_weight: 15.0
+    path_ratio_weight: 8.0
+    rot_weight: 0.2
