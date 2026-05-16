@@ -1,0 +1,93 @@
+{
+  "anti_parallel_count": 4543,
+  "anti_parallel_rate": 0.4366589773164168,
+  "gt_tmag_stats": {
+    "mean": 1.610855699685959,
+    "median": 1.0101561546325684
+  },
+  "gt_rot_angle_stats": {
+    "mean": 1.7231839081180775,
+    "median": 0.6394963672631374
+  },
+  "tmag_bucket_counts": [
+    {
+      "bucket": "very_small",
+      "count": 294,
+      "share": 0.06471494607087827
+    },
+    {
+      "bucket": "small",
+      "count": 748,
+      "share": 0.16464891041162227
+    },
+    {
+      "bucket": "medium",
+      "count": 1051,
+      "share": 0.2313449262601805
+    },
+    {
+      "bucket": "large",
+      "count": 1103,
+      "share": 0.24279110719788685
+    },
+    {
+      "bucket": "very_large",
+      "count": 1347,
+      "share": 0.2965001100594321
+    }
+  ],
+  "rotation_bucket_counts": [
+    {
+      "bucket": "small_rotation",
+      "count": 4477,
+      "share": 0.9854721549636803
+    },
+    {
+      "bucket": "medium_rotation",
+      "count": 63,
+      "share": 0.01386748844375963
+    },
+    {
+      "bucket": "large_rotation",
+      "count": 3,
+      "share": 0.0006603565925599824
+    },
+    {
+      "bucket": "extreme_rotation",
+      "count": 0,
+      "share": 0.0
+    }
+  ],
+  "top_scenes": [
+    {
+      "scene": "downhill_biking",
+      "count": 2196
+    },
+    {
+      "scene": "mountains",
+      "count": 1326
+    },
+    {
+      "scene": "ridge_to_lake",
+      "count": 1021
+    }
+  ],
+  "top_sequences": [
+    {
+      "sequence": "downhill_biking",
+      "count": 2196
+    },
+    {
+      "sequence": "mountains",
+      "count": 1326
+    },
+    {
+      "sequence": "ridge_to_lake",
+      "count": 1021
+    }
+  ],
+  "pred_tmag_anomaly_share": {
+    "collapse": 0.0,
+    "explosion": 0.0
+  }
+}
