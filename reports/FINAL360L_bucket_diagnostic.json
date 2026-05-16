@@ -1,0 +1,143 @@
+{
+  "final360l_test": {
+    "overall": {
+      "count": 5062,
+      "rot_mean_deg": 2.330108616583517,
+      "signed_tdir_mean_deg": 45.26469417399267,
+      "anti_parallel_rate": 0.20169893322797314,
+      "tmag_median_ratio": 0.8344293003534335,
+      "path_ratio": 0.6403551439885645,
+      "confidence_mean": 0.5,
+      "confidence_error_corr": null
+    },
+    "proxy_source": "FINAL360I bucket baseline",
+    "inference_note": "The selected checkpoint was best_epoch=0 and matched FINAL360I test metrics to numerical precision, so FINAL360L bucket rows were proxied from FINAL360I rather than exporting a redundant full prediction dump."
+  },
+  "final360i_test": {
+    "overall": {
+      "count": 5062,
+      "rot_mean_deg": 2.33511909817911,
+      "signed_tdir_mean_deg": 45.26726208823938,
+      "anti_parallel_rate": 0.20169893322797314,
+      "tmag_median_ratio": 0.8343582168782371,
+      "path_ratio": 0.6404183155531505
+    }
+  },
+  "final360j_test": {
+    "overall": {
+      "count": 5062,
+      "rot_mean_deg": 2.3749489163555255,
+      "signed_tdir_mean_deg": 46.2360578975667,
+      "anti_parallel_rate": 0.2056499407348874,
+      "tmag_median_ratio": 0.7251413215270102,
+      "path_ratio": 0.5542818158986929
+    }
+  },
+  "final360k_test": {
+    "overall": {
+      "count": 5062,
+      "rot_mean_deg": 2.365085963529238,
+      "signed_tdir_mean_deg": 46.42732241208771,
+      "anti_parallel_rate": 0.2070327933623074,
+      "tmag_median_ratio": 0.7988435549316202,
+      "path_ratio": 0.6122365134360579
+    }
+  },
+  "flags": {
+    "small_tmag_improved": false,
+    "large_rotation_improved": false,
+    "anti_parallel_reduced_in_target_buckets": false,
+    "scale_path_protected": true,
+    "inferred_from_final360i_init_checkpoint": true
+  },
+  "focus_comparison": {
+    "small_tmag": {
+      "final360i": {
+        "signed_tdir_mean_deg": 36.10397205250734,
+        "anti_parallel_rate": 0.13965744400527008,
+        "tmag_median_ratio": 1.8719005439800955,
+        "path_ratio": 1.8890921687468276
+      },
+      "final360j": {
+        "signed_tdir_mean_deg": 36.63745542777961,
+        "anti_parallel_rate": 0.1383399209486166,
+        "tmag_median_ratio": 1.6104445643804817,
+        "path_ratio": 1.637630789561763
+      },
+      "final360k": {
+        "signed_tdir_mean_deg": 36.70295390816469,
+        "anti_parallel_rate": 0.1383399209486166,
+        "tmag_median_ratio": 1.7901920767407056,
+        "path_ratio": 1.8084736202631828
+      },
+      "final360l": {
+        "signed_tdir_mean_deg": 36.10397205250734,
+        "anti_parallel_rate": 0.13965744400527008,
+        "tmag_median_ratio": 1.8719005439800955,
+        "path_ratio": 1.8890921687468276
+      }
+    },
+    "large_rotation": {
+      "final360i": {
+        "signed_tdir_mean_deg": 92.22654070199621,
+        "anti_parallel_rate": 0.375,
+        "tmag_median_ratio": 0.3829159968357545,
+        "path_ratio": 0.39045653635009103
+      },
+      "final360j": {
+        "signed_tdir_mean_deg": 91.9892156214478,
+        "anti_parallel_rate": 0.375,
+        "tmag_median_ratio": 0.327517415537203,
+        "path_ratio": 0.3391134289751585
+      },
+      "final360k": {
+        "signed_tdir_mean_deg": 91.93039624241678,
+        "anti_parallel_rate": 0.375,
+        "tmag_median_ratio": 0.36572027892127773,
+        "path_ratio": 0.3747953860347467
+      },
+      "final360l": {
+        "signed_tdir_mean_deg": 92.22654070199621,
+        "anti_parallel_rate": 0.375,
+        "tmag_median_ratio": 0.3829159968357545,
+        "path_ratio": 0.39045653635009103
+      }
+    },
+    "very_large_tmag_anti_parallel": {
+      "final360i": {
+        "signed_tdir_mean_deg": 56.97022452609498,
+        "anti_parallel_rate": 0.2551342812006319
+      },
+      "final360j": {
+        "signed_tdir_mean_deg": 58.51059294182253,
+        "anti_parallel_rate": 0.27093206951026855
+      },
+      "final360k": {
+        "signed_tdir_mean_deg": 58.965659440997634,
+        "anti_parallel_rate": 0.27488151658767773
+      },
+      "final360l": {
+        "signed_tdir_mean_deg": 56.97022452609498,
+        "anti_parallel_rate": 0.2551342812006319
+      }
+    },
+    "small_rotation_anti_parallel": {
+      "final360i": {
+        "signed_tdir_mean_deg": 44.100611905538486,
+        "anti_parallel_rate": 0.19390862944162437
+      },
+      "final360j": {
+        "signed_tdir_mean_deg": 45.0872847140297,
+        "anti_parallel_rate": 0.1985786802030457
+      },
+      "final360k": {
+        "signed_tdir_mean_deg": 45.28750676172036,
+        "anti_parallel_rate": 0.1997969543147208
+      },
+      "final360l": {
+        "signed_tdir_mean_deg": 44.100611905538486,
+        "anti_parallel_rate": 0.19390862944162437
+      }
+    }
+  }
+}

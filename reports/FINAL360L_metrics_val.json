@@ -1,0 +1,73 @@
+{
+  "task_name": "FINAL360L_translation_head_factorization_direction_confidence_scale",
+  "training_executed": true,
+  "selected_checkpoint": "/home/dovetao/graduation_design_demo/checkpoints/FINAL360L_translation_head_factorization/best_val.pt",
+  "best_epoch": 0,
+  "val_score": 162.11849932950537,
+  "metrics": {
+    "count": 5342,
+    "coverage": 1.0,
+    "rot_mean_deg": 1.3020083894210444,
+    "rot_median_deg": 1.0851637125015259,
+    "rot_p90_deg": 2.7727072477340724,
+    "signed_tdir_mean_deg": 104.46983571768872,
+    "signed_tdir_median_deg": 116.29196702950043,
+    "signed_tdir_p90_deg": 146.4627332717577,
+    "unsigned_tdir_mean_deg": 54.37515865104158,
+    "unsigned_tdir_median_deg": 53.18997752593509,
+    "unsigned_tdir_p90_deg": 81.32271683945811,
+    "anti_parallel_rate": 0.6593036315986522,
+    "tmag_ratio_p10": 0.26706720767884584,
+    "tmag_median_ratio": 1.0006511626149384,
+    "tmag_ratio_p50": 1.0006511626149384,
+    "tmag_mean_ratio": 1.4712228999750097,
+    "tmag_ratio_p90": 3.9675055142462594,
+    "tmag_p90_ratio": 3.9675055142462594,
+    "log_tmag_mae": 0.7438104151443241,
+    "scale_collapse_rate": 0.0,
+    "scale_explosion_rate": 0.0,
+    "path_ratio": 0.5603039396060789,
+    "path_length_pred": 3404.216032475233,
+    "path_length_gt": 6075.659640852362,
+    "nan_inf_count": 0,
+    "nan_count": 0,
+    "inf_count": 0,
+    "confidence_mean": 0.5,
+    "confidence_std": 0.0,
+    "confidence_error_corr": null,
+    "confidence_auc_high_error": 0.6170427473212793,
+    "anti_parallel_confidence_mean": 0.5,
+    "non_anti_parallel_confidence_mean": 0.5
+  },
+  "diagnostics": {
+    "delta_rot_mean_deg": 0.045807072125690476,
+    "delta_tdir_norm_mean": 6.20511479815612e-05,
+    "delta_log_tmag_abs_mean": 0.00017829455031527123,
+    "residual_gate_mean": 0.03968076617814369,
+    "residual_gate_median": 0.039681002497673035,
+    "residual_gate_max": 0.03969378024339676
+  },
+  "test_used_for_selection": false,
+  "load_status": {
+    "loaded_key_count": 345,
+    "missing_keys": [
+      "struct360l_residual_head.tdir_branch.0.weight",
+      "struct360l_residual_head.tdir_branch.0.bias",
+      "struct360l_residual_head.conf_branch.0.weight",
+      "struct360l_residual_head.conf_branch.0.bias",
+      "struct360l_residual_head.conf_branch.1.weight",
+      "struct360l_residual_head.conf_branch.1.bias",
+      "struct360l_residual_head.conf_branch.3.weight",
+      "struct360l_residual_head.conf_branch.3.bias",
+      "struct360l_residual_head.log_tmag_branch.0.weight",
+      "struct360l_residual_head.log_tmag_branch.0.bias"
+    ],
+    "unexpected_keys": [],
+    "skipped_shape_mismatch": [],
+    "newly_initialized_modules": [
+      "struct360l_residual_head"
+    ],
+    "epoch": 1
+  },
+  "stopped_early_reason": null
+}
