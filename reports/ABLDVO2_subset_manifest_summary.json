@@ -1,0 +1,88 @@
+{
+  "task_name": "ABLDVO2_larger_subset_big_module_ablation_rerun",
+  "train_subset_summary": {
+    "subset_used": true,
+    "subset_count": 512,
+    "original_count": 12154,
+    "seed": 1,
+    "group_count": 236,
+    "groups_selected": 150,
+    "tmag_bucket_edges": [
+      0.3386044995154558,
+      0.6231381232144533,
+      0.9938734261188488,
+      1.7735950519041426
+    ],
+    "rot_bucket_edges_deg": [
+      0.19382665722055112,
+      0.5286014235678185,
+      1.1141691119237351,
+      2.6044098721267335
+    ],
+    "scene_weight_mode": "uniform_sequence",
+    "sequence_count_selected": 6,
+    "top_sequence_counts": {
+      "bridge_night": 87,
+      "city_driving": 87,
+      "canyon_line": 86,
+      "drone_racetrack": 85,
+      "field": 84,
+      "shanghai_street": 83
+    },
+    "selected_tmag_bucket_histogram": {
+      "3": 116,
+      "2": 99,
+      "0": 86,
+      "1": 92,
+      "4": 119
+    },
+    "selected_rot_bucket_histogram": {
+      "3": 87,
+      "1": 106,
+      "4": 100,
+      "2": 89,
+      "0": 130
+    }
+  },
+  "minival_summary": {
+    "subset_used": true,
+    "subset_count": 1024,
+    "original_count": 5342,
+    "seed": 1,
+    "group_count": 104,
+    "groups_selected": 96,
+    "tmag_bucket_edges": [
+      0.23018546691761158,
+      0.407794173827156,
+      0.756927299381157,
+      1.8450473099940305
+    ],
+    "rot_bucket_edges_deg": [
+      0.1855748884546529,
+      0.3582740158310247,
+      0.6342733397514175,
+      1.2113737329453962
+    ],
+    "scene_weight_mode": "uniform_sequence",
+    "sequence_count_selected": 2,
+    "top_sequence_counts": {
+      "downhill_biking": 514,
+      "mountains": 510
+    },
+    "selected_tmag_bucket_histogram": {
+      "0": 181,
+      "2": 194,
+      "1": 186,
+      "3": 224,
+      "4": 239
+    },
+    "selected_rot_bucket_histogram": {
+      "3": 199,
+      "4": 187,
+      "1": 217,
+      "2": 213,
+      "0": 208
+    }
+  },
+  "selection_protocol": "mini_val_only_per_epoch_full_val_once_after_training"
+}

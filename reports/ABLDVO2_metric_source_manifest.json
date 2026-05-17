@@ -1,0 +1,21 @@
+{
+  "task_name": "ABLDVO2_larger_subset_big_module_ablation_rerun",
+  "train_manifest": "external_baselines/results/dset2c_360dvo_canonical/pair_manifest_train.jsonl",
+  "val_manifest": "external_baselines/results/dset2c_360dvo_canonical/pair_manifest_val.jsonl",
+  "test_manifest": "external_baselines/results/dset2c_360dvo_canonical/pair_manifest_test.jsonl",
+  "test_used_for_selection": false,
+  "existing_metrics_modified": false,
+  "full_model_checkpoint_modified": false,
+  "checkpoints_committed": false,
+  "mini_val_manifest_used_for_selection": true,
+  "full_val_executed_for_best_checkpoints": true,
+  "full_test_executed_for_best_checkpoints": true,
+  "trained_models": [
+    "ABLDVO2_PlainPairVO",
+    "ABLDVO2_NoSphericalGeometry",
+    "ABLDVO2_NoCrossImageInteraction"
+  ],
+  "skipped_models": [
+    "ABLDVO2_SingleStagePoseRegression"
+  ]
+}

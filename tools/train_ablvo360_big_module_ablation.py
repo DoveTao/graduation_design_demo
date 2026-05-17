@@ -107,13 +107,28 @@ def _bucket_index(value: float, edges: Sequence[float]) -> int:
     return int(len(edges))
 
 
+def _quantile_bucket_edges(values: Sequence[float], quantiles: Sequence[float]) -> List[float]:
+    arr = np.asarray([float(v) for v in values if math.isfinite(float(v))], dtype=np.float64)
+    if arr.size == 0:
+        return []
+    edges = sorted({float(np.percentile(arr, float(q) * 100.0)) for q in quantiles})
+    filtered: List[float] = []
+    prev = None
+    for edge in edges:
+        if prev is None or abs(edge - prev) > 1.0e-12:
+            filtered.append(edge)
+            prev = edge
+    return filtered
+
+
 def _stratified_subset_dataset(
     dataset: Dset2CCanonicalPairDataset,
     *,
     target_count: Optional[int],
     seed: int,
-    tmag_bucket_edges: Sequence[float],
-    rot_bucket_edges: Sequence[float],
+    tmag_bucket_edges: Optional[Sequence[float]] = None,
+    rot_bucket_edges: Optional[Sequence[float]] = None,
+    scene_weight_mode: str = "sequence",
 ) -> Tuple[Dset2CCanonicalPairDataset | Subset, Dict[str, Any]]:
     if target_count is None or int(target_count) <= 0 or len(dataset) <= int(target_count):
         return dataset, {
@@ -123,20 +138,32 @@ def _stratified_subset_dataset(
             "seed": int(seed),
         }
 
+    all_tmags = [float(sample["tmag"]) for sample in dataset.samples]
+    all_rots = [_rotation_angle_deg_from_matrix(sample["R_BA"]) for sample in dataset.samples]
+    tmag_edges = list(tmag_bucket_edges) if tmag_bucket_edges is not None else _quantile_bucket_edges(all_tmags, [0.2, 0.4, 0.6, 0.8])
+    rot_edges = list(rot_bucket_edges) if rot_bucket_edges is not None else _quantile_bucket_edges(all_rots, [0.2, 0.4, 0.6, 0.8])
+
     groups: Dict[Tuple[str, int, int, int], List[int]] = {}
     for idx, sample in enumerate(dataset.samples):
         seq_id = str(sample["sequence_id"])
-        tmag_bucket = _bucket_index(float(sample["tmag"]), tmag_bucket_edges)
-        rot_bucket = _bucket_index(_rotation_angle_deg_from_matrix(sample["R_BA"]), rot_bucket_edges)
+        tmag_bucket = _bucket_index(float(sample["tmag"]), tmag_edges)
+        rot_bucket = _bucket_index(_rotation_angle_deg_from_matrix(sample["R_BA"]), rot_edges)
         k_bucket = int(sample["k"])
         groups.setdefault((seq_id, tmag_bucket, rot_bucket, k_bucket), []).append(idx)
 
     rng = np.random.default_rng(int(seed))
+    seq_counts = {}
+    for sample in dataset.samples:
+        seq_id = str(sample["sequence_id"])
+        seq_counts[seq_id] = int(seq_counts.get(seq_id, 0)) + 1
     group_items = []
     for key, indices in groups.items():
         shuffled = list(indices)
         rng.shuffle(shuffled)
-        expected = float(len(indices)) * float(target_count) / float(len(dataset))
+        if str(scene_weight_mode) == "uniform_sequence":
+            expected = float(target_count) / float(max(len(seq_counts), 1)) * float(len(indices)) / float(max(seq_counts[key[0]], 1))
+        else:
+            expected = float(len(indices)) * float(target_count) / float(len(dataset))
         base_take = int(math.floor(expected))
         frac = expected - float(base_take)
         group_items.append(
@@ -183,8 +210,8 @@ def _stratified_subset_dataset(
     for idx in selected:
         sample = dataset.samples[idx]
         seq_id = str(sample["sequence_id"])
-        tmag_bucket = _bucket_index(float(sample["tmag"]), tmag_bucket_edges)
-        rot_bucket = _bucket_index(_rotation_angle_deg_from_matrix(sample["R_BA"]), rot_bucket_edges)
+        tmag_bucket = _bucket_index(float(sample["tmag"]), tmag_edges)
+        rot_bucket = _bucket_index(_rotation_angle_deg_from_matrix(sample["R_BA"]), rot_edges)
         selected_seq[seq_id] = int(selected_seq.get(seq_id, 0)) + 1
         selected_tmag_bucket[str(tmag_bucket)] = int(selected_tmag_bucket.get(str(tmag_bucket), 0)) + 1
         selected_rot_bucket[str(rot_bucket)] = int(selected_rot_bucket.get(str(rot_bucket), 0)) + 1
@@ -195,8 +222,9 @@ def _stratified_subset_dataset(
         "seed": int(seed),
         "group_count": len(groups),
         "groups_selected": int(selected_groups),
-        "tmag_bucket_edges": [float(x) for x in tmag_bucket_edges],
-        "rot_bucket_edges_deg": [float(x) for x in rot_bucket_edges],
+        "tmag_bucket_edges": [float(x) for x in tmag_edges],
+        "rot_bucket_edges_deg": [float(x) for x in rot_edges],
+        "scene_weight_mode": str(scene_weight_mode),
         "sequence_count_selected": len(selected_seq),
         "top_sequence_counts": dict(sorted(selected_seq.items(), key=lambda kv: (-kv[1], kv[0]))[:20]),
         "selected_tmag_bucket_histogram": selected_tmag_bucket,
@@ -639,13 +667,21 @@ def train() -> None:
     ds_train = precheck["datasets"]["train"]
     ds_val = precheck["datasets"]["val"]
     ds_test = precheck["datasets"]["test"]
-    train_subset, subset_info = _subset_dataset(ds_train, cfg["data"].get("train_subset_max"), int(cfg["training"]["seed"]))
+    train_subset, subset_info = _stratified_subset_dataset(
+        ds_train,
+        target_count=cfg["data"].get("train_subset_count", cfg["data"].get("train_subset_max")),
+        seed=int(cfg["data"].get("train_subset_seed", cfg["training"]["seed"])),
+        tmag_bucket_edges=cfg["data"].get("train_subset_tmag_bucket_edges"),
+        rot_bucket_edges=cfg["data"].get("train_subset_rot_bucket_edges_deg"),
+        scene_weight_mode=str(cfg["data"].get("train_subset_scene_weight_mode", "uniform_sequence")),
+    )
     mini_val_subset, minival_summary = _stratified_subset_dataset(
         ds_val,
         target_count=cfg["evaluation"].get("val_subset_count"),
-        seed=int(cfg["training"]["seed"]),
-        tmag_bucket_edges=cfg["evaluation"].get("val_subset_tmag_bucket_edges", [0.03, 0.08, 0.2, 0.5]),
-        rot_bucket_edges=cfg["evaluation"].get("val_subset_rot_bucket_edges_deg", [5.0, 15.0, 30.0, 60.0, 120.0]),
+        seed=int(cfg["evaluation"].get("val_subset_seed", cfg["training"]["seed"])),
+        tmag_bucket_edges=cfg["evaluation"].get("val_subset_tmag_bucket_edges"),
+        rot_bucket_edges=cfg["evaluation"].get("val_subset_rot_bucket_edges_deg"),
+        scene_weight_mode=str(cfg["evaluation"].get("val_subset_scene_weight_mode", "uniform_sequence")),
     )
     train_loader = DataLoader(train_subset, batch_size=int(cfg["data"]["train_batch_size"]), shuffle=bool(cfg["data"]["shuffle_train"]), num_workers=int(cfg["data"]["num_workers"]), pin_memory=device.type == "cuda", persistent_workers=bool(int(cfg["data"]["num_workers"]) > 0), drop_last=False)
     mini_val_loader = DataLoader(mini_val_subset, batch_size=int(cfg["data"]["eval_batch_size"]), shuffle=False, num_workers=int(cfg["data"]["num_workers"]), pin_memory=device.type == "cuda", persistent_workers=bool(int(cfg["data"]["num_workers"]) > 0), drop_last=False)
@@ -921,7 +957,8 @@ def train() -> None:
     if "minival_manifest_summary_path" in outputs:
         _json_dump(REPO_ROOT / outputs["minival_manifest_summary_path"], {
             "task_name": cfg["task_name"],
-            "summary": minival_summary,
+            "train_subset_summary": subset_info,
+            "minival_summary": minival_summary,
             "selection_protocol": "mini_val_only_per_epoch_full_val_once_after_training",
         })
 

@@ -748,13 +748,13 @@ class AblationNoSphericalGeometryModel(AblationBaseModel):
 
 def build_ablvo360_model(variant: str, cfg: Config, device: torch.device) -> nn.Module:
     variant = str(variant)
-    if variant == "ABLVO360_PlainPairVO":
+    if variant in {"ABLVO360_PlainPairVO", "ABLDVO2_PlainPairVO"}:
         return AblationPairRegressionModel(cfg, device, geometry_mode="planar", model_name=variant)
-    if variant == "ABLVO360_NoCrossImageInteraction":
+    if variant in {"ABLVO360_NoCrossImageInteraction", "ABLDVO2_NoCrossImageInteraction"}:
         return AblationPairRegressionModel(cfg, device, geometry_mode="spherical", model_name=variant)
-    if variant == "ABLVO360_SingleStagePoseRegression":
+    if variant in {"ABLVO360_SingleStagePoseRegression", "ABLDVO2_SingleStagePoseRegression"}:
         return AblationSingleStageCrossModel(cfg, device)
-    if variant == "ABLVO360_NoSphericalGeometry":
+    if variant in {"ABLVO360_NoSphericalGeometry", "ABLDVO2_NoSphericalGeometry"}:
         return AblationNoSphericalGeometryModel(cfg, device)
     raise ValueError(f"Unsupported ABLVO360 variant: {variant}")
 
