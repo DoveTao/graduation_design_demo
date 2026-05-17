@@ -1,0 +1,26 @@
+{
+  "task_name": "ABLVO360_big_module_ablation_against_plain_pair_vo",
+  "test_used_for_selection": false,
+  "rows": [
+    {
+      "model_name": "ABLVO360_PlainPairVO",
+      "executed": false,
+      "skip_reason": "blocked_by_full_manifest_eval_runtime"
+    },
+    {
+      "model_name": "ABLVO360_NoSphericalGeometry",
+      "executed": false,
+      "skip_reason": "blocked_by_full_manifest_eval_runtime"
+    },
+    {
+      "model_name": "ABLVO360_NoCrossImageInteraction",
+      "executed": false,
+      "skip_reason": "blocked_by_full_manifest_eval_runtime"
+    },
+    {
+      "model_name": "ABLVO360_SingleStagePoseRegression",
+      "executed": false,
+      "skip_reason": "resource_limited_optional_group_D"
+    }
+  ]
+}

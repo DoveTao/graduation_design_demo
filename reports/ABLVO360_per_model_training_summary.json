@@ -1,0 +1,12 @@
+{
+  "task_name": "ABLVO360_big_module_ablation_against_plain_pair_vo",
+  "status": "blocked",
+  "code_ready": true,
+  "forward_smoke_passed": [
+    "ABLVO360_PlainPairVO",
+    "ABLVO360_NoSphericalGeometry",
+    "ABLVO360_NoCrossImageInteraction",
+    "ABLVO360_SingleStagePoseRegression"
+  ],
+  "runtime_blocker": "full-manifest validation runtime bottleneck on current hardware budget"
+}

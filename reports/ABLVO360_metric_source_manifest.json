@@ -1,0 +1,13 @@
+{
+  "task_name": "ABLVO360_big_module_ablation_against_plain_pair_vo",
+  "train_manifest": "external_baselines/results/dset2c_360dvo_canonical/pair_manifest_train.jsonl",
+  "val_manifest": "external_baselines/results/dset2c_360dvo_canonical/pair_manifest_val.jsonl",
+  "test_manifest": "external_baselines/results/dset2c_360dvo_canonical/pair_manifest_test.jsonl",
+  "train_count": 12154,
+  "val_count": 5342,
+  "test_count": 5062,
+  "test_used_for_selection": false,
+  "full_model_checkpoint_modified": false,
+  "metrics_modified_existing": false,
+  "checkpoints_committed": false
+}

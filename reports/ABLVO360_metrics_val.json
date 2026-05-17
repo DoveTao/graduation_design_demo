@@ -1,0 +1,7 @@
+{
+  "task_name": "ABLVO360_big_module_ablation_against_plain_pair_vo",
+  "training_executed": false,
+  "status": "blocked",
+  "reason": "full-manifest validation runtime bottleneck on current hardware budget",
+  "models": {}
+}
