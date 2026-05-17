@@ -1,0 +1,177 @@
+{
+  "task_name": "ABLVO361_fast_minival_ablation_rerun",
+  "training_executed": true,
+  "models": {
+    "ABLVO360_PlainPairVO": {
+      "task_name": "ABLVO361_fast_minival_ablation_rerun",
+      "model_name": "ABLVO360_PlainPairVO",
+      "checkpoint_used": "/home/dovetao/graduation_design_demo/checkpoints/ABLVO360_PlainPairVO/best_val.pt",
+      "best_epoch": 2,
+      "minival_score_of_selected_checkpoint": 154.46562296958135,
+      "val_score": 155.6863916217744,
+      "metrics": {
+        "count": 5342,
+        "coverage": 1.0,
+        "rot_mean_deg": 5.106030519581698,
+        "rot_median_deg": 5.211430072784424,
+        "signed_tdir_mean_deg": 97.43632540216363,
+        "signed_tdir_median_deg": 113.08731336747,
+        "unsigned_tdir_mean_deg": 54.43620100654322,
+        "anti_parallel_rate": 0.5990265818045676,
+        "tmag_ratio_p10": 0.2642717579943316,
+        "tmag_median_ratio": 1.5596525244134307,
+        "tmag_mean_ratio": 2.2686060530780465,
+        "tmag_ratio_p90": 6.323573290898847,
+        "log_tmag_mae": 0.9648261705823963,
+        "scale_collapse_rate": 0.0,
+        "scale_explosion_rate": 0.003182328715836765,
+        "path_ratio": 0.7189428088908575,
+        "nan_inf_count": 0
+      },
+      "coarse_metrics": {
+        "count": 5342,
+        "coverage": 1.0,
+        "rot_mean_deg": 5.106030519581698,
+        "rot_median_deg": 5.211430072784424,
+        "signed_tdir_mean_deg": 97.43632519493406,
+        "signed_tdir_median_deg": 113.08731058322411,
+        "unsigned_tdir_mean_deg": 54.43620153072098,
+        "anti_parallel_rate": 0.5990265818045676,
+        "tmag_ratio_p10": 0.2642717579943316,
+        "tmag_median_ratio": 1.5596525244134307,
+        "tmag_mean_ratio": 2.2686060530780465,
+        "tmag_ratio_p90": 6.323573290898847,
+        "log_tmag_mae": 0.9648261705823963,
+        "scale_collapse_rate": 0.0,
+        "scale_explosion_rate": 0.003182328715836765,
+        "path_ratio": 0.7189428088908575,
+        "nan_inf_count": 0
+      },
+      "residual_stats": {
+        "delta_rot_mean_deg": 0.0,
+        "delta_tdir_norm_mean": 0.0,
+        "delta_log_tmag_abs_mean": 0.0
+      },
+      "gate_stats": {
+        "mean": 0.0,
+        "median": 0.0,
+        "max": 0.0
+      },
+      "selection_protocol": "mini_val_only_per_epoch_full_val_once_after_training"
+    },
+    "ABLVO360_NoSphericalGeometry": {
+      "task_name": "ABLVO361_fast_minival_ablation_rerun",
+      "model_name": "ABLVO360_NoSphericalGeometry",
+      "checkpoint_used": "/home/dovetao/graduation_design_demo/checkpoints/ABLVO360_NoSphericalGeometry/best_val.pt",
+      "best_epoch": 1,
+      "minival_score_of_selected_checkpoint": 148.95501441779967,
+      "val_score": 150.61218441417589,
+      "metrics": {
+        "count": 5342,
+        "coverage": 1.0,
+        "rot_mean_deg": 1.2811739897736893,
+        "rot_median_deg": 1.0441772937774658,
+        "signed_tdir_mean_deg": 95.07216829006609,
+        "signed_tdir_median_deg": 110.44989836742573,
+        "unsigned_tdir_mean_deg": 55.5716698245774,
+        "anti_parallel_rate": 0.5969674279296143,
+        "tmag_ratio_p10": 0.25192373206234353,
+        "tmag_median_ratio": 1.28714391857561,
+        "tmag_mean_ratio": 1.8768767781553164,
+        "tmag_ratio_p90": 5.26070715357442,
+        "log_tmag_mae": 0.8771111187728785,
+        "scale_collapse_rate": 0.0,
+        "scale_explosion_rate": 0.0011231748408835642,
+        "path_ratio": 0.6265666595036484,
+        "nan_inf_count": 0
+      },
+      "coarse_metrics": {
+        "count": 5342,
+        "coverage": 1.0,
+        "rot_mean_deg": 1.2786231033757849,
+        "rot_median_deg": 1.040798544883728,
+        "signed_tdir_mean_deg": 95.0719863058091,
+        "signed_tdir_median_deg": 110.44958127216712,
+        "unsigned_tdir_mean_deg": 55.57171268338331,
+        "anti_parallel_rate": 0.5969674279296143,
+        "tmag_ratio_p10": 0.25192090181543814,
+        "tmag_median_ratio": 1.2871290787244176,
+        "tmag_mean_ratio": 1.8768552639443825,
+        "tmag_ratio_p90": 5.26064668673434,
+        "log_tmag_mae": 0.8771089122233239,
+        "scale_collapse_rate": 0.0,
+        "scale_explosion_rate": 0.0011231748408835642,
+        "path_ratio": 0.6265595219282938,
+        "nan_inf_count": 0
+      },
+      "residual_stats": {
+        "delta_rot_mean_deg": 0.0040429270561632485,
+        "delta_tdir_norm_mean": 2.59239948133468e-05,
+        "delta_log_tmag_abs_mean": 4.560744221460424e-05
+      },
+      "gate_stats": {
+        "mean": 0.03784261068286676,
+        "median": 0.03784249350428581,
+        "max": 0.03784678131341934
+      },
+      "selection_protocol": "mini_val_only_per_epoch_full_val_once_after_training"
+    },
+    "ABLVO360_NoCrossImageInteraction": {
+      "task_name": "ABLVO361_fast_minival_ablation_rerun",
+      "model_name": "ABLVO360_NoCrossImageInteraction",
+      "checkpoint_used": "/home/dovetao/graduation_design_demo/checkpoints/ABLVO360_NoCrossImageInteraction/best_val.pt",
+      "best_epoch": 1,
+      "minival_score_of_selected_checkpoint": 149.86214029366334,
+      "val_score": 151.62345786813603,
+      "metrics": {
+        "count": 5342,
+        "coverage": 1.0,
+        "rot_mean_deg": 2.3684908600934813,
+        "rot_median_deg": 2.423658847808838,
+        "signed_tdir_mean_deg": 92.73668722829896,
+        "signed_tdir_median_deg": 107.69445953484623,
+        "unsigned_tdir_mean_deg": 55.262036445905466,
+        "anti_parallel_rate": 0.6282291276675402,
+        "tmag_ratio_p10": 0.22496825246492125,
+        "tmag_median_ratio": 1.324321369080562,
+        "tmag_mean_ratio": 1.9261671158644476,
+        "tmag_ratio_p90": 5.368358883287698,
+        "log_tmag_mae": 0.9316685741859717,
+        "scale_collapse_rate": 0.0011231748408835642,
+        "scale_explosion_rate": 0.0013103706476974915,
+        "path_ratio": 0.6110020325994311,
+        "nan_inf_count": 0
+      },
+      "coarse_metrics": {
+        "count": 5342,
+        "coverage": 1.0,
+        "rot_mean_deg": 2.3684908600934813,
+        "rot_median_deg": 2.423658847808838,
+        "signed_tdir_mean_deg": 92.73668660911308,
+        "signed_tdir_median_deg": 107.69446043099585,
+        "unsigned_tdir_mean_deg": 55.26203693455938,
+        "anti_parallel_rate": 0.6282291276675402,
+        "tmag_ratio_p10": 0.22496825246492125,
+        "tmag_median_ratio": 1.324321369080562,
+        "tmag_mean_ratio": 1.9261671158644476,
+        "tmag_ratio_p90": 5.368358883287698,
+        "log_tmag_mae": 0.9316685741859717,
+        "scale_collapse_rate": 0.0011231748408835642,
+        "scale_explosion_rate": 0.0013103706476974915,
+        "path_ratio": 0.6110020325994311,
+        "nan_inf_count": 0
+      },
+      "residual_stats": {
+        "delta_rot_mean_deg": 0.0,
+        "delta_tdir_norm_mean": 0.0,
+        "delta_log_tmag_abs_mean": 0.0
+      },
+      "gate_stats": {
+        "mean": 0.0,
+        "median": 0.0,
+        "max": 0.0
+      },
+      "selection_protocol": "mini_val_only_per_epoch_full_val_once_after_training"
+    }
+  }
+}

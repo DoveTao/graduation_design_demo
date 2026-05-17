@@ -1,0 +1,98 @@
+{
+  "task_name": "ABLVO361_fast_minival_ablation_rerun",
+  "rows": [
+    {
+      "model_name": "ABLVO360_PlainPairVO",
+      "executed": true,
+      "init_mode": "scratch",
+      "load_status": {
+        "status": "scratch",
+        "missing_keys": [],
+        "unexpected_keys": [],
+        "skipped_shape_mismatch": []
+      },
+      "checkpoint_dir": "/home/dovetao/graduation_design_demo/checkpoints/ABLVO360_PlainPairVO",
+      "parameter_count": {
+        "total": 7525974,
+        "trainable": 7525974
+      },
+      "minival_subset_count": 512
+    },
+    {
+      "model_name": "ABLVO360_NoSphericalGeometry",
+      "executed": true,
+      "init_mode": "partial",
+      "load_status": {
+        "status": "non-strict",
+        "strict_error": "RuntimeError: Error(s) in loading state_dict for AblationNoSphericalGeometryModel:\n\tMissing key(s) in state_dict: \"module2.bearing_coarse\", \"module2.id_coarse\", \"module2.gridpos_coarse\", \"module2.bearing_fine\", \"module2.id_fine\", \"module2.parent_fine\", \"module2.gridpos_fine\", \"module2.pos_enc.net.1.weight\", \"module2.pos_enc.net.1.bias\", \"module2.pos_enc.net.3.weight\", \"module2.pos_enc.net.3.bias\". \n\tUnexpected key(s) in state_dict: \"log_tmag_bias\", \"direct_head.net.0.weight\", \"direct_head.net.0.bias\", \"direct_head.net.1.weight\", \"direct_head.net.1.bias\", \"direct_head.net.3.weight\", \"direct_head.net.3.bias\", \"direct_head.rot.weight\", \"direct_head.rot.bias\", \"direct_head.t.weight\", \"direct_head.t.bias\", \"fine.fuse.net.0.weight\", \"fine.fuse.net.0.bias\", \"fine.fuse.net.1.weight\", \"fine.fuse.net.1.bias\", \"fine.fuse.net.3.weight\", \"fine.fuse.net.3.bias\", \"fine.pose_head.mlp.0.weight\", \"fine.pose_head.mlp.0.bias\", \"fine.pose_head.mlp.1.weight\", \"fine.pose_head.mlp.1.bias\", \"fine.pose_head.mlp.3.weight\", \"fine.pose_head.mlp.3.bias\", \"fine.pose_head.rot.weight\", \"fine.pose_head.rot.bias\", \"fine.pose_head.t.weight\", \"fine.pose_head.t.bias\", \"fine.rel_head.net.0.weight\", \"fine.rel_head.net.0.bias\", \"fine.rel_head.net.1.weight\", \"fine.rel_head.net.1.bias\", \"fine.rel_head.net.3.weight\", \"fine.rel_head.net.3.bias\", \"fine.t_head.net.0.weight\", \"fine.t_head.net.0.bias\", \"fine.t_head.net.1.weight\", \"fine.t_head.net.1.bias\", \"fine.t_head.net.3.weight\", \"fine.t_head.net.3.bias\", \"fine.t_head.t.weight\", \"fine.t_head.t.bias\", \"fine.mag_head.ridge_calib_raw_center\", \"fine.mag_head.net.0.weight\", \"fine.mag_head.net.0.bias\", \"fine.mag_head.net.1.weight\", \"fine.mag_head.net.1.bias\", \"fine.mag_head.net.3.weight\", \"fine.mag_head.net.3.bias\", \"fine.mag_head.net.5.weight\", \"fine.mag_head.net.5.bias\", \"coupled_pose_head.backbone.0.weight\", \"coupled_pose_head.backbone.0.bias\", \"coupled_pose_head.backbone.1.weight\", \"coupled_pose_head.backbone.1.bias\", \"coupled_pose_head.backbone.4.weight\", \"coupled_pose_head.backbone.4.bias\", \"coupled_pose_head.rot_head.weight\", \"coupled_pose_head.rot_head.bias\", \"coupled_pose_head.tdir_head.weight\", \"coupled_pose_head.tdir_head.bias\", \"coupled_pose_head.gate_head.weight\", \"coupled_pose_head.gate_head.bias\", \"module2.hier.coarse_bearing\", \"module2.hier.fine_bearing\", \"module2.hier.coarse_patch_bearing\", \"module2.hier.fine_patch_bearing\", \"module2.hier.coarse_id\", \"module2.hier.fine_id\", \"module2.hier.fine_parent_id\", \"module2.patch_embed_c_t.pool_gate\", \"module2.patch_embed_c_t.cnn.0.weight\", \"module2.patch_embed_c_t.cnn.1.weight\", \"module2.patch_embed_c_t.cnn.1.bias\", \"module2.patch_embed_c_t.cnn.3.weight\", \"module2.patch_embed_c_t.cnn.4.weight\", \"module2.patch_embed_c_t.cnn.4.bias\", \"module2.patch_embed_c_t.cnn.6.weight\", \"module2.patch_embed_c_t.cnn.7.weight\", \"module2.patch_embed_c_t.cnn.7.bias\", \"module2.patch_embed_c_t.proj.0.weight\", \"module2.patch_embed_c_t.proj.0.bias\", \"module2.patch_embed_c_t.proj.1.weight\", \"module2.patch_embed_c_t.proj.1.bias\", \"module2.patch_embed_c_t.proj.3.weight\", \"module2.patch_embed_c_t.proj.3.bias\", \"module2.enc_c_t.weight\", \"module2.enc_c_t.bias\", \"module2.pos_enc.net.2.weight\", \"module2.pos_enc.net.2.bias\", \"coarse.t_fuse.net.0.weight\", \"coarse.t_fuse.net.0.bias\", \"coarse.t_fuse.net.1.weight\", \"coarse.t_fuse.net.1.bias\", \"coarse.t_fuse.net.3.weight\", \"coarse.t_fuse.net.3.bias\", \"coarse.t_head.net.0.weight\", \"coarse.t_head.net.0.bias\", \"coarse.t_head.net.1.weight\", \"coarse.t_head.net.1.bias\", \"coarse.t_head.net.3.weight\", \"coarse.t_head.net.3.bias\", \"coarse.t_head.t.weight\", \"coarse.t_head.t.bias\", \"coarse.mag_head.log_centers\", \"coarse.mag_head.scale_cls_head.0.weight\", \"coarse.mag_head.scale_cls_head.0.bias\", \"coarse.mag_head.scale_cls_head.1.weight\", \"coarse.mag_head.scale_cls_head.1.bias\", \"coarse.mag_head.scale_cls_head.3.weight\", \"coarse.mag_head.scale_cls_head.3.bias\", \"coarse.mag_head.scale_cls_head.5.weight\", \"coarse.mag_head.scale_cls_head.5.bias\", \"coarse.mag_head.residual_head.0.weight\", \"coarse.mag_head.residual_head.0.bias\", \"coarse.mag_head.residual_head.1.weight\", \"coarse.mag_head.residual_head.1.bias\", \"coarse.mag_head.residual_head.3.weight\", \"coarse.mag_head.residual_head.3.bias\". \n\tsize mismatch for module2.pos_enc.net.0.weight: copying a param with shape torch.Size([256, 3]) from checkpoint, the shape in current model is torch.Size([6]).\n\tsize mismatch for module2.pos_enc.net.0.bias: copying a param with shape torch.Size([256]) from checkpoint, the shape in current model is torch.Size([6]).\n\tsize mismatch for struct360b_fine_refiner.pos_enc.net.0.weight: copying a param with shape torch.Size([10]) from checkpoint, the shape in current model is torch.Size([6]).\n\tsize mismatch for struct360b_fine_refiner.pos_enc.net.0.bias: copying a param with shape torch.Size([10]) from checkpoint, the shape in current model is torch.Size([6]).\n\tsize mismatch for struct360b_fine_refiner.pos_enc.net.1.weight: copying a param with shape torch.Size([256, 10]) from checkpoint, the shape in current model is torch.Size([256, 6]).",
+        "missing_keys": [
+          "module2.bearing_coarse",
+          "module2.id_coarse",
+          "module2.gridpos_coarse",
+          "module2.bearing_fine",
+          "module2.id_fine",
+          "module2.parent_fine",
+          "module2.gridpos_fine",
+          "module2.pos_enc.net.0.weight",
+          "module2.pos_enc.net.0.bias",
+          "module2.pos_enc.net.1.weight",
+          "module2.pos_enc.net.1.bias",
+          "module2.pos_enc.net.3.weight",
+          "module2.pos_enc.net.3.bias",
+          "struct360b_fine_refiner.pos_enc.net.0.weight",
+          "struct360b_fine_refiner.pos_enc.net.0.bias",
+          "struct360b_fine_refiner.pos_enc.net.1.weight"
+        ],
+        "unexpected_keys": [],
+        "skipped_shape_mismatch": [
+          "module2.pos_enc.net.0.weight",
+          "module2.pos_enc.net.0.bias",
+          "struct360b_fine_refiner.pos_enc.net.0.weight",
+          "struct360b_fine_refiner.pos_enc.net.0.bias",
+          "struct360b_fine_refiner.pos_enc.net.1.weight"
+        ],
+        "loaded_param_count": 218
+      },
+      "checkpoint_dir": "/home/dovetao/graduation_design_demo/checkpoints/ABLVO360_NoSphericalGeometry",
+      "parameter_count": {
+        "total": 10239366,
+        "trainable": 10239366
+      },
+      "minival_subset_count": 512
+    },
+    {
+      "model_name": "ABLVO360_NoCrossImageInteraction",
+      "executed": true,
+      "init_mode": "partial",
+      "load_status": {
+        "status": "non-strict",
+        "strict_error": "RuntimeError: Error(s) in loading state_dict for AblationPairRegressionModel:\n\tMissing key(s) in state_dict: \"module2.bearing_coarse\", \"module2.id_coarse\", \"pair_head.backbone.0.weight\", \"pair_head.backbone.0.bias\", \"pair_head.backbone.1.weight\", \"pair_head.backbone.1.bias\", \"pair_head.backbone.3.weight\", \"pair_head.backbone.3.bias\", \"pair_head.rot.weight\", \"pair_head.rot.bias\", \"pair_head.tdir.weight\", \"pair_head.tdir.bias\", \"pair_head.log_tmag.weight\", \"pair_head.log_tmag.bias\". \n\tUnexpected key(s) in state_dict: \"log_tmag_bias\", \"direct_head.net.0.weight\", \"direct_head.net.0.bias\", \"direct_head.net.1.weight\", \"direct_head.net.1.bias\", \"direct_head.net.3.weight\", \"direct_head.net.3.bias\", \"direct_head.rot.weight\", \"direct_head.rot.bias\", \"direct_head.t.weight\", \"direct_head.t.bias\", \"coarse.fuse.net.0.weight\", \"coarse.fuse.net.0.bias\", \"coarse.fuse.net.1.weight\", \"coarse.fuse.net.1.bias\", \"coarse.fuse.net.3.weight\", \"coarse.fuse.net.3.bias\", \"coarse.pose_head.mlp.0.weight\", \"coarse.pose_head.mlp.0.bias\", \"coarse.pose_head.mlp.1.weight\", \"coarse.pose_head.mlp.1.bias\", \"coarse.pose_head.mlp.3.weight\", \"coarse.pose_head.mlp.3.bias\", \"coarse.pose_head.rot.weight\", \"coarse.pose_head.rot.bias\", \"coarse.pose_head.t.weight\", \"coarse.pose_head.t.bias\", \"coarse.t_fuse.net.0.weight\", \"coarse.t_fuse.net.0.bias\", \"coarse.t_fuse.net.1.weight\", \"coarse.t_fuse.net.1.bias\", \"coarse.t_fuse.net.3.weight\", \"coarse.t_fuse.net.3.bias\", \"coarse.t_head.net.0.weight\", \"coarse.t_head.net.0.bias\", \"coarse.t_head.net.1.weight\", \"coarse.t_head.net.1.bias\", \"coarse.t_head.net.3.weight\", \"coarse.t_head.net.3.bias\", \"coarse.t_head.t.weight\", \"coarse.t_head.t.bias\", \"coarse.mag_head.ridge_calib_raw_center\", \"coarse.mag_head.log_centers\", \"coarse.mag_head.net.0.weight\", \"coarse.mag_head.net.0.bias\", \"coarse.mag_head.net.1.weight\", \"coarse.mag_head.net.1.bias\", \"coarse.mag_head.net.3.weight\", \"coarse.mag_head.net.3.bias\", \"coarse.mag_head.net.5.weight\", \"coarse.mag_head.net.5.bias\", \"coarse.mag_head.scale_cls_head.0.weight\", \"coarse.mag_head.scale_cls_head.0.bias\", \"coarse.mag_head.scale_cls_head.1.weight\", \"coarse.mag_head.scale_cls_head.1.bias\", \"coarse.mag_head.scale_cls_head.3.weight\", \"coarse.mag_head.scale_cls_head.3.bias\", \"coarse.mag_head.scale_cls_head.5.weight\", \"coarse.mag_head.scale_cls_head.5.bias\", \"coarse.mag_head.residual_head.0.weight\", \"coarse.mag_head.residual_head.0.bias\", \"coarse.mag_head.residual_head.1.weight\", \"coarse.mag_head.residual_head.1.bias\", \"coarse.mag_head.residual_head.3.weight\", \"coarse.mag_head.residual_head.3.bias\", \"coarse.rel_head.net.0.weight\", \"coarse.rel_head.net.0.bias\", \"coarse.rel_head.net.1.weight\", \"coarse.rel_head.net.1.bias\", \"coarse.rel_head.net.3.weight\", \"coarse.rel_head.net.3.bias\", \"fine.fuse.net.0.weight\", \"fine.fuse.net.0.bias\", \"fine.fuse.net.1.weight\", \"fine.fuse.net.1.bias\", \"fine.fuse.net.3.weight\", \"fine.fuse.net.3.bias\", \"fine.pose_head.mlp.0.weight\", \"fine.pose_head.mlp.0.bias\", \"fine.pose_head.mlp.1.weight\", \"fine.pose_head.mlp.1.bias\", \"fine.pose_head.mlp.3.weight\", \"fine.pose_head.mlp.3.bias\", \"fine.pose_head.rot.weight\", \"fine.pose_head.rot.bias\", \"fine.pose_head.t.weight\", \"fine.pose_head.t.bias\", \"fine.rel_head.net.0.weight\", \"fine.rel_head.net.0.bias\", \"fine.rel_head.net.1.weight\", \"fine.rel_head.net.1.bias\", \"fine.rel_head.net.3.weight\", \"fine.rel_head.net.3.bias\", \"fine.t_head.net.0.weight\", \"fine.t_head.net.0.bias\", \"fine.t_head.net.1.weight\", \"fine.t_head.net.1.bias\", \"fine.t_head.net.3.weight\", \"fine.t_head.net.3.bias\", \"fine.t_head.t.weight\", \"fine.t_head.t.bias\", \"fine.mag_head.ridge_calib_raw_center\", \"fine.mag_head.net.0.weight\", \"fine.mag_head.net.0.bias\", \"fine.mag_head.net.1.weight\", \"fine.mag_head.net.1.bias\", \"fine.mag_head.net.3.weight\", \"fine.mag_head.net.3.bias\", \"fine.mag_head.net.5.weight\", \"fine.mag_head.net.5.bias\", \"coupled_pose_head.backbone.0.weight\", \"coupled_pose_head.backbone.0.bias\", \"coupled_pose_head.backbone.1.weight\", \"coupled_pose_head.backbone.1.bias\", \"coupled_pose_head.backbone.4.weight\", \"coupled_pose_head.backbone.4.bias\", \"coupled_pose_head.rot_head.weight\", \"coupled_pose_head.rot_head.bias\", \"coupled_pose_head.tdir_head.weight\", \"coupled_pose_head.tdir_head.bias\", \"coupled_pose_head.gate_head.weight\", \"coupled_pose_head.gate_head.bias\", \"struct360b_pose_embed.net.0.weight\", \"struct360b_pose_embed.net.0.bias\", \"struct360b_pose_embed.net.1.weight\", \"struct360b_pose_embed.net.1.bias\", \"struct360b_pose_embed.net.3.weight\", \"struct360b_pose_embed.net.3.bias\", \"struct360b_fine_refiner.pos_enc.net.0.weight\", \"struct360b_fine_refiner.pos_enc.net.0.bias\", \"struct360b_fine_refiner.pos_enc.net.1.weight\", \"struct360b_fine_refiner.pos_enc.net.1.bias\", \"struct360b_fine_refiner.pos_enc.net.3.weight\", \"struct360b_fine_refiner.pos_enc.net.3.bias\", \"struct360b_fine_refiner.pose_to_film_a.weight\", \"struct360b_fine_refiner.pose_to_film_a.bias\", \"struct360b_fine_refiner.pose_to_film_b.weight\", \"struct360b_fine_refiner.pose_to_film_b.bias\", \"struct360b_fine_refiner.pose_to_token.weight\", \"struct360b_fine_refiner.pose_to_token.bias\", \"struct360b_fine_refiner.norm_a.weight\", \"struct360b_fine_refiner.norm_a.bias\", \"struct360b_fine_refiner.norm_b.weight\", \"struct360b_fine_refiner.norm_b.bias\", \"struct360b_fine_refiner.cross_attn_ab.in_proj_weight\", \"struct360b_fine_refiner.cross_attn_ab.in_proj_bias\", \"struct360b_fine_refiner.cross_attn_ab.out_proj.weight\", \"struct360b_fine_refiner.cross_attn_ab.out_proj.bias\", \"struct360b_fine_refiner.cross_attn_ba.in_proj_weight\", \"struct360b_fine_refiner.cross_attn_ba.in_proj_bias\", \"struct360b_fine_refiner.cross_attn_ba.out_proj.weight\", \"struct360b_fine_refiner.cross_attn_ba.out_proj.bias\", \"struct360b_fine_refiner.ffn_a.0.weight\", \"struct360b_fine_refiner.ffn_a.0.bias\", \"struct360b_fine_refiner.ffn_a.1.weight\", \"struct360b_fine_refiner.ffn_a.1.bias\", \"struct360b_fine_refiner.ffn_a.4.weight\", \"struct360b_fine_refiner.ffn_a.4.bias\", \"struct360b_fine_refiner.ffn_b.0.weight\", \"struct360b_fine_refiner.ffn_b.0.bias\", \"struct360b_fine_refiner.ffn_b.1.weight\", \"struct360b_fine_refiner.ffn_b.1.bias\", \"struct360b_fine_refiner.ffn_b.4.weight\", \"struct360b_fine_refiner.ffn_b.4.bias\", \"struct360b_fine_refiner.update_gate.weight\", \"struct360b_fine_refiner.update_gate.bias\", \"struct360b_residual_head.net.0.weight\", \"struct360b_residual_head.net.0.bias\", \"struct360b_residual_head.net.1.weight\", \"struct360b_residual_head.net.1.bias\", \"struct360b_residual_head.net.3.weight\", \"struct360b_residual_head.net.3.bias\", \"struct360b_residual_head.rot_head.weight\", \"struct360b_residual_head.rot_head.bias\", \"struct360b_residual_head.tdir_head.weight\", \"struct360b_residual_head.tdir_head.bias\", \"struct360b_residual_head.log_tmag_head.weight\", \"struct360b_residual_head.log_tmag_head.bias\", \"struct360b_residual_head.gate_head.weight\", \"struct360b_residual_head.gate_head.bias\", \"module2.grid_fine\", \"module2.patch_embed_c_t.pool_gate\", \"module2.patch_embed_c_t.cnn.0.weight\", \"module2.patch_embed_c_t.cnn.1.weight\", \"module2.patch_embed_c_t.cnn.1.bias\", \"module2.patch_embed_c_t.cnn.3.weight\", \"module2.patch_embed_c_t.cnn.4.weight\", \"module2.patch_embed_c_t.cnn.4.bias\", \"module2.patch_embed_c_t.cnn.6.weight\", \"module2.patch_embed_c_t.cnn.7.weight\", \"module2.patch_embed_c_t.cnn.7.bias\", \"module2.patch_embed_c_t.proj.0.weight\", \"module2.patch_embed_c_t.proj.0.bias\", \"module2.patch_embed_c_t.proj.1.weight\", \"module2.patch_embed_c_t.proj.1.bias\", \"module2.patch_embed_c_t.proj.3.weight\", \"module2.patch_embed_c_t.proj.3.bias\", \"module2.enc_c_t.weight\", \"module2.enc_c_t.bias\". ",
+        "missing_keys": [
+          "module2.bearing_coarse",
+          "module2.id_coarse",
+          "pair_head.backbone.0.weight",
+          "pair_head.backbone.0.bias",
+          "pair_head.backbone.1.weight",
+          "pair_head.backbone.1.bias",
+          "pair_head.backbone.3.weight",
+          "pair_head.backbone.3.bias",
+          "pair_head.rot.weight",
+          "pair_head.rot.bias",
+          "pair_head.tdir.weight",
+          "pair_head.tdir.bias",
+          "pair_head.log_tmag.weight",
+          "pair_head.log_tmag.bias"
+        ],
+        "unexpected_keys": [],
+        "skipped_shape_mismatch": [],
+        "loaded_param_count": 142
+      },
+      "checkpoint_dir": "/home/dovetao/graduation_design_demo/checkpoints/ABLVO360_NoCrossImageInteraction",
+      "parameter_count": {
+        "total": 7525194,
+        "trainable": 7525194
+      },
+      "minival_subset_count": 512
+    }
+  ]
+}

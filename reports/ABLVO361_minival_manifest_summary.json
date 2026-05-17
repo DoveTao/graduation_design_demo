@@ -1,0 +1,40 @@
+{
+  "task_name": "ABLVO361_fast_minival_ablation_rerun",
+  "summary": {
+    "subset_used": true,
+    "subset_count": 512,
+    "original_count": 5342,
+    "seed": 0,
+    "group_count": 18,
+    "groups_selected": 18,
+    "tmag_bucket_edges": [
+      0.03,
+      0.08,
+      0.2,
+      0.5
+    ],
+    "rot_bucket_edges_deg": [
+      5.0,
+      15.0,
+      30.0,
+      60.0,
+      120.0
+    ],
+    "sequence_count_selected": 2,
+    "top_sequence_counts": {
+      "mountains": 292,
+      "downhill_biking": 220
+    },
+    "selected_tmag_bucket_histogram": {
+      "2": 77,
+      "3": 158,
+      "4": 276,
+      "1": 1
+    },
+    "selected_rot_bucket_histogram": {
+      "0": 511,
+      "1": 1
+    }
+  },
+  "selection_protocol": "mini_val_only_per_epoch_full_val_once_after_training"
+}

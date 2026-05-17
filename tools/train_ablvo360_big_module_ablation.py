@@ -94,6 +94,117 @@ def _subset_dataset(dataset: Dset2CCanonicalPairDataset, max_count: Optional[int
     }
 
 
+def _rotation_angle_deg_from_matrix(R: np.ndarray) -> float:
+    trace = float(np.trace(R))
+    cos_theta = max(-1.0, min(1.0, 0.5 * (trace - 1.0)))
+    return float(math.degrees(math.acos(cos_theta)))
+
+
+def _bucket_index(value: float, edges: Sequence[float]) -> int:
+    for idx, edge in enumerate(edges):
+        if value < float(edge):
+            return int(idx)
+    return int(len(edges))
+
+
+def _stratified_subset_dataset(
+    dataset: Dset2CCanonicalPairDataset,
+    *,
+    target_count: Optional[int],
+    seed: int,
+    tmag_bucket_edges: Sequence[float],
+    rot_bucket_edges: Sequence[float],
+) -> Tuple[Dset2CCanonicalPairDataset | Subset, Dict[str, Any]]:
+    if target_count is None or int(target_count) <= 0 or len(dataset) <= int(target_count):
+        return dataset, {
+            "subset_used": False,
+            "subset_count": len(dataset),
+            "original_count": len(dataset),
+            "seed": int(seed),
+        }
+
+    groups: Dict[Tuple[str, int, int, int], List[int]] = {}
+    for idx, sample in enumerate(dataset.samples):
+        seq_id = str(sample["sequence_id"])
+        tmag_bucket = _bucket_index(float(sample["tmag"]), tmag_bucket_edges)
+        rot_bucket = _bucket_index(_rotation_angle_deg_from_matrix(sample["R_BA"]), rot_bucket_edges)
+        k_bucket = int(sample["k"])
+        groups.setdefault((seq_id, tmag_bucket, rot_bucket, k_bucket), []).append(idx)
+
+    rng = np.random.default_rng(int(seed))
+    group_items = []
+    for key, indices in groups.items():
+        shuffled = list(indices)
+        rng.shuffle(shuffled)
+        expected = float(len(indices)) * float(target_count) / float(len(dataset))
+        base_take = int(math.floor(expected))
+        frac = expected - float(base_take)
+        group_items.append(
+            {
+                "key": key,
+                "indices": shuffled,
+                "expected": expected,
+                "take": base_take,
+                "frac": frac,
+            }
+        )
+
+    selected_count = sum(int(item["take"]) for item in group_items)
+    remaining = max(0, int(target_count) - int(selected_count))
+    for item in sorted(group_items, key=lambda x: (-x["frac"], -len(x["indices"]), x["key"])):
+        if remaining <= 0:
+            break
+        if int(item["take"]) < len(item["indices"]):
+            item["take"] = int(item["take"]) + 1
+            remaining -= 1
+
+    selected: List[int] = []
+    selected_groups = 0
+    for item in group_items:
+        take = min(int(item["take"]), len(item["indices"]))
+        if take > 0:
+            selected_groups += 1
+            selected.extend(item["indices"][:take])
+
+    if len(selected) < int(target_count):
+        selected_set = set(selected)
+        leftover = []
+        for item in sorted(group_items, key=lambda x: (-len(x["indices"]), x["key"])):
+            for idx in item["indices"]:
+                if idx not in selected_set:
+                    leftover.append(idx)
+        selected.extend(leftover[: int(target_count) - len(selected)])
+
+    selected = sorted(selected[: int(target_count)])
+    subset = Subset(dataset, selected)
+    selected_seq = {}
+    selected_tmag_bucket = {}
+    selected_rot_bucket = {}
+    for idx in selected:
+        sample = dataset.samples[idx]
+        seq_id = str(sample["sequence_id"])
+        tmag_bucket = _bucket_index(float(sample["tmag"]), tmag_bucket_edges)
+        rot_bucket = _bucket_index(_rotation_angle_deg_from_matrix(sample["R_BA"]), rot_bucket_edges)
+        selected_seq[seq_id] = int(selected_seq.get(seq_id, 0)) + 1
+        selected_tmag_bucket[str(tmag_bucket)] = int(selected_tmag_bucket.get(str(tmag_bucket), 0)) + 1
+        selected_rot_bucket[str(rot_bucket)] = int(selected_rot_bucket.get(str(rot_bucket), 0)) + 1
+    summary = {
+        "subset_used": True,
+        "subset_count": len(selected),
+        "original_count": len(dataset),
+        "seed": int(seed),
+        "group_count": len(groups),
+        "groups_selected": int(selected_groups),
+        "tmag_bucket_edges": [float(x) for x in tmag_bucket_edges],
+        "rot_bucket_edges_deg": [float(x) for x in rot_bucket_edges],
+        "sequence_count_selected": len(selected_seq),
+        "top_sequence_counts": dict(sorted(selected_seq.items(), key=lambda kv: (-kv[1], kv[0]))[:20]),
+        "selected_tmag_bucket_histogram": selected_tmag_bucket,
+        "selected_rot_bucket_histogram": selected_rot_bucket,
+    }
+    return subset, summary
+
+
 def _hist_from_dataset(dataset: Dset2CCanonicalPairDataset) -> Dict[str, Any]:
     ks: Dict[int, int] = {}
     adjacent = 0
@@ -485,8 +596,9 @@ def _run_prechecks(cfg: Mapping[str, Any], cfg_path: Path) -> Dict[str, Any]:
 def _write_blocker_artifacts(cfg: Mapping[str, Any], blocker_lines: List[str], precheck: Mapping[str, Any]) -> None:
     outputs = cfg["outputs"]
     report_path = REPO_ROOT / outputs["report_path"]
+    report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text(
-        "# ABLVO360 blocked before training\n\n## Blockers\n" + "\n".join(f"- {line}" for line in blocker_lines) + "\n",
+        f"# {cfg['task_name']} blocked before training\n\n## Blockers\n" + "\n".join(f"- {line}" for line in blocker_lines) + "\n",
         encoding="utf-8",
     )
     payload = {
@@ -501,10 +613,13 @@ def _write_blocker_artifacts(cfg: Mapping[str, Any], blocker_lines: List[str], p
             "split_audit": precheck["split_audit"],
         },
     }
-    for key in ("val_metrics_path", "test_metrics_path", "selection_table_path", "metric_source_manifest_path", "per_model_summary_path"):
+    json_keys = ["val_metrics_path", "test_metrics_path", "selection_table_path", "metric_source_manifest_path", "per_model_summary_path"]
+    if "minival_manifest_summary_path" in outputs:
+        json_keys.append("minival_manifest_summary_path")
+    for key in json_keys:
         _json_dump(REPO_ROOT / outputs[key], payload)
-    (REPO_ROOT / outputs["main_table_path"]).write_text("# ABLVO360 blocked before training\n", encoding="utf-8")
-    (REPO_ROOT / outputs["contribution_summary_path"]).write_text("# ABLVO360 blocked before training\n", encoding="utf-8")
+    (REPO_ROOT / outputs["main_table_path"]).write_text(f"# {cfg['task_name']} blocked before training\n", encoding="utf-8")
+    (REPO_ROOT / outputs["contribution_summary_path"]).write_text(f"# {cfg['task_name']} blocked before training\n", encoding="utf-8")
 
 
 def train() -> None:
@@ -525,7 +640,15 @@ def train() -> None:
     ds_val = precheck["datasets"]["val"]
     ds_test = precheck["datasets"]["test"]
     train_subset, subset_info = _subset_dataset(ds_train, cfg["data"].get("train_subset_max"), int(cfg["training"]["seed"]))
+    mini_val_subset, minival_summary = _stratified_subset_dataset(
+        ds_val,
+        target_count=cfg["evaluation"].get("val_subset_count"),
+        seed=int(cfg["training"]["seed"]),
+        tmag_bucket_edges=cfg["evaluation"].get("val_subset_tmag_bucket_edges", [0.03, 0.08, 0.2, 0.5]),
+        rot_bucket_edges=cfg["evaluation"].get("val_subset_rot_bucket_edges_deg", [5.0, 15.0, 30.0, 60.0, 120.0]),
+    )
     train_loader = DataLoader(train_subset, batch_size=int(cfg["data"]["train_batch_size"]), shuffle=bool(cfg["data"]["shuffle_train"]), num_workers=int(cfg["data"]["num_workers"]), pin_memory=device.type == "cuda", persistent_workers=bool(int(cfg["data"]["num_workers"]) > 0), drop_last=False)
+    mini_val_loader = DataLoader(mini_val_subset, batch_size=int(cfg["data"]["eval_batch_size"]), shuffle=False, num_workers=int(cfg["data"]["num_workers"]), pin_memory=device.type == "cuda", persistent_workers=bool(int(cfg["data"]["num_workers"]) > 0), drop_last=False)
     val_loader = DataLoader(ds_val, batch_size=int(cfg["data"]["eval_batch_size"]), shuffle=False, num_workers=int(cfg["data"]["num_workers"]), pin_memory=device.type == "cuda", persistent_workers=bool(int(cfg["data"]["num_workers"]) > 0), drop_last=False)
     test_loader = DataLoader(ds_test, batch_size=int(cfg["data"]["eval_batch_size"]), shuffle=False, num_workers=int(cfg["data"]["num_workers"]), pin_memory=device.type == "cuda", persistent_workers=bool(int(cfg["data"]["num_workers"]) > 0), drop_last=False)
 
@@ -660,20 +783,20 @@ def train() -> None:
                 epoch_losses.append(float(loss_total.detach().cpu()))
                 train_nan_inf_count += int(sum((~torch.isfinite(v)).sum().item() for v in [R_pred, aux["t_dir_out"], aux["t_mag"], loss_total]))
 
-            val_eval = evaluate_ablvo360_pose(model, val_loader, device, tmag_epsilon=float(cfg["data"]["tmag_epsilon"]), max_batches=cfg["evaluation"].get("max_val_batches"))
-            val_metrics = val_eval["final_metrics"]
-            val_score = _compute_val_score(val_metrics, cfg["evaluation"]["selection_score"], eps=float(cfg["data"]["tmag_epsilon"]))
+            minival_eval = evaluate_ablvo360_pose(model, mini_val_loader, device, tmag_epsilon=float(cfg["data"]["tmag_epsilon"]), max_batches=cfg["evaluation"].get("max_minival_batches"))
+            minival_metrics = minival_eval["final_metrics"]
+            val_score = _compute_val_score(minival_metrics, cfg["evaluation"]["selection_score"], eps=float(cfg["data"]["tmag_epsilon"]))
             _append_jsonl(train_log_path, {
                 "epoch": int(epoch),
                 "train_loss_total": float(np.mean(epoch_losses)) if epoch_losses else None,
                 "train_nan_inf_count": int(train_nan_inf_count),
-                "val_score": float(val_score),
-                "val_metrics": val_metrics,
-                "coarse_val_metrics": val_eval["coarse_metrics"],
-                "residual_stats": val_eval["residual_stats"],
-                "gate_stats": val_eval["gate_stats"],
+                "minival_score": float(val_score),
+                "minival_metrics": minival_metrics,
+                "coarse_minival_metrics": minival_eval["coarse_metrics"],
+                "residual_stats": minival_eval["residual_stats"],
+                "gate_stats": minival_eval["gate_stats"],
             })
-            if val_score < best_val_score and int(val_metrics["nan_inf_count"]) == 0:
+            if val_score < best_val_score and int(minival_metrics["nan_inf_count"]) == 0:
                 best_val_score = float(val_score)
                 best_epoch = int(epoch)
                 _save_checkpoint(best_checkpoint_path, model, optimizer, epoch, model_cfg, {
@@ -682,6 +805,7 @@ def train() -> None:
                     "checkpoint_role": "best_val",
                     "load_status": load_status,
                     "subset_info": subset_info,
+                    "minival_summary": minival_summary,
                     "parameter_count": param_counts,
                 })
 
@@ -691,6 +815,7 @@ def train() -> None:
             "checkpoint_role": "final",
             "load_status": load_status,
             "subset_info": subset_info,
+            "minival_summary": minival_summary,
             "parameter_count": param_counts,
         })
 
@@ -707,11 +832,13 @@ def train() -> None:
             "model_name": variant_name,
             "checkpoint_used": str(selected_checkpoint_path),
             "best_epoch": int(best_epoch),
+            "minival_score_of_selected_checkpoint": float(best_val_score),
             "val_score": float(_compute_val_score(val_eval["final_metrics"], cfg["evaluation"]["selection_score"], eps=float(cfg["data"]["tmag_epsilon"]))),
             "metrics": val_eval["final_metrics"],
             "coarse_metrics": val_eval["coarse_metrics"],
             "residual_stats": val_eval["residual_stats"],
             "gate_stats": val_eval["gate_stats"],
+            "selection_protocol": "mini_val_only_per_epoch_full_val_once_after_training",
         }
         test_payload = {
             "task_name": cfg["task_name"],
@@ -723,6 +850,7 @@ def train() -> None:
             "residual_stats": test_eval["residual_stats"],
             "gate_stats": test_eval["gate_stats"],
             "test_used_for_selection": False,
+            "selection_protocol": "mini_val_only_per_epoch_full_val_once_after_training",
         }
         aggregate_val[variant_name] = val_payload
         aggregate_test[variant_name] = test_payload
@@ -730,6 +858,7 @@ def train() -> None:
             "model_name": variant_name,
             "executed": True,
             "best_epoch": int(best_epoch),
+            "minival_score": float(best_val_score),
             "val_score": float(val_payload["val_score"]),
             "val_signed_tdir_mean": val_payload["metrics"].get("signed_tdir_mean_deg"),
             "val_anti_parallel_rate": val_payload["metrics"].get("anti_parallel_rate"),
@@ -746,6 +875,7 @@ def train() -> None:
             "load_status": load_status,
             "checkpoint_dir": str(checkpoint_dir),
             "parameter_count": param_counts,
+            "minival_subset_count": minival_summary.get("subset_count"),
         })
         trained_models.append(variant_name)
 
@@ -766,6 +896,7 @@ def train() -> None:
     })
     _json_dump(REPO_ROOT / outputs["selection_table_path"], {
         "task_name": cfg["task_name"],
+        "selection_protocol": "mini_val_only_per_epoch_full_val_once_after_training",
         "rows": selection_rows,
     })
     _json_dump(REPO_ROOT / outputs["per_model_summary_path"], {
@@ -781,9 +912,18 @@ def train() -> None:
         "existing_metrics_modified": False,
         "full_model_checkpoint_modified": False,
         "checkpoints_committed": False,
+        "mini_val_manifest_used_for_selection": True,
+        "full_val_executed_for_best_checkpoints": True,
+        "full_test_executed_for_best_checkpoints": True,
         "trained_models": trained_models,
         "skipped_models": skipped_models,
     })
+    if "minival_manifest_summary_path" in outputs:
+        _json_dump(REPO_ROOT / outputs["minival_manifest_summary_path"], {
+            "task_name": cfg["task_name"],
+            "summary": minival_summary,
+            "selection_protocol": "mini_val_only_per_epoch_full_val_once_after_training",
+        })
 
     test_lines = [
         "| model | signed_tdir_mean_deg | anti_parallel_rate | tmag_median_ratio | path_ratio | coverage |",
@@ -804,7 +944,7 @@ def train() -> None:
     nocross = aggregate_test.get("ABLVO360_NoCrossImageInteraction", {}).get("metrics", {})
     singlestage = aggregate_test.get("ABLVO360_SingleStagePoseRegression", {}).get("metrics", {})
     contribution_lines = [
-        "# ABLVO360 module contribution summary",
+        f"# {cfg['task_name']} module contribution summary",
         "",
         f"- spherical-aware contribution: `{'positive' if nosph and float(nosph.get('signed_tdir_mean_deg') or float('inf')) > float(final360i_ref.get('signed_tdir_mean_deg') or float('inf')) else 'inconclusive'}`",
         f"- cross-image interaction contribution: `{'positive' if nocross and float(nocross.get('signed_tdir_mean_deg') or float('inf')) > float(final360i_ref.get('signed_tdir_mean_deg') or float('inf')) else 'inconclusive'}`",
@@ -814,7 +954,7 @@ def train() -> None:
     (REPO_ROOT / outputs["contribution_summary_path"]).write_text("\n".join(contribution_lines) + "\n", encoding="utf-8")
 
     report_lines = [
-        "# ABLVO360 big module ablation against plain pair VO",
+        f"# {cfg['task_name']}",
         "",
         "## 1. Executive summary",
         "- ablation executed true/false: `true`",
@@ -828,8 +968,10 @@ def train() -> None:
         f"- training epochs: `{cfg['training']['epochs']}`",
         f"- seed: `{cfg['training']['seed']}`",
         f"- optimizer: `{cfg['training']['optimizer']}`",
+        f"- mini-val subset count: `{minival_summary.get('subset_count')}`",
         "- test used for selection: `false`",
         f"- subset info: `{subset_info}`",
+        f"- mini-val summary: `{minival_summary}`",
         f"- system info: `{system_info}`",
         f"- runtime sec: `{runtime_sec:.2f}`",
         "",
@@ -853,9 +995,12 @@ def train() -> None:
     ]
     (REPO_ROOT / outputs["report_path"]).write_text("\n".join(report_lines) + "\n", encoding="utf-8")
 
-    print(f"- ABLVO360 ablation executed: true")
+    print(f"- {cfg['task_name']} rerun executed: true")
     print(f"- models trained: {trained_models}")
     print(f"- models skipped: {skipped_models}")
+    print(f"- mini-val count: {minival_summary.get('subset_count')}")
+    print(f"- full val executed for best checkpoints: true")
+    print(f"- full test executed for best checkpoints: true")
     print(f"- FINAL360I reference signed_tdir_mean: {final360i_ref.get('signed_tdir_mean_deg')}")
     if plain:
         print(f"- PlainPairVO test signed_tdir_mean: {plain.get('signed_tdir_mean_deg')}")

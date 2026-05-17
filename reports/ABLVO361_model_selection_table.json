@@ -1,0 +1,54 @@
+{
+  "task_name": "ABLVO361_fast_minival_ablation_rerun",
+  "selection_protocol": "mini_val_only_per_epoch_full_val_once_after_training",
+  "rows": [
+    {
+      "model_name": "ABLVO360_PlainPairVO",
+      "executed": true,
+      "best_epoch": 2,
+      "minival_score": 154.46562296958135,
+      "val_score": 155.6863916217744,
+      "val_signed_tdir_mean": 97.43632540216363,
+      "val_anti_parallel_rate": 0.5990265818045676,
+      "val_rot_mean": 5.106030519581698,
+      "val_tmag_median_ratio": 1.5596525244134307,
+      "val_path_ratio": 0.7189428088908575,
+      "selected_checkpoint": "/home/dovetao/graduation_design_demo/checkpoints/ABLVO360_PlainPairVO/best_val.pt",
+      "test_used_for_selection": false
+    },
+    {
+      "model_name": "ABLVO360_NoSphericalGeometry",
+      "executed": true,
+      "best_epoch": 1,
+      "minival_score": 148.95501441779967,
+      "val_score": 150.61218441417589,
+      "val_signed_tdir_mean": 95.07216829006609,
+      "val_anti_parallel_rate": 0.5969674279296143,
+      "val_rot_mean": 1.2811739897736893,
+      "val_tmag_median_ratio": 1.28714391857561,
+      "val_path_ratio": 0.6265666595036484,
+      "selected_checkpoint": "/home/dovetao/graduation_design_demo/checkpoints/ABLVO360_NoSphericalGeometry/best_val.pt",
+      "test_used_for_selection": false
+    },
+    {
+      "model_name": "ABLVO360_NoCrossImageInteraction",
+      "executed": true,
+      "best_epoch": 1,
+      "minival_score": 149.86214029366334,
+      "val_score": 151.62345786813603,
+      "val_signed_tdir_mean": 92.73668722829896,
+      "val_anti_parallel_rate": 0.6282291276675402,
+      "val_rot_mean": 2.3684908600934813,
+      "val_tmag_median_ratio": 1.324321369080562,
+      "val_path_ratio": 0.6110020325994311,
+      "selected_checkpoint": "/home/dovetao/graduation_design_demo/checkpoints/ABLVO360_NoCrossImageInteraction/best_val.pt",
+      "test_used_for_selection": false
+    },
+    {
+      "model_name": "ABLVO360_SingleStagePoseRegression",
+      "executed": false,
+      "skip_reason": "resource_limited_optional_group_D",
+      "test_used_for_selection": false
+    }
+  ]
+}

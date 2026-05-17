@@ -1,0 +1,160 @@
+task_name: ABLVO361_fast_minival_ablation_rerun
+
+prechecks:
+  expected_branches:
+    - research/ablvo360-big-module-ablation-against-plain-pair-vo
+  min_disk_free_gb: 5.0
+  require_cuda: true
+  required_env: pytorch
+
+inputs:
+  hygiene_json: checkpoints/DSET2C_360DVO_dataset_hygiene.json
+  train_manifest: external_baselines/results/dset2c_360dvo_canonical/pair_manifest_train.jsonl
+  val_manifest: external_baselines/results/dset2c_360dvo_canonical/pair_manifest_val.jsonl
+  test_manifest: external_baselines/results/dset2c_360dvo_canonical/pair_manifest_test.jsonl
+  dataset_adapter: datasets/dset2c_manifest_dataset.py
+  init_checkpoint: checkpoints/FINAL360I_struct360b_final/seed0/best_val.pt
+  fallback_init_checkpoint: checkpoints/TRAIN360D_observability_kstep_scale/best_val.pt
+  final360i_test_metrics: reports/FINAL360I_metrics_test.json
+  results_table: reports/RESULTS360_main_results_table.md
+  results_narrative: reports/RESULTS360_experiment_narrative.md
+  current_mainline: CURRENT_MAINLINE.md
+  delivery_handoff: DELIVERY_HANDOFF.md
+
+outputs:
+  report_path: reports/ABLVO361_fast_minival_ablation_rerun.md
+  main_table_path: reports/ABLVO361_main_ablation_table.md
+  val_metrics_path: reports/ABLVO361_metrics_val.json
+  test_metrics_path: reports/ABLVO361_metrics_test.json
+  selection_table_path: reports/ABLVO361_model_selection_table.json
+  contribution_summary_path: reports/ABLVO361_module_contribution_summary.md
+  metric_source_manifest_path: reports/ABLVO361_metric_source_manifest.json
+  per_model_summary_path: reports/ABLVO361_per_model_training_summary.json
+  minival_manifest_summary_path: reports/ABLVO361_minival_manifest_summary.json
+
+data:
+  image_hw: [384, 768]
+  tmag_epsilon: 1.0e-6
+  train_batch_size: 2
+  eval_batch_size: 16
+  num_workers: 2
+  train_subset_max: 64
+  shuffle_train: true
+  require_paths: true
+  skip_invalid: true
+
+model:
+  use_cuda_if_available: true
+  strict_load_attempt: true
+  base_overrides:
+    D: 256
+    Nc: 192
+    Nf: 768
+    p: 16
+    n_layers: 4
+    n_heads: 8
+    mlp_ratio: 4.0
+    dropout: 0.05
+    coarse_temperature: 0.10
+    logits_clip: 20.0
+    pose_use_stats_pool: true
+    tmag_min: 1.0e-3
+    log_tmag_clamp_min: -6.0
+    log_tmag_clamp_max: 6.0
+    tmag_condition_on_dt: false
+    tmag_dt_clamp_min: 0.01
+    planar_coarse_rows: 12
+    planar_coarse_cols: 16
+    planar_fine_rows: 24
+    planar_fine_cols: 32
+    struct360b_fine_heads: 4
+    struct360b_fine_dropout: 0.05
+    struct360b_fine_mlp_ratio: 2.0
+    struct360b_refiner_gate_bias: -2.0
+    struct360b_residual_hidden_dim: 256
+    struct360b_delta_rot_scale: 0.08
+    struct360b_delta_tdir_scale: 0.25
+    struct360b_delta_log_tmag_scale: 0.35
+    struct360b_residual_gate_bias: -2.5
+    struct360b_residual_gate_max: 0.5
+    struct360b_alpha: 0.25
+    struct360b_beta: 0.25
+    abl_pair_hidden_dim: 256
+  variants:
+    - name: ABLVO360_PlainPairVO
+      enabled: true
+      init_mode: scratch
+      coarse_aux_weight: 0.0
+      residual_reg_weight: 0.0
+    - name: ABLVO360_NoSphericalGeometry
+      enabled: true
+      init_mode: partial
+      coarse_aux_weight: 0.5
+      residual_reg_weight: 0.05
+    - name: ABLVO360_NoCrossImageInteraction
+      enabled: true
+      init_mode: partial
+      coarse_aux_weight: 0.0
+      residual_reg_weight: 0.0
+    - name: ABLVO360_SingleStagePoseRegression
+      enabled: false
+      skip_reason: resource_limited_optional_group_D
+      init_mode: partial
+      coarse_aux_weight: 0.0
+      residual_reg_weight: 0.0
+
+loss:
+  rot_weight: 1.0
+  tdir_weight: 1.0
+  tmag_weight: 0.5
+  scale_stability_weight: 0.1
+  tmag_loss_type: log_smooth_l1
+  components:
+    enable_observability: true
+    enable_k_step_balancing: true
+    enable_scale_stabilization: true
+  k_step_balancing:
+    weight_k1: 1.0
+    weight_k2: 1.05
+    weight_k3: 1.0
+    weight_k5: 0.9
+  observability:
+    tmag_epsilon: 1.0e-6
+    near_zero_tmag: 0.02
+    low_tmag: 0.05
+    medium_tmag: 0.15
+    high_tmag: 0.4
+    min_weight: 0.2
+    max_weight: 2.0
+    k1_factor: 1.05
+    k2_factor: 1.0
+    k3_factor: 0.95
+    k5_factor: 0.85
+  scale_stability:
+    collapse_ratio: 0.1
+    explosion_ratio: 10.0
+    mean_log_bias_weight: 1.0
+
+training:
+  epochs: 3
+  optimizer: AdamW
+  lr: 1.0e-4
+  weight_decay: 1.0e-4
+  grad_clip_norm: 1.0
+  amp: false
+  seed: 0
+
+evaluation:
+  val_subset_count: 512
+  val_subset_tmag_bucket_edges: [0.03, 0.08, 0.2, 0.5]
+  val_subset_rot_bucket_edges_deg: [5.0, 15.0, 30.0, 60.0, 120.0]
+  max_minival_batches: null
+  max_val_batches: null
+  max_test_batches: null
+  run_test_after_selection: true
+  selection_score:
+    signed_tdir_weight: 1.0
+    anti_parallel_weight: 80.0
+    rot_weight: 0.2
+    tmag_ratio_weight: 15.0
+    path_ratio_weight: 8.0
