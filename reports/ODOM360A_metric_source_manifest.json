@@ -1,0 +1,21 @@
+{
+  "task_name": "ODOM360A_lightweight_trajectory_fusion",
+  "prediction_cache": {
+    "cache_dir": "/home/dovetao/graduation_design_demo/external_baselines/results/odom360a_lightweight_trajectory_fusion/cache",
+    "reused": {
+      "val": "/home/dovetao/graduation_design_demo/external_baselines/results/odom360a_lightweight_trajectory_fusion/cache/val_all_pair_predictions.jsonl",
+      "test": "/home/dovetao/graduation_design_demo/external_baselines/results/odom360a_lightweight_trajectory_fusion/cache/test_all_pair_predictions.jsonl"
+    },
+    "generated": {}
+  },
+  "reproduction_delta_vs_train360e_test": {
+    "ate_none_rmse": 3.824510741878839e-06,
+    "ate_se3_rmse": 7.315839667398905e-07,
+    "ate_sim3_rmse": 1.4322169867853063e-06,
+    "trajectory_path_ratio": 7.414386749005075e-08
+  },
+  "checkpoint": "checkpoints/FINAL360I_struct360b_final/seed0/best_val.pt",
+  "train360e_metrics_test": "reports/TRAIN360E_metrics_test.json",
+  "seq360b_trajectory_metrics_test": "reports/SEQ360B_trajectory_metrics_test.json",
+  "test_used_for_selection": false
+}

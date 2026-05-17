@@ -1,0 +1,52 @@
+{
+  "all_sequences": [
+    {
+      "sequence": "snowmobile",
+      "selected_ate_se3": 48.54476908792696,
+      "baseline_ate_se3": 128.3745267897022,
+      "delta_ate_se3": -79.82975770177524,
+      "selected_ate_sim3": 10.02301789973129,
+      "baseline_ate_sim3": 10.023031063281069,
+      "delta_ate_sim3": -1.3163549779093842e-05,
+      "selected_path_ratio": 1.4915080009990203,
+      "baseline_path_ratio": 2.3604664036076444
+    },
+    {
+      "sequence": "ridge_to_lake",
+      "selected_ate_se3": 56.59648598747024,
+      "baseline_ate_se3": 104.51614784846797,
+      "delta_ate_se3": -47.91966186099773,
+      "selected_ate_sim3": 40.257308258742036,
+      "baseline_ate_sim3": 40.23229163678398,
+      "delta_ate_sim3": 0.025016621958059204,
+      "selected_path_ratio": 0.8150741280500888,
+      "baseline_path_ratio": 1.2879417469974064
+    }
+  ],
+  "best_improved_sequences": [
+    {
+      "sequence": "snowmobile",
+      "selected_ate_se3": 48.54476908792696,
+      "baseline_ate_se3": 128.3745267897022,
+      "delta_ate_se3": -79.82975770177524,
+      "selected_ate_sim3": 10.02301789973129,
+      "baseline_ate_sim3": 10.023031063281069,
+      "delta_ate_sim3": -1.3163549779093842e-05,
+      "selected_path_ratio": 1.4915080009990203,
+      "baseline_path_ratio": 2.3604664036076444
+    },
+    {
+      "sequence": "ridge_to_lake",
+      "selected_ate_se3": 56.59648598747024,
+      "baseline_ate_se3": 104.51614784846797,
+      "delta_ate_se3": -47.91966186099773,
+      "selected_ate_sim3": 40.257308258742036,
+      "baseline_ate_sim3": 40.23229163678398,
+      "delta_ate_sim3": 0.025016621958059204,
+      "selected_path_ratio": 0.8150741280500888,
+      "baseline_path_ratio": 1.2879417469974064
+    }
+  ],
+  "worst_degraded_sequences": [],
+  "per_sequence_degradation_found": false
+}
