@@ -1,106 +1,20 @@
 {
   "task_name": "ABLDVO3_single_stage_pose_regression_ablation",
-  "training_executed": false,
-  "blockers": [
-    "insufficient disk free space: 4.96 GiB"
-  ],
-  "precheck": {
-    "branch": "research/abldvo3-single-stage-pose-regression-ablation",
-    "disk_free_gb": 4.960094451904297,
-    "git_status_short": [
-      "M models/ablvo360_big_module_ablation.py",
-      "?? configs/abldvo3_single_stage_pose_regression_ablation.yaml",
-      "?? external_baselines/results/data360a_tdir_regime_diagnostic/",
-      "?? external_baselines/results/odom360a_lightweight_trajectory_fusion/",
-      "?? reports/MAIN362_blocker_worktree_not_clean.md"
-    ],
-    "dataset_histograms": {
-      "train": {
-        "pair_count": 12154,
-        "sequence_ids": [
-          "bridge_night",
-          "canyon_line",
-          "city_driving",
-          "drone_racetrack",
-          "field",
-          "shanghai_street"
-        ],
-        "k_histogram": {
-          "1": 3049,
-          "2": 3043,
-          "3": 3037,
-          "5": 3025
-        },
-        "adjacent_pair_count": 3049,
-        "non_adjacent_pair_count": 9105,
-        "tmag_quantiles": {
-          "p10": 0.2381341490489577,
-          "p50": 0.7540582156494824,
-          "p90": 2.764104897387863
-        }
-      },
-      "val": {
-        "pair_count": 5342,
-        "sequence_ids": [
-          "downhill_biking",
-          "mountains"
-        ],
-        "k_histogram": {
-          "1": 1339,
-          "2": 1337,
-          "3": 1335,
-          "5": 1331
-        },
-        "adjacent_pair_count": 1339,
-        "non_adjacent_pair_count": 4003,
-        "tmag_quantiles": {
-          "p10": 0.1294159302718717,
-          "p50": 0.5242541488407756,
-          "p90": 3.097980192190403
-        }
-      },
-      "test": {
-        "pair_count": 5062,
-        "sequence_ids": [
-          "ridge_to_lake",
-          "snowmobile"
-        ],
-        "k_histogram": {
-          "1": 1269,
-          "2": 1267,
-          "3": 1265,
-          "5": 1261
-        },
-        "adjacent_pair_count": 1269,
-        "non_adjacent_pair_count": 3793,
-        "tmag_quantiles": {
-          "p10": 0.4518312842734925,
-          "p50": 1.2670413875783233,
-          "p90": 3.2179406416457987
-        }
-      }
-    },
-    "split_audit": {
-      "sequence_sets": {
-        "pair_manifest_train": [
-          "bridge_night",
-          "canyon_line",
-          "city_driving",
-          "drone_racetrack",
-          "field",
-          "shanghai_street"
-        ],
-        "pair_manifest_val": [
-          "downhill_biking",
-          "mountains"
-        ],
-        "pair_manifest_test": [
-          "ridge_to_lake",
-          "snowmobile"
-        ]
-      },
-      "sequence_overlap": {},
-      "has_overlap": false
+  "selection_protocol": "mini_val_only_per_epoch_full_val_once_after_training",
+  "rows": [
+    {
+      "model_name": "ABLDVO3_SingleStagePoseRegression",
+      "executed": true,
+      "best_epoch": 3,
+      "minival_score": 176.91699716065327,
+      "val_score": 173.6823349820883,
+      "val_signed_tdir_mean": 108.73056671302521,
+      "val_anti_parallel_rate": 0.7076001497566454,
+      "val_rot_mean": 1.2757425438898617,
+      "val_tmag_median_ratio": 1.7020824480466077,
+      "val_path_ratio": 1.0139489813443454,
+      "selected_checkpoint": "/home/dovetao/graduation_design_demo/checkpoints/ABLDVO3_SingleStagePoseRegression/best_val.pt",
+      "test_used_for_selection": false
     }
-  }
+  ]
 }

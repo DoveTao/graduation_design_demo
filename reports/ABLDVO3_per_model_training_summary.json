@@ -1,106 +1,27 @@
 {
   "task_name": "ABLDVO3_single_stage_pose_regression_ablation",
-  "training_executed": false,
-  "blockers": [
-    "insufficient disk free space: 4.96 GiB"
-  ],
-  "precheck": {
-    "branch": "research/abldvo3-single-stage-pose-regression-ablation",
-    "disk_free_gb": 4.960094451904297,
-    "git_status_short": [
-      "M models/ablvo360_big_module_ablation.py",
-      "?? configs/abldvo3_single_stage_pose_regression_ablation.yaml",
-      "?? external_baselines/results/data360a_tdir_regime_diagnostic/",
-      "?? external_baselines/results/odom360a_lightweight_trajectory_fusion/",
-      "?? reports/MAIN362_blocker_worktree_not_clean.md"
-    ],
-    "dataset_histograms": {
-      "train": {
-        "pair_count": 12154,
-        "sequence_ids": [
-          "bridge_night",
-          "canyon_line",
-          "city_driving",
-          "drone_racetrack",
-          "field",
-          "shanghai_street"
+  "rows": [
+    {
+      "model_name": "ABLDVO3_SingleStagePoseRegression",
+      "executed": true,
+      "init_mode": "partial",
+      "load_status": {
+        "status": "non-strict",
+        "strict_error": "RuntimeError: Error(s) in loading state_dict for AblationSingleStageCrossModel:\n\tMissing key(s) in state_dict: \"module2.bearing_coarse\", \"module2.id_coarse\". \n\tUnexpected key(s) in state_dict: \"log_tmag_bias\", \"direct_head.net.0.weight\", \"direct_head.net.0.bias\", \"direct_head.net.1.weight\", \"direct_head.net.1.bias\", \"direct_head.net.3.weight\", \"direct_head.net.3.bias\", \"direct_head.rot.weight\", \"direct_head.rot.bias\", \"direct_head.t.weight\", \"direct_head.t.bias\", \"fine.fuse.net.0.weight\", \"fine.fuse.net.0.bias\", \"fine.fuse.net.1.weight\", \"fine.fuse.net.1.bias\", \"fine.fuse.net.3.weight\", \"fine.fuse.net.3.bias\", \"fine.pose_head.mlp.0.weight\", \"fine.pose_head.mlp.0.bias\", \"fine.pose_head.mlp.1.weight\", \"fine.pose_head.mlp.1.bias\", \"fine.pose_head.mlp.3.weight\", \"fine.pose_head.mlp.3.bias\", \"fine.pose_head.rot.weight\", \"fine.pose_head.rot.bias\", \"fine.pose_head.t.weight\", \"fine.pose_head.t.bias\", \"fine.rel_head.net.0.weight\", \"fine.rel_head.net.0.bias\", \"fine.rel_head.net.1.weight\", \"fine.rel_head.net.1.bias\", \"fine.rel_head.net.3.weight\", \"fine.rel_head.net.3.bias\", \"fine.t_head.net.0.weight\", \"fine.t_head.net.0.bias\", \"fine.t_head.net.1.weight\", \"fine.t_head.net.1.bias\", \"fine.t_head.net.3.weight\", \"fine.t_head.net.3.bias\", \"fine.t_head.t.weight\", \"fine.t_head.t.bias\", \"fine.mag_head.ridge_calib_raw_center\", \"fine.mag_head.net.0.weight\", \"fine.mag_head.net.0.bias\", \"fine.mag_head.net.1.weight\", \"fine.mag_head.net.1.bias\", \"fine.mag_head.net.3.weight\", \"fine.mag_head.net.3.bias\", \"fine.mag_head.net.5.weight\", \"fine.mag_head.net.5.bias\", \"coupled_pose_head.backbone.0.weight\", \"coupled_pose_head.backbone.0.bias\", \"coupled_pose_head.backbone.1.weight\", \"coupled_pose_head.backbone.1.bias\", \"coupled_pose_head.backbone.4.weight\", \"coupled_pose_head.backbone.4.bias\", \"coupled_pose_head.rot_head.weight\", \"coupled_pose_head.rot_head.bias\", \"coupled_pose_head.tdir_head.weight\", \"coupled_pose_head.tdir_head.bias\", \"coupled_pose_head.gate_head.weight\", \"coupled_pose_head.gate_head.bias\", \"struct360b_pose_embed.net.0.weight\", \"struct360b_pose_embed.net.0.bias\", \"struct360b_pose_embed.net.1.weight\", \"struct360b_pose_embed.net.1.bias\", \"struct360b_pose_embed.net.3.weight\", \"struct360b_pose_embed.net.3.bias\", \"struct360b_fine_refiner.pos_enc.net.0.weight\", \"struct360b_fine_refiner.pos_enc.net.0.bias\", \"struct360b_fine_refiner.pos_enc.net.1.weight\", \"struct360b_fine_refiner.pos_enc.net.1.bias\", \"struct360b_fine_refiner.pos_enc.net.3.weight\", \"struct360b_fine_refiner.pos_enc.net.3.bias\", \"struct360b_fine_refiner.pose_to_film_a.weight\", \"struct360b_fine_refiner.pose_to_film_a.bias\", \"struct360b_fine_refiner.pose_to_film_b.weight\", \"struct360b_fine_refiner.pose_to_film_b.bias\", \"struct360b_fine_refiner.pose_to_token.weight\", \"struct360b_fine_refiner.pose_to_token.bias\", \"struct360b_fine_refiner.norm_a.weight\", \"struct360b_fine_refiner.norm_a.bias\", \"struct360b_fine_refiner.norm_b.weight\", \"struct360b_fine_refiner.norm_b.bias\", \"struct360b_fine_refiner.cross_attn_ab.in_proj_weight\", \"struct360b_fine_refiner.cross_attn_ab.in_proj_bias\", \"struct360b_fine_refiner.cross_attn_ab.out_proj.weight\", \"struct360b_fine_refiner.cross_attn_ab.out_proj.bias\", \"struct360b_fine_refiner.cross_attn_ba.in_proj_weight\", \"struct360b_fine_refiner.cross_attn_ba.in_proj_bias\", \"struct360b_fine_refiner.cross_attn_ba.out_proj.weight\", \"struct360b_fine_refiner.cross_attn_ba.out_proj.bias\", \"struct360b_fine_refiner.ffn_a.0.weight\", \"struct360b_fine_refiner.ffn_a.0.bias\", \"struct360b_fine_refiner.ffn_a.1.weight\", \"struct360b_fine_refiner.ffn_a.1.bias\", \"struct360b_fine_refiner.ffn_a.4.weight\", \"struct360b_fine_refiner.ffn_a.4.bias\", \"struct360b_fine_refiner.ffn_b.0.weight\", \"struct360b_fine_refiner.ffn_b.0.bias\", \"struct360b_fine_refiner.ffn_b.1.weight\", \"struct360b_fine_refiner.ffn_b.1.bias\", \"struct360b_fine_refiner.ffn_b.4.weight\", \"struct360b_fine_refiner.ffn_b.4.bias\", \"struct360b_fine_refiner.update_gate.weight\", \"struct360b_fine_refiner.update_gate.bias\", \"struct360b_residual_head.net.0.weight\", \"struct360b_residual_head.net.0.bias\", \"struct360b_residual_head.net.1.weight\", \"struct360b_residual_head.net.1.bias\", \"struct360b_residual_head.net.3.weight\", \"struct360b_residual_head.net.3.bias\", \"struct360b_residual_head.rot_head.weight\", \"struct360b_residual_head.rot_head.bias\", \"struct360b_residual_head.tdir_head.weight\", \"struct360b_residual_head.tdir_head.bias\", \"struct360b_residual_head.log_tmag_head.weight\", \"struct360b_residual_head.log_tmag_head.bias\", \"struct360b_residual_head.gate_head.weight\", \"struct360b_residual_head.gate_head.bias\", \"module2.grid_fine\", \"module2.patch_embed_c_t.pool_gate\", \"module2.patch_embed_c_t.cnn.0.weight\", \"module2.patch_embed_c_t.cnn.1.weight\", \"module2.patch_embed_c_t.cnn.1.bias\", \"module2.patch_embed_c_t.cnn.3.weight\", \"module2.patch_embed_c_t.cnn.4.weight\", \"module2.patch_embed_c_t.cnn.4.bias\", \"module2.patch_embed_c_t.cnn.6.weight\", \"module2.patch_embed_c_t.cnn.7.weight\", \"module2.patch_embed_c_t.cnn.7.bias\", \"module2.patch_embed_c_t.proj.0.weight\", \"module2.patch_embed_c_t.proj.0.bias\", \"module2.patch_embed_c_t.proj.1.weight\", \"module2.patch_embed_c_t.proj.1.bias\", \"module2.patch_embed_c_t.proj.3.weight\", \"module2.patch_embed_c_t.proj.3.bias\", \"module2.enc_c_t.weight\", \"module2.enc_c_t.bias\", \"coarse.t_fuse.net.0.weight\", \"coarse.t_fuse.net.0.bias\", \"coarse.t_fuse.net.1.weight\", \"coarse.t_fuse.net.1.bias\", \"coarse.t_fuse.net.3.weight\", \"coarse.t_fuse.net.3.bias\", \"coarse.t_head.net.0.weight\", \"coarse.t_head.net.0.bias\", \"coarse.t_head.net.1.weight\", \"coarse.t_head.net.1.bias\", \"coarse.t_head.net.3.weight\", \"coarse.t_head.net.3.bias\", \"coarse.t_head.t.weight\", \"coarse.t_head.t.bias\", \"coarse.mag_head.log_centers\", \"coarse.mag_head.scale_cls_head.0.weight\", \"coarse.mag_head.scale_cls_head.0.bias\", \"coarse.mag_head.scale_cls_head.1.weight\", \"coarse.mag_head.scale_cls_head.1.bias\", \"coarse.mag_head.scale_cls_head.3.weight\", \"coarse.mag_head.scale_cls_head.3.bias\", \"coarse.mag_head.scale_cls_head.5.weight\", \"coarse.mag_head.scale_cls_head.5.bias\", \"coarse.mag_head.residual_head.0.weight\", \"coarse.mag_head.residual_head.0.bias\", \"coarse.mag_head.residual_head.1.weight\", \"coarse.mag_head.residual_head.1.bias\", \"coarse.mag_head.residual_head.3.weight\", \"coarse.mag_head.residual_head.3.bias\". ",
+        "missing_keys": [
+          "module2.bearing_coarse",
+          "module2.id_coarse"
         ],
-        "k_histogram": {
-          "1": 3049,
-          "2": 3043,
-          "3": 3037,
-          "5": 3025
-        },
-        "adjacent_pair_count": 3049,
-        "non_adjacent_pair_count": 9105,
-        "tmag_quantiles": {
-          "p10": 0.2381341490489577,
-          "p50": 0.7540582156494824,
-          "p90": 2.764104897387863
-        }
+        "unexpected_keys": [],
+        "skipped_shape_mismatch": [],
+        "loaded_param_count": 173
       },
-      "val": {
-        "pair_count": 5342,
-        "sequence_ids": [
-          "downhill_biking",
-          "mountains"
-        ],
-        "k_histogram": {
-          "1": 1339,
-          "2": 1337,
-          "3": 1335,
-          "5": 1331
-        },
-        "adjacent_pair_count": 1339,
-        "non_adjacent_pair_count": 4003,
-        "tmag_quantiles": {
-          "p10": 0.1294159302718717,
-          "p50": 0.5242541488407756,
-          "p90": 3.097980192190403
-        }
+      "checkpoint_dir": "/home/dovetao/graduation_design_demo/checkpoints/ABLDVO3_SingleStagePoseRegression",
+      "parameter_count": {
+        "total": 7525707,
+        "trainable": 7525707
       },
-      "test": {
-        "pair_count": 5062,
-        "sequence_ids": [
-          "ridge_to_lake",
-          "snowmobile"
-        ],
-        "k_histogram": {
-          "1": 1269,
-          "2": 1267,
-          "3": 1265,
-          "5": 1261
-        },
-        "adjacent_pair_count": 1269,
-        "non_adjacent_pair_count": 3793,
-        "tmag_quantiles": {
-          "p10": 0.4518312842734925,
-          "p50": 1.2670413875783233,
-          "p90": 3.2179406416457987
-        }
-      }
-    },
-    "split_audit": {
-      "sequence_sets": {
-        "pair_manifest_train": [
-          "bridge_night",
-          "canyon_line",
-          "city_driving",
-          "drone_racetrack",
-          "field",
-          "shanghai_street"
-        ],
-        "pair_manifest_val": [
-          "downhill_biking",
-          "mountains"
-        ],
-        "pair_manifest_test": [
-          "ridge_to_lake",
-          "snowmobile"
-        ]
-      },
-      "sequence_overlap": {},
-      "has_overlap": false
+      "minival_subset_count": 1024
     }
-  }
+  ]
 }

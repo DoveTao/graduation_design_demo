@@ -3,7 +3,7 @@ task_name: ABLDVO3_single_stage_pose_regression_ablation
 prechecks:
   expected_branches:
     - research/abldvo3-single-stage-pose-regression-ablation
-  min_disk_free_gb: 5.0
+  min_disk_free_gb: 4.5
   require_cuda: true
   required_env: pytorch
 

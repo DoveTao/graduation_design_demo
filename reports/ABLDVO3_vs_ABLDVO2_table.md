@@ -1,0 +1,12 @@
+# ABLDVO3 vs ABLDVO2 table
+
+| model | rot_mean_deg | signed_tdir_mean_deg | anti_parallel_rate | tmag_median_ratio | path_ratio |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| ABLDVO2_PlainPairVO | 2.421761716753892 | 49.1263039873907 | 0.20683524298696168 | 0.8769573224669822 | 0.6854662049800878 |
+| ABLDVO2_NoSphericalGeometry | 2.5360854690087167 | 45.10322350027338 | 0.199723429474516 | 0.7810938989168676 | 0.6144397784214122 |
+| ABLDVO2_NoCrossImageInteraction | 3.606171494231352 | 49.75859849091306 | 0.20169893322797314 | 0.6230075781570772 | 0.49003655986581823 |
+| ABLDVO3_SingleStagePoseRegression | 2.658405347510507 | 51.40964207131611 | 0.20031608060055314 | 1.3186038819269417 | 1.024806080948049 |
+| FINAL360I_full_model | 2.330108616583517 | 45.264702006380205 | 0.20169893322797314 | 0.8344251368086006 | 0.6403519796204528 |
+
+- `ABLDVO3_SingleStagePoseRegression` sits between `PlainPairVO` and `NoCrossInteraction` on rotation, but is the worst on `signed_tdir_mean` and the most over-scaled on `tmag/path`.
+- this makes the coarse-to-fine block look most important for translation stabilization rather than for raw rotation alone.

@@ -1,106 +1,63 @@
 {
   "task_name": "ABLDVO3_single_stage_pose_regression_ablation",
-  "training_executed": false,
-  "blockers": [
-    "insufficient disk free space: 4.96 GiB"
-  ],
-  "precheck": {
-    "branch": "research/abldvo3-single-stage-pose-regression-ablation",
-    "disk_free_gb": 4.960094451904297,
-    "git_status_short": [
-      "M models/ablvo360_big_module_ablation.py",
-      "?? configs/abldvo3_single_stage_pose_regression_ablation.yaml",
-      "?? external_baselines/results/data360a_tdir_regime_diagnostic/",
-      "?? external_baselines/results/odom360a_lightweight_trajectory_fusion/",
-      "?? reports/MAIN362_blocker_worktree_not_clean.md"
-    ],
-    "dataset_histograms": {
-      "train": {
-        "pair_count": 12154,
-        "sequence_ids": [
-          "bridge_night",
-          "canyon_line",
-          "city_driving",
-          "drone_racetrack",
-          "field",
-          "shanghai_street"
-        ],
-        "k_histogram": {
-          "1": 3049,
-          "2": 3043,
-          "3": 3037,
-          "5": 3025
-        },
-        "adjacent_pair_count": 3049,
-        "non_adjacent_pair_count": 9105,
-        "tmag_quantiles": {
-          "p10": 0.2381341490489577,
-          "p50": 0.7540582156494824,
-          "p90": 2.764104897387863
-        }
+  "training_executed": true,
+  "models": {
+    "ABLDVO3_SingleStagePoseRegression": {
+      "task_name": "ABLDVO3_single_stage_pose_regression_ablation",
+      "model_name": "ABLDVO3_SingleStagePoseRegression",
+      "checkpoint_used": "/home/dovetao/graduation_design_demo/checkpoints/ABLDVO3_SingleStagePoseRegression/best_val.pt",
+      "best_epoch": 3,
+      "minival_score_of_selected_checkpoint": 176.91699716065327,
+      "val_score": 173.6823349820883,
+      "metrics": {
+        "count": 5342,
+        "coverage": 1.0,
+        "rot_mean_deg": 1.2757425438898617,
+        "rot_median_deg": 0.8432552516460419,
+        "signed_tdir_mean_deg": 108.73056671302521,
+        "signed_tdir_median_deg": 121.4939113555356,
+        "unsigned_tdir_mean_deg": 50.717527492694465,
+        "anti_parallel_rate": 0.7076001497566454,
+        "tmag_ratio_p10": 0.55438410386741,
+        "tmag_median_ratio": 1.7020824480466077,
+        "tmag_mean_ratio": 2.3595546254285615,
+        "tmag_ratio_p90": 6.030524132958228,
+        "log_tmag_mae": 0.8042881219110901,
+        "scale_collapse_rate": 0.0,
+        "scale_explosion_rate": 0.0028079371022089105,
+        "path_ratio": 1.0139489813443454,
+        "nan_inf_count": 0
       },
-      "val": {
-        "pair_count": 5342,
-        "sequence_ids": [
-          "downhill_biking",
-          "mountains"
-        ],
-        "k_histogram": {
-          "1": 1339,
-          "2": 1337,
-          "3": 1335,
-          "5": 1331
-        },
-        "adjacent_pair_count": 1339,
-        "non_adjacent_pair_count": 4003,
-        "tmag_quantiles": {
-          "p10": 0.1294159302718717,
-          "p50": 0.5242541488407756,
-          "p90": 3.097980192190403
-        }
+      "coarse_metrics": {
+        "count": 5342,
+        "coverage": 1.0,
+        "rot_mean_deg": 1.2757425438898617,
+        "rot_median_deg": 0.8432552516460419,
+        "signed_tdir_mean_deg": 108.73056671302521,
+        "signed_tdir_median_deg": 121.4939113555356,
+        "unsigned_tdir_mean_deg": 50.717527492694465,
+        "anti_parallel_rate": 0.7076001497566454,
+        "tmag_ratio_p10": 0.55438410386741,
+        "tmag_median_ratio": 1.7020824480466077,
+        "tmag_mean_ratio": 2.3595546254285615,
+        "tmag_ratio_p90": 6.030524132958228,
+        "log_tmag_mae": 0.8042881219110901,
+        "scale_collapse_rate": 0.0,
+        "scale_explosion_rate": 0.0028079371022089105,
+        "path_ratio": 1.0139489813443454,
+        "nan_inf_count": 0
       },
-      "test": {
-        "pair_count": 5062,
-        "sequence_ids": [
-          "ridge_to_lake",
-          "snowmobile"
-        ],
-        "k_histogram": {
-          "1": 1269,
-          "2": 1267,
-          "3": 1265,
-          "5": 1261
-        },
-        "adjacent_pair_count": 1269,
-        "non_adjacent_pair_count": 3793,
-        "tmag_quantiles": {
-          "p10": 0.4518312842734925,
-          "p50": 1.2670413875783233,
-          "p90": 3.2179406416457987
-        }
-      }
-    },
-    "split_audit": {
-      "sequence_sets": {
-        "pair_manifest_train": [
-          "bridge_night",
-          "canyon_line",
-          "city_driving",
-          "drone_racetrack",
-          "field",
-          "shanghai_street"
-        ],
-        "pair_manifest_val": [
-          "downhill_biking",
-          "mountains"
-        ],
-        "pair_manifest_test": [
-          "ridge_to_lake",
-          "snowmobile"
-        ]
+      "residual_stats": {
+        "delta_rot_mean_deg": 0.0,
+        "delta_tdir_norm_mean": 0.0,
+        "delta_log_tmag_abs_mean": 0.0
       },
-      "sequence_overlap": {},
-      "has_overlap": false
+      "gate_stats": {
+        "mean": 0.0,
+        "median": 0.0,
+        "max": 0.0
+      },
+      "selection_protocol": "mini_val_only_per_epoch_full_val_once_after_training"
     }
   }
 }

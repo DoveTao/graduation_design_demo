@@ -1,106 +1,94 @@
 {
   "task_name": "ABLDVO3_single_stage_pose_regression_ablation",
-  "training_executed": false,
-  "blockers": [
-    "insufficient disk free space: 4.96 GiB"
-  ],
-  "precheck": {
-    "branch": "research/abldvo3-single-stage-pose-regression-ablation",
-    "disk_free_gb": 4.960094451904297,
-    "git_status_short": [
-      "M models/ablvo360_big_module_ablation.py",
-      "?? configs/abldvo3_single_stage_pose_regression_ablation.yaml",
-      "?? external_baselines/results/data360a_tdir_regime_diagnostic/",
-      "?? external_baselines/results/odom360a_lightweight_trajectory_fusion/",
-      "?? reports/MAIN362_blocker_worktree_not_clean.md"
-    ],
-    "dataset_histograms": {
-      "train": {
-        "pair_count": 12154,
-        "sequence_ids": [
-          "bridge_night",
-          "canyon_line",
-          "city_driving",
-          "drone_racetrack",
-          "field",
-          "shanghai_street"
-        ],
-        "k_histogram": {
-          "1": 3049,
-          "2": 3043,
-          "3": 3037,
-          "5": 3025
-        },
-        "adjacent_pair_count": 3049,
-        "non_adjacent_pair_count": 9105,
-        "tmag_quantiles": {
-          "p10": 0.2381341490489577,
-          "p50": 0.7540582156494824,
-          "p90": 2.764104897387863
-        }
+  "training_executed": true,
+  "models": {
+    "ABLDVO3_SingleStagePoseRegression": {
+      "task_name": "ABLDVO3_single_stage_pose_regression_ablation",
+      "model_name": "ABLDVO3_SingleStagePoseRegression",
+      "checkpoint_used": "/home/dovetao/graduation_design_demo/checkpoints/ABLDVO3_SingleStagePoseRegression/best_val.pt",
+      "best_epoch": 3,
+      "metrics": {
+        "count": 5062,
+        "coverage": 1.0,
+        "rot_mean_deg": 2.658405347510507,
+        "rot_median_deg": 0.7016503214836121,
+        "signed_tdir_mean_deg": 51.40964207131611,
+        "signed_tdir_median_deg": 25.73842928459247,
+        "unsigned_tdir_mean_deg": 31.21946918069599,
+        "anti_parallel_rate": 0.20031608060055314,
+        "tmag_ratio_p10": 0.5231659723605302,
+        "tmag_median_ratio": 1.3186038819269417,
+        "tmag_mean_ratio": 1.7651776678063202,
+        "tmag_ratio_p90": 3.701286086339751,
+        "log_tmag_mae": 0.6659076778289399,
+        "scale_collapse_rate": 0.0,
+        "scale_explosion_rate": 0.0,
+        "path_ratio": 1.024806080948049,
+        "nan_inf_count": 0
       },
-      "val": {
-        "pair_count": 5342,
-        "sequence_ids": [
-          "downhill_biking",
-          "mountains"
-        ],
-        "k_histogram": {
-          "1": 1339,
-          "2": 1337,
-          "3": 1335,
-          "5": 1331
-        },
-        "adjacent_pair_count": 1339,
-        "non_adjacent_pair_count": 4003,
-        "tmag_quantiles": {
-          "p10": 0.1294159302718717,
-          "p50": 0.5242541488407756,
-          "p90": 3.097980192190403
-        }
+      "coarse_metrics": {
+        "count": 5062,
+        "coverage": 1.0,
+        "rot_mean_deg": 2.658405347510507,
+        "rot_median_deg": 0.7016503214836121,
+        "signed_tdir_mean_deg": 51.40964207131611,
+        "signed_tdir_median_deg": 25.73842928459247,
+        "unsigned_tdir_mean_deg": 31.21946918069599,
+        "anti_parallel_rate": 0.20031608060055314,
+        "tmag_ratio_p10": 0.5231659723605302,
+        "tmag_median_ratio": 1.3186038819269417,
+        "tmag_mean_ratio": 1.7651776678063202,
+        "tmag_ratio_p90": 3.701286086339751,
+        "log_tmag_mae": 0.6659076778289399,
+        "scale_collapse_rate": 0.0,
+        "scale_explosion_rate": 0.0,
+        "path_ratio": 1.024806080948049,
+        "nan_inf_count": 0
       },
-      "test": {
-        "pair_count": 5062,
-        "sequence_ids": [
-          "ridge_to_lake",
-          "snowmobile"
-        ],
-        "k_histogram": {
-          "1": 1269,
-          "2": 1267,
-          "3": 1265,
-          "5": 1261
-        },
-        "adjacent_pair_count": 1269,
-        "non_adjacent_pair_count": 3793,
-        "tmag_quantiles": {
-          "p10": 0.4518312842734925,
-          "p50": 1.2670413875783233,
-          "p90": 3.2179406416457987
-        }
-      }
-    },
-    "split_audit": {
-      "sequence_sets": {
-        "pair_manifest_train": [
-          "bridge_night",
-          "canyon_line",
-          "city_driving",
-          "drone_racetrack",
-          "field",
-          "shanghai_street"
-        ],
-        "pair_manifest_val": [
-          "downhill_biking",
-          "mountains"
-        ],
-        "pair_manifest_test": [
-          "ridge_to_lake",
-          "snowmobile"
-        ]
+      "residual_stats": {
+        "delta_rot_mean_deg": 0.0,
+        "delta_tdir_norm_mean": 0.0,
+        "delta_log_tmag_abs_mean": 0.0
       },
-      "sequence_overlap": {},
-      "has_overlap": false
+      "gate_stats": {
+        "mean": 0.0,
+        "median": 0.0,
+        "max": 0.0
+      },
+      "test_used_for_selection": false,
+      "selection_protocol": "mini_val_only_per_epoch_full_val_once_after_training"
     }
+  },
+  "final360i_reference": {
+    "count": 5062,
+    "coverage": 1.0,
+    "rot_mean_deg": 2.330108616583517,
+    "rot_median_deg": 0.20558422803878784,
+    "rot_p90_deg": 6.713612318038943,
+    "signed_tdir_mean_deg": 45.264702006380205,
+    "signed_tdir_median_deg": 22.704615219747595,
+    "signed_tdir_p90_deg": 140.27662565571296,
+    "unsigned_tdir_mean_deg": 25.937378929700255,
+    "unsigned_tdir_median_deg": 19.432276054381838,
+    "unsigned_tdir_p90_deg": 58.16424864012134,
+    "anti_parallel_rate": 0.20169893322797314,
+    "tmag_ratio_p10": 0.2966194117283973,
+    "tmag_median_ratio": 0.8344251368086006,
+    "tmag_ratio_p50": 0.8344251368086006,
+    "tmag_mean_ratio": 1.1036085340991515,
+    "tmag_ratio_p90": 2.4225009459219193,
+    "tmag_p90_ratio": 2.4225009459219193,
+    "log_tmag_mae": 0.6559796168700758,
+    "scale_collapse_rate": 0.0019755037534571317,
+    "scale_explosion_rate": 0.0,
+    "path_ratio": 0.6403519796204528,
+    "path_length_pred": 5221.007291018963,
+    "path_length_gt": 8153.339814946055,
+    "nan_inf_count": 0,
+    "nan_count": 0,
+    "inf_count": 0,
+    "ate_none": null,
+    "ate_se3": null,
+    "ate_sim3": null
   }
 }
