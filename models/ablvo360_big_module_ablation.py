@@ -549,8 +549,9 @@ class AblationPairRegressionModel(AblationBaseModel):
 
 
 class AblationSingleStageCrossModel(AblationBaseModel):
-    def __init__(self, cfg: Config, device: torch.device) -> None:
+    def __init__(self, cfg: Config, device: torch.device, *, model_name: str) -> None:
         super().__init__(cfg, device)
+        self.model_name = str(model_name)
         self.module2 = AblationTokenSampler(cfg, device, geometry_mode="spherical", use_fine_tokens=False)
         self.coarse = CoarseInteraction(
             cfg.D,
@@ -597,7 +598,7 @@ class AblationSingleStageCrossModel(AblationBaseModel):
             "coarse_t_mag": out_c["tc_mag"],
             "coarse_log_t_mag": out_c["log_tc_mag"],
             "coarse_pair_context": self._stats_pool(out_c["Fc"]),
-            "stage": "ABLVO360_SingleStagePoseRegression",
+            "stage": self.model_name,
         }
         aux.update(out_c)
         _set_transform_outputs(aux, out_c["Rc"], out_c["tc_dir"], out_c["tc_mag"], out_c["log_tc_mag"])
@@ -752,8 +753,8 @@ def build_ablvo360_model(variant: str, cfg: Config, device: torch.device) -> nn.
         return AblationPairRegressionModel(cfg, device, geometry_mode="planar", model_name=variant)
     if variant in {"ABLVO360_NoCrossImageInteraction", "ABLDVO2_NoCrossImageInteraction"}:
         return AblationPairRegressionModel(cfg, device, geometry_mode="spherical", model_name=variant)
-    if variant in {"ABLVO360_SingleStagePoseRegression", "ABLDVO2_SingleStagePoseRegression"}:
-        return AblationSingleStageCrossModel(cfg, device)
+    if variant in {"ABLVO360_SingleStagePoseRegression", "ABLDVO2_SingleStagePoseRegression", "ABLDVO3_SingleStagePoseRegression"}:
+        return AblationSingleStageCrossModel(cfg, device, model_name=variant)
     if variant in {"ABLVO360_NoSphericalGeometry", "ABLDVO2_NoSphericalGeometry"}:
         return AblationNoSphericalGeometryModel(cfg, device)
     raise ValueError(f"Unsupported ABLVO360 variant: {variant}")
