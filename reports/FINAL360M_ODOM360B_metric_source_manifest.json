@@ -1,0 +1,28 @@
+{
+  "task_name": "FINAL360M_ODOM360B_local_pose_graph_with_kstep_constraints",
+  "prediction_source": {
+    "source": "odom360a_cache",
+    "val_cache": "/home/dovetao/graduation_design_demo/external_baselines/results/final360m_odom360a_lightweight_trajectory_fusion/cache/val_all_pair_predictions.jsonl",
+    "test_cache": "/home/dovetao/graduation_design_demo/external_baselines/results/final360m_odom360a_lightweight_trajectory_fusion/cache/test_all_pair_predictions.jsonl"
+  },
+  "k_values_available": [
+    1,
+    2,
+    3
+  ],
+  "reused_odom360a_cache": true,
+  "direct_reproduction_delta_vs_train360e_test": {
+    "ate_none_rmse": 28.64594946621179,
+    "ate_se3_rmse": 1.330348900688179,
+    "ate_sim3_rmse": 1.85839708029145,
+    "trajectory_path_ratio": 0.11116824612130083
+  },
+  "odom360a_reproduction_delta_vs_odom360a_test": {
+    "ate_none_rmse": 0.0,
+    "ate_se3_rmse": 0.0,
+    "ate_sim3_rmse": 0.0,
+    "trajectory_path_ratio": 0.0
+  },
+  "checkpoint": "checkpoints/FINAL360M_fulltrain_struct360b_thesis_main_guarded/best_full_val.pt",
+  "test_used_for_selection": false
+}

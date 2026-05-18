@@ -1,0 +1,73 @@
+{
+  "task_name": "THESIS362_FINAL360M_refresh",
+  "backups": [
+    {
+      "original": "thesis/final_assets/tables/final_main_pair_results.md",
+      "backup": "thesis/final_assets/backups/20260518_final360m_refresh/thesis/final_assets/tables/final_main_pair_results.md"
+    },
+    {
+      "original": "thesis/final_assets/tables/final_trajectory_results.md",
+      "backup": "thesis/final_assets/backups/20260518_final360m_refresh/thesis/final_assets/tables/final_trajectory_results.md"
+    },
+    {
+      "original": "thesis/final_assets/tables/final_negative_results_appendix.md",
+      "backup": "thesis/final_assets/backups/20260518_final360m_refresh/thesis/final_assets/tables/final_negative_results_appendix.md"
+    },
+    {
+      "original": "thesis/final_assets/captions/final_figure_captions_zh.md",
+      "backup": "thesis/final_assets/backups/20260518_final360m_refresh/thesis/final_assets/captions/final_figure_captions_zh.md"
+    },
+    {
+      "original": "thesis/final_assets/captions/final_figure_captions_en.md",
+      "backup": "thesis/final_assets/backups/20260518_final360m_refresh/thesis/final_assets/captions/final_figure_captions_en.md"
+    },
+    {
+      "original": "reports/THESIS362_table_manifest.json",
+      "backup": "thesis/final_assets/backups/20260518_final360m_refresh/reports/THESIS362_table_manifest.json"
+    },
+    {
+      "original": "reports/THESIS362_figure_manifest.json",
+      "backup": "thesis/final_assets/backups/20260518_final360m_refresh/reports/THESIS362_figure_manifest.json"
+    },
+    {
+      "original": "reports/THESIS362_visual_source_manifest.json",
+      "backup": "thesis/final_assets/backups/20260518_final360m_refresh/reports/THESIS362_visual_source_manifest.json"
+    },
+    {
+      "original": "thesis/final_assets/figures/main_results/pair_level_main_results_bar.png",
+      "backup": "thesis/final_assets/backups/20260518_final360m_refresh/thesis/final_assets/figures/main_results/pair_level_main_results_bar.png"
+    },
+    {
+      "original": "thesis/final_assets/figures/main_results/pair_level_main_results_bar.pdf",
+      "backup": "thesis/final_assets/backups/20260518_final360m_refresh/thesis/final_assets/figures/main_results/pair_level_main_results_bar.pdf"
+    },
+    {
+      "original": "thesis/final_assets/figures/trajectories/trajectory_metric_comparison.png",
+      "backup": "thesis/final_assets/backups/20260518_final360m_refresh/thesis/final_assets/figures/trajectories/trajectory_metric_comparison.png"
+    },
+    {
+      "original": "thesis/final_assets/figures/trajectories/trajectory_metric_comparison.pdf",
+      "backup": "thesis/final_assets/backups/20260518_final360m_refresh/thesis/final_assets/figures/trajectories/trajectory_metric_comparison.pdf"
+    },
+    {
+      "original": "thesis/final_assets/figures/trajectories/trajectory_overlay_ridge_to_lake.png",
+      "backup": "thesis/final_assets/backups/20260518_final360m_refresh/thesis/final_assets/figures/trajectories/trajectory_overlay_ridge_to_lake.png"
+    },
+    {
+      "original": "thesis/final_assets/figures/trajectories/trajectory_overlay_ridge_to_lake.pdf",
+      "backup": "thesis/final_assets/backups/20260518_final360m_refresh/thesis/final_assets/figures/trajectories/trajectory_overlay_ridge_to_lake.pdf"
+    }
+  ],
+  "updated_tables": [
+    "thesis/final_assets/tables/final_main_pair_results.md",
+    "thesis/final_assets/tables/final_trajectory_results.md"
+  ],
+  "updated_figures": [
+    "thesis/final_assets/figures/main_results/pair_level_main_results_bar.png",
+    "thesis/final_assets/figures/trajectories/trajectory_metric_comparison.png",
+    "thesis/final_assets/figures/trajectories/trajectory_overlay_ridge_to_lake.png"
+  ],
+  "old_final360i_marked_subset_trained_candidate": true,
+  "metrics_modified": false,
+  "checkpoints_committed": false
+}

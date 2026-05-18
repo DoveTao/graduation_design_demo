@@ -1,0 +1,44 @@
+[
+  {
+    "output_file": "thesis/final_assets/tables/final_main_pair_results.md",
+    "source_files": [
+      "reports/FINAL360M_metrics_test.json",
+      "reports/FINAL360I_metrics_test.json",
+      "reports/RESULTS360_main_results_table.json"
+    ],
+    "notes": "FINAL360M promoted to thesis main model; old FINAL360I explicitly retained as subset-trained candidate only."
+  },
+  {
+    "output_file": "thesis/final_assets/tables/final_trajectory_results.md",
+    "source_files": [
+      "reports/FINAL360M_trajectory_metrics_test.json",
+      "reports/TRAIN360E_metrics_test.json",
+      "reports/SEQ360B_trajectory_metrics_test.json"
+    ],
+    "notes": "Trajectory refresh is FINAL360M-based, but its best refreshed backend remains weaker than the historical subset-model-based ODOM360A reference."
+  },
+  {
+    "output_file": "thesis/final_assets/figures/main_results/pair_level_main_results_bar.png",
+    "source_files": [
+      "reports/FINAL360M_metrics_test.json",
+      "reports/FINAL360I_metrics_test.json"
+    ],
+    "notes": "Narrative support for protocol-based mainline promotion."
+  },
+  {
+    "output_file": "thesis/final_assets/figures/trajectories/trajectory_metric_comparison.png",
+    "source_files": [
+      "reports/FINAL360M_trajectory_metrics_test.json"
+    ],
+    "notes": "Narrative support for the claim that backend fusion helps direct composition but does not remove shape error."
+  },
+  {
+    "output_file": "thesis/final_assets/figures/trajectories/trajectory_overlay_ridge_to_lake.png",
+    "source_files": [
+      "external_baselines/results/final360m_odom360a_lightweight_trajectory_fusion/test/direct_composition/ridge_to_lake/pred_tum.txt",
+      "external_baselines/results/final360m_odom360a_lightweight_trajectory_fusion/test/local_window_pose_fusion/ridge_to_lake/pred_tum.txt",
+      "external_baselines/results/final360m_odom360b_local_pose_graph_kstep/test/pg_k3/ridge_to_lake/pred_tum.txt"
+    ],
+    "notes": "Representative refreshed FINAL360M trajectory overlay."
+  }
+]

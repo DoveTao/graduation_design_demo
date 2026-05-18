@@ -12,6 +12,7 @@ from typing import Any, Dict, List, Mapping, Optional
 
 import torch
 from torch.utils.data import DataLoader
+import yaml
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
@@ -20,7 +21,11 @@ sys.path.insert(0, str(REPO_ROOT / "tools"))
 from train360.core.config import Config
 from datasets.dset2c_manifest_dataset import Dset2CCanonicalPairDataset, summarize_manifest_group
 from mainline_dependency_utils import summarize_optional_artifact
-from miniyaml import load_yaml_like
+try:
+    from miniyaml import load_yaml_like
+except ModuleNotFoundError:
+    def load_yaml_like(path: Path) -> Dict[str, Any]:
+        return yaml.safe_load(Path(path).read_text(encoding="utf-8"))
 from models.struct360b_match_free_coarse_to_fine import STRUCT360BMatchFreeCoarseToFineModel
 from train_struct360b_match_free_coarse_to_fine import (
     T57B_REFERENCE,

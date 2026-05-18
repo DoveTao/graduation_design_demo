@@ -1,0 +1,198 @@
+[
+  {
+    "output_file": "thesis/final_assets/figures/main_results/pair_level_main_results_bar.png",
+    "source_files": [
+      "reports/RESULTS360_main_results_table.json",
+      "reports/TRAIN360E_metrics_test.json",
+      "reports/RESULTS360_main_results_table.json",
+      "reports/TRAIN360E_metrics_test.json",
+      "reports/FINAL360I_metrics_test.json",
+      "reports/BASE360D_metrics_test.json",
+      "reports/RESULTS360_main_results_table.json"
+    ],
+    "notes": "T57b rot_mean bar is omitted because the cleaned source set does not retain that value."
+  },
+  {
+    "output_file": "thesis/final_assets/figures/ablations/structural_ablation_multimetric.png",
+    "source_files": [
+      "reports/ABLDVO2_metrics_test.json",
+      "reports/ABLDVO3_metrics_test.json"
+    ],
+    "notes": "Covers rotation, translation direction, anti-parallel rate, scale ratio, and path ratio together."
+  },
+  {
+    "output_file": "thesis/final_assets/figures/trajectories/trajectory_metric_comparison.png",
+    "source_files": [
+      "reports/TRAIN360E_metrics_test.json",
+      "reports/SEQ360B_trajectory_metrics_test.json",
+      "external_baselines/results/odom360a_lightweight_trajectory_fusion/test",
+      "external_baselines/results/odom360b_local_pose_graph_kstep/test",
+      "reports/BASE360D_metrics_test.json"
+    ],
+    "notes": "ODOM360A/B values are computed from existing TUM exports only."
+  },
+  {
+    "output_file": "thesis/final_assets/figures/trajectories/trajectory_overlay_ridge_to_lake.png",
+    "source_files": [
+      "external_baselines/results/odom360a_lightweight_trajectory_fusion",
+      "external_baselines/results/odom360b_local_pose_graph_kstep",
+      "external_baselines/results/base360_hkust_360dvo_official"
+    ],
+    "notes": "Uses `ridge_to_lake` and only retained TUM exports that still exist in the cleaned worktree; direct TRAIN360E/SEQ360B TUM files are unavailable, so the overlay emphasizes export-available sequence backends plus a direct-composition reference."
+  },
+  {
+    "output_file": "thesis/final_assets/figures/training_curves/final360i_validation_curves.png",
+    "source_files": [
+      "checkpoints/FINAL360I_struct360b_final/seed0/train_log.jsonl"
+    ],
+    "notes": "Validation curves extracted from retained train_log.jsonl."
+  },
+  {
+    "output_file": "thesis/final_assets/figures/training_curves/no_cross_interaction_validation_curves.png",
+    "source_files": [
+      "checkpoints/FINAL360I_struct360b_final/seed0/train_log.jsonl"
+    ],
+    "notes": "Representative ablation curve from retained minival logs."
+  },
+  {
+    "output_file": "thesis/final_assets/figures/training_curves/single_stage_validation_curves.png",
+    "source_files": [
+      "checkpoints/FINAL360I_struct360b_final/seed0/train_log.jsonl"
+    ],
+    "notes": "Representative ablation curve from retained minival logs."
+  },
+  {
+    "output_file": "thesis/final_assets/figures/training_curves/final360i_joint_vs_single_best.png",
+    "source_files": [
+      "checkpoints/FINAL360I_struct360b_final/seed0/train_log.jsonl"
+    ],
+    "notes": "Compares checkpoint selection by joint score against minimum signed_tdir epoch."
+  },
+  {
+    "output_file": "thesis/final_assets/figures/diagnostics/data360a_tmag_bucket_signed_tdir.png",
+    "source_files": [
+      "external_baselines/results/data360a_tdir_regime_diagnostic"
+    ],
+    "notes": "Derived from retained final360i test pair rows."
+  },
+  {
+    "output_file": "thesis/final_assets/figures/diagnostics/data360a_rotation_bucket_signed_tdir.png",
+    "source_files": [
+      "external_baselines/results/data360a_tdir_regime_diagnostic"
+    ],
+    "notes": "Derived from retained final360i test pair rows."
+  },
+  {
+    "output_file": "thesis/final_assets/figures/diagnostics/anti_parallel_regime_distribution.png",
+    "source_files": [
+      "external_baselines/results/data360a_tdir_regime_diagnostic"
+    ],
+    "notes": "Shows anti-parallel remains a broad failure regime rather than a single-bucket issue."
+  },
+  {
+    "output_file": "thesis/final_assets/figures/diagnostics/final360i_j_k_l_validation_compare.png",
+    "source_files": [
+      "external_baselines/results/data360a_tdir_regime_diagnostic"
+    ],
+    "notes": "Validation-only comparison because standalone J/K/L test json files are unavailable."
+  },
+  {
+    "output_file": "thesis/final_assets/figures/diagnostics/final360i_vs_seq360b_bucket_compare.png",
+    "source_files": [
+      "external_baselines/results/data360a_tdir_regime_diagnostic"
+    ],
+    "notes": "Shows SEQ360B mainly changes scale/path behavior rather than direction error."
+  },
+  {
+    "output_file": "thesis/final_assets/tables/final_main_pair_results.md",
+    "source_files": [
+      "reports/RESULTS360_main_results_table.json",
+      "reports/TRAIN360E_metrics_test.json",
+      "reports/RESULTS360_main_results_table.json",
+      "reports/TRAIN360E_metrics_test.json",
+      "reports/FINAL360I_metrics_test.json",
+      "reports/BASE360D_metrics_test.json",
+      "reports/RESULTS360_main_results_table.json"
+    ],
+    "notes": "Includes BASE360D caveat and retained-source missing-value disclosure."
+  },
+  {
+    "output_file": "thesis/final_assets/tables/final_ablation_results.md",
+    "source_files": [
+      "reports/ABLDVO2_metrics_test.json",
+      "reports/ABLDVO3_metrics_test.json"
+    ],
+    "notes": "Merged retained ABLDVO2 + ABLDVO3 results."
+  },
+  {
+    "output_file": "thesis/final_assets/tables/final_trajectory_results.md",
+    "source_files": [
+      "reports/TRAIN360E_metrics_test.json",
+      "reports/SEQ360B_trajectory_metrics_test.json",
+      "external_baselines/results/odom360a_lightweight_trajectory_fusion/test",
+      "external_baselines/results/odom360b_local_pose_graph_kstep/test",
+      "reports/BASE360D_metrics_test.json"
+    ],
+    "notes": "Includes export-derived ODOM360A/B metrics with provenance notes."
+  },
+  {
+    "output_file": "thesis/final_assets/tables/final_negative_results_appendix.md",
+    "source_files": [
+      "checkpoints/FINAL360J_tdir_loss_reweight/train_log.jsonl",
+      "checkpoints/FINAL360K_conservative_observability_weighting/train_log.jsonl",
+      "checkpoints/FINAL360L_translation_head_factorization/train_log.jsonl",
+      "reports/SEQ360A_status_summary.md",
+      "reports/STRUCT360C_status_summary.md",
+      "external_baselines/results/data360a_tdir_regime_diagnostic"
+    ],
+    "notes": "Validation-only negative branch summary plus diagnostic statuses."
+  },
+  {
+    "output_file": "thesis/final_assets/figures/matching_geometry/thesis360_cross_image_interaction_sample01_normal_mountains.png",
+    "source_files": [
+      "checkpoints/FINAL360I_struct360b_final/seed0/best_val.pt",
+      "external_baselines/results/dset2c_360dvo_canonical/pair_manifest_val.jsonl"
+    ],
+    "notes": "Eval-only token-level relation heatmaps derived from real fine-stage tokens; this is not explicit keypoint matching. THESIS360 eval-only supplement."
+  },
+  {
+    "output_file": "thesis/final_assets/figures/matching_geometry/thesis360_cross_image_interaction_sample02_normal_downhill.png",
+    "source_files": [
+      "checkpoints/FINAL360I_struct360b_final/seed0/best_val.pt",
+      "external_baselines/results/dset2c_360dvo_canonical/pair_manifest_val.jsonl"
+    ],
+    "notes": "Eval-only token-level relation heatmaps derived from real fine-stage tokens; this is not explicit keypoint matching. THESIS360 eval-only supplement."
+  },
+  {
+    "output_file": "thesis/final_assets/figures/matching_geometry/thesis360_cross_image_interaction_sample03_scale_path_k5.png",
+    "source_files": [
+      "checkpoints/FINAL360I_struct360b_final/seed0/best_val.pt",
+      "external_baselines/results/dset2c_360dvo_canonical/pair_manifest_val.jsonl"
+    ],
+    "notes": "Eval-only token-level relation heatmaps derived from real fine-stage tokens; this is not explicit keypoint matching. THESIS360 eval-only supplement."
+  },
+  {
+    "output_file": "thesis/final_assets/figures/matching_geometry/thesis360_residual_gate_diagnostic.png",
+    "source_files": [
+      "checkpoints/FINAL360I_struct360b_final/seed0/best_val.pt",
+      "external_baselines/results/dset2c_360dvo_canonical/pair_manifest_val.jsonl"
+    ],
+    "notes": "Shows real fine-gate and residual-gate responses plus applied residual update magnitudes. THESIS360 eval-only supplement."
+  },
+  {
+    "output_file": "thesis/final_assets/figures/matching_geometry/thesis360_coarse_final_pose_diagnostic.png",
+    "source_files": [
+      "checkpoints/FINAL360I_struct360b_final/seed0/best_val.pt",
+      "external_baselines/results/dset2c_360dvo_canonical/pair_manifest_val.jsonl"
+    ],
+    "notes": "Compares coarse and final pose errors against GT on fixed eval-only samples. THESIS360 eval-only supplement."
+  },
+  {
+    "output_file": "thesis/final_assets/figures/matching_geometry/thesis360_token_layout_visualization.png",
+    "source_files": [
+      "checkpoints/FINAL360I_struct360b_final/seed0/best_val.pt",
+      "external_baselines/results/dset2c_360dvo_canonical/pair_manifest_val.jsonl"
+    ],
+    "notes": "Visualizes actual coarse and fine spherical token locations in ERP coordinates. THESIS360 eval-only supplement."
+  }
+]

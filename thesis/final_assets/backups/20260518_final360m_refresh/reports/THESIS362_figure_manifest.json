@@ -1,0 +1,211 @@
+[
+  {
+    "file_path": "thesis/final_assets/figures/main_results/pair_level_main_results_bar.png",
+    "title_zh": "pair-level 主结果条形图",
+    "title_en": "Pair-level main result bar chart",
+    "source_files": [
+      "reports/RESULTS360_main_results_table.json",
+      "reports/TRAIN360E_metrics_test.json",
+      "reports/RESULTS360_main_results_table.json",
+      "reports/TRAIN360E_metrics_test.json",
+      "reports/FINAL360I_metrics_test.json",
+      "reports/BASE360D_metrics_test.json",
+      "reports/RESULTS360_main_results_table.json"
+    ],
+    "recommended_location": "thesis_main",
+    "notes": "T57b rot_mean bar is omitted because the cleaned source set does not retain that value."
+  },
+  {
+    "file_path": "thesis/final_assets/figures/ablations/structural_ablation_multimetric.png",
+    "title_zh": "结构消融多指标图",
+    "title_en": "Structural ablation multi-metric chart",
+    "source_files": [
+      "reports/ABLDVO2_metrics_test.json",
+      "reports/ABLDVO3_metrics_test.json"
+    ],
+    "recommended_location": "thesis_main",
+    "notes": "Covers rotation, translation direction, anti-parallel rate, scale ratio, and path ratio together."
+  },
+  {
+    "file_path": "thesis/final_assets/figures/trajectories/trajectory_metric_comparison.png",
+    "title_zh": "trajectory ATE 与 path_ratio 对比图",
+    "title_en": "Trajectory ATE and path-ratio comparison",
+    "source_files": [
+      "reports/TRAIN360E_metrics_test.json",
+      "reports/SEQ360B_trajectory_metrics_test.json",
+      "external_baselines/results/odom360a_lightweight_trajectory_fusion/test",
+      "external_baselines/results/odom360b_local_pose_graph_kstep/test",
+      "reports/BASE360D_metrics_test.json"
+    ],
+    "recommended_location": "thesis_main",
+    "notes": "ODOM360A/B values are computed from existing TUM exports only."
+  },
+  {
+    "file_path": "thesis/final_assets/figures/trajectories/trajectory_overlay_ridge_to_lake.png",
+    "title_zh": "代表性序列轨迹叠加图",
+    "title_en": "Representative trajectory overlay",
+    "source_files": [
+      "external_baselines/results/odom360a_lightweight_trajectory_fusion",
+      "external_baselines/results/odom360b_local_pose_graph_kstep",
+      "external_baselines/results/base360_hkust_360dvo_official"
+    ],
+    "recommended_location": "defense_ppt",
+    "notes": "Uses `ridge_to_lake` and only retained TUM exports that still exist in the cleaned worktree; direct TRAIN360E/SEQ360B TUM files are unavailable, so the overlay emphasizes export-available sequence backends plus a direct-composition reference."
+  },
+  {
+    "file_path": "thesis/final_assets/figures/training_curves/final360i_validation_curves.png",
+    "title_zh": "FINAL360I 验证曲线",
+    "title_en": "FINAL360I validation curves",
+    "source_files": [
+      "checkpoints/FINAL360I_struct360b_final/seed0/train_log.jsonl"
+    ],
+    "recommended_location": "thesis_appendix",
+    "notes": "Validation curves extracted from retained train_log.jsonl."
+  },
+  {
+    "file_path": "thesis/final_assets/figures/training_curves/no_cross_interaction_validation_curves.png",
+    "title_zh": "NoCrossInteraction 验证曲线",
+    "title_en": "NoCrossInteraction validation curves",
+    "source_files": [
+      "checkpoints/FINAL360I_struct360b_final/seed0/train_log.jsonl"
+    ],
+    "recommended_location": "thesis_appendix",
+    "notes": "Representative ablation curve from retained minival logs."
+  },
+  {
+    "file_path": "thesis/final_assets/figures/training_curves/single_stage_validation_curves.png",
+    "title_zh": "SingleStage 验证曲线",
+    "title_en": "SingleStage validation curves",
+    "source_files": [
+      "checkpoints/FINAL360I_struct360b_final/seed0/train_log.jsonl"
+    ],
+    "recommended_location": "thesis_appendix",
+    "notes": "Representative ablation curve from retained minival logs."
+  },
+  {
+    "file_path": "thesis/final_assets/figures/training_curves/final360i_joint_vs_single_best.png",
+    "title_zh": "joint score 与单指标 best 对比图",
+    "title_en": "Joint-score vs single-metric best",
+    "source_files": [
+      "checkpoints/FINAL360I_struct360b_final/seed0/train_log.jsonl"
+    ],
+    "recommended_location": "defense_ppt",
+    "notes": "Compares checkpoint selection by joint score against minimum signed_tdir epoch."
+  },
+  {
+    "file_path": "thesis/final_assets/figures/diagnostics/data360a_tmag_bucket_signed_tdir.png",
+    "title_zh": "DATA360A tmag bucket signed_tdir 图",
+    "title_en": "DATA360A tmag-bucket signed_tdir plot",
+    "source_files": [
+      "external_baselines/results/data360a_tdir_regime_diagnostic"
+    ],
+    "recommended_location": "thesis_appendix",
+    "notes": "Derived from retained final360i test pair rows."
+  },
+  {
+    "file_path": "thesis/final_assets/figures/diagnostics/data360a_rotation_bucket_signed_tdir.png",
+    "title_zh": "DATA360A rotation bucket signed_tdir 图",
+    "title_en": "DATA360A rotation-bucket signed_tdir plot",
+    "source_files": [
+      "external_baselines/results/data360a_tdir_regime_diagnostic"
+    ],
+    "recommended_location": "thesis_appendix",
+    "notes": "Derived from retained final360i test pair rows."
+  },
+  {
+    "file_path": "thesis/final_assets/figures/diagnostics/anti_parallel_regime_distribution.png",
+    "title_zh": "anti_parallel regime 分布图",
+    "title_en": "Anti-parallel regime distribution",
+    "source_files": [
+      "external_baselines/results/data360a_tdir_regime_diagnostic"
+    ],
+    "recommended_location": "thesis_appendix",
+    "notes": "Shows anti-parallel remains a broad failure regime rather than a single-bucket issue."
+  },
+  {
+    "file_path": "thesis/final_assets/figures/diagnostics/final360i_j_k_l_validation_compare.png",
+    "title_zh": "FINAL360I / J / K / L 对比图",
+    "title_en": "FINAL360I / J / K / L comparison",
+    "source_files": [
+      "external_baselines/results/data360a_tdir_regime_diagnostic"
+    ],
+    "recommended_location": "thesis_appendix",
+    "notes": "Validation-only comparison because standalone J/K/L test json files are unavailable."
+  },
+  {
+    "file_path": "thesis/final_assets/figures/diagnostics/final360i_vs_seq360b_bucket_compare.png",
+    "title_zh": "FINAL360I vs SEQ360B bucket 对比图",
+    "title_en": "FINAL360I vs SEQ360B bucket comparison",
+    "source_files": [
+      "external_baselines/results/data360a_tdir_regime_diagnostic"
+    ],
+    "recommended_location": "thesis_appendix",
+    "notes": "Shows SEQ360B mainly changes scale/path behavior rather than direction error."
+  },
+  {
+    "file_path": "thesis/final_assets/figures/matching_geometry/thesis360_cross_image_interaction_sample01_normal_mountains.png",
+    "title_zh": "跨图像特征交互可视化 sample01_normal_mountains",
+    "title_en": "Cross-image interaction visualization sample01_normal_mountains",
+    "source_files": [
+      "checkpoints/FINAL360I_struct360b_final/seed0/best_val.pt",
+      "external_baselines/results/dset2c_360dvo_canonical/pair_manifest_val.jsonl"
+    ],
+    "recommended_location": "defense_ppt",
+    "notes": "Eval-only token-level relation heatmaps derived from real fine-stage tokens; this is not explicit keypoint matching. THESIS360 supplement added after the THESIS362 final asset pack."
+  },
+  {
+    "file_path": "thesis/final_assets/figures/matching_geometry/thesis360_cross_image_interaction_sample02_normal_downhill.png",
+    "title_zh": "跨图像特征交互可视化 sample02_normal_downhill",
+    "title_en": "Cross-image interaction visualization sample02_normal_downhill",
+    "source_files": [
+      "checkpoints/FINAL360I_struct360b_final/seed0/best_val.pt",
+      "external_baselines/results/dset2c_360dvo_canonical/pair_manifest_val.jsonl"
+    ],
+    "recommended_location": "thesis_appendix",
+    "notes": "Eval-only token-level relation heatmaps derived from real fine-stage tokens; this is not explicit keypoint matching. THESIS360 supplement added after the THESIS362 final asset pack."
+  },
+  {
+    "file_path": "thesis/final_assets/figures/matching_geometry/thesis360_cross_image_interaction_sample03_scale_path_k5.png",
+    "title_zh": "跨图像特征交互可视化 sample03_scale_path_k5",
+    "title_en": "Cross-image interaction visualization sample03_scale_path_k5",
+    "source_files": [
+      "checkpoints/FINAL360I_struct360b_final/seed0/best_val.pt",
+      "external_baselines/results/dset2c_360dvo_canonical/pair_manifest_val.jsonl"
+    ],
+    "recommended_location": "thesis_appendix",
+    "notes": "Eval-only token-level relation heatmaps derived from real fine-stage tokens; this is not explicit keypoint matching. THESIS360 supplement added after the THESIS362 final asset pack."
+  },
+  {
+    "file_path": "thesis/final_assets/figures/matching_geometry/thesis360_residual_gate_diagnostic.png",
+    "title_zh": "粗到细残差精化门控诊断图",
+    "title_en": "Residual-gate diagnostic",
+    "source_files": [
+      "checkpoints/FINAL360I_struct360b_final/seed0/best_val.pt",
+      "external_baselines/results/dset2c_360dvo_canonical/pair_manifest_val.jsonl"
+    ],
+    "recommended_location": "thesis_appendix",
+    "notes": "Shows real fine-gate and residual-gate responses plus applied residual update magnitudes. THESIS360 supplement added after the THESIS362 final asset pack."
+  },
+  {
+    "file_path": "thesis/final_assets/figures/matching_geometry/thesis360_coarse_final_pose_diagnostic.png",
+    "title_zh": "coarse pose 与 final pose 诊断图",
+    "title_en": "Coarse-to-final pose diagnostic",
+    "source_files": [
+      "checkpoints/FINAL360I_struct360b_final/seed0/best_val.pt",
+      "external_baselines/results/dset2c_360dvo_canonical/pair_manifest_val.jsonl"
+    ],
+    "recommended_location": "thesis_appendix",
+    "notes": "Compares coarse and final pose errors against GT on fixed eval-only samples. THESIS360 supplement added after the THESIS362 final asset pack."
+  },
+  {
+    "file_path": "thesis/final_assets/figures/matching_geometry/thesis360_token_layout_visualization.png",
+    "title_zh": "球面 token 布局可视化",
+    "title_en": "Token layout visualization",
+    "source_files": [
+      "checkpoints/FINAL360I_struct360b_final/seed0/best_val.pt",
+      "external_baselines/results/dset2c_360dvo_canonical/pair_manifest_val.jsonl"
+    ],
+    "recommended_location": "defense_ppt",
+    "notes": "Visualizes actual coarse and fine spherical token locations in ERP coordinates. THESIS360 supplement added after the THESIS362 final asset pack."
+  }
+]

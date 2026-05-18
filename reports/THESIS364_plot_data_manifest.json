@@ -1,0 +1,307 @@
+{
+  "task_name": "THESIS364_export_plot_data_for_manual_redrawing",
+  "plot_data_root": "thesis/final_assets/plot_data",
+  "figures_total": 19,
+  "figures_covered": [
+    "pair_level_main_results_bar",
+    "structural_ablation_multimetric",
+    "trajectory_metric_comparison",
+    "trajectory_overlay_ridge_to_lake",
+    "final360i_validation_curves",
+    "no_cross_interaction_validation_curves",
+    "single_stage_validation_curves",
+    "final360i_joint_vs_single_best",
+    "data360a_tmag_bucket_signed_tdir",
+    "data360a_rotation_bucket_signed_tdir",
+    "anti_parallel_regime_distribution",
+    "final360i_j_k_l_validation_compare",
+    "final360i_vs_seq360b_bucket_compare"
+  ],
+  "figures_unavailable": [
+    "thesis360_cross_image_interaction_sample01_normal_mountains",
+    "thesis360_cross_image_interaction_sample02_normal_downhill",
+    "thesis360_cross_image_interaction_sample03_scale_path_k5",
+    "thesis360_residual_gate_diagnostic",
+    "thesis360_coarse_final_pose_diagnostic",
+    "thesis360_token_layout_visualization"
+  ],
+  "trajectory_plot_data_exported": true,
+  "training_curve_plot_data_exported": true,
+  "metrics_modified": false,
+  "training_executed": false,
+  "checkpoints_modified": false,
+  "entries": [
+    {
+      "figure_path": "thesis/final_assets/figures/main_results/pair_level_main_results_bar.png",
+      "figure_name": "pair_level_main_results_bar",
+      "status": "exported",
+      "plot_data_files": [
+        "thesis/final_assets/plot_data/pair_level_main_results_bar.csv"
+      ],
+      "source_files": [
+        "reports/RESULTS360_main_results_table.json",
+        "reports/TRAIN360E_metrics_test.json",
+        "reports/RESULTS360_main_results_table.json",
+        "reports/TRAIN360E_metrics_test.json",
+        "reports/FINAL360I_metrics_test.json",
+        "reports/BASE360D_metrics_test.json",
+        "reports/RESULTS360_main_results_table.json"
+      ],
+      "reason": "",
+      "notes": "T57b rot_mean bar is omitted because the cleaned source set does not retain that value."
+    },
+    {
+      "figure_path": "thesis/final_assets/figures/ablations/structural_ablation_multimetric.png",
+      "figure_name": "structural_ablation_multimetric",
+      "status": "exported",
+      "plot_data_files": [
+        "thesis/final_assets/plot_data/structural_ablation_multimetric.csv"
+      ],
+      "source_files": [
+        "reports/ABLDVO2_metrics_test.json",
+        "reports/ABLDVO3_metrics_test.json"
+      ],
+      "reason": "",
+      "notes": "Covers rotation, translation direction, anti-parallel rate, scale ratio, and path ratio together."
+    },
+    {
+      "figure_path": "thesis/final_assets/figures/trajectories/trajectory_metric_comparison.png",
+      "figure_name": "trajectory_metric_comparison",
+      "status": "exported",
+      "plot_data_files": [
+        "thesis/final_assets/plot_data/trajectory_metric_comparison.csv"
+      ],
+      "source_files": [
+        "reports/TRAIN360E_metrics_test.json",
+        "reports/SEQ360B_trajectory_metrics_test.json",
+        "external_baselines/results/odom360a_lightweight_trajectory_fusion/test",
+        "external_baselines/results/odom360b_local_pose_graph_kstep/test",
+        "reports/BASE360D_metrics_test.json"
+      ],
+      "reason": "",
+      "notes": "ODOM360A/B values are computed from existing TUM exports only."
+    },
+    {
+      "figure_path": "thesis/final_assets/figures/trajectories/trajectory_overlay_ridge_to_lake.png",
+      "figure_name": "trajectory_overlay_ridge_to_lake",
+      "status": "exported",
+      "plot_data_files": [
+        "thesis/final_assets/plot_data/trajectory_overlay_ridge_to_lake__GT.csv",
+        "thesis/final_assets/plot_data/trajectory_overlay_ridge_to_lake__ODOM360A-direct.csv",
+        "thesis/final_assets/plot_data/trajectory_overlay_ridge_to_lake__ODOM360A.csv",
+        "thesis/final_assets/plot_data/trajectory_overlay_ridge_to_lake__ODOM360B.csv",
+        "thesis/final_assets/plot_data/trajectory_overlay_ridge_to_lake__BASE360D.csv",
+        "thesis/final_assets/plot_data/trajectory_overlay_ridge_to_lake.json"
+      ],
+      "source_files": [
+        "external_baselines/results/odom360a_lightweight_trajectory_fusion",
+        "external_baselines/results/odom360b_local_pose_graph_kstep",
+        "external_baselines/results/base360_hkust_360dvo_official"
+      ],
+      "reason": "",
+      "notes": "Uses `ridge_to_lake` and only retained TUM exports that still exist in the cleaned worktree; direct TRAIN360E/SEQ360B TUM files are unavailable, so the overlay emphasizes export-available sequence backends plus a direct-composition reference."
+    },
+    {
+      "figure_path": "thesis/final_assets/figures/training_curves/final360i_validation_curves.png",
+      "figure_name": "final360i_validation_curves",
+      "status": "exported",
+      "plot_data_files": [
+        "thesis/final_assets/plot_data/final360i_validation_curves.csv"
+      ],
+      "source_files": [
+        "checkpoints/FINAL360I_struct360b_final/seed0/train_log.jsonl"
+      ],
+      "reason": "",
+      "notes": "Validation curves extracted from retained train_log.jsonl."
+    },
+    {
+      "figure_path": "thesis/final_assets/figures/training_curves/no_cross_interaction_validation_curves.png",
+      "figure_name": "no_cross_interaction_validation_curves",
+      "status": "exported",
+      "plot_data_files": [
+        "thesis/final_assets/plot_data/no_cross_interaction_validation_curves.csv"
+      ],
+      "source_files": [
+        "checkpoints/FINAL360I_struct360b_final/seed0/train_log.jsonl"
+      ],
+      "reason": "",
+      "notes": "Representative ablation curve from retained minival logs."
+    },
+    {
+      "figure_path": "thesis/final_assets/figures/training_curves/single_stage_validation_curves.png",
+      "figure_name": "single_stage_validation_curves",
+      "status": "exported",
+      "plot_data_files": [
+        "thesis/final_assets/plot_data/single_stage_validation_curves.csv"
+      ],
+      "source_files": [
+        "checkpoints/FINAL360I_struct360b_final/seed0/train_log.jsonl"
+      ],
+      "reason": "",
+      "notes": "Representative ablation curve from retained minival logs."
+    },
+    {
+      "figure_path": "thesis/final_assets/figures/training_curves/final360i_joint_vs_single_best.png",
+      "figure_name": "final360i_joint_vs_single_best",
+      "status": "exported",
+      "plot_data_files": [
+        "thesis/final_assets/plot_data/final360i_joint_vs_single_best.csv"
+      ],
+      "source_files": [
+        "checkpoints/FINAL360I_struct360b_final/seed0/train_log.jsonl"
+      ],
+      "reason": "",
+      "notes": "Compares checkpoint selection by joint score against minimum signed_tdir epoch."
+    },
+    {
+      "figure_path": "thesis/final_assets/figures/diagnostics/data360a_tmag_bucket_signed_tdir.png",
+      "figure_name": "data360a_tmag_bucket_signed_tdir",
+      "status": "exported",
+      "plot_data_files": [
+        "thesis/final_assets/plot_data/data360a_tmag_bucket_signed_tdir.csv"
+      ],
+      "source_files": [
+        "external_baselines/results/data360a_tdir_regime_diagnostic"
+      ],
+      "reason": "",
+      "notes": "Derived from retained final360i test pair rows."
+    },
+    {
+      "figure_path": "thesis/final_assets/figures/diagnostics/data360a_rotation_bucket_signed_tdir.png",
+      "figure_name": "data360a_rotation_bucket_signed_tdir",
+      "status": "exported",
+      "plot_data_files": [
+        "thesis/final_assets/plot_data/data360a_rotation_bucket_signed_tdir.csv"
+      ],
+      "source_files": [
+        "external_baselines/results/data360a_tdir_regime_diagnostic"
+      ],
+      "reason": "",
+      "notes": "Derived from retained final360i test pair rows."
+    },
+    {
+      "figure_path": "thesis/final_assets/figures/diagnostics/anti_parallel_regime_distribution.png",
+      "figure_name": "anti_parallel_regime_distribution",
+      "status": "exported",
+      "plot_data_files": [
+        "thesis/final_assets/plot_data/anti_parallel_regime_distribution.csv"
+      ],
+      "source_files": [
+        "external_baselines/results/data360a_tdir_regime_diagnostic"
+      ],
+      "reason": "",
+      "notes": "Shows anti-parallel remains a broad failure regime rather than a single-bucket issue."
+    },
+    {
+      "figure_path": "thesis/final_assets/figures/diagnostics/final360i_j_k_l_validation_compare.png",
+      "figure_name": "final360i_j_k_l_validation_compare",
+      "status": "exported",
+      "plot_data_files": [
+        "thesis/final_assets/plot_data/final360i_j_k_l_validation_compare.csv"
+      ],
+      "source_files": [
+        "external_baselines/results/data360a_tdir_regime_diagnostic"
+      ],
+      "reason": "",
+      "notes": "Validation-only comparison because standalone J/K/L test json files are unavailable."
+    },
+    {
+      "figure_path": "thesis/final_assets/figures/diagnostics/final360i_vs_seq360b_bucket_compare.png",
+      "figure_name": "final360i_vs_seq360b_bucket_compare",
+      "status": "exported",
+      "plot_data_files": [
+        "thesis/final_assets/plot_data/final360i_vs_seq360b_bucket_compare.csv"
+      ],
+      "source_files": [
+        "external_baselines/results/data360a_tdir_regime_diagnostic"
+      ],
+      "reason": "",
+      "notes": "Shows SEQ360B mainly changes scale/path behavior rather than direction error."
+    },
+    {
+      "figure_path": "thesis/final_assets/figures/matching_geometry/thesis360_cross_image_interaction_sample01_normal_mountains.png",
+      "figure_name": "thesis360_cross_image_interaction_sample01_normal_mountains",
+      "status": "unavailable",
+      "plot_data_files": [
+        "thesis/final_assets/plot_data/thesis360_cross_image_interaction_sample01_normal_mountains.json"
+      ],
+      "source_files": [
+        "checkpoints/FINAL360I_struct360b_final/seed0/best_val.pt",
+        "external_baselines/results/dset2c_360dvo_canonical/pair_manifest_val.jsonl"
+      ],
+      "reason": "Current THESIS360 assets retain figure images and metadata, but not the raw token-level matrices or debug tensors required for plot-data reconstruction without rerunning eval-only forward.",
+      "notes": "Eval-only token-level relation heatmaps derived from real fine-stage tokens; this is not explicit keypoint matching. THESIS360 eval-only supplement."
+    },
+    {
+      "figure_path": "thesis/final_assets/figures/matching_geometry/thesis360_cross_image_interaction_sample02_normal_downhill.png",
+      "figure_name": "thesis360_cross_image_interaction_sample02_normal_downhill",
+      "status": "unavailable",
+      "plot_data_files": [
+        "thesis/final_assets/plot_data/thesis360_cross_image_interaction_sample02_normal_downhill.json"
+      ],
+      "source_files": [
+        "checkpoints/FINAL360I_struct360b_final/seed0/best_val.pt",
+        "external_baselines/results/dset2c_360dvo_canonical/pair_manifest_val.jsonl"
+      ],
+      "reason": "Current THESIS360 assets retain figure images and metadata, but not the raw token-level matrices or debug tensors required for plot-data reconstruction without rerunning eval-only forward.",
+      "notes": "Eval-only token-level relation heatmaps derived from real fine-stage tokens; this is not explicit keypoint matching. THESIS360 eval-only supplement."
+    },
+    {
+      "figure_path": "thesis/final_assets/figures/matching_geometry/thesis360_cross_image_interaction_sample03_scale_path_k5.png",
+      "figure_name": "thesis360_cross_image_interaction_sample03_scale_path_k5",
+      "status": "unavailable",
+      "plot_data_files": [
+        "thesis/final_assets/plot_data/thesis360_cross_image_interaction_sample03_scale_path_k5.json"
+      ],
+      "source_files": [
+        "checkpoints/FINAL360I_struct360b_final/seed0/best_val.pt",
+        "external_baselines/results/dset2c_360dvo_canonical/pair_manifest_val.jsonl"
+      ],
+      "reason": "Current THESIS360 assets retain figure images and metadata, but not the raw token-level matrices or debug tensors required for plot-data reconstruction without rerunning eval-only forward.",
+      "notes": "Eval-only token-level relation heatmaps derived from real fine-stage tokens; this is not explicit keypoint matching. THESIS360 eval-only supplement."
+    },
+    {
+      "figure_path": "thesis/final_assets/figures/matching_geometry/thesis360_residual_gate_diagnostic.png",
+      "figure_name": "thesis360_residual_gate_diagnostic",
+      "status": "unavailable",
+      "plot_data_files": [
+        "thesis/final_assets/plot_data/thesis360_residual_gate_diagnostic.json"
+      ],
+      "source_files": [
+        "checkpoints/FINAL360I_struct360b_final/seed0/best_val.pt",
+        "external_baselines/results/dset2c_360dvo_canonical/pair_manifest_val.jsonl"
+      ],
+      "reason": "Current THESIS360 assets retain figure images and metadata, but not the raw token-level matrices or debug tensors required for plot-data reconstruction without rerunning eval-only forward.",
+      "notes": "Shows real fine-gate and residual-gate responses plus applied residual update magnitudes. THESIS360 eval-only supplement."
+    },
+    {
+      "figure_path": "thesis/final_assets/figures/matching_geometry/thesis360_coarse_final_pose_diagnostic.png",
+      "figure_name": "thesis360_coarse_final_pose_diagnostic",
+      "status": "unavailable",
+      "plot_data_files": [
+        "thesis/final_assets/plot_data/thesis360_coarse_final_pose_diagnostic.json"
+      ],
+      "source_files": [
+        "checkpoints/FINAL360I_struct360b_final/seed0/best_val.pt",
+        "external_baselines/results/dset2c_360dvo_canonical/pair_manifest_val.jsonl"
+      ],
+      "reason": "Current THESIS360 assets retain figure images and metadata, but not the raw token-level matrices or debug tensors required for plot-data reconstruction without rerunning eval-only forward.",
+      "notes": "Compares coarse and final pose errors against GT on fixed eval-only samples. THESIS360 eval-only supplement."
+    },
+    {
+      "figure_path": "thesis/final_assets/figures/matching_geometry/thesis360_token_layout_visualization.png",
+      "figure_name": "thesis360_token_layout_visualization",
+      "status": "unavailable",
+      "plot_data_files": [
+        "thesis/final_assets/plot_data/thesis360_token_layout_visualization.json"
+      ],
+      "source_files": [
+        "checkpoints/FINAL360I_struct360b_final/seed0/best_val.pt",
+        "external_baselines/results/dset2c_360dvo_canonical/pair_manifest_val.jsonl"
+      ],
+      "reason": "Current THESIS360 assets retain figure images and metadata, but not the raw token-level matrices or debug tensors required for plot-data reconstruction without rerunning eval-only forward.",
+      "notes": "Visualizes actual coarse and fine spherical token locations in ERP coordinates. THESIS360 eval-only supplement."
+    }
+  ],
+  "unavailable_plot_data_file": "thesis/final_assets/plot_data/unavailable_plot_data.json"
+}

@@ -1,0 +1,24 @@
+# FINAL360M overnight watchdog final
+
+- watchdog started: `true`
+- watchdog pid: `19057`
+- monitored training pid: `18450`
+- monitoring interval sec: `900`
+- process alive at start: `true`
+- process alive at end: `false`
+- latest epoch: `20`
+- latest update: `None`
+- recent loss finite: `True`
+- recent grad finite: `None`
+- nonfinite detected: `false`
+- disk free min: `7.81 GiB`
+- low disk warning: `false`
+- critical stop executed: `false`
+- stop reason: `None`
+- best_full_val.pt exists: `true`
+- metrics_val generated: `true`
+- metrics_test generated: `true`
+- reports written: `true`
+- metrics modified: `false`
+- checkpoints deleted: `false`
+- recommended next action: `final_evaluate`

@@ -1,0 +1,23 @@
+{
+  "watchdog_started": true,
+  "watchdog_pid": 19057,
+  "monitored_training_pid": 18450,
+  "monitoring_interval_sec": 900,
+  "process_alive_at_start": true,
+  "process_alive_at_end": false,
+  "latest_epoch": 20,
+  "latest_update": null,
+  "recent_loss_finite": true,
+  "recent_grad_finite": null,
+  "nonfinite_detected": false,
+  "disk_free_min_bytes": 8383193088,
+  "disk_free_min_human": "7.81 GiB",
+  "low_disk_warning": false,
+  "critical_stop_executed": false,
+  "stop_reason": null,
+  "stop_method": null,
+  "best_full_val_exists": true,
+  "metrics_val_generated": true,
+  "metrics_test_generated": true,
+  "recommended_next_action": "final_evaluate"
+}

@@ -24,11 +24,13 @@
 
 ## Kept Mainline Files
 
-- `tools/final360i_retrain_and_select.py`
-- `tools/train360e_sequence_trajectory_export_and_ate_eval.py`
+- `tools/train_final360m_fulltrain_thesis_main.py`
+- `tools/final360m_trajectory_thesis_refresh.py`
+- `tools/odom360a_lightweight_trajectory_fusion.py`
+- `tools/odom360b_local_pose_graph_kstep.py`
 - `tools/train_struct360b_match_free_coarse_to_fine.py`
 - `models/struct360b_match_free_coarse_to_fine.py`
-- `configs/final360i_struct360b_final.yaml`
+- `configs/final360m_fulltrain_struct360b_thesis_main_guarded.yaml`
 - `configs/struct360b_match_free_coarse_to_fine.yaml`
 
 ## Kept Variant
@@ -39,8 +41,10 @@
 
 ## Visible Comparison Set
 
-- `FINAL360I`: current pair-level thesis main model
-- `TRAIN360E`: kept trajectory / ATE evaluation path for `FINAL360I`
+- `FINAL360M`: current full-train pair-level thesis main model
+- `FINAL360I`: subset-trained candidate only
+- `FINAL360M-ODOM360A`: recommended refreshed eval-only trajectory backend
+- `TRAIN360E`: old `FINAL360I`-based direct trajectory reference
 - `SEQ360B`: retained sequence-scale variant
 - `BASE360D`: official external baseline
 - `T57b`: legacy external reference

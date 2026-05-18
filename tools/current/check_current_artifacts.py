@@ -10,11 +10,13 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 REQUIRED = {
     "readme": "README.md",
     "current_mainline_doc": "CURRENT_MAINLINE.md",
-    "pair_main_config": "configs/final360i_struct360b_final.yaml",
+    "pair_main_config": "configs/final360m_fulltrain_struct360b_thesis_main_guarded.yaml",
     "pair_base_config": "configs/struct360b_match_free_coarse_to_fine.yaml",
     "seq360b_config": "configs/seq360b_lightweight_scale_smoothing.yaml",
-    "pair_main_tool": "tools/final360i_retrain_and_select.py",
-    "trajectory_eval_tool": "tools/train360e_sequence_trajectory_export_and_ate_eval.py",
+    "pair_main_tool": "tools/train_final360m_fulltrain_thesis_main.py",
+    "trajectory_eval_tool": "tools/final360m_trajectory_thesis_refresh.py",
+    "odom360a_eval_tool": "tools/odom360a_lightweight_trajectory_fusion.py",
+    "odom360b_eval_tool": "tools/odom360b_local_pose_graph_kstep.py",
     "struct360b_tool": "tools/train_struct360b_match_free_coarse_to_fine.py",
     "seq360b_tool": "tools/train_seq360b_lightweight_scale_smoothing.py",
     "pair_main_model": "models/struct360b_match_free_coarse_to_fine.py",
@@ -22,7 +24,8 @@ REQUIRED = {
     "core_model": "train360/core/model.py",
     "manifest_dataset": "datasets/dset2c_manifest_dataset.py",
     "sequence_dataset": "datasets/dset2c_sequence_clip_dataset.py",
-    "final360i_report": "reports/FINAL360I_metrics_test.json",
+    "final360m_report": "reports/FINAL360M_metrics_test.json",
+    "final360m_trajectory_report": "reports/FINAL360M_trajectory_metrics_test.json",
     "train360e_report": "reports/TRAIN360E_metrics_test.json",
     "seq360b_report": "reports/SEQ360B_metrics_test.json",
     "base360d_report": "reports/BASE360D_component_metric_alignment.md",
@@ -32,6 +35,8 @@ REQUIRED = {
 OPTIONAL = {
     "seq360a_status_summary": "reports/SEQ360A_status_summary.md",
     "struct360c_status_summary": "reports/STRUCT360C_status_summary.md",
+    "final360i_subset_candidate_report": "reports/FINAL360I_metrics_test.json",
+    "final360m_mainline_promotion_report": "reports/CURRENT_MAINLINE_FINAL360M_promotion.md",
 }
 
 INTENTIONALLY_OMITTED_AFTER_CLEANUP = {
@@ -62,6 +67,11 @@ def main() -> None:
             "exists": path.exists(),
             "status": "intentionally_omitted_after_cleanup" if not path.exists() else "present",
         }
+    payload["mainline_status"] = {
+        "pair_main_model": "FINAL360M_fulltrain_struct360b_thesis_main_guarded",
+        "old_final360i_status": "subset-trained candidate only",
+        "trajectory_backend_refresh": "FINAL360M-ODOM360A recommended, but weaker than old subset-model-based ODOM360A",
+    }
     print(json.dumps(payload, ensure_ascii=False, indent=2))
 
 

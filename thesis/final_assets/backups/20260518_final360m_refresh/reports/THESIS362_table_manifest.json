@@ -1,0 +1,58 @@
+[
+  {
+    "file_path": "thesis/final_assets/tables/final_main_pair_results.md",
+    "title_zh": "最终 pair-level 主结果表",
+    "title_en": "Final pair-level main results",
+    "source_files": [
+      "reports/RESULTS360_main_results_table.json",
+      "reports/TRAIN360E_metrics_test.json",
+      "reports/RESULTS360_main_results_table.json",
+      "reports/TRAIN360E_metrics_test.json",
+      "reports/FINAL360I_metrics_test.json",
+      "reports/BASE360D_metrics_test.json",
+      "reports/RESULTS360_main_results_table.json"
+    ],
+    "recommended_location": "thesis_main",
+    "notes": "Includes BASE360D caveat and retained-source missing-value disclosure."
+  },
+  {
+    "file_path": "thesis/final_assets/tables/final_ablation_results.md",
+    "title_zh": "大模块结构消融表",
+    "title_en": "Structural ablation table",
+    "source_files": [
+      "reports/ABLDVO2_metrics_test.json",
+      "reports/ABLDVO3_metrics_test.json"
+    ],
+    "recommended_location": "thesis_main",
+    "notes": "Merged retained ABLDVO2 + ABLDVO3 results."
+  },
+  {
+    "file_path": "thesis/final_assets/tables/final_trajectory_results.md",
+    "title_zh": "trajectory-level 结果表",
+    "title_en": "Trajectory-level results",
+    "source_files": [
+      "reports/TRAIN360E_metrics_test.json",
+      "reports/SEQ360B_trajectory_metrics_test.json",
+      "external_baselines/results/odom360a_lightweight_trajectory_fusion/test",
+      "external_baselines/results/odom360b_local_pose_graph_kstep/test",
+      "reports/BASE360D_metrics_test.json"
+    ],
+    "recommended_location": "thesis_main",
+    "notes": "Includes export-derived ODOM360A/B metrics with provenance notes."
+  },
+  {
+    "file_path": "thesis/final_assets/tables/final_negative_results_appendix.md",
+    "title_zh": "负结果与附录表",
+    "title_en": "Negative and appendix results",
+    "source_files": [
+      "checkpoints/FINAL360J_tdir_loss_reweight/train_log.jsonl",
+      "checkpoints/FINAL360K_conservative_observability_weighting/train_log.jsonl",
+      "checkpoints/FINAL360L_translation_head_factorization/train_log.jsonl",
+      "reports/SEQ360A_status_summary.md",
+      "reports/STRUCT360C_status_summary.md",
+      "external_baselines/results/data360a_tdir_regime_diagnostic"
+    ],
+    "recommended_location": "thesis_appendix",
+    "notes": "Validation-only negative branch summary plus diagnostic statuses."
+  }
+]

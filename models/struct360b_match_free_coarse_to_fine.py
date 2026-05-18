@@ -135,12 +135,16 @@ class PoseConditionedFineTokenRefiner(nn.Module):
         tokens_a: Tokens,
         tokens_b: Tokens,
         pose_embed: torch.Tensor,
+        *,
+        return_debug: bool = False,
     ) -> Dict[str, torch.Tensor]:
         pose_token = self.pose_to_token(pose_embed).unsqueeze(1)
         xa = tokens_a.feat.float() + self.pos_enc(tokens_a.bearing) + pose_token
         xb = tokens_b.feat.float() + self.pos_enc(tokens_b.bearing) + pose_token
         xa = self._apply_film(self.norm_a(xa), self.pose_to_film_a(pose_embed))
         xb = self._apply_film(self.norm_b(xb), self.pose_to_film_b(pose_embed))
+        xa_before_cross = xa
+        xb_before_cross = xb
 
         ab_ctx, _ = self.cross_attn_ab(xa, xb, xb, need_weights=False)
         ba_ctx, _ = self.cross_attn_ba(xb, xa, xa, need_weights=False)
@@ -154,12 +158,24 @@ class PoseConditionedFineTokenRefiner(nn.Module):
         pooled_a = self._pool_stats(xa)
         pooled_b = self._pool_stats(xb)
         pooled_cross = self._pool_stats(0.5 * (ab_ctx + ba_ctx))
-        return {
+        out = {
             "tokens_a": xa,
             "tokens_b": xb,
             "pair_summary": torch.cat([pooled_a, pooled_b, pooled_cross, pose_embed], dim=-1),
             "fine_gate": gate.view(-1),
         }
+        if return_debug:
+            out["debug_visuals"] = {
+                "tokens_a_before_cross": xa_before_cross,
+                "tokens_b_before_cross": xb_before_cross,
+                "tokens_a_after_refine": xa,
+                "tokens_b_after_refine": xb,
+                "cross_context_ab": ab_ctx,
+                "cross_context_ba": ba_ctx,
+                "pose_embed": pose_embed,
+                "fine_gate": gate.view(-1),
+            }
+        return out
 
 
 class FineResidualPoseHead(nn.Module):
@@ -289,6 +305,7 @@ class STRUCT360BMatchFreeCoarseToFineModel(PanoramaRelPoseModel):
         *,
         enable_depth_fusion: Optional[bool] = None,
         dt_world: Optional[torch.Tensor] = None,
+        return_debug: bool = False,
     ) -> Tuple[torch.Tensor, torch.Tensor, Dict[str, torch.Tensor]]:
         del enable_depth_fusion  # STRUCT360B keeps a pure match-free pose refinement path.
         tokens = self.module2(IA, IB)
@@ -333,7 +350,7 @@ class STRUCT360BMatchFreeCoarseToFineModel(PanoramaRelPoseModel):
             out_c["log_tc_mag"],
             aux["coarse_pair_context"],
         )
-        refine_out = self.struct360b_fine_refiner(tok_a_f, tok_b_f, pose_embed)
+        refine_out = self.struct360b_fine_refiner(tok_a_f, tok_b_f, pose_embed, return_debug=return_debug)
         residual_out = self.struct360b_residual_head(refine_out["pair_summary"])
 
         gate = residual_out["residual_gate"].float()
@@ -385,6 +402,25 @@ class STRUCT360BMatchFreeCoarseToFineModel(PanoramaRelPoseModel):
         aux["tdir_after_residual"] = tdir_out_final
         aux["tmag_after_residual_unbiased"] = tmag_final_unbiased
         aux["log_tmag_after_residual_unbiased"] = log_tmag_final_unbiased
+        if return_debug:
+            aux["debug_visuals"] = {
+                "fine_refiner": refine_out.get("debug_visuals", {}),
+                "coarse_pair_context": aux["coarse_pair_context"],
+                "coarse_rotation": out_c["Rc"],
+                "coarse_tdir_out": coarse_tdir_out,
+                "coarse_log_tmag": coarse_log_tmag_eval,
+                "final_rotation": R_final,
+                "final_tdir_out": tdir_out_final,
+                "final_log_tmag": log_tmag_final,
+                "bearingA_f": tok_a_f.bearing,
+                "bearingB_f": tok_b_f.bearing,
+                "bearingA_c": tok_a_c.bearing,
+                "bearingB_c": tok_b_c.bearing,
+                "residual_gate": gate,
+                "delta_rot_vec": delta_rot_applied,
+                "delta_tdir_vec": delta_tdir_applied,
+                "delta_log_tmag": delta_log_tmag_applied,
+            }
 
         _set_transform_outputs(aux, R_final, tdir_local_final, tmag_final, log_tmag_final)
         _apply_dt_bucket_scale_anchor(self.cfg, aux, dt_world=dt_world)

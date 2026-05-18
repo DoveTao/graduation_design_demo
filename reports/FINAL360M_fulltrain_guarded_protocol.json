@@ -1,0 +1,39 @@
+{
+  "task_name": "FINAL360M_fulltrain_struct360b_thesis_main_guarded",
+  "experiment_name": "FINAL360M_fulltrain_struct360b_thesis_main_guarded",
+  "full_retrain_executed": true,
+  "wall_time_budget_hours": 8.0,
+  "wall_time_used_sec": 19286.46299481392,
+  "full_train_manifest_used": true,
+  "train_subset_disabled": true,
+  "train_sample_count": 12154,
+  "val_sample_count": 5342,
+  "test_sample_count": 5062,
+  "epochs_requested": 20,
+  "epochs_completed": 20,
+  "best_epoch": 10,
+  "selected_by_full_val": true,
+  "test_used_for_selection": false,
+  "init_checkpoint": "/home/dovetao/graduation_design_demo/checkpoints/TRAIN360D_observability_kstep_scale/best_val.pt",
+  "selected_checkpoint": "/home/dovetao/graduation_design_demo/checkpoints/FINAL360M_fulltrain_struct360b_thesis_main_guarded/best_full_val.pt",
+  "classification": "thesis_main_model",
+  "thesis_main_model_recommendation": true,
+  "current_branch": "research/abldvo3-single-stage-pose-regression-ablation",
+  "git_commit": "fcf91d14ee4c6bb9e5087ae609ddcef13de0d7f6",
+  "warnings": [],
+  "system_info": {
+    "device": "cuda",
+    "cuda_available": true,
+    "torch_version": "2.9.1+cu128",
+    "gpu_name": "NVIDIA GeForce RTX 3060 Laptop GPU"
+  },
+  "manifest_line_counts": {
+    "train": 12154,
+    "val": 5342,
+    "test": 5062
+  },
+  "mini_val_info": {
+    "subset_count": 1024,
+    "subset_seed": 0
+  }
+}

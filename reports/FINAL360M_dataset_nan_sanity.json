@@ -1,0 +1,22 @@
+{
+  "config": "configs/final360m_fulltrain_struct360b_thesis_main.yaml",
+  "train_sample_count": 12154,
+  "val_sample_count": 5342,
+  "test_sample_count": 5062,
+  "bad_samples_detected": false,
+  "bad_sample_count": 0,
+  "bad_sample_examples": [],
+  "image_finite": true,
+  "R_gt_finite": true,
+  "t_gt_finite": true,
+  "tdir_gt_finite": true,
+  "tmag_gt_finite": true,
+  "dt_world_finite": true,
+  "k_finite": true,
+  "tmag_gt_min": 2.2487470105565646e-09,
+  "tmag_gt_max": 6.05706417021006,
+  "tmag_gt_median": 0.7540582156494824,
+  "zero_tmag_count": 0,
+  "negative_tmag_count": 0,
+  "nan_inf_count": 0
+}

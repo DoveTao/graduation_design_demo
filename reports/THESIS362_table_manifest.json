@@ -1,0 +1,24 @@
+[
+  {
+    "file_path": "thesis/final_assets/tables/final_main_pair_results.md",
+    "title_zh": "FINAL360M 刷新的 pair-level 主结果表",
+    "title_en": "FINAL360M-refreshed pair-level main results",
+    "source_files": [
+      "reports/FINAL360M_metrics_test.json",
+      "reports/FINAL360I_metrics_test.json",
+      "reports/RESULTS360_main_results_table.json"
+    ],
+    "notes": "FINAL360M is the thesis main model because it is the only protocol-qualified full-train result; old FINAL360I is subset-trained candidate only."
+  },
+  {
+    "file_path": "thesis/final_assets/tables/final_trajectory_results.md",
+    "title_zh": "FINAL360M 刷新的 trajectory-level 结果表",
+    "title_en": "FINAL360M-refreshed trajectory results",
+    "source_files": [
+      "reports/FINAL360M_trajectory_metrics_test.json",
+      "reports/TRAIN360E_metrics_test.json",
+      "reports/SEQ360B_trajectory_metrics_test.json"
+    ],
+    "notes": "FINAL360M-ODOM360A improves FINAL360M-direct, but the refreshed FINAL360M backend remains weaker than the old subset-model-based ODOM360A reference."
+  }
+]

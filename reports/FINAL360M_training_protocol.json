@@ -1,0 +1,19 @@
+{
+  "task_name": "FINAL360M_fulltrain_struct360b_thesis_main",
+  "experiment_name": "FINAL360M_fulltrain_struct360b_thesis_main",
+  "status": "running",
+  "started_at": "2026-05-18 02:23:56",
+  "full_retrain_executed": false,
+  "full_train_manifest_used": true,
+  "train_subset_disabled": true,
+  "train_sample_count": 12154,
+  "val_sample_count": 5342,
+  "test_sample_count": 5062,
+  "epochs_requested": 20,
+  "epochs_completed": 0,
+  "current_branch": "research/abldvo3-single-stage-pose-regression-ablation",
+  "git_commit": "fcf91d14ee4c6bb9e5087ae609ddcef13de0d7f6",
+  "warnings": [
+    "disk free is low: 4.94 GiB"
+  ]
+}

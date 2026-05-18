@@ -1,0 +1,32 @@
+[
+  {
+    "file_path": "thesis/final_assets/figures/main_results/pair_level_main_results_bar.png",
+    "title_zh": "FINAL360M pair-level 主结果图",
+    "title_en": "FINAL360M pair-level main result figure",
+    "source_files": [
+      "reports/FINAL360M_metrics_test.json",
+      "reports/FINAL360I_metrics_test.json"
+    ],
+    "notes": "Used to support the protocol-driven promotion from old FINAL360I to FINAL360M; not a claim of uniform metric dominance."
+  },
+  {
+    "file_path": "thesis/final_assets/figures/trajectories/trajectory_metric_comparison.png",
+    "title_zh": "FINAL360M trajectory 指标对比图",
+    "title_en": "FINAL360M trajectory metric comparison",
+    "source_files": [
+      "reports/FINAL360M_trajectory_metrics_test.json"
+    ],
+    "notes": "Shows that FINAL360M backend fusion improves FINAL360M-direct but does not beat the old subset-model-based ODOM360A reference."
+  },
+  {
+    "file_path": "thesis/final_assets/figures/trajectories/trajectory_overlay_ridge_to_lake.png",
+    "title_zh": "FINAL360M trajectory overlay 图",
+    "title_en": "FINAL360M trajectory overlay",
+    "source_files": [
+      "external_baselines/results/final360m_odom360a_lightweight_trajectory_fusion/test/direct_composition/ridge_to_lake/pred_tum.txt",
+      "external_baselines/results/final360m_odom360a_lightweight_trajectory_fusion/test/local_window_pose_fusion/ridge_to_lake/pred_tum.txt",
+      "external_baselines/results/final360m_odom360b_local_pose_graph_kstep/test/pg_k3/ridge_to_lake/pred_tum.txt"
+    ],
+    "notes": "Representative qualitative figure for the claim that backend fusion helps but does not fully resolve trajectory-shape error."
+  }
+]

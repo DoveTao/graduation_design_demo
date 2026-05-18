@@ -1,0 +1,85 @@
+{
+  "task_name": "FINAL360M_nan_root_cause_and_guarded_restart",
+  "corrupt_final360m_run_stopped": true,
+  "stop_method": "already_dead",
+  "corrupt_run_archived": true,
+  "original_checkpoint_dir_preserved": true,
+  "nan_root_cause_identified": true,
+  "suspected_cause": "AMP mixed-precision path caused nonfinite gradients on the very first update; FP32 path remained finite",
+  "dataset_finite_sanity_passed": true,
+  "bad_samples_found": false,
+  "fp32_single_batch_finite": true,
+  "amp_single_batch_finite": false,
+  "loss_finite": true,
+  "grad_finite": false,
+  "first_nan_batch_identified": true,
+  "guarded_smoke_training_executed": true,
+  "guarded_smoke_updates": 100,
+  "guarded_smoke_finite": true,
+  "guarded_full_train_restarted": true,
+  "new_pid": 18450,
+  "new_log": "logs/FINAL360M_fulltrain_guarded_20260518_031947.log",
+  "new_checkpoint_dir": "checkpoints/FINAL360M_fulltrain_struct360b_thesis_main_guarded",
+  "train_subset_disabled": true,
+  "train_sample_count": 12154,
+  "val_sample_count": 5342,
+  "test_sample_count": 5062,
+  "disk_free_before_restart": "8.6G",
+  "metrics_modified": false,
+  "checkpoints_committed": false,
+  "current_artifact_check": "pass",
+  "py_compile": "pass",
+  "config_audit": {
+    "original_config": "configs/final360m_fulltrain_struct360b_thesis_main.yaml",
+    "guarded_config": "configs/final360m_fulltrain_struct360b_thesis_main_guarded.yaml",
+    "original_amp": true,
+    "guarded_amp": false,
+    "original_tmag_epsilon": 1e-6,
+    "guarded_tmag_epsilon": 1e-3,
+    "original_coarse_lr": 1e-5,
+    "guarded_coarse_lr": 5e-6,
+    "original_fine_lr": 1e-4,
+    "guarded_fine_lr": 1e-5,
+    "train_subset_max_original": null,
+    "use_train_subset_original": false
+  },
+  "dataset_sanity_report": "reports/FINAL360M_dataset_nan_sanity.json",
+  "single_batch_sanity": {
+    "fp32": {
+      "forward_finite": true,
+      "loss_finite": true,
+      "grad_finite": true
+    },
+    "amp": {
+      "forward_finite": true,
+      "loss_finite": true,
+      "grad_finite": false
+    }
+  },
+  "first_nan_batch": {
+    "first_nan_batch_index": 0,
+    "loss_component_that_first_became_nan": "gradient_nonfinite",
+    "sequence": [
+      "city_driving",
+      "city_driving"
+    ],
+    "pair_index": [
+      12012,
+      11967
+    ],
+    "k": [
+      5,
+      3
+    ],
+    "dt_world": [
+      0.5,
+      0.30000000000000004
+    ],
+    "tmag_gt": [
+      3.876643180847168,
+      2.4688963890075684
+    ]
+  },
+  "guarded_protocol": "reports/FINAL360M_fulltrain_guarded_protocol.json",
+  "recommended_next_task": "FINAL360M_guarded_training_progress_audit"
+}

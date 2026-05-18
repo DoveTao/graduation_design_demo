@@ -1,0 +1,13 @@
+{
+  "task_name": "FINAL360M_fulltrain_struct360b_thesis_main_guarded",
+  "selected_checkpoint": "/home/dovetao/graduation_design_demo/checkpoints/FINAL360M_fulltrain_struct360b_thesis_main_guarded/best_full_val.pt",
+  "val_metrics_source": "reports/FINAL360M_fulltrain_guarded_metrics_val.json",
+  "test_metrics_source": "reports/FINAL360M_fulltrain_guarded_metrics_test.json",
+  "selected_by_full_val": true,
+  "test_used_for_selection": false,
+  "full_train_manifest": "external_baselines/results/dset2c_360dvo_canonical/pair_manifest_train.jsonl",
+  "old_final360i_subset_candidate": "reports/FINAL360I_metrics_test.json",
+  "train360d_source": "derived from reports/FINAL360I_model_selection_table.json baseline_recap",
+  "train360h_source": "derived from reports/FINAL360I_model_selection_table.json baseline_recap",
+  "base360d_source": "reports/BASE360D_metrics_test.json"
+}

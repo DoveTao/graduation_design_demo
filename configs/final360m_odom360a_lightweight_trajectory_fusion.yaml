@@ -1,0 +1,142 @@
+task_name: FINAL360M_ODOM360A_lightweight_trajectory_fusion
+
+prechecks:
+  expected_branches:
+    - main
+    - research/odom360a-lightweight-trajectory-fusion
+    - research/abldvo3-single-stage-pose-regression-ablation
+  require_expected_branch: false
+  require_clean_worktree: false
+  min_disk_free_gb: 5.0
+  required_env: pytorch
+
+inputs:
+  checkpoint: checkpoints/FINAL360M_fulltrain_struct360b_thesis_main_guarded/best_full_val.pt
+  train_manifest: external_baselines/results/dset2c_360dvo_canonical/pair_manifest_train.jsonl
+  val_manifest: external_baselines/results/dset2c_360dvo_canonical/pair_manifest_val.jsonl
+  test_manifest: external_baselines/results/dset2c_360dvo_canonical/pair_manifest_test.jsonl
+  final360i_metrics_test: reports/FINAL360M_metrics_test.json
+  train360e_metrics_test: reports/TRAIN360E_metrics_test.json
+  seq360b_metrics_test: reports/SEQ360B_metrics_test.json
+  seq360b_trajectory_metrics_test: reports/SEQ360B_trajectory_metrics_test.json
+  results_table: reports/RESULTS360_main_results_table.md
+  results_narrative: reports/RESULTS360_experiment_narrative.md
+  current_mainline: CURRENT_MAINLINE.md
+  delivery_handoff: DELIVERY_HANDOFF.md
+  train360e_report: reports/TRAIN360E_sequence_trajectory_export_and_ATE_eval.md
+  seq360b_report: reports/SEQ360B_train_lightweight_scale_smoothing_head.md
+  data360a_pair_rows_root: external_baselines/results/data360a_tdir_regime_diagnostic
+
+outputs:
+  result_root: external_baselines/results/final360m_odom360a_lightweight_trajectory_fusion
+  report_path: reports/FINAL360M_ODOM360A_lightweight_trajectory_fusion.md
+  summary_path: reports/FINAL360M_ODOM360A_vs_old_backends_summary.md
+  metrics_val_path: reports/FINAL360M_ODOM360A_metrics_val.json
+  metrics_test_path: reports/FINAL360M_ODOM360A_metrics_test.json
+  model_selection_table_path: reports/FINAL360M_ODOM360A_model_selection_table.json
+  per_sequence_metrics_path: reports/FINAL360M_ODOM360A_per_sequence_metrics.json
+  ablation_path: reports/FINAL360M_ODOM360A_fusion_method_ablation.json
+  metric_source_manifest_path: reports/FINAL360M_ODOM360A_metric_source_manifest.json
+
+data:
+  image_hw: [384, 768]
+  eval_batch_size: 8
+  num_workers: 4
+  require_paths: true
+  skip_invalid: true
+  tmag_epsilon: 1.0e-6
+  export_all_pairs_for_k: [1, 2, 3]
+  reuse_cache_if_present: true
+
+evaluation:
+  require_direct_reproduction_match: false
+  selection_score:
+    ate_se3_weight: 1.0
+    ate_sim3_weight: 2.0
+    path_ratio_weight: 30.0
+  direct_reproduction_tolerance:
+    ate_none_rmse: 1.0
+    ate_se3_rmse: 1.0
+    ate_sim3_rmse: 0.5
+    trajectory_path_ratio: 0.05
+
+search:
+  scale_only:
+    enabled: true
+    methods:
+      - smooth_mode: ema
+        ema_alpha: 0.2
+      - smooth_mode: ema
+        ema_alpha: 0.4
+      - smooth_mode: ema
+        ema_alpha: 0.6
+      - smooth_mode: median
+        window: 3
+      - smooth_mode: median
+        window: 5
+      - smooth_mode: median
+        window: 7
+  rotation_smoothing:
+    enabled: true
+    methods:
+      - smooth_mode: ema
+        strength: 0.1
+      - smooth_mode: ema
+        strength: 0.2
+      - smooth_mode: ema
+        strength: 0.3
+      - smooth_mode: window
+        window: 3
+        strength: 0.2
+      - smooth_mode: window
+        window: 5
+        strength: 0.2
+  tdir_outlier_suppression:
+    enabled: true
+    methods:
+      - window: 3
+        angular_threshold_deg: 90.0
+        replacement_strength: 0.25
+      - window: 3
+        angular_threshold_deg: 120.0
+        replacement_strength: 0.5
+      - window: 5
+        angular_threshold_deg: 120.0
+        replacement_strength: 0.25
+      - window: 5
+        angular_threshold_deg: 150.0
+        replacement_strength: 0.5
+  local_window_pose_fusion:
+    enabled: true
+    methods:
+      - use_scale_pre_smoothing: ema
+        scale_ema_alpha: 0.4
+        use_rotation_pre_smoothing: ema
+        rotation_strength: 0.2
+        use_tdir_pre_suppression: true
+        tdir_window: 3
+        tdir_threshold_deg: 120.0
+        tdir_replacement_strength: 0.25
+        k_max: 2
+        k_decay: 0.7
+      - use_scale_pre_smoothing: ema
+        scale_ema_alpha: 0.4
+        use_rotation_pre_smoothing: ema
+        rotation_strength: 0.2
+        use_tdir_pre_suppression: true
+        tdir_window: 5
+        tdir_threshold_deg: 120.0
+        tdir_replacement_strength: 0.5
+        k_max: 3
+        k_decay: 0.6
+      - use_scale_pre_smoothing: median
+        scale_window: 5
+        use_rotation_pre_smoothing: window
+        rotation_window: 5
+        rotation_strength: 0.2
+        use_tdir_pre_suppression: true
+        tdir_window: 5
+        tdir_threshold_deg: 150.0
+        tdir_replacement_strength: 0.5
+        k_max: 3
+        k_decay: 0.5

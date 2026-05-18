@@ -1,0 +1,58 @@
+{
+  "task_name": "FINAL360M_guarded_training_progress_audit",
+  "progress_audit_executed": true,
+  "final360m_guarded_process_alive": false,
+  "process_alive": false,
+  "elapsed_time": "completed",
+  "current_epoch": 20,
+  "current_update": null,
+  "loss_finite_recently": true,
+  "grad_finite_recently": null,
+  "nonfinite_after_restart": false,
+  "current_disk_free": "7.9G",
+  "full_val_executed": true,
+  "best_full_val_exists": true,
+  "test_executed": true,
+  "training_status": "completed",
+  "recommended_action": "final_evaluate",
+  "checkpoint_dir": "checkpoints/FINAL360M_fulltrain_struct360b_thesis_main_guarded",
+  "log_path": "logs/FINAL360M_fulltrain_guarded_20260518_031947.log",
+  "protocol_path": "reports/FINAL360M_fulltrain_guarded_protocol.json",
+  "checkpoint_dir_size": "719M",
+  "checkpoint_dir_contents": [
+    "best_full_val.pt",
+    "candidate_epoch_10.pt",
+    "candidate_epoch_15.pt",
+    "candidate_epoch_19.pt",
+    "config.yaml",
+    "last.pt",
+    "train_log.jsonl"
+  ],
+  "artifacts": {
+    "train_log_jsonl": true,
+    "last_pt": true,
+    "best_full_val_pt": true,
+    "candidate_epoch_pts": [
+      "candidate_epoch_10.pt",
+      "candidate_epoch_15.pt",
+      "candidate_epoch_19.pt"
+    ],
+    "guarded_metrics_val_json": true,
+    "guarded_metrics_test_json": true,
+    "guarded_model_selection_table_json": true,
+    "guarded_protocol_json": true
+  },
+  "latest_rows": {
+    "latest_epoch": 20,
+    "latest_update": null,
+    "latest_train_loss_total": 0.19977737911710214,
+    "latest_loss_rot": 0.01935336256374617,
+    "latest_loss_tdir": 0.0024645835187553774,
+    "latest_loss_tmag": 0.18615497406691844,
+    "latest_grad_norm": null,
+    "nonfinite_count": 0,
+    "train_nan_inf_count": 0,
+    "mini_val_score": 168.08821424095544,
+    "full_val_score": 166.32906043512162
+  }
+}

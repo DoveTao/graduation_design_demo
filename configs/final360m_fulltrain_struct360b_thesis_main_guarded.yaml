@@ -1,0 +1,146 @@
+task_name: FINAL360M_fulltrain_struct360b_thesis_main_guarded
+experiment_name: FINAL360M_fulltrain_struct360b_thesis_main_guarded
+
+prechecks:
+  expected_branches:
+    - research/final360i-full-retrain-thesis-main-result
+    - research/abldvo3-single-stage-pose-regression-ablation
+    - experiment/final360i-final-retrain-and-model-selection
+    - experiment/struct360b-match-free-coarse-to-fine-pose-refinement
+    - main
+  required_env: pytorch
+  min_disk_free_gb_warn: 5.0
+  expected_counts:
+    train: 12154
+    val: 5342
+    test: 5062
+
+inputs:
+  train_manifest: external_baselines/results/dset2c_360dvo_canonical/pair_manifest_train.jsonl
+  val_manifest: external_baselines/results/dset2c_360dvo_canonical/pair_manifest_val.jsonl
+  test_manifest: external_baselines/results/dset2c_360dvo_canonical/pair_manifest_test.jsonl
+  dataset_adapter: datasets/dset2c_manifest_dataset.py
+  init_checkpoint: checkpoints/TRAIN360D_observability_kstep_scale/best_val.pt
+  old_final360i_metrics_val: reports/FINAL360I_metrics_val.json
+  old_final360i_metrics_test: reports/FINAL360I_metrics_test.json
+  old_final360i_model_selection_table: reports/FINAL360I_model_selection_table.json
+  old_final360i_report: reports/FINAL360I_final_retrain_and_model_selection.md
+  old_final360i_audit_json: reports/AUDIT_FINAL360I_training_protocol_and_checkpoint_lineage.json
+  base360d_test_metrics: reports/BASE360D_metrics_test.json
+
+outputs:
+  checkpoint_dir: checkpoints/FINAL360M_fulltrain_struct360b_thesis_main_guarded
+  report_path: reports/FINAL360M_fulltrain_guarded_thesis_main.md
+  training_protocol_path: reports/FINAL360M_fulltrain_guarded_protocol.json
+  model_selection_table_path: reports/FINAL360M_fulltrain_guarded_model_selection_table.json
+  val_metrics_path: reports/FINAL360M_fulltrain_guarded_metrics_val.json
+  test_metrics_path: reports/FINAL360M_fulltrain_guarded_metrics_test.json
+  comparison_path: reports/FINAL360M_fulltrain_guarded_vs_FINAL360I_subset_candidate.md
+  metric_source_manifest_path: reports/FINAL360M_fulltrain_guarded_metric_source_manifest.json
+  blocker_or_partial_path: reports/FINAL360M_fulltrain_guarded_blocker_or_partial.md
+
+data:
+  image_hw: [384, 768]
+  tmag_epsilon: 1.0e-3
+  train_batch_size: 2
+  eval_batch_size: 8
+  num_workers: 4
+  train_subset_max: null
+  train_subset_count: null
+  use_train_subset: false
+  shuffle_train: true
+  require_paths: true
+  skip_invalid: true
+  mini_val_count: 1024
+  mini_val_seed: 0
+
+model:
+  strict_load_attempt: true
+  use_cuda_if_available: true
+  init_source: TRAIN360D
+  enable_depth_fusion: false
+  struct360b:
+    fine_heads: 4
+    fine_dropout: 0.05
+    fine_mlp_ratio: 2.0
+    refiner_gate_bias: -2.0
+    residual_hidden_dim: 256
+    delta_rot_scale: 0.08
+    delta_tdir_scale: 0.25
+    delta_log_tmag_scale: 0.35
+    residual_gate_bias: -2.5
+    residual_gate_max: 0.5
+    alpha: 0.25
+    beta: 0.25
+
+loss:
+  rot_weight: 1.0
+  tdir_weight: 1.0
+  tmag_weight: 0.5
+  scale_stability_weight: 0.1
+  tmag_loss_type: log_smooth_l1
+  coarse_aux_weight: 0.5
+  residual_reg_weight: 0.05
+  components:
+    enable_observability: true
+    enable_k_step_balancing: true
+    enable_scale_stabilization: true
+  k_step_balancing:
+    weight_k1: 1.0
+    weight_k2: 1.05
+    weight_k3: 1.0
+    weight_k5: 0.9
+  observability:
+    tmag_epsilon: 1.0e-3
+    near_zero_tmag: 0.02
+    low_tmag: 0.05
+    medium_tmag: 0.15
+    high_tmag: 0.4
+    min_weight: 0.2
+    max_weight: 2.0
+    k1_factor: 1.05
+    k2_factor: 1.0
+    k3_factor: 0.95
+    k5_factor: 0.85
+  scale_stability:
+    collapse_ratio: 0.1
+    explosion_ratio: 10.0
+    mean_log_bias_weight: 1.0
+
+training:
+  seed: 0
+  optimizer: AdamW
+  amp: false
+  grad_clip_norm: 1.0
+  abort_on_nonfinite_loss: true
+  abort_on_nonfinite_grad: true
+  epochs_requested: 20
+  max_epochs: 50
+  min_epochs_for_meaningful: 10
+  max_wall_time_hours: 8.0
+  resume_if_available: true
+  coarse_lr: 5.0e-6
+  fine_lr: 1.0e-5
+  warmup_coarse_lr: 0.0
+  warmup_fine_lr: 1.0e-5
+  warmup_epochs: 2
+  weight_decay: 1.0e-4
+  scheduler: cosine
+  min_lr: 1.0e-6
+
+validation:
+  mini_val_count: 1024
+  full_val_every_n_epochs: 5
+  top_k_mini_val_candidates: 3
+  selected_by_full_val_required: true
+  selection_score:
+    signed_tdir_weight: 1.0
+    anti_parallel_weight: 80.0
+    rot_weight: 0.2
+    tmag_ratio_weight: 15.0
+    path_ratio_weight: 8.0
+
+test_evaluation:
+  run_full_test_on_selected_checkpoint: true
+  test_used_for_selection: false
+

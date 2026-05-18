@@ -1,0 +1,76 @@
+{
+  "task_name": "DISK_FINAL360M_execute_safe_checkpoint_cleanup_and_nan_check",
+  "safe_checkpoint_cleanup_executed": true,
+  "final360m_process_alive_before": true,
+  "final360m_process_alive_after": true,
+  "disk_free_before": "4.6G",
+  "disk_free_after": "7.4G",
+  "deleted_total_size": "~2.8G",
+  "deleted_checkpoint_dirs": [
+    "checkpoints/FINAL360J_tdir_loss_reweight",
+    "checkpoints/FINAL360K_conservative_observability_weighting",
+    "checkpoints/FINAL360L_translation_head_factorization",
+    "checkpoints/SEQ360A_sequence_consistency_scale_drift",
+    "checkpoints/STRUCT360A_implicit_spherical_cross_attention",
+    "checkpoints/STRUCT360C_rotation_aware_fine_refinement",
+    "checkpoints/ABLDVO2_PlainPairVO",
+    "checkpoints/ABLDVO2_NoCrossImageInteraction",
+    "checkpoints/ABLDVO2_NoSphericalGeometry",
+    "checkpoints/ABLDVO3_SingleStagePoseRegression",
+    "checkpoints/ABLVO360_PlainPairVO",
+    "checkpoints/ABLVO360_NoCrossImageInteraction",
+    "checkpoints/ABLVO360_NoSphericalGeometry",
+    "checkpoints/TRAIN360C_spherical_pose_baseline",
+    "checkpoints/T57b_no_dt_multiscale_tmag_head_400"
+  ],
+  "deleted_checkpoint_dir_count": 15,
+  "protected_checkpoint_deleted": false,
+  "current_final360m_checkpoint_deleted": false,
+  "metrics_modified": false,
+  "nan_in_train_loss": true,
+  "nan_in_grad": false,
+  "nan_only_in_eval_placeholder": false,
+  "training_valid_so_far": false,
+  "possible_training_corruption": true,
+  "recommended_nan_action": "stop_and_restart_required",
+  "recommended_action": "stop_and_restart_required",
+  "nan_diagnosis": {
+    "epochs_logged": 3,
+    "epochs_with_nan_train_loss": [1, 2, 3],
+    "epochs_with_nan_train_components": [1, 2, 3],
+    "latest_logged_epoch": 3,
+    "latest_logged_train_nan_fields": [
+      "train_loss_total",
+      "train_loss_final",
+      "train_loss_coarse_aux",
+      "train_loss_residual_reg",
+      "train_loss_rot",
+      "train_loss_tdir",
+      "train_loss_tmag",
+      "train_loss_scale_stability",
+      "mini_val_score"
+    ],
+    "latest_logged_train_nan_inf_count": 164079,
+    "latest_logged_mini_val_nan_inf_count": 13312
+  },
+  "protected_directories_checked": [
+    "checkpoints/FINAL360M_fulltrain_struct360b_thesis_main/",
+    "logs/FINAL360M_fulltrain_20260518_022354.log",
+    "reports/FINAL360M_training_protocol.json",
+    "checkpoints/TRAIN360D_observability_kstep_scale/best_val.pt",
+    "checkpoints/TRAIN360H_sweep/TRAIN360H_F01_TRAIN360H_S1_best_seed1/best_val.pt",
+    "checkpoints/FINAL360I_struct360b_final/seed0/best_val.pt",
+    "external_baselines/results/dset2c_360dvo_canonical/",
+    "reports/*.json",
+    "reports/*.md",
+    "thesis/final_assets/",
+    "data/"
+  ],
+  "next_batch_requires_manual_confirmation": [
+    {
+      "path": "checkpoints/STRUCT360B_match_free_coarse_to_fine",
+      "size": "248M",
+      "reason": "older superseded lineage checkpoint directory, not deleted in this task"
+    }
+  ]
+}

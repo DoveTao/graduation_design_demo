@@ -1,0 +1,75 @@
+{
+  "all_sequences": [
+    {
+      "sequence": "ridge_to_lake",
+      "selected_ate_se3": 48.674197932798165,
+      "odom360a_ate_se3": 48.671832041654255,
+      "delta_ate_se3": 0.0023658911439099484,
+      "selected_ate_sim3": 41.4060862097912,
+      "odom360a_ate_sim3": 41.40503348875037,
+      "delta_ate_sim3": 0.0010527210408284304,
+      "selected_path_ratio": 0.8117583914907458,
+      "odom360a_path_ratio": 0.7751965827697378
+    },
+    {
+      "sequence": "snowmobile",
+      "selected_ate_se3": 57.48174892113805,
+      "odom360a_ate_se3": 57.47870265102845,
+      "delta_ate_se3": 0.0030462701095999023,
+      "selected_ate_sim3": 14.533055680916359,
+      "odom360a_ate_sim3": 14.531690580688919,
+      "delta_ate_sim3": 0.0013651002274404078,
+      "selected_path_ratio": 1.750292755085201,
+      "odom360a_path_ratio": 1.7177165710312197
+    }
+  ],
+  "best_improved_sequences": [
+    {
+      "sequence": "ridge_to_lake",
+      "selected_ate_se3": 48.674197932798165,
+      "odom360a_ate_se3": 48.671832041654255,
+      "delta_ate_se3": 0.0023658911439099484,
+      "selected_ate_sim3": 41.4060862097912,
+      "odom360a_ate_sim3": 41.40503348875037,
+      "delta_ate_sim3": 0.0010527210408284304,
+      "selected_path_ratio": 0.8117583914907458,
+      "odom360a_path_ratio": 0.7751965827697378
+    },
+    {
+      "sequence": "snowmobile",
+      "selected_ate_se3": 57.48174892113805,
+      "odom360a_ate_se3": 57.47870265102845,
+      "delta_ate_se3": 0.0030462701095999023,
+      "selected_ate_sim3": 14.533055680916359,
+      "odom360a_ate_sim3": 14.531690580688919,
+      "delta_ate_sim3": 0.0013651002274404078,
+      "selected_path_ratio": 1.750292755085201,
+      "odom360a_path_ratio": 1.7177165710312197
+    }
+  ],
+  "worst_degraded_sequences": [
+    {
+      "sequence": "ridge_to_lake",
+      "selected_ate_se3": 48.674197932798165,
+      "odom360a_ate_se3": 48.671832041654255,
+      "delta_ate_se3": 0.0023658911439099484,
+      "selected_ate_sim3": 41.4060862097912,
+      "odom360a_ate_sim3": 41.40503348875037,
+      "delta_ate_sim3": 0.0010527210408284304,
+      "selected_path_ratio": 0.8117583914907458,
+      "odom360a_path_ratio": 0.7751965827697378
+    },
+    {
+      "sequence": "snowmobile",
+      "selected_ate_se3": 57.48174892113805,
+      "odom360a_ate_se3": 57.47870265102845,
+      "delta_ate_se3": 0.0030462701095999023,
+      "selected_ate_sim3": 14.533055680916359,
+      "odom360a_ate_sim3": 14.531690580688919,
+      "delta_ate_sim3": 0.0013651002274404078,
+      "selected_path_ratio": 1.750292755085201,
+      "odom360a_path_ratio": 1.7177165710312197
+    }
+  ],
+  "per_sequence_degradation_found": true
+}

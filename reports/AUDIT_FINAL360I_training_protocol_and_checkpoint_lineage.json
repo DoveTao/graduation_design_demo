@@ -1,0 +1,49 @@
+{
+  "task_name": "AUDIT_FINAL360I_training_protocol_and_checkpoint_lineage",
+  "blocking_issue": true,
+  "recommended_action": "FINAL360I_full_retrain_for_thesis_main_result",
+  "final360i_training_executed": true,
+  "final360i_train_split": "subset",
+  "train_sample_count": 256,
+  "train_manifest_total_count": 12154,
+  "val_sample_count": 5342,
+  "test_sample_count": 5062,
+  "epoch_count": 5,
+  "best_epoch": 1,
+  "optimizer": "AdamW",
+  "seed": 0,
+  "init_checkpoint": "checkpoints/TRAIN360D_observability_kstep_scale/best_val.pt",
+  "selected_checkpoint": "FINAL360I_struct360b_final_selected",
+  "checkpoint_path": "/home/dovetao/graduation_design_demo/checkpoints/FINAL360I_struct360b_final/seed0/best_val.pt",
+  "test_used_for_selection": false,
+  "final360i_metrics_test_matches_selected_checkpoint": true,
+  "signs_of_train_subset_512": false,
+  "signs_of_epochs_3": false,
+  "signs_of_train_subset_256": true,
+  "mixed_with_abldvo2_or_abldvo3": false,
+  "thesis_main_model_usable": false,
+  "conclusion": "FINAL360I cannot currently be accepted as a full-train thesis main model result because the executed run used train_subset_max=256.",
+  "evidence": {
+    "top_level_config": "configs/final360i_struct360b_final.yaml",
+    "base_config": "configs/struct360b_match_free_coarse_to_fine.yaml",
+    "selection_script": "tools/final360i_retrain_and_select.py",
+    "executed_seed_config": "checkpoints/FINAL360I_struct360b_final/seed0/config.yaml",
+    "train_log": "checkpoints/FINAL360I_struct360b_final/seed0/train_log.jsonl",
+    "val_report": "reports/FINAL360I_metrics_val.json",
+    "test_report": "reports/FINAL360I_metrics_test.json",
+    "selection_report": "reports/FINAL360I_model_selection_table.json",
+    "main_report": "reports/FINAL360I_final_retrain_and_model_selection.md"
+  },
+  "git_lineage": {
+    "final360i_add_commit": {
+      "commit": "5933e2c741e02df2aa0681c1b606e8dcb7c82d86",
+      "date": "2026-05-13 16:08:33 +0800",
+      "subject": "FINAL360I: add final STRUCT360B retrain and model selection"
+    },
+    "maint15_commit": {
+      "commit": "270073daec3d5a7d5265b7d3c0666b34488693a3",
+      "date": "2026-05-14 19:14:04 +0800",
+      "subject": "MAINT15: reduce stale comparison labels after cleanup"
+    }
+  }
+}
