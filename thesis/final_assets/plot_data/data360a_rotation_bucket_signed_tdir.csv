@@ -1,0 +1,9 @@
+figure_name,bucket_type,bucket_name,metric,value,count,source_file,note
+data360a_rotation_bucket_signed_tdir,gt_rot_angle_deg,"[0.0000,0.0999)",signed_tdir_mean_deg,14.61274924056256,1257,external_baselines/results/data360a_tdir_regime_diagnostic,Primary bucket series for FINAL360I.
+data360a_rotation_bucket_signed_tdir,gt_rot_angle_deg,"[0.0000,0.0999)",anti_parallel_rate,0.0,1257,external_baselines/results/data360a_tdir_regime_diagnostic,Primary bucket series for FINAL360I.
+data360a_rotation_bucket_signed_tdir,gt_rot_angle_deg,"[0.0999,0.2201)",signed_tdir_mean_deg,14.026323191391617,1274,external_baselines/results/data360a_tdir_regime_diagnostic,Primary bucket series for FINAL360I.
+data360a_rotation_bucket_signed_tdir,gt_rot_angle_deg,"[0.0999,0.2201)",anti_parallel_rate,0.0007849293563579278,1274,external_baselines/results/data360a_tdir_regime_diagnostic,Primary bucket series for FINAL360I.
+data360a_rotation_bucket_signed_tdir,gt_rot_angle_deg,"[0.2201,2.3465)",signed_tdir_mean_deg,67.75897652692531,1265,external_baselines/results/data360a_tdir_regime_diagnostic,Primary bucket series for FINAL360I.
+data360a_rotation_bucket_signed_tdir,gt_rot_angle_deg,"[0.2201,2.3465)",anti_parallel_rate,0.3391304347826087,1265,external_baselines/results/data360a_tdir_regime_diagnostic,Primary bucket series for FINAL360I.
+data360a_rotation_bucket_signed_tdir,gt_rot_angle_deg,"[2.3465,54.1788)",signed_tdir_mean_deg,84.65805003588403,1266,external_baselines/results/data360a_tdir_regime_diagnostic,Primary bucket series for FINAL360I.
+data360a_rotation_bucket_signed_tdir,gt_rot_angle_deg,"[2.3465,54.1788)",anti_parallel_rate,0.466824644549763,1266,external_baselines/results/data360a_tdir_regime_diagnostic,Primary bucket series for FINAL360I.

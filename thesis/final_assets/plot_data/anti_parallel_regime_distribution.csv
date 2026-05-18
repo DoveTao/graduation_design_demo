@@ -1,0 +1,61 @@
+figure_name,bucket_type,bucket_name,metric,value,count,source_file,note
+anti_parallel_regime_distribution,anti_parallel_hist_not_anti,"[0.3684,6.2955)",count,652,652,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for non anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_anti,"[0.3684,6.2955)",count,0,0,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_not_anti,"[6.2955,12.2225)",count,902,902,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for non anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_anti,"[6.2955,12.2225)",count,0,0,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_not_anti,"[12.2225,18.1495)",count,634,634,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for non anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_anti,"[12.2225,18.1495)",count,0,0,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_not_anti,"[18.1495,24.0765)",count,465,465,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for non anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_anti,"[18.1495,24.0765)",count,0,0,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_not_anti,"[24.0765,30.0035)",count,377,377,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for non anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_anti,"[24.0765,30.0035)",count,0,0,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_not_anti,"[30.0035,35.9305)",count,265,265,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for non anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_anti,"[30.0035,35.9305)",count,0,0,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_not_anti,"[35.9305,41.8575)",count,217,217,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for non anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_anti,"[35.9305,41.8575)",count,0,0,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_not_anti,"[41.8575,47.7846)",count,168,168,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for non anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_anti,"[41.8575,47.7846)",count,0,0,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_not_anti,"[47.7846,53.7116)",count,95,95,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for non anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_anti,"[47.7846,53.7116)",count,0,0,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_not_anti,"[53.7116,59.6386)",count,63,63,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for non anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_anti,"[53.7116,59.6386)",count,0,0,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_not_anti,"[59.6386,65.5656)",count,52,52,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for non anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_anti,"[59.6386,65.5656)",count,0,0,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_not_anti,"[65.5656,71.4926)",count,41,41,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for non anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_anti,"[65.5656,71.4926)",count,0,0,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_not_anti,"[71.4926,77.4196)",count,35,35,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for non anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_anti,"[71.4926,77.4196)",count,0,0,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_not_anti,"[77.4196,83.3466)",count,36,36,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for non anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_anti,"[77.4196,83.3466)",count,0,0,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_not_anti,"[83.3466,89.2736)",count,35,35,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for non anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_anti,"[83.3466,89.2736)",count,0,0,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_not_anti,"[89.2736,95.2007)",count,4,4,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for non anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_anti,"[89.2736,95.2007)",count,41,41,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_not_anti,"[95.2007,101.1277)",count,0,0,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for non anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_anti,"[95.2007,101.1277)",count,58,58,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_not_anti,"[101.1277,107.0547)",count,0,0,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for non anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_anti,"[101.1277,107.0547)",count,49,49,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_not_anti,"[107.0547,112.9817)",count,0,0,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for non anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_anti,"[107.0547,112.9817)",count,49,49,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_not_anti,"[112.9817,118.9087)",count,0,0,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for non anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_anti,"[112.9817,118.9087)",count,47,47,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_not_anti,"[118.9087,124.8357)",count,0,0,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for non anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_anti,"[118.9087,124.8357)",count,81,81,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_not_anti,"[124.8357,130.7627)",count,0,0,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for non anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_anti,"[124.8357,130.7627)",count,83,83,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_not_anti,"[130.7627,136.6897)",count,0,0,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for non anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_anti,"[130.7627,136.6897)",count,81,81,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_not_anti,"[136.6897,142.6168)",count,0,0,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for non anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_anti,"[136.6897,142.6168)",count,50,50,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_not_anti,"[142.6168,148.5438)",count,0,0,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for non anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_anti,"[142.6168,148.5438)",count,61,61,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_not_anti,"[148.5438,154.4708)",count,0,0,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for non anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_anti,"[148.5438,154.4708)",count,70,70,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_not_anti,"[154.4708,160.3978)",count,0,0,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for non anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_anti,"[154.4708,160.3978)",count,118,118,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_not_anti,"[160.3978,166.3248)",count,0,0,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for non anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_anti,"[160.3978,166.3248)",count,105,105,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_not_anti,"[166.3248,172.2518)",count,0,0,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for non anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_anti,"[166.3248,172.2518)",count,87,87,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_not_anti,"[172.2518,178.1788)",count,0,0,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for non anti-parallel rows.
+anti_parallel_regime_distribution,anti_parallel_hist_anti,"[172.2518,178.1788)",count,41,41,external_baselines/results/data360a_tdir_regime_diagnostic,Histogram bin count for anti-parallel rows.

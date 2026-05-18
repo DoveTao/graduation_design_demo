@@ -1,0 +1,11 @@
+model,update,epoch,metric,value,source_file
+FINAL360I,1,1,joint_score,149.8338157649262,checkpoints/FINAL360I_struct360b_final/seed0/train_log.jsonl
+FINAL360I,1,1,signed_tdir_mean_deg,104.46986810553231,checkpoints/FINAL360I_struct360b_final/seed0/train_log.jsonl
+FINAL360I,2,2,joint_score,153.22605494308124,checkpoints/FINAL360I_struct360b_final/seed0/train_log.jsonl
+FINAL360I,2,2,signed_tdir_mean_deg,106.48941675617395,checkpoints/FINAL360I_struct360b_final/seed0/train_log.jsonl
+FINAL360I,3,3,joint_score,167.80120341825932,checkpoints/FINAL360I_struct360b_final/seed0/train_log.jsonl
+FINAL360I,3,3,signed_tdir_mean_deg,115.23288472001836,checkpoints/FINAL360I_struct360b_final/seed0/train_log.jsonl
+FINAL360I,4,4,joint_score,160.00892377531267,checkpoints/FINAL360I_struct360b_final/seed0/train_log.jsonl
+FINAL360I,4,4,signed_tdir_mean_deg,109.12675204440352,checkpoints/FINAL360I_struct360b_final/seed0/train_log.jsonl
+FINAL360I,5,5,joint_score,160.52957741302149,checkpoints/FINAL360I_struct360b_final/seed0/train_log.jsonl
+FINAL360I,5,5,signed_tdir_mean_deg,109.61048754101272,checkpoints/FINAL360I_struct360b_final/seed0/train_log.jsonl

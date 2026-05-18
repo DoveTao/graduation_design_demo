@@ -1,0 +1,17 @@
+figure_name,bucket_type,bucket_name,metric,value,count,source_file,note
+final360i_vs_seq360b_bucket_compare,gt_tmag,"[0.2050,0.4000)",signed_tdir_mean_deg,62.365856770815284,317,external_baselines/results/data360a_tdir_regime_diagnostic,Primary bucket series for FINAL360I.
+final360i_vs_seq360b_bucket_compare,gt_tmag,"[0.2050,0.4000)",anti_parallel_rate,0.38170347003154576,317,external_baselines/results/data360a_tdir_regime_diagnostic,Primary bucket series for FINAL360I.
+final360i_vs_seq360b_bucket_compare,gt_tmag_SEQ360B,"[0.2050,0.4000)",signed_tdir_mean_deg,62.17198087556777,318,external_baselines/results/data360a_tdir_regime_diagnostic,Comparison bucket series for SEQ360B.
+final360i_vs_seq360b_bucket_compare,gt_tmag_SEQ360B,"[0.2050,0.4000)",anti_parallel_rate,0.3805031446540881,318,external_baselines/results/data360a_tdir_regime_diagnostic,Comparison bucket series for SEQ360B.
+final360i_vs_seq360b_bucket_compare,gt_tmag,"[0.4000,0.4825)",signed_tdir_mean_deg,27.447053608406836,317,external_baselines/results/data360a_tdir_regime_diagnostic,Primary bucket series for FINAL360I.
+final360i_vs_seq360b_bucket_compare,gt_tmag,"[0.4000,0.4825)",anti_parallel_rate,0.0914826498422713,317,external_baselines/results/data360a_tdir_regime_diagnostic,Primary bucket series for FINAL360I.
+final360i_vs_seq360b_bucket_compare,gt_tmag_SEQ360B,"[0.4000,0.4825)",signed_tdir_mean_deg,27.469235983154952,317,external_baselines/results/data360a_tdir_regime_diagnostic,Comparison bucket series for SEQ360B.
+final360i_vs_seq360b_bucket_compare,gt_tmag_SEQ360B,"[0.4000,0.4825)",anti_parallel_rate,0.0914826498422713,317,external_baselines/results/data360a_tdir_regime_diagnostic,Comparison bucket series for SEQ360B.
+final360i_vs_seq360b_bucket_compare,gt_tmag,"[0.4825,0.6366)",signed_tdir_mean_deg,21.721398623320226,317,external_baselines/results/data360a_tdir_regime_diagnostic,Primary bucket series for FINAL360I.
+final360i_vs_seq360b_bucket_compare,gt_tmag,"[0.4825,0.6366)",anti_parallel_rate,0.01892744479495268,317,external_baselines/results/data360a_tdir_regime_diagnostic,Primary bucket series for FINAL360I.
+final360i_vs_seq360b_bucket_compare,gt_tmag_SEQ360B,"[0.4825,0.6366)",signed_tdir_mean_deg,21.765626466198313,316,external_baselines/results/data360a_tdir_regime_diagnostic,Comparison bucket series for SEQ360B.
+final360i_vs_seq360b_bucket_compare,gt_tmag_SEQ360B,"[0.4825,0.6366)",anti_parallel_rate,0.0189873417721519,316,external_baselines/results/data360a_tdir_regime_diagnostic,Comparison bucket series for SEQ360B.
+final360i_vs_seq360b_bucket_compare,gt_tmag,"[0.6366,1.4600)",signed_tdir_mean_deg,69.69061346600161,318,external_baselines/results/data360a_tdir_regime_diagnostic,Primary bucket series for FINAL360I.
+final360i_vs_seq360b_bucket_compare,gt_tmag,"[0.6366,1.4600)",anti_parallel_rate,0.3081761006289308,318,external_baselines/results/data360a_tdir_regime_diagnostic,Primary bucket series for FINAL360I.
+final360i_vs_seq360b_bucket_compare,gt_tmag_SEQ360B,"[0.6366,1.4600)",signed_tdir_mean_deg,69.69061315926612,318,external_baselines/results/data360a_tdir_regime_diagnostic,Comparison bucket series for SEQ360B.
+final360i_vs_seq360b_bucket_compare,gt_tmag_SEQ360B,"[0.6366,1.4600)",anti_parallel_rate,0.3081761006289308,318,external_baselines/results/data360a_tdir_regime_diagnostic,Comparison bucket series for SEQ360B.

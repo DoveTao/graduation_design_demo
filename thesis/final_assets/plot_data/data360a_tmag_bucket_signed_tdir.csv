@@ -1,0 +1,9 @@
+figure_name,bucket_type,bucket_name,metric,value,count,source_file,note
+data360a_tmag_bucket_signed_tdir,gt_tmag,"[0.2050,0.6912)",signed_tdir_mean_deg,41.88670619530803,1266,external_baselines/results/data360a_tdir_regime_diagnostic,Primary bucket series for FINAL360I.
+data360a_tmag_bucket_signed_tdir,gt_tmag,"[0.2050,0.6912)",anti_parallel_rate,0.1966824644549763,1266,external_baselines/results/data360a_tdir_regime_diagnostic,Primary bucket series for FINAL360I.
+data360a_tmag_bucket_signed_tdir,gt_tmag,"[0.6912,1.2670)",signed_tdir_mean_deg,43.03944569616906,1265,external_baselines/results/data360a_tdir_regime_diagnostic,Primary bucket series for FINAL360I.
+data360a_tmag_bucket_signed_tdir,gt_tmag,"[0.6912,1.2670)",anti_parallel_rate,0.1984189723320158,1265,external_baselines/results/data360a_tdir_regime_diagnostic,Primary bucket series for FINAL360I.
+data360a_tmag_bucket_signed_tdir,gt_tmag,"[1.2670,2.1789)",signed_tdir_mean_deg,39.16378898242902,1265,external_baselines/results/data360a_tdir_regime_diagnostic,Primary bucket series for FINAL360I.
+data360a_tmag_bucket_signed_tdir,gt_tmag,"[1.2670,2.1789)",anti_parallel_rate,0.1565217391304348,1265,external_baselines/results/data360a_tdir_regime_diagnostic,Primary bucket series for FINAL360I.
+data360a_tmag_bucket_signed_tdir,gt_tmag,"[2.1789,6.8315)",signed_tdir_mean_deg,56.96231933769605,1266,external_baselines/results/data360a_tdir_regime_diagnostic,Primary bucket series for FINAL360I.
+data360a_tmag_bucket_signed_tdir,gt_tmag,"[2.1789,6.8315)",anti_parallel_rate,0.2551342812006319,1266,external_baselines/results/data360a_tdir_regime_diagnostic,Primary bucket series for FINAL360I.

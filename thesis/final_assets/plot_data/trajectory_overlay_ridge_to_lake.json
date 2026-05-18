@@ -1,0 +1,12 @@
+{
+  "figure_name": "trajectory_overlay_ridge_to_lake",
+  "sequence": "ridge_to_lake",
+  "trajectory_files": [
+    "thesis/final_assets/plot_data/trajectory_overlay_ridge_to_lake__GT.csv",
+    "thesis/final_assets/plot_data/trajectory_overlay_ridge_to_lake__ODOM360A-direct.csv",
+    "thesis/final_assets/plot_data/trajectory_overlay_ridge_to_lake__ODOM360A.csv",
+    "thesis/final_assets/plot_data/trajectory_overlay_ridge_to_lake__ODOM360B.csv",
+    "thesis/final_assets/plot_data/trajectory_overlay_ridge_to_lake__BASE360D.csv"
+  ],
+  "note": "Per-trajectory XYZ data exported for the representative overlay figure."
+}

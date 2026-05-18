@@ -1,0 +1,15 @@
+[
+  {
+    "status": "unavailable",
+    "reason": "FINAL360I retained STRUCT360B mainline does not emit the requested matching/geometry tensors without intrusive model changes.",
+    "sequence_id": "snowmobile",
+    "pair_index": 17496,
+    "k": 1,
+    "source_manifest": "external_baselines/results/dset2c_360dvo_canonical/pair_manifest_test.jsonl",
+    "checkpoint": "checkpoints/FINAL360I_struct360b_final/seed0/best_val.pt",
+    "default_model_behavior_changed": false,
+    "debug_hooks_added": false,
+    "return_debug_used": false,
+    "eval_only": true
+  }
+]

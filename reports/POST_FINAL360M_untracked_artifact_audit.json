@@ -1,0 +1,175 @@
+{
+  "task_name": "POST_FINAL360M_untracked_artifact_audit",
+  "current_branch": "research/abldvo3-single-stage-pose-regression-ablation",
+  "latest_commit": "85f12ed FINAL360M: promote full-train thesis mainline and refresh final assets",
+  "untracked_file_count": 91,
+  "untracked_total_bytes": 28856300,
+  "untracked_total_mib": 27.52,
+  "commit_now": [
+    {
+      "path": "thesis/final_assets/manifests/matching_geometry_eval_only_manifest.json",
+      "size_bytes": 565
+    },
+    {
+      "path": "thesis/final_assets/plot_data/anti_parallel_regime_distribution.csv",
+      "size_bytes": 11961
+    },
+    {
+      "path": "thesis/final_assets/plot_data/data360a_rotation_bucket_signed_tdir.csv",
+      "size_bytes": 1763
+    },
+    {
+      "path": "thesis/final_assets/plot_data/data360a_tmag_bucket_signed_tdir.csv",
+      "size_bytes": 1669
+    },
+    {
+      "path": "thesis/final_assets/plot_data/final360i_j_k_l_validation_compare.csv",
+      "size_bytes": 2413
+    },
+    {
+      "path": "thesis/final_assets/plot_data/final360i_joint_vs_single_best.csv",
+      "size_bytes": 1159
+    },
+    {
+      "path": "thesis/final_assets/plot_data/final360i_validation_curves.csv",
+      "size_bytes": 2842
+    },
+    {
+      "path": "thesis/final_assets/plot_data/final360i_vs_seq360b_bucket_compare.csv",
+      "size_bytes": 3376
+    },
+    {
+      "path": "thesis/final_assets/plot_data/no_cross_interaction_validation_curves.csv",
+      "size_bytes": 2033
+    },
+    {
+      "path": "thesis/final_assets/plot_data/pair_level_main_results_bar.csv",
+      "size_bytes": 5310
+    },
+    {
+      "path": "thesis/final_assets/plot_data/single_stage_validation_curves.csv",
+      "size_bytes": 2096
+    },
+    {
+      "path": "thesis/final_assets/plot_data/structural_ablation_multimetric.csv",
+      "size_bytes": 5245
+    },
+    {
+      "path": "thesis/final_assets/plot_data/thesis360_coarse_final_pose_diagnostic.json",
+      "size_bytes": 6509
+    },
+    {
+      "path": "thesis/final_assets/plot_data/thesis360_cross_image_interaction_sample01_normal_mountains.json",
+      "size_bytes": 6530
+    },
+    {
+      "path": "thesis/final_assets/plot_data/thesis360_cross_image_interaction_sample02_normal_downhill.json",
+      "size_bytes": 6529
+    },
+    {
+      "path": "thesis/final_assets/plot_data/thesis360_cross_image_interaction_sample03_scale_path_k5.json",
+      "size_bytes": 6527
+    },
+    {
+      "path": "thesis/final_assets/plot_data/thesis360_residual_gate_diagnostic.json",
+      "size_bytes": 6505
+    },
+    {
+      "path": "thesis/final_assets/plot_data/thesis360_token_layout_visualization.json",
+      "size_bytes": 6507
+    },
+    {
+      "path": "thesis/final_assets/plot_data/trajectory_metric_comparison.csv",
+      "size_bytes": 4482
+    },
+    {
+      "path": "thesis/final_assets/plot_data/trajectory_overlay_ridge_to_lake.json",
+      "size_bytes": 621
+    },
+    {
+      "path": "thesis/final_assets/plot_data/trajectory_overlay_ridge_to_lake__BASE360D.csv",
+      "size_bytes": 89031
+    },
+    {
+      "path": "thesis/final_assets/plot_data/trajectory_overlay_ridge_to_lake__GT.csv",
+      "size_bytes": 94622
+    },
+    {
+      "path": "thesis/final_assets/plot_data/trajectory_overlay_ridge_to_lake__ODOM360A-direct.csv",
+      "size_bytes": 99398
+    },
+    {
+      "path": "thesis/final_assets/plot_data/trajectory_overlay_ridge_to_lake__ODOM360A.csv",
+      "size_bytes": 98477
+    },
+    {
+      "path": "thesis/final_assets/plot_data/trajectory_overlay_ridge_to_lake__ODOM360B.csv",
+      "size_bytes": 84153
+    },
+    {
+      "path": "thesis/final_assets/plot_data/unavailable_plot_data.json",
+      "size_bytes": 40808
+    }
+  ],
+  "keep_local_only": [
+    {
+      "path": "external_baselines/results/final360m_odom360a_lightweight_trajectory_fusion/",
+      "size_bytes": 8868209
+    },
+    {
+      "path": "external_baselines/results/odom360a_lightweight_trajectory_fusion/",
+      "size_bytes": 8873982
+    },
+    {
+      "path": "external_baselines/results/data360a_tdir_regime_diagnostic/",
+      "size_bytes": 10521399
+    }
+  ],
+  "safe_to_delete": [
+    {
+      "path": "models/__pycache__/",
+      "type": "cache_dir"
+    },
+    {
+      "path": "tools/__pycache__/",
+      "type": "cache_dir"
+    },
+    {
+      "path": "tools/current/__pycache__/",
+      "type": "cache_dir"
+    },
+    {
+      "path": "datasets/__pycache__/",
+      "type": "cache_dir"
+    },
+    {
+      "path": "train360/core/__pycache__/",
+      "type": "cache_dir"
+    }
+  ],
+  "risky_files": [
+    {
+      "path": "reports/MAIN362_blocker_worktree_not_clean.md",
+      "reason": "small untracked blocker/debug artifact not clearly part of final thesis asset pack"
+    }
+  ],
+  "checkpoint_untracked": false,
+  "raw_data_untracked": false,
+  "large_dump_untracked": true,
+  "found_large_dump_examples": [
+    "external_baselines/results/final360m_odom360a_lightweight_trajectory_fusion/cache/val_all_pair_predictions.jsonl",
+    "external_baselines/results/final360m_odom360a_lightweight_trajectory_fusion/cache/test_all_pair_predictions.jsonl",
+    "external_baselines/results/data360a_tdir_regime_diagnostic/final360i_val_pair_rows.jsonl",
+    "external_baselines/results/data360a_tdir_regime_diagnostic/final360i_test_pair_rows.jsonl"
+  ],
+  "recommend_commit_plot_data": true,
+  "recommend_commit_final_asset_manifests": true,
+  "recommend_keep_external_baselines_eval_exports_local_only": true,
+  "recommend_new_semantic_branch": true,
+  "recommended_semantic_branch": "research/final360m-thesis-mainline-promotion",
+  "local_semantic_branch_exists": false,
+  "remote_semantic_branch_exists": false,
+  "show_mainline_pass": true,
+  "current_artifact_check_pass": true,
+  "metrics_modified": false
+}

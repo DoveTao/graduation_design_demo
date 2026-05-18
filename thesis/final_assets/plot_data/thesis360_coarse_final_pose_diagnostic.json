@@ -1,0 +1,141 @@
+{
+  "figure_name": "thesis360_coarse_final_pose_diagnostic",
+  "status": "unavailable_plot_data",
+  "reason": "Current THESIS360 assets retain figure images and metadata, but not the raw token-level matrices or debug tensors required for plot-data reconstruction without rerunning eval-only forward.",
+  "source_files": [
+    "checkpoints/FINAL360I_struct360b_final/seed0/best_val.pt",
+    "external_baselines/results/dset2c_360dvo_canonical/pair_manifest_val.jsonl"
+  ],
+  "task_manifest": {
+    "task_name": "THESIS360_eval_only_matching_geometry_debug_export",
+    "eval_only_forward_executed": true,
+    "training_executed": false,
+    "checkpoints_modified": false,
+    "metrics_modified": false,
+    "debug_hooks_added": true,
+    "default_model_behavior_changed": false,
+    "sample_split": "val",
+    "samples": [
+      {
+        "sample_name": "sample01_normal_mountains",
+        "sequence_id": "mountains",
+        "pair_index": 12154,
+        "pair_type": "adjacent",
+        "k": 1,
+        "dt_world": 0.1
+      },
+      {
+        "sample_name": "sample02_normal_downhill",
+        "sequence_id": "downhill_biking",
+        "pair_index": 15203,
+        "pair_type": "adjacent",
+        "k": 1,
+        "dt_world": 0.1
+      },
+      {
+        "sample_name": "sample03_scale_path_k5",
+        "sequence_id": "mountains",
+        "pair_index": 12157,
+        "pair_type": "kstep",
+        "k": 5,
+        "dt_world": 0.5
+      }
+    ],
+    "figures": [
+      {
+        "file_path": "thesis/final_assets/figures/matching_geometry/thesis360_cross_image_interaction_sample01_normal_mountains.png",
+        "title_zh": "跨图像特征交互可视化 sample01_normal_mountains",
+        "title_en": "Cross-image interaction visualization sample01_normal_mountains",
+        "source_files": [
+          "checkpoints/FINAL360I_struct360b_final/seed0/best_val.pt",
+          "external_baselines/results/dset2c_360dvo_canonical/pair_manifest_val.jsonl"
+        ],
+        "recommended_location": "defense_ppt",
+        "notes": "Eval-only token-level relation heatmaps derived from real fine-stage tokens; this is not explicit keypoint matching.",
+        "kind": "cross_image_interaction"
+      },
+      {
+        "file_path": "thesis/final_assets/figures/matching_geometry/thesis360_cross_image_interaction_sample02_normal_downhill.png",
+        "title_zh": "跨图像特征交互可视化 sample02_normal_downhill",
+        "title_en": "Cross-image interaction visualization sample02_normal_downhill",
+        "source_files": [
+          "checkpoints/FINAL360I_struct360b_final/seed0/best_val.pt",
+          "external_baselines/results/dset2c_360dvo_canonical/pair_manifest_val.jsonl"
+        ],
+        "recommended_location": "thesis_appendix",
+        "notes": "Eval-only token-level relation heatmaps derived from real fine-stage tokens; this is not explicit keypoint matching.",
+        "kind": "cross_image_interaction"
+      },
+      {
+        "file_path": "thesis/final_assets/figures/matching_geometry/thesis360_cross_image_interaction_sample03_scale_path_k5.png",
+        "title_zh": "跨图像特征交互可视化 sample03_scale_path_k5",
+        "title_en": "Cross-image interaction visualization sample03_scale_path_k5",
+        "source_files": [
+          "checkpoints/FINAL360I_struct360b_final/seed0/best_val.pt",
+          "external_baselines/results/dset2c_360dvo_canonical/pair_manifest_val.jsonl"
+        ],
+        "recommended_location": "thesis_appendix",
+        "notes": "Eval-only token-level relation heatmaps derived from real fine-stage tokens; this is not explicit keypoint matching.",
+        "kind": "cross_image_interaction"
+      },
+      {
+        "file_path": "thesis/final_assets/figures/matching_geometry/thesis360_residual_gate_diagnostic.png",
+        "title_zh": "粗到细残差精化门控诊断图",
+        "title_en": "Residual-gate diagnostic",
+        "source_files": [
+          "checkpoints/FINAL360I_struct360b_final/seed0/best_val.pt",
+          "external_baselines/results/dset2c_360dvo_canonical/pair_manifest_val.jsonl"
+        ],
+        "recommended_location": "thesis_appendix",
+        "notes": "Shows real fine-gate and residual-gate responses plus applied residual update magnitudes.",
+        "kind": "residual_gate"
+      },
+      {
+        "file_path": "thesis/final_assets/figures/matching_geometry/thesis360_coarse_final_pose_diagnostic.png",
+        "title_zh": "coarse pose 与 final pose 诊断图",
+        "title_en": "Coarse-to-final pose diagnostic",
+        "source_files": [
+          "checkpoints/FINAL360I_struct360b_final/seed0/best_val.pt",
+          "external_baselines/results/dset2c_360dvo_canonical/pair_manifest_val.jsonl"
+        ],
+        "recommended_location": "thesis_appendix",
+        "notes": "Compares coarse and final pose errors against GT on fixed eval-only samples.",
+        "kind": "coarse_final_diagnostic"
+      },
+      {
+        "file_path": "thesis/final_assets/figures/matching_geometry/thesis360_token_layout_visualization.png",
+        "title_zh": "球面 token 布局可视化",
+        "title_en": "Token layout visualization",
+        "source_files": [
+          "checkpoints/FINAL360I_struct360b_final/seed0/best_val.pt",
+          "external_baselines/results/dset2c_360dvo_canonical/pair_manifest_val.jsonl"
+        ],
+        "recommended_location": "defense_ppt",
+        "notes": "Visualizes actual coarse and fine spherical token locations in ERP coordinates.",
+        "kind": "token_layout"
+      }
+    ],
+    "unavailable_targets": [
+      {
+        "target": "explicit matching / keypoint correspondence",
+        "reason": "The retained FINAL360I / STRUCT360B mainline is match-free and does not emit explicit keypoint matches."
+      },
+      {
+        "target": "epipolar allowed mask / epipolar residual / epipolar bias",
+        "reason": "These tensors are not part of the retained STRUCT360B forward path and were not fabricated."
+      }
+    ],
+    "explicit_matching_visualized": false,
+    "cross_image_interaction_visualized": true,
+    "residual_gate_visualized": true,
+    "coarse_final_diagnostic_visualized": true,
+    "real_exported_quantities": [
+      "fine token relation heatmap (pre-refine / post-refine cosine relation)",
+      "cross-attention context response energy",
+      "fine_gate and residual_gate",
+      "delta rotation / delta tdir / delta log_tmag",
+      "coarse pose vs final pose diagnostics",
+      "coarse/fine token ERP layout"
+    ]
+  }
+}
